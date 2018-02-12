@@ -2,8 +2,16 @@ Introduction
 -------------
 CS-Rank is a Python package for context-sensitive ranking algorithms.
 
+
 Getting started
 ---------------
+As a simple "Hello World!"-example we will try to learn the Medoid problem:
+```python
+import csrank as cs
+
+fate = cs.FATEObjectRanker()
+fate.fit(X, Y)
+```
 
 Installation
 ------------
