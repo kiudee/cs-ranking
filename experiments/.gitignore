@@ -1,0 +1,10 @@
+/logs_multiple_folds/
+/logs_single_fold/
+/nips_results/
+/optimizer_multiple_folds/
+/optimizer_single_fold/
+/cv_results/
+/multiple_cv_results/
+/single_cv_results/
+/predictions/
+/results/

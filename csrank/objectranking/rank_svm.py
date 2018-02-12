@@ -1,0 +1,107 @@
+import logging
+from collections import OrderedDict
+
+import numpy as np
+import sklearn.preprocessing as prep
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import LinearSVC
+from sklearn.utils import check_random_state
+
+from csrank.objectranking.object_ranker import ObjectRanker
+from csrank.tunable import Tunable
+from csrank.util import tunable_parameters_ranges
+from ..dataset_reader.objectranking.util import generate_complete_pairwise_dataset
+
+__all__ = ['RankSVM']
+
+
+class RankSVM(ObjectRanker, Tunable):
+    _tunable = None
+
+    def __init__(self, n_features, C=1, tol=1e-4, normalize=True, fit_intercept=True, random_state=None, **kwargs):
+        self.normalize = normalize
+        self.n_features = n_features
+        self.C = C
+        self.tol = tol
+        self.logger = logging.getLogger('RankSVM')
+        self.random_state = check_random_state(random_state)
+        self.threshold_instances = 1000000
+        self.fit_intercept = fit_intercept
+
+    def fit(self, X, Y, **kwargs):
+        self.logger.debug('Creating the Dataset')
+        X_train, garbage, garbage, garbage, Y_single = generate_complete_pairwise_dataset(X, Y)
+        del garbage
+        assert X_train.shape[1] == self.n_features
+
+        self.logger.debug('Finished the Dataset with instances {}'.format(X_train.shape[0]))
+        if (X_train.shape[0] > self.threshold_instances):
+            self.model = LogisticRegression(C=self.C, tol=self.tol, fit_intercept=self.fit_intercept,
+                                            random_state=self.random_state)
+        else:
+            self.model = LinearSVC(C=self.C, tol=self.tol, fit_intercept=self.fit_intercept,
+                                   random_state=self.random_state)
+
+        if (self.normalize):
+            scaler = prep.StandardScaler()
+            X_train = scaler.fit_transform(X_train)
+        self.logger.debug('Finished Creating the model, now fitting started')
+
+        self.model.fit(X_train, Y_single)
+        self.weights = self.model.coef_.flatten()
+        if (self.fit_intercept):
+            self.weights = np.append(self.weights, self.model.intercept_)
+        self.logger.debug('Fitting Complete')
+
+    def _predict_scores_fixed(self, X, **kwargs):
+        n_instances, n_objects, n_features = X.shape
+        self.logger.info("For Test instances {} objects {} features {}".format(n_instances, n_objects, n_features))
+        scores = []
+        for data_test in X:
+            assert data_test.shape[1] == self.n_features
+            weights = np.array(self.model.coef_)[0]
+            try:
+                score = np.sum(weights * data_test, axis=1)
+            except ValueError:
+                score = np.sum(weights[1:] * data_test, axis=1)
+            scores.append(score)
+        self.logger.info("Done predicting scores")
+        return np.array(scores)
+
+    def predict_scores(self, X, **kwargs):
+        return super().predict_scores(X, **kwargs)
+
+    def predict(self, X, **kwargs):
+        return super().predict(X, **kwargs)
+
+    def predict_pair(self, a, b, **kwargs):
+        weights = np.array(self.model.coef_)[0]
+        score_a = np.sum(weights * a, axis=1)
+        score_b = np.sum(weights * b, axis=1)
+        return [score_a / (score_a + score_b), score_b / (score_a + score_b)]
+
+    @classmethod
+    def set_tunable_parameter_ranges(cls, param_ranges_dict):
+        logger = logging.getLogger('RankSVM')
+        return tunable_parameters_ranges(cls, logger, param_ranges_dict)
+
+    def set_tunable_parameters(self, point):
+        named = Tunable.set_tunable_parameters(self, point)
+
+        for name, param in named.items():
+            if name == 'C':
+                self.C = param
+            elif name == 'tolerance':
+                self.tol = param
+            else:
+                self.logger.warning('This ranking algorithm does not support'
+                                    'a tunable parameter called {}'.format(name))
+
+    @classmethod
+    def tunable_parameters(cls):
+        if cls._tunable is None:
+            cls._tunable = OrderedDict([
+                ('C', (1, 12)),
+                ('tolerance', (1e-4, 5e-1, "log-uniform"))
+            ])
+        return list(cls._tunable.values())
