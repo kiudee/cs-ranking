@@ -46,3 +46,4 @@ To be announced.
 
 License
 --------
+[Apache License, Version 2.0](https://github.com/kiudee/cs-ranking/blob/master/LICENSE)
