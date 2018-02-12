@@ -5,7 +5,7 @@ scikit-learn>=0.18.2
 scikit-optimize>=0.4
 pandas>=0.22
 h5py>=2.7
-pygmo>=
+pygmo
 
 joblib>=0.9.4
 tqdm>=4.11.2
