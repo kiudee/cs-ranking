@@ -1,8 +1,8 @@
 language: python
 
-cache:
-  directories:
-    - $HOME/miniconda3
+#cache:
+        #  directories:
+          #    - $HOME/miniconda3
 
 before_install:
   - . ./scripts/install_miniconda.sh
