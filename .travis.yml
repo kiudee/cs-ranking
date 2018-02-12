@@ -9,6 +9,10 @@ before_install:
 
 install:
   - . ./scripts/create_testenv.sh
+  - pip install coveralls
 
 script:
   - pytest -v --cov=csrank --ignore experiments
+
+after_success:
+  - coveralls
