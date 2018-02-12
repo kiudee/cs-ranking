@@ -23,10 +23,6 @@ fi
 
 
 conda install --yes numpy scipy joblib pytest pytest-cov coverage tensorflow scikit-learn pandas h5py
-conda install -c conda-forge pygmo
-pip install -q keras
-pip install -q tqdm
-pip install -q scikit-optimize
-
+pip install -r requirements.txt
 
 python setup.py build_ext --inplace
