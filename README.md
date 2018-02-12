@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/kiudee/cs-ranking.svg?branch=master)](https://travis-ci.org/kiudee/cs-ranking)
+
 Introduction
 -------------
 CS-Rank is a Python package for context-sensitive ranking algorithms.
