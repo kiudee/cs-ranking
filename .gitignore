@@ -101,5 +101,4 @@ ENV/
 
 # mkdocs documentation
 /site
-*.sh
 /sim_scripts/
