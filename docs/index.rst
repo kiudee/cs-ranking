@@ -3,13 +3,18 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to csrank's documentation!
+Welcome to CSRank's documentation!
 ==================================
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
+
+
+.. autoclass:: csrank.FATEObjectRanker
+   :members:
+   :inherited-members:
 
 
 Indices and tables
