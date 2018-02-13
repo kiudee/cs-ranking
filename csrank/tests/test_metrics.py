@@ -4,7 +4,7 @@ from keras import backend as K
 from numpy.testing import assert_almost_equal
 
 from csrank.metrics import zero_one_rank_loss, zero_one_rank_loss_for_scores, \
-    zero_one_accuracy, make_ndcg_at_k_loss
+    zero_one_accuracy, make_ndcg_at_k_loss, kendalls_tau_for_scores
 
 
 @pytest.fixture(scope="module",
@@ -84,3 +84,14 @@ def test_ndcg(problem_for_pred):
     assert_almost_equal(actual=real_gain,
                         desired=np.array([[expected_dcg/expected_idcg]]),
                         decimal=5)
+
+
+def test_kendalls_tau_for_scores(problem_for_scores):
+    y_true_tensor, y_scores_tensor, ties = problem_for_scores
+
+    score = kendalls_tau_for_scores(y_true_tensor, y_scores_tensor)
+    real_score = K.eval(score)
+    if ties:
+        assert_almost_equal(actual=real_score, desired=np.array([0.7]))
+    else:
+        assert_almost_equal(actual=real_score, desired=np.array([0.8]))

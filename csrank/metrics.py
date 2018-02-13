@@ -87,21 +87,7 @@ def make_ndcg_at_k_loss(k=5):
 
 
 def kendalls_tau_for_scores(y_true, y_pred):
-    y_true, y_pred = tensorify(y_true), tensorify(y_pred)
-    n_instances, n_objects = get_instances_objects(y_true)
-    predicted_rankings = get_rankings_tensor(n_objects, y_pred)
-
-    mask = K.greater(y_true[:, None] - y_true[:, :, None], 0)
-    mask2 = K.greater(predicted_rankings[:, None] - predicted_rankings[:, :, None], 0)
-
-    # Calculate Transpositions
-    transpositions = tf.logical_xor(mask, mask2)
-    transpositions = K.sum(K.cast(transpositions, dtype='float32'), axis=[1, 2]) / 2
-    transpositions = tf.reduce_sum(transpositions)
-
-    denominator = K.cast((n_objects * (n_objects - 1)) * n_instances, dtype='float32')
-    kendall_tau = 1 - (4 * transpositions) / denominator
-    return kendall_tau
+    return 1. - 2. * zero_one_rank_loss_for_scores(y_true, y_pred)
 
 
 def spearman_correlation_for_scores(y_true, y_pred):
