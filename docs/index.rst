@@ -8,13 +8,9 @@ Welcome to CSRank's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
-
-
-.. autoclass:: csrank.FATEObjectRanker
-   :members:
-   :inherited-members:
+   intro
+   getting_started
 
 
 Indices and tables
