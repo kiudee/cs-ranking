@@ -213,20 +213,7 @@ def zero_one_rank_loss_for_scores_ties_np(y_true, s_pred):
 
 
 def zero_one_rank_loss_for_scores_np(y_true, s_pred):
-    n_objects = y_true.shape[1]
-    mask = np.greater(y_true[:, None] - y_true[:, :, None], 0).astype(float)
-    mask2 = np.greater(s_pred[:, None] - s_pred[:, :, None], 0).astype(float)
-    # mask3 = np.equal(s_pred[:, None] - s_pred[:, :, None], 0).astype(float)
-
-    # Calculate Transpositions
-    transpositions = np.logical_and(mask, mask2)
-    # x = (np.sum(mask3, axis=(1, 2)) - n_objects).astype(float)/4.0
-    transpositions = np.sum(transpositions, axis=(1, 2)).astype(float)
-    # transpositions += x
-
-    denominator = n_objects * (n_objects - 1.) / 2.
-    result = transpositions / denominator
-    return np.mean(result)
+    return zero_one_rank_loss_for_scores_ties_np(y_true, s_pred)
 
 
 def normalize(score):
