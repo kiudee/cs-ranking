@@ -12,7 +12,7 @@ import numpy as np
 import tensorflow as tf
 from keras import backend as K
 from keras.layers import Lambda
-from scipy.stats import kendalltau, spearmanr
+from scipy.stats import kendalltau, spearmanr, rankdata
 from sklearn.utils import check_random_state
 from tensorflow.python.client import device_lib
 
@@ -43,8 +43,16 @@ def deprecated(func):
 
 
 def scores_to_rankings(score_matrix):
-    orderings = np.argsort(score_matrix, axis=1)[:, ::-1]
-    rankings = np.argsort(orderings, axis=1)
+    mask3 = np.equal(score_matrix[:, None] - score_matrix[:, :, None], 0)
+    n_objects = score_matrix.shape[1]
+    ties = np.sum(np.sum(mask3, axis=(1, 2)) - n_objects)
+    rankings = np.empty_like(score_matrix)
+    if ties >0:
+        for i, s in enumerate(score_matrix):
+            rankings[i] = rankdata(s) - 1
+    else:
+        orderings = np.argsort(score_matrix, axis=1)[:, ::-1]
+        rankings = np.argsort(orderings, axis=1)
     return rankings
 
 
@@ -178,11 +186,7 @@ def spearman_mean_np(y_true, y_pred):
 
 
 def kendalls_mean_np(y_true, y_pred):
-    y_pred = scores_to_rankings(y_pred)
-    rho = []
-    for r1, r2 in zip(y_true, y_pred):
-        rho.append(kendalltau(r1, r2)[0])
-    return np.mean(np.array(rho))
+    return 1. - 2. * zero_one_rank_loss_for_scores_ties_np(y_true, y_pred)
 
 
 def zero_one_accuracy_np(y_true, y_pred):
