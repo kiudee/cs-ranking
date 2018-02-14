@@ -95,7 +95,6 @@ def spearman_correlation_for_scores(y_true, y_pred):
     n_instances, n_objects = get_instances_objects(y_true)
     predicted_rankings = get_rankings_tensor(n_objects, y_pred)
     y_true = K.cast(y_true, dtype='float32')
-
     sum_of_squared_distances = tf.constant(0.0)
     for i in np.arange(K.int_shape(y_pred)[1]):
         objects_pred = predicted_rankings[:, i]
