@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/kiudee/cs-ranking.svg?branch=master)](https://travis-ci.org/kiudee/cs-ranking)
 [![Coverage Status](https://coveralls.io/repos/github/kiudee/cs-ranking/badge.svg)](https://coveralls.io/github/kiudee/cs-ranking)
+[![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/kiudee/cs-ranking/master?filepath=notebooks)
 
 Introduction
 -------------

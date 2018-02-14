@@ -31,10 +31,11 @@ def hinged_rank_loss(y_true, y_pred):
 @identifiable
 def smooth_rank_loss(y_true, y_pred):
     y_true, y_pred = tensorify(y_true), tensorify(y_pred)
-    mask = K.greater(y_true[:, None] - y_true[:, :, None], 0)
+    mask = K.cast(K.greater(y_true[:, None] - y_true[:, :, None], 0),
+                  dtype='float32')
     exped = K.exp(y_pred[:, None] - y_pred[:, :, None])
-    result = K.sum(exped * K.cast(mask, dtype='float32'), axis=[1, 2])
-    return result
+    result = K.sum(exped * mask, axis=[1, 2])
+    return result / K.sum(mask, axis=(1, 2))
 
 
 def make_smooth_ndcg_loss(y_true, y_pred):
