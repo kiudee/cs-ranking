@@ -3,10 +3,10 @@ from os.path import realpath, dirname, join
 from setuptools import setup, find_packages
 
 DISTNAME = 'csrank'
-DESCRIPTION = 'BordaRank'
+DESCRIPTION = 'Context-sensitive ranking'
 MAINTAINER = 'Karlson Pfannschmidt'
 MAINTAINER_EMAIL = 'kiudee@mail.upb.de'
-VERSION = "0.1"
+VERSION = "1.0"
 
 PROJECT_ROOT = dirname(realpath(__file__))
 REQUIREMENTS_FILE = join(PROJECT_ROOT, 'requirements.txt')
