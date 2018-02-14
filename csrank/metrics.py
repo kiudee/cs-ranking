@@ -7,7 +7,8 @@ from csrank.util import tensorify, get_instances_objects, \
 
 __all__ = ['zero_one_rank_loss', 'zero_one_rank_loss_for_scores',
            'zero_one_rank_loss_for_scores_ties',
-           'make_ndcg_at_k_loss', 'kendalls_tau_for_scores', 'spearman_correlation_for_scores', "zero_one_accuracy",
+           'make_ndcg_at_k_loss', 'kendalls_tau_for_scores',
+           'spearman_correlation_for_scores', "zero_one_accuracy",
            "zero_one_accuracy_for_scores"]
 
 
@@ -16,12 +17,15 @@ def zero_one_rank_loss(y_true, y_pred):
     mask = K.greater(y_true[:, None] - y_true[:, :, None], 0)
     # Count the number of mistakes (here position difference less than 0)
     mask2 = K.less(y_pred[:, None] - y_pred[:, :, None], 0)
+    mask3 = K.equal(y_pred[:, None] - y_pred[:, :, None], 0)
 
     # Calculate Transpositions
     transpositions = tf.logical_and(mask, mask2)
     transpositions = K.sum(K.cast(transpositions, dtype='float32'), axis=[1, 2])
 
     n_objects = K.max(y_true) + 1
+    transpositions += (K.sum(K.cast(mask3, dtype='float32'), axis=[1, 2])
+                       - n_objects) / 4.
     denominator = K.cast((n_objects * (n_objects - 1.)) / 2., dtype='float32')
     result = transpositions / denominator
     return K.mean(result)
@@ -37,19 +41,7 @@ def zero_one_accuracy(y_true, y_pred):
 
 
 def zero_one_rank_loss_for_scores(y_true, s_pred):
-    y_true, s_pred = tensorify(y_true), tensorify(s_pred)
-    mask = K.greater(y_true[:, None] - y_true[:, :, None], 0)
-    # Count the number of mistakes (score difference is larger than 0)
-    mask2 = K.greater(s_pred[:, None] - s_pred[:, :, None], 0)
-
-    # Calculate Transpositions
-    transpositions = tf.logical_and(mask, mask2)
-    transpositions = K.sum(K.cast(transpositions, dtype='float32'), axis=[1, 2])
-
-    n_objects = K.max(y_true) + 1
-    denominator = K.cast((n_objects * (n_objects - 1.)) / 2., dtype='float32')
-    result = transpositions / denominator
-    return K.mean(result)
+    return zero_one_rank_loss_for_scores_ties(y_true, s_pred)
 
 
 def zero_one_rank_loss_for_scores_ties(y_true, s_pred):
@@ -74,8 +66,8 @@ def make_ndcg_at_k_loss(k=5):
     def ndcg(y_true, y_pred):
         y_true, y_pred = tensorify(y_true), tensorify(y_pred)
         n_objects = K.cast(K.int_shape(y_pred)[1], 'float32')
-        y_true_f = K.cast(y_true, 'float32')
-        relevance = K.pow(2., n_objects - y_pred - 1.) - 1.
+        relevance = K.pow(2., n_objects - y_true - 1.) - 1.
+        relevance_pred = K.pow(2., n_objects - y_pred - 1.) - 1.
 
         # Calculate ideal dcg:
         toprel, toprel_ind = tf.nn.top_k(relevance, k)
@@ -83,32 +75,19 @@ def make_ndcg_at_k_loss(k=5):
         idcg = K.sum(toprel / log_term, axis=-1, keepdims=True)
 
         # Calculate actual dcg:
-        toppred, toppred_ind = tf.nn.top_k(y_pred, k)
+        toppred, toppred_ind = tf.nn.top_k(relevance_pred, k)
         row_ind = K.cumsum(K.ones_like(toppred_ind), axis=0) - 1
         ind = K.stack([row_ind, toppred_ind], axis=-1)
-        pred_rel = K.sum(tf.gather_nd(relevance, ind) / log_term, axis=-1, keepdims=True)
-        loss = 1 - pred_rel / idcg
-        return loss
+        pred_rel = K.sum(tf.gather_nd(relevance, ind) / log_term, axis=-1,
+                         keepdims=True)
+        gain = pred_rel / idcg
+        return gain
 
     return ndcg
 
 
 def kendalls_tau_for_scores(y_true, y_pred):
-    y_true, y_pred = tensorify(y_true), tensorify(y_pred)
-    n_instances, n_objects = get_instances_objects(y_true)
-    predicted_rankings = get_rankings_tensor(n_objects, y_pred)
-
-    mask = K.greater(y_true[:, None] - y_true[:, :, None], 0)
-    mask2 = K.greater(predicted_rankings[:, None] - predicted_rankings[:, :, None], 0)
-
-    # Calculate Transpositions
-    transpositions = tf.logical_xor(mask, mask2)
-    transpositions = K.sum(K.cast(transpositions, dtype='float32'), axis=[1, 2]) / 2
-    transpositions = tf.reduce_sum(transpositions)
-
-    denominator = K.cast((n_objects * (n_objects - 1)) * n_instances, dtype='float32')
-    kendall_tau = 1 - (4 * transpositions) / denominator
-    return kendall_tau
+    return 1. - 2. * zero_one_rank_loss_for_scores(y_true, y_pred)
 
 
 def spearman_correlation_for_scores(y_true, y_pred):
