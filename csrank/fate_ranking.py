@@ -23,7 +23,7 @@ from csrank.discretechoice.discrete_choice import ObjectChooser
 from csrank.dyadranking.contextual_ranking import ContextualRanker
 from csrank.labelranking.label_ranker import LabelRanker
 from csrank.layers import DeepSet
-from csrank.losses import hinged_rank_loss
+from csrank.losses import hinged_rank_loss, smooth_rank_loss
 from csrank.metrics import zero_one_rank_loss_for_scores_ties, \
     zero_one_rank_loss_for_scores
 from csrank.objectranking.object_ranker import ObjectRanker
@@ -594,9 +594,37 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
 
 class FATEObjectRanker(FATEObjectRankingCore, ObjectRanker):
 
-    def __init__(self, loss_function=hinged_rank_loss, metrics=None,
+    def __init__(self, n_object_features,
+                 n_hidden_set_layers=2,
+                 n_hidden_set_units=32,
+                 loss_function=smooth_rank_loss,
+                 metrics=None,
                  **kwargs):
-        FATEObjectRankingCore.__init__(self, **kwargs)
+        """ Create a FATE-network architecture for object ranking.
+
+        Training complexity is quadratic in the number of objects and
+        prediction complexity is only linear.
+
+        Parameters
+        ----------
+        n_object_features : int
+            Dimensionality of the feature space of each object
+        n_hidden_set_layers : int
+            Number of hidden layers for the context representation
+        n_hidden_set_units : int
+            Number of hidden units in each layer of the context representation
+        loss_function : function
+            Differentiable loss function for the score vector
+        metrics : list
+            List of evaluation metrics (can be non-differentiable)
+        **kwargs
+            Keyword arguments for the hidden units
+        """
+        FATEObjectRankingCore.__init__(self,
+                                       n_object_features=n_object_features,
+                                       n_hidden_set_layers=n_hidden_set_layers,
+                                       n_hidden_set_units=n_hidden_set_units,
+                                       **kwargs)
         self.loss_function = loss_function
         self.logger = logging.getLogger(GENERAL_OBJECT_RANKER)
         if metrics is None:
@@ -647,7 +675,7 @@ class FATEObjectChooser(FATEObjectRankingCore, ObjectChooser):
 class FATELabelRanker(FATERankingCore, LabelRanker):
     def __init__(self, loss_function=hinged_rank_loss, metrics=None,
                  **kwargs):
-        FATEObjectRankingCore.__init__(self, label_ranker=True, **kwargs)
+        super().__init__(self, label_ranker=True, **kwargs)
         self.loss_function = loss_function
         self.logger = logging.getLogger(GENERAL_LABEL_RANKER)
         if metrics is None:
