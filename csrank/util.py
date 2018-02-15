@@ -12,7 +12,7 @@ import numpy as np
 import tensorflow as tf
 from keras import backend as K
 from keras.layers import Lambda
-from scipy.stats import kendalltau, spearmanr, rankdata
+from scipy.stats import spearmanr, rankdata
 from sklearn.utils import check_random_state
 from tensorflow.python.client import device_lib
 
@@ -20,7 +20,8 @@ __all__ = ['scores_to_rankings', 'strongly_connected_components', 'create_graph_
            'create_pairwise_prob_matrix', 'quicksort', 'get_rankings_tensor', 'get_instances_objects', 'tensorify',
            'deprecated', "print_dictionary", "configure_logging_numpy_keras",
            "create_input_lambda", 'files_with_same_name', 'rename_file_if_exist', "create_dir_recursively",
-           'generate_seed', 'get_tensor_value', "spearman_mean_np","zero_one_accuracy_np" ,"kendalls_mean_np", "zero_one_rank_loss_for_scores_ties_np", "normalize",
+           'generate_seed', 'get_tensor_value', "spearman_mean_np", "zero_one_accuracy_np", "kendalls_mean_np",
+           "zero_one_rank_loss_for_scores_ties_np", "normalize",
            "tunable_parameters_ranges", "zero_one_rank_loss_for_scores_np"]
 
 
@@ -47,7 +48,7 @@ def scores_to_rankings(score_matrix):
     n_objects = score_matrix.shape[1]
     ties = np.sum(np.sum(mask3, axis=(1, 2)) - n_objects)
     rankings = np.empty_like(score_matrix)
-    if ties >0:
+    if ties > 0:
         for i, s in enumerate(score_matrix):
             rankings[i] = rankdata(s) - 1
     else:

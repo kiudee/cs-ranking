@@ -17,9 +17,9 @@ from csrank.fate_ranking import FATEObjectRanker, N_HIDDEN_SET_LAYERS, N_HIDDEN_
 from csrank.losses import smooth_rank_loss
 from csrank.metrics import zero_one_rank_loss_for_scores_ties, zero_one_rank_loss_for_scores, \
     spearman_correlation_for_scores, kendalls_tau_for_scores, zero_one_accuracy_for_scores
-from csrank.objectranking.feta_ranker import FETANetwork
 from csrank.objectranking.cmp_net import *
 from csrank.objectranking.expected_rank_regression import ExpectedRankRegression
+from csrank.objectranking.feta_ranker import FETANetwork
 from csrank.objectranking.rank_net import RankNet
 from csrank.objectranking.rank_svm import RankSVM
 from csrank.util import kendalls_mean_np, spearman_mean_np, zero_one_accuracy_np, \
@@ -113,8 +113,9 @@ def get_ranker_parameters(ranker_name, n_features, n_objects, dataset_name, data
         parameter_ranges[LEARNING_RATE] = (1e-5, 1e-4, LOG_UNIFORM)
         ranker_params["optimizer"] = SGD(lr=1e-5, momentum=0.9, nesterov=True)
 
-        if ranker_name in [GENERAL_RANKER, BORDA_ZERO, BORDA, BORDA_RANKNET_ZERO, BORDA_RANKNET] and dataset_name not in [DEPTH,
-                                                                                                          HYPER_VOLUME, LETOR]:
+        if ranker_name in [GENERAL_RANKER, BORDA_ZERO, BORDA, BORDA_RANKNET_ZERO,
+                           BORDA_RANKNET] and dataset_name not in [DEPTH,
+                                                                   HYPER_VOLUME, LETOR]:
             ranker_params["loss_function"] = smooth_rank_loss
 
         if dataset_name == LETOR:

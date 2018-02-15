@@ -32,7 +32,6 @@ import numpy as np
 import pandas as pd
 from docopt import docopt
 from sklearn.model_selection import ShuffleSplit
-from skopt import load
 
 from csrank.tuning import ParameterOptimizer
 from csrank.util import (create_dir_recursively, configure_logging_numpy_keras,

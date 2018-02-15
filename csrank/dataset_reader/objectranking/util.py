@@ -99,8 +99,8 @@ def initialize_similarity_matrix(mypath):
 def sub_sampling(name, Xt, Yt, n_objects=5):
     logger = logging.getLogger(name=name)
     bucket_size = int(Xt.shape[1] / n_objects)
-    #logger.info("#########################################################################")
-    #logger.info("X instances {} objects {} bucket_size {}".format(Xt.shape[0], Xt.shape[1], bucket_size))
+    # logger.info("#########################################################################")
+    # logger.info("X instances {} objects {} bucket_size {}".format(Xt.shape[0], Xt.shape[1], bucket_size))
     X_train = []
     Y_train = []
     for i in range(bucket_size):

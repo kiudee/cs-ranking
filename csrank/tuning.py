@@ -274,7 +274,7 @@ class ParameterOptimizer(ObjectRanker):
         else:
             self.logger.debug('Finally, fit a model on the complete training set and storing the model at {}'.format(
                 self.optimizer_path))
-            self._fit_params["epochs"] = self._fit_params.get("epochs", 1000)*2
+            self._fit_params["epochs"] = self._fit_params.get("epochs", 1000) * 2
             self.model = self._ranker_class(random_state=self.random_state, **self._ranker_params)
             if "ps" in opt.acq_func:
                 best_point = opt.Xi[np.argmin(np.array(opt.yi)[:, 0])]
