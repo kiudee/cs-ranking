@@ -179,13 +179,13 @@ class ParameterOptimizer(ObjectRanker):
         ))
         if "use_early_stopping" in self._ranker_params:
             self._ranker_class._use_early_stopping = self._ranker_params["use_early_stopping"]
+        param_ranges = self._ranker_class.set_tunable_parameter_ranges(parameters_ranges)
 
         if (optimizer is not None):
             opt = optimizer
             self.logger.debug('Setting the provided optimizer')
             self.log_best_params(opt)
         else:
-            param_ranges = self._ranker_class.set_tunable_parameter_ranges(parameters_ranges)
             transformed = []
             for param in param_ranges:
                 transformed.append(check_dimension(param))
@@ -274,7 +274,7 @@ class ParameterOptimizer(ObjectRanker):
         else:
             self.logger.debug('Finally, fit a model on the complete training set and storing the model at {}'.format(
                 self.optimizer_path))
-            self._fit_params["epochs"] = self._fit_params.get("epochs", 1000)*2
+            self._fit_params["epochs"] = self._fit_params.get("epochs", 1000) * 2
             self.model = self._ranker_class(random_state=self.random_state, **self._ranker_params)
             if "ps" in opt.acq_func:
                 best_point = opt.Xi[np.argmin(np.array(opt.yi)[:, 0])]

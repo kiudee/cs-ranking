@@ -1,5 +1,5 @@
-import pytest
 import numpy as np
+import pytest
 from keras import backend as K
 from numpy.testing import assert_almost_equal
 
@@ -83,7 +83,7 @@ def test_ndcg(problem_for_pred):
     expected_dcg = 15. + 3. / np.log2(3.)
     expected_idcg = 15. + 7. / np.log2(3.)
     assert_almost_equal(actual=real_gain,
-                        desired=np.array([[expected_dcg/expected_idcg]]),
+                        desired=np.array([[expected_dcg / expected_idcg]]),
                         decimal=5)
 
 

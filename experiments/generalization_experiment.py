@@ -31,9 +31,10 @@ ERROR_OUTPUT_STRING = 'Out of sample error {} : {} for n_objects {}'
 
 def generate_medoid_dataset(n_objects=5, random_state=42):
     parameters = {"n_features": 2, "n_objects": n_objects, "n_train_instances": 10000, "n_test_instances": 100000,
-                 "dataset_type": "medoid","random_state":random_state}
+                  "dataset_type": "medoid", "random_state": random_state}
     generator = SyntheticDatasetGenerator(**parameters)
     return generator.get_single_train_test_split()
+
 
 def get_evaluation_result(gor, X_train, Y_train, epochs):
     gor.fit(X_train, Y_train, log_callbacks=[DebugOutput()], epochs=epochs)

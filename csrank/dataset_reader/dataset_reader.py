@@ -16,7 +16,8 @@ class DatasetReader(metaclass=ABCMeta):
         self.rankings = None
         self.Xc = None
         self.learning_problem = learning_problem
-        dirname = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))).replace("dataset_reader","datasets")
+        dirname = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))).replace("dataset_reader",
+                                                                                                    "datasets")
         if dataset_folder is not None:
             self.dirname = os.path.join(dirname, dataset_folder)
             if not os.path.exists(self.dirname):

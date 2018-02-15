@@ -32,7 +32,6 @@ import numpy as np
 import pandas as pd
 from docopt import docopt
 from sklearn.model_selection import ShuffleSplit
-from skopt import load
 
 from csrank.tuning import ParameterOptimizer
 from csrank.util import (create_dir_recursively, configure_logging_numpy_keras,
@@ -40,7 +39,7 @@ from csrank.util import (create_dir_recursively, configure_logging_numpy_keras,
                          get_loss_for_array)
 from experiments.util import get_ranker_and_dataset_functions, get_ranker_parameters, ERROR_OUTPUT_STRING, \
     lp_metric_dict, get_duration_microsecond, get_applicable_ranker_dataset, get_dataset_str, \
-    log_test_train_data
+    log_test_train_data, get_optimizer
 
 DIR_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
@@ -97,32 +96,8 @@ if __name__ == '__main__':
             optimizer_path = os.path.join(DIR_PATH, OPTIMIZER_FOLDER,
                                           (FILE_FORMAT).format(dataset_str, ranker_name, cluster_index))
             create_dir_recursively(optimizer_path, True)
-            logger.info('Retrieving model stored at: {}'.format(optimizer_path))
-            try:
-                optimizer = load(optimizer_path)
-                logger.info('Loading model stored at: {}'.format(optimizer_path))
 
-            except KeyError:
-                logger.error('Cannot open the file {}'.format(optimizer_path))
-                optimizer = None
-
-            except ValueError:
-                logger.error('Cannot open the file {}'.format(optimizer_path))
-                optimizer = None
-            except FileNotFoundError:
-                logger.error('No such file or directory: {}'.format(optimizer_path))
-                optimizer = None
-            if optimizer is not None:
-                finished_iterations = np.array(optimizer.yi).shape[0]
-                if finished_iterations == 0:
-                    optimizer = None
-                    logger.info('Optimizer did not finish any iterations so setting optimizer to null')
-                else:
-                    n_iter = n_iter - finished_iterations
-                    if n_iter < 0:
-                        n_iter = 0
-                    logger.info(
-                        'Iterations already done: {} and running iterations {}'.format(finished_iterations, n_iter))
+            optimizer, n_iter = get_optimizer(logger, optimizer_path, n_iter)
 
             optimizer_fit_params = {'n_iter': n_iter, 'cv_iter': inner_cv, 'optimizer': optimizer,
                                     "parameters_ranges": parameter_ranges, 'acq_func': 'EIps'}

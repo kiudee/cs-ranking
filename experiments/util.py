@@ -1,9 +1,11 @@
 import re
 from collections import OrderedDict
 
+import numpy as np
 from keras.losses import categorical_crossentropy
 from keras.metrics import categorical_accuracy
 from keras.optimizers import SGD
+from skopt import load
 
 from csrank.callbacks import DebugOutput, LRScheduler
 from csrank.constants import OBJECT_RANKING, LABEL_RANKING, DYAD_RANKING, DISCRETE_CHOICE, BATCH_SIZE, LEARNING_RATE, \
@@ -15,9 +17,9 @@ from csrank.fate_ranking import FATEObjectRanker, N_HIDDEN_SET_LAYERS, N_HIDDEN_
 from csrank.losses import smooth_rank_loss
 from csrank.metrics import zero_one_rank_loss_for_scores_ties, zero_one_rank_loss_for_scores, \
     spearman_correlation_for_scores, kendalls_tau_for_scores, zero_one_accuracy_for_scores
-from csrank.objectranking.feta_ranker import FETANetwork
 from csrank.objectranking.cmp_net import *
 from csrank.objectranking.expected_rank_regression import ExpectedRankRegression
+from csrank.objectranking.feta_ranker import FETANetwork
 from csrank.objectranking.rank_net import RankNet
 from csrank.objectranking.rank_svm import RankSVM
 from csrank.util import kendalls_mean_np, spearman_mean_np, zero_one_accuracy_np, \
@@ -111,8 +113,9 @@ def get_ranker_parameters(ranker_name, n_features, n_objects, dataset_name, data
         parameter_ranges[LEARNING_RATE] = (1e-5, 1e-4, LOG_UNIFORM)
         ranker_params["optimizer"] = SGD(lr=1e-5, momentum=0.9, nesterov=True)
 
-        if ranker_name in [GENERAL_RANKER, BORDA_ZERO, BORDA, BORDA_RANKNET_ZERO, BORDA_RANKNET] and dataset_name not in [DEPTH,
-                                                                                                          HYPER_VOLUME, LETOR]:
+        if ranker_name in [GENERAL_RANKER, BORDA_ZERO, BORDA, BORDA_RANKNET_ZERO,
+                           BORDA_RANKNET] and dataset_name not in [DEPTH,
+                                                                   HYPER_VOLUME, LETOR]:
             ranker_params["loss_function"] = smooth_rank_loss
 
         if dataset_name == LETOR:
@@ -185,3 +188,32 @@ def log_test_train_data(X_train, X_test, logger):
         n_instances, n_objects, n_features = X_train.shape
         logger.info("Train Set instances {} objects {} features {}".format(n_instances, n_objects, n_features))
     return n_features, n_objects
+
+
+def get_optimizer(logger, optimizer_path, n_iter):
+    logger.info('Retrieving model stored at: {}'.format(optimizer_path))
+    try:
+        optimizer = load(optimizer_path)
+        logger.info('Loading model stored at: {}'.format(optimizer_path))
+
+    except KeyError:
+        logger.error('Cannot open the file {}'.format(optimizer_path))
+        optimizer = None
+
+    except ValueError:
+        logger.error('Cannot open the file {}'.format(optimizer_path))
+        optimizer = None
+    except FileNotFoundError:
+        logger.error('No such file or directory: {}'.format(optimizer_path))
+        optimizer = None
+    if optimizer is not None:
+        finished_iterations = np.array(optimizer.yi).shape[0]
+        if finished_iterations == 0:
+            optimizer = None
+            logger.info('Optimizer did not finish any iterations so setting optimizer to null')
+        else:
+            n_iter = n_iter - finished_iterations
+            if n_iter < 0:
+                n_iter = 0
+            logger.info('Iterations already done: {} and running iterations {}'.format(finished_iterations, n_iter))
+    return optimizer, n_iter
