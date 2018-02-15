@@ -1,9 +1,11 @@
 import re
 from collections import OrderedDict
 
+import numpy as np
 from keras.losses import categorical_crossentropy
 from keras.metrics import categorical_accuracy
 from keras.optimizers import SGD
+from skopt import load
 
 from csrank.callbacks import DebugOutput, LRScheduler
 from csrank.constants import OBJECT_RANKING, LABEL_RANKING, DYAD_RANKING, DISCRETE_CHOICE, BATCH_SIZE, LEARNING_RATE, \
@@ -185,3 +187,32 @@ def log_test_train_data(X_train, X_test, logger):
         n_instances, n_objects, n_features = X_train.shape
         logger.info("Train Set instances {} objects {} features {}".format(n_instances, n_objects, n_features))
     return n_features, n_objects
+
+
+def get_optimizer(logger, optimizer_path, n_iter):
+    logger.info('Retrieving model stored at: {}'.format(optimizer_path))
+    try:
+        optimizer = load(optimizer_path)
+        logger.info('Loading model stored at: {}'.format(optimizer_path))
+
+    except KeyError:
+        logger.error('Cannot open the file {}'.format(optimizer_path))
+        optimizer = None
+
+    except ValueError:
+        logger.error('Cannot open the file {}'.format(optimizer_path))
+        optimizer = None
+    except FileNotFoundError:
+        logger.error('No such file or directory: {}'.format(optimizer_path))
+        optimizer = None
+    if optimizer is not None:
+        finished_iterations = np.array(optimizer.yi).shape[0]
+        if finished_iterations == 0:
+            optimizer = None
+            logger.info('Optimizer did not finish any iterations so setting optimizer to null')
+        else:
+            n_iter = n_iter - finished_iterations
+            if n_iter < 0:
+                n_iter = 0
+            logger.info('Iterations already done: {} and running iterations {}'.format(finished_iterations, n_iter))
+    return optimizer, n_iter

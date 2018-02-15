@@ -179,13 +179,13 @@ class ParameterOptimizer(ObjectRanker):
         ))
         if "use_early_stopping" in self._ranker_params:
             self._ranker_class._use_early_stopping = self._ranker_params["use_early_stopping"]
+        param_ranges = self._ranker_class.set_tunable_parameter_ranges(parameters_ranges)
 
         if (optimizer is not None):
             opt = optimizer
             self.logger.debug('Setting the provided optimizer')
             self.log_best_params(opt)
         else:
-            param_ranges = self._ranker_class.set_tunable_parameter_ranges(parameters_ranges)
             transformed = []
             for param in param_ranges:
                 transformed.append(check_dimension(param))
