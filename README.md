@@ -6,6 +6,17 @@ Introduction
 -------------
 CS-Rank is a Python package for context-sensitive ranking algorithms.
 
+We implement the following new object ranking architectures:
+
+ * FATE (First aggregate then evaluate)
+ * FETA (First evaluate then aggregate)
+ 
+In addition we also offer these benchmark algorithms:
+
+* Expected Rank Regression
+* RankNet
+* RankSVM
+
 Check out our [interactive notebooks](https://mybinder.org/v2/gh/kiudee/cs-ranking/master?filepath=notebooks) to quickly find out what our package can do.
 
 
