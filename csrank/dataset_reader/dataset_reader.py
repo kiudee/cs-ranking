@@ -16,11 +16,13 @@ class DatasetReader(metaclass=ABCMeta):
         self.rankings = None
         self.Xc = None
         self.learning_problem = learning_problem
-        dirname = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))).replace("dataset_reader",
-                                                                                                    "datasets")
-        self.dirname = os.path.join(dirname, dataset_folder)
-        if not os.path.exists(self.dirname):
-            self.dr_logger.error("Path given for dataset does not exit {}".format(self.dirname))
+        dirname = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))).replace("dataset_reader","datasets")
+        if dataset_folder is not None:
+            self.dirname = os.path.join(dirname, dataset_folder)
+            if not os.path.exists(self.dirname):
+                self.dr_logger.warning("Path given for dataset does not exit {}".format(self.dirname))
+        else:
+            self.dirname = None
 
     @abstractmethod
     def __load_dataset__(self):

@@ -14,7 +14,7 @@ from csrank.util import scores_to_rankings, create_pairwise_prob_matrix, quickso
 class SyntheticDatasetGenerator(DatasetReader):
     def __init__(self, dataset_type='medoid', n_train_instances=10000, n_test_instances=10000, random_state=None,
                  **kwargs):
-        super(SyntheticDatasetGenerator, self).__init__(learning_problem=OBJECT_RANKING, **kwargs)
+        super(SyntheticDatasetGenerator, self).__init__(learning_problem=OBJECT_RANKING, dataset_folder=None, **kwargs)
         self.random_state = check_random_state(random_state)
         dataset_function_options = {'linear': self.make_linear_transitive, 'medoid': self.make_intransitive_medoids,
                                     'gp_intransitive': self.make_gp_transitive,
