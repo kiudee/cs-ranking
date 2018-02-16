@@ -2,6 +2,7 @@ import logging
 
 from keras.layers import Dense
 from keras.losses import binary_crossentropy
+from keras.regularizers import l2
 
 from csrank.fate_ranking import FATEObjectRankingCore
 
@@ -14,6 +15,7 @@ class FATEChoiceFunction(FATEObjectRankingCore):
                  n_hidden_set_layers=2,
                  n_hidden_set_units=32,
                  loss_function=binary_crossentropy,
+                 kernel_regularizer=l2(1e-10),
                  metrics=None,
                  **kwargs):
         super().__init__(n_object_features=n_object_features,

@@ -162,6 +162,7 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
         self.n_hidden_set_layers = n_hidden_set_layers
         self.n_hidden_set_units = n_hidden_set_units
         self.n_object_features = n_object_features
+        self.model = None
         self.logger_gorc.info("args: {}".format(repr(kwargs)))
         self._create_set_layers(activation=self.activation,
                                 kernel_initializer=self.kernel_initializer,
@@ -596,7 +597,6 @@ class FATEObjectRanker(FATEObjectRankingCore, ObjectRanker):
             metrics = [zero_one_rank_loss_for_scores_ties,
                        zero_one_rank_loss_for_scores]
         self.metrics = metrics
-        self.model = None
         self.logger.info("Initializing network with object features {}".format(
             self.n_object_features))
 
