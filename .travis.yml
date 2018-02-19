@@ -10,7 +10,7 @@ before_install:
 install:
   - . ./scripts/create_testenv.sh
   - conda install --yes sphinx
-  - pip install coveralls travis-sphinx nbsphinx
+  - pip install coveralls travis-sphinx nbsphinx sphinx_rtd_theme
 
 script:
   - pytest -v --cov=csrank --ignore experiments
