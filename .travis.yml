@@ -14,7 +14,7 @@ install:
 
 script:
   - pytest -v --cov=csrank --ignore experiments
-  - travis-sphinx build --source=docs
+  - travis-sphinx build -n --source=docs
 
 after_success:
   - coveralls
