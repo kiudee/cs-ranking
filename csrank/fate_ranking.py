@@ -593,14 +593,7 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
 
 
 class FATEObjectRanker(FATEObjectRankingCore, ObjectRanker):
-
-    def __init__(self, n_object_features,
-                 n_hidden_set_layers=2,
-                 n_hidden_set_units=32,
-                 loss_function=smooth_rank_loss,
-                 metrics=None,
-                 **kwargs):
-        """ Create a FATE-network architecture for object ranking.
+    """ Create a FATE-network architecture for object ranking.
 
         Training complexity is quadratic in the number of objects and
         prediction complexity is only linear.
@@ -620,6 +613,13 @@ class FATEObjectRanker(FATEObjectRankingCore, ObjectRanker):
         **kwargs
             Keyword arguments for the hidden units
         """
+
+    def __init__(self, n_object_features,
+                 n_hidden_set_layers=2,
+                 n_hidden_set_units=32,
+                 loss_function=smooth_rank_loss,
+                 metrics=None,
+                 **kwargs):
         FATEObjectRankingCore.__init__(self,
                                        n_object_features=n_object_features,
                                        n_hidden_set_layers=n_hidden_set_layers,
