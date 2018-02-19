@@ -4,6 +4,10 @@ cache:
   directories:
     - $HOME/miniconda3
 
+addons:
+  apt_packages:
+    - pandoc
+
 before_install:
   - . ./scripts/install_miniconda.sh
 
