@@ -26,6 +26,50 @@ __all__ = ['FETANetwork']
 
 
 class FETANetwork(ObjectRanker, Tunable):
+    """ Create a FETA-network architecture for object ranking.
+
+    Training and prediction complexity is quadratic in the number of objects.
+
+    Parameters
+    ----------
+    n_objects : int
+        Number of objects to be ranked
+    n_features : int
+        Dimensionality of the feature space of each object
+    n_hidden : int
+        Number of hidden layers
+    n_units : int
+        Number of hidden units in each layer
+    add_zeroth_order_model : bool
+        True if the model should include a latent utility function
+    max_number_of_objects : int
+        The maximum number of objects to train from
+    num_subsample : int
+        Number of objects to subsample to
+    loss_function : function
+        Differentiable loss function for the score vector
+    batch_normalization : bool
+        Whether to use batch normalization in the hidden layers
+    kernel_regularizer : function
+        Regularizer to use in the hidden units
+    non_linearities : string or function
+        Activation function to use in the hidden units
+    optimizer : string or function
+        Stochastic gradient optimizer
+    metrics : list
+        List of evaluation metrics (can be non-differentiable)
+    use_early_stopping : bool
+        Whether to use early stopping during training
+    es_patience : int
+        Number of iterations to wait for no improvement in early stopping
+    batch_size : int
+        Batch size to use for training
+    random_state : int or object
+        Numpy random state
+    **kwargs
+        Keyword arguments for the hidden units
+    """
+
     _tunable = None
     _use_early_stopping = None
 
