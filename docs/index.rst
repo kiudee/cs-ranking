@@ -5,7 +5,7 @@ Welcome to CSRank's documentation!
    :maxdepth: 3
 
    intro
-   getting_started
+   examples
    api
 
 
