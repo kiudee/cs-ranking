@@ -13,7 +13,7 @@ before_install:
 
 install:
   - . ./scripts/create_testenv.sh
-  - conda install --yes sphinx
+  - conda install --yes sphinx ipython
   - pip install coveralls travis-sphinx nbsphinx sphinx_rtd_theme
 
 script:
