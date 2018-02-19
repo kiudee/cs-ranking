@@ -9,10 +9,13 @@ before_install:
 
 install:
   - . ./scripts/create_testenv.sh
-  - pip install coveralls
+  - conda install --yes sphinx
+  - pip install coveralls travis-sphinx
 
 script:
   - pytest -v --cov=csrank --ignore experiments
+  - travis-sphinx build --source=docs
 
 after_success:
   - coveralls
+  - travis-sphinx deploy
