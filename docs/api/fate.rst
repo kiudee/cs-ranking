@@ -9,3 +9,4 @@ FATE Architecture
 
 .. automodule:: csrank.fate_ranking
    :members:
+   :inherited-members:

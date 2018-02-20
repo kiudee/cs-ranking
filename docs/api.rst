@@ -9,4 +9,5 @@ API Reference
 
    api/fate
    api/feta
+   api/benchmark
    

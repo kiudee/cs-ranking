@@ -9,3 +9,4 @@ FETA Architecture
 
 .. automodule:: csrank.objectranking.feta_ranker
    :members:
+   :inherited-members:

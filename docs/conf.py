@@ -88,6 +88,13 @@ todo_include_todos = False
 
 suppress_warnings = ['image.nonlocal_uri']
 
+# Show the documentation of __init__ and the class docstring
+autoclass_content = 'both'
+
+# Do not show the return type as seperate section
+napoleon_use_rtype = False
+
+
 
 # -- Options for HTML output ----------------------------------------------
 
