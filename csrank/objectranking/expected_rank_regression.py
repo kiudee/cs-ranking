@@ -8,7 +8,8 @@ from sklearn.utils import check_random_state
 from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.tunable import Tunable
 from csrank.util import normalize, tunable_parameters_ranges
-from ..dataset_reader.objectranking.util import complete_linear_regression_dataset
+from ..dataset_reader.objectranking.util import \
+    complete_linear_regression_dataset
 
 __all__ = ['ExpectedRankRegression']
 
@@ -16,8 +17,35 @@ __all__ = ['ExpectedRankRegression']
 class ExpectedRankRegression(ObjectRanker, Tunable):
     _tunable = None
 
-    def __init__(self, n_features, alpha=1.0, l1_ratio=0.5, tol=1e-4, normalize=True, fit_intercept=True,
-                 random_state=None, **kwargs):
+    def __init__(self, n_features, alpha=1.0, l1_ratio=0.5, tol=1e-4,
+                 normalize=True, fit_intercept=True, random_state=None,
+                 **kwargs):
+        """Create an expected rank regression model.
+
+        This model normalizes the ranks to [0, 1] and treats them as regression
+        target. For α = 0 we employ simple linear regression. For α > 0 the
+        model becomes ridge regression (when l1_ratio = 0) or elastic net
+        (when l1_ratio > 0).
+
+        Parameters
+        ----------
+        n_features : int
+            Number of features of the object space
+        alpha : float
+            Regularization strength
+        l1_ratio : float
+            Ratio between pure L2 (=0) or pure L1 (=1) regularization.
+        tol : float
+            Optimization tolerance
+        normalize : bool
+            If True, the regressors will be normalized before fitting.
+        fit_intercept : bool
+            If True, the linear model will also fit an intercept.
+        random_state : int, RandomState instance or None
+            Seed of the pseudorandom generator or a RandomState instance
+        **kwargs
+            Keyword arguments for the algorithms
+        """
         self.normalize = normalize
         self.n_features = n_features
         self.alpha = alpha
@@ -32,16 +60,21 @@ class ExpectedRankRegression(ObjectRanker, Tunable):
         X_train, Y_train = complete_linear_regression_dataset(X, Y)
         assert X_train.shape[1] == self.n_features
         self.logger.debug('Finished the Dataset')
-        if (self.alpha == 0):
-            self.model = LinearRegression(normalize=self.normalize, fit_intercept=self.fit_intercept)
+        if self.alpha == 0:
+            self.model = LinearRegression(normalize=self.normalize,
+                                          fit_intercept=self.fit_intercept)
 
         else:
-            if (self.l1_ratio >= 0.01):
-                self.model = ElasticNet(alpha=self.alpha, l1_ratio=self.l1_ratio, normalize=self.normalize,
-                                        tol=self.tol, fit_intercept=self.fit_intercept,
+            if self.l1_ratio >= 0.01:
+                self.model = ElasticNet(alpha=self.alpha,
+                                        l1_ratio=self.l1_ratio,
+                                        normalize=self.normalize,
+                                        tol=self.tol,
+                                        fit_intercept=self.fit_intercept,
                                         random_state=self.random_state)
             else:
-                self.model = Ridge(alpha=self.alpha, normalize=self.normalize, tol=self.tol,
+                self.model = Ridge(alpha=self.alpha, normalize=self.normalize,
+                                   tol=self.tol,
                                    fit_intercept=self.fit_intercept,
                                    random_state=self.random_state)
         self.logger.debug('Finished Creating the model, now fitting started')
@@ -53,7 +86,10 @@ class ExpectedRankRegression(ObjectRanker, Tunable):
 
     def _predict_scores_fixed(self, X, **kwargs):
         n_instances, n_objects, n_features = X.shape
-        self.logger.info("For Test instances {} objects {} features {}".format(n_instances, n_objects, n_features))
+        self.logger.info(
+            "For Test instances {} objects {} features {}".format(n_instances,
+                                                                  n_objects,
+                                                                  n_features))
         scores = np.empty([n_instances, n_objects])
         for i, data_test in enumerate(X):
             assert data_test.shape[1] == self.n_features
@@ -91,7 +127,8 @@ class ExpectedRankRegression(ObjectRanker, Tunable):
                 self.l1_ratio = param
             else:
                 self.logger.warning('This ranking algorithm does not support'
-                                    'a tunable parameter called {}'.format(name))
+                                    'a tunable parameter called {}'.format(
+                    name))
 
     @classmethod
     def tunable_parameters(cls):
