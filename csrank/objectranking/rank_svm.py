@@ -10,7 +10,8 @@ from sklearn.utils import check_random_state
 from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.tunable import Tunable
 from csrank.util import tunable_parameters_ranges
-from ..dataset_reader.objectranking.util import generate_complete_pairwise_dataset
+from ..dataset_reader.objectranking.util import \
+    generate_complete_pairwise_dataset
 
 __all__ = ['RankSVM']
 
@@ -18,7 +19,34 @@ __all__ = ['RankSVM']
 class RankSVM(ObjectRanker, Tunable):
     _tunable = None
 
-    def __init__(self, n_features, C=1, tol=1e-4, normalize=True, fit_intercept=True, random_state=None, **kwargs):
+    def __init__(self, n_features, C=1.0, tol=1e-4, normalize=True,
+                 fit_intercept=True, random_state=None, **kwargs):
+        """ Create an instance of the RankSVM model.
+
+        Parameters
+        ----------
+        n_features : int
+            Number of features of the object space
+        C : float, optional
+            Penalty parameter of the error term
+        tol : float, optional
+            Optimization tolerance
+        normalize : bool, optional
+            If True, the regressors will be normalized before fitting.
+        fit_intercept : bool, optional
+            If True, the linear model will also fit an intercept.
+        random_state : int, RandomState instance or None, optional
+            Seed of the pseudorandom generator or a RandomState instance
+        **kwargs
+            Keyword arguments for the algorithms
+
+        References
+        ----------
+        .. [1] Joachims, T. (2002, July).
+               "Optimizing search engines using clickthrough data.",
+               Proceedings of the eighth ACM SIGKDD international conference on
+               Knowledge discovery and data mining (pp. 133-142). ACM.
+        """
         self.normalize = normalize
         self.n_features = n_features
         self.C = C
@@ -30,16 +58,20 @@ class RankSVM(ObjectRanker, Tunable):
 
     def fit(self, X, Y, **kwargs):
         self.logger.debug('Creating the Dataset')
-        X_train, garbage, garbage, garbage, Y_single = generate_complete_pairwise_dataset(X, Y)
+        X_train, garbage, garbage, garbage, Y_single = generate_complete_pairwise_dataset(
+            X, Y)
         del garbage
         assert X_train.shape[1] == self.n_features
 
-        self.logger.debug('Finished the Dataset with instances {}'.format(X_train.shape[0]))
+        self.logger.debug(
+            'Finished the Dataset with instances {}'.format(X_train.shape[0]))
         if (X_train.shape[0] > self.threshold_instances):
-            self.model = LogisticRegression(C=self.C, tol=self.tol, fit_intercept=self.fit_intercept,
+            self.model = LogisticRegression(C=self.C, tol=self.tol,
+                                            fit_intercept=self.fit_intercept,
                                             random_state=self.random_state)
         else:
-            self.model = LinearSVC(C=self.C, tol=self.tol, fit_intercept=self.fit_intercept,
+            self.model = LinearSVC(C=self.C, tol=self.tol,
+                                   fit_intercept=self.fit_intercept,
                                    random_state=self.random_state)
 
         if (self.normalize):
@@ -55,7 +87,10 @@ class RankSVM(ObjectRanker, Tunable):
 
     def _predict_scores_fixed(self, X, **kwargs):
         n_instances, n_objects, n_features = X.shape
-        self.logger.info("For Test instances {} objects {} features {}".format(n_instances, n_objects, n_features))
+        self.logger.info(
+            "For Test instances {} objects {} features {}".format(n_instances,
+                                                                  n_objects,
+                                                                  n_features))
         scores = []
         for data_test in X:
             assert data_test.shape[1] == self.n_features
@@ -95,7 +130,8 @@ class RankSVM(ObjectRanker, Tunable):
                 self.tol = param
             else:
                 self.logger.warning('This ranking algorithm does not support'
-                                    'a tunable parameter called {}'.format(name))
+                                    'a tunable parameter called {}'.format(
+                    name))
 
     @classmethod
     def tunable_parameters(cls):

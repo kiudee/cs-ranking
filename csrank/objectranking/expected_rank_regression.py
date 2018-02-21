@@ -31,20 +31,26 @@ class ExpectedRankRegression(ObjectRanker, Tunable):
         ----------
         n_features : int
             Number of features of the object space
-        alpha : float
+        alpha : float, optional
             Regularization strength
-        l1_ratio : float
+        l1_ratio : float, optional
             Ratio between pure L2 (=0) or pure L1 (=1) regularization.
-        tol : float
+        tol : float, optional
             Optimization tolerance
-        normalize : bool
+        normalize : bool, optional
             If True, the regressors will be normalized before fitting.
-        fit_intercept : bool
+        fit_intercept : bool, optional
             If True, the linear model will also fit an intercept.
-        random_state : int, RandomState instance or None
+        random_state : int, RandomState instance or None, optional
             Seed of the pseudorandom generator or a RandomState instance
         **kwargs
             Keyword arguments for the algorithms
+
+        References
+        ----------
+        .. [1] Kamishima, T., Kazawa, H., & Akaho, S. (2005, November).
+               "Supervised ordering-an empirical survey.",
+               Fifth IEEE International Conference on Data Mining.
         """
         self.normalize = normalize
         self.n_features = n_features
