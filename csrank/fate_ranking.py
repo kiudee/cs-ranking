@@ -331,7 +331,7 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
     def fit(self, X, Y, epochs=35, inner_epochs=1, log_callbacks=None,
             validation_split=0.1, verbose=0,
             global_lr=1.0, global_momentum=0.9,
-            min_bucket_size=500, **kwargs):
+            min_bucket_size=500, refit=False, **kwargs):
         """
         Fit a generic object ranking model on a provided set of queries.
 
@@ -367,6 +367,9 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
             Momentum for the meta gradient descent (variadic model only)
         min_bucket_size : int
             Restrict the training to queries of a minimum size
+        refit : bool
+            If True, create a new model object, otherwise continue fitting the
+            existing one if one exists.
         """
         if isinstance(X, dict):
             self.is_variadic = True
@@ -378,7 +381,8 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
             #  Create models which need to be trained
             #  Note, that the models share all their weights, the only
             #  difference is the compute graph constructed for back propagation.
-            self.models_ = self._construct_models(X)
+            if not hasattr(self, 'models_') or refit:
+                self.models_ = self._construct_models(X)
 
             #  Iterate training
             for epoch in range(epochs):
@@ -423,18 +427,20 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
         else:
             self.is_variadic = False
             n_inst, n_objects, n_features = X.shape
-            input_layer = Input(shape=(n_objects,
-                                       n_features),
-                                name="input_node")
 
-            set_repr = self.set_layer(input_layer)
-            scores = self.join_input_layers(input_layer, set_repr,
-                                            n_objects=n_objects,
-                                            n_layers=self.n_hidden_set_layers)
-            self.model = Model(inputs=input_layer, outputs=scores)
+            if not self.model is not None or refit:
+                input_layer = Input(shape=(n_objects,
+                                           n_features),
+                                    name="input_node")
+
+                set_repr = self.set_layer(input_layer)
+                scores = self.join_input_layers(input_layer, set_repr,
+                                                n_objects=n_objects,
+                                                n_layers=self.n_hidden_set_layers)
+                self.model = Model(inputs=input_layer, outputs=scores)
             self.model.compile(loss=self.loss_function,
-                               optimizer=self.optimizer,
-                               metrics=self.metrics)
+                                optimizer=self.optimizer,
+                                 metrics=self.metrics)
             callbacks = []
             if log_callbacks is None:
                 log_callbacks = []
@@ -455,6 +461,9 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
                 validation_split=validation_split, batch_size=self.batch_size,
                 verbose=verbose, **kwargs)
             self.logger.info("Fitting complete")
+
+    def fit_generator(self, generator, **kwargs):
+        raise NotImplementedError
 
     def get_set_representaion(self, X, kwargs):
         n_instances, n_objects, n_features = X.shape
