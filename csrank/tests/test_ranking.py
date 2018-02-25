@@ -1,12 +1,16 @@
 import logging
+import pytest
 from abc import ABCMeta
 
 import numpy as np
 from keras.layers import Input
 from keras.models import Model
+from keras.optimizers import SGD
+from keras.regularizers import l2
 
-from ..fate_ranking import FATERankingCore
+from ..fate_ranking import FATERankingCore, FATEObjectRanker
 from ..util import tunable_parameters_ranges
+from ..metrics import zero_one_rank_loss
 
 
 def test_construction_core():
@@ -48,3 +52,25 @@ def test_construction_core():
     X = np.random.randn(100, n_objects, n_features)
     y = X.sum(axis=2)
     model.fit(x=X, y=y, verbose=0)
+
+
+@pytest.fixture(scope="module")
+def trivial_ranking_problem():
+    rand = np.random.RandomState(123)
+    x = rand.randn(100, 5, 1)
+    y_true = x.argsort(axis=1).argsort(axis=1).squeeze(axis=-1)
+    return x, y_true
+
+
+def test_fate_object_ranker_fixed(trivial_ranking_problem):
+    x, y = trivial_ranking_problem
+    fate = FATEObjectRanker(n_object_features=1,
+                            n_hidden_joint_layers=1,
+                            n_hidden_set_layers=1,
+                            n_hidden_joint_units=5,
+                            n_hidden_set_units=5,
+                            kernel_regularizer=l2(1e-4),
+                            optimizer=SGD(lr=1e-3, momentum=0.9, nesterov=True))
+    fate.fit(x, y, epochs=50, validation_split=0, verbose=True)
+    pred = fate.predict(x)
+    assert np.all(pred == y)
