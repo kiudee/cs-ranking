@@ -328,49 +328,9 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
         else:
             self.model.set_weights(weights)
 
-    def fit(self, X, Y, epochs=35, inner_epochs=1, log_callbacks=None,
-            validation_split=0.1, verbose=0,
-            global_lr=1.0, global_momentum=0.9,
-            min_bucket_size=500, refit=False, **kwargs):
-        """
-        Fit a generic object ranking model on a provided set of queries.
-
-        The provided queries can be of a fixed size (numpy arrays) or of
-        varying sizes in which case dictionaries are expected as input.
-
-        For varying sizes a meta gradient descent is performed across the
-        different query sizes.
-
-        Parameters
-        ----------
-        X : numpy array or dict
-            (n_instances, n_objects, n_features) if numpy array or
-            map from n_objects to numpy arrays
-        Y : numpy array or dict
-            (n_instances, n_objects) if numpy array or
-            map from n_objects to numpy arrays
-        epochs : int
-            Number of epochs to run if training for a fixed query size or
-            number of epochs of the meta gradient descent for the variadic model
-        inner_epochs : int
-            Number of epochs to train for each query size inside the variadic
-            model
-        log_callbacks : list
-            List of callbacks to be called during optimization
-        validation_split : float
-            Percentage of instances to split off to validate on
-        verbose : bool
-            Print verbose information
-        global_lr : float
-            Learning rate of the meta gradient descent (variadic model only)
-        global_momentum : float
-            Momentum for the meta gradient descent (variadic model only)
-        min_bucket_size : int
-            Restrict the training to queries of a minimum size
-        refit : bool
-            If True, create a new model object, otherwise continue fitting the
-            existing one if one exists.
-        """
+    def _fit(self, X=None, Y=None, generator=None, epochs=35, inner_epochs=1,
+             log_callbacks=None, validation_split=0.1, verbose=0, global_lr=1.0,
+             global_momentum=0.9, min_bucket_size=500, refit=False, **kwargs):
         if isinstance(X, dict):
             self.is_variadic = True
             decay_rate = global_lr / epochs
@@ -462,8 +422,102 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
                 verbose=verbose, **kwargs)
             self.logger.info("Fitting complete")
 
-    def fit_generator(self, generator, **kwargs):
-        raise NotImplementedError
+    def fit(self, X, Y, epochs=35, inner_epochs=1, log_callbacks=None,
+            validation_split=0.1, verbose=0,
+            global_lr=1.0, global_momentum=0.9,
+            min_bucket_size=500, refit=False, **kwargs):
+        """Fit a generic object ranking model on a provided set of queries.
+
+        The provided queries can be of a fixed size (numpy arrays) or of
+        varying sizes in which case dictionaries are expected as input.
+
+        For varying sizes a meta gradient descent is performed across the
+        different query sizes.
+
+        Parameters
+        ----------
+        X : numpy array or dict
+            (n_instances, n_objects, n_features) if numpy array or
+            map from n_objects to numpy arrays
+        Y : numpy array or dict
+            (n_instances, n_objects) if numpy array or
+            map from n_objects to numpy arrays
+        epochs : int
+            Number of epochs to run if training for a fixed query size or
+            number of epochs of the meta gradient descent for the variadic model
+        inner_epochs : int
+            Number of epochs to train for each query size inside the variadic
+            model
+        log_callbacks : list
+            List of callbacks to be called during optimization
+        validation_split : float
+            Percentage of instances to split off to validate on
+        verbose : bool
+            Print verbose information
+        global_lr : float
+            Learning rate of the meta gradient descent (variadic model only)
+        global_momentum : float
+            Momentum for the meta gradient descent (variadic model only)
+        min_bucket_size : int
+            Restrict the training to queries of a minimum size
+        refit : bool
+            If True, create a new model object, otherwise continue fitting the
+            existing one if one exists.
+        """
+        self._fit(X=X, Y=Y, epochs=epochs, inner_epochs=inner_epochs,
+                  log_callbacks=log_callbacks,
+                  validation_split=validation_split, verbose=verbose,
+                  global_lr=global_lr, global_momentum=global_momentum,
+                  min_bucket_size=min_bucket_size, refit=refit, **kwargs)
+
+    def fit_generator(self, generator, epochs=35, inner_epochs=1,
+                      log_callbacks=None, validation_split=0.1, verbose=0,
+                      global_lr=1.0, global_momentum=0.9, min_bucket_size=500,
+                      refit=False, **kwargs):
+        """Fit a generic object ranking model on a set of queries provided by
+        a generator.
+
+        The provided queries can be of a fixed size (numpy arrays) or of
+        varying sizes in which case dictionaries are expected as input.
+
+        For varying sizes a meta gradient descent is performed across the
+        different query sizes.
+
+        Parameters
+        ----------
+        X : numpy array or dict
+            (n_instances, n_objects, n_features) if numpy array or
+            map from n_objects to numpy arrays
+        Y : numpy array or dict
+            (n_instances, n_objects) if numpy array or
+            map from n_objects to numpy arrays
+        epochs : int
+            Number of epochs to run if training for a fixed query size or
+            number of epochs of the meta gradient descent for the variadic model
+        inner_epochs : int
+            Number of epochs to train for each query size inside the variadic
+            model
+        log_callbacks : list
+            List of callbacks to be called during optimization
+        validation_split : float
+            Percentage of instances to split off to validate on
+        verbose : bool
+            Print verbose information
+        global_lr : float
+            Learning rate of the meta gradient descent (variadic model only)
+        global_momentum : float
+            Momentum for the meta gradient descent (variadic model only)
+        min_bucket_size : int
+            Restrict the training to queries of a minimum size
+        refit : bool
+            If True, create a new model object, otherwise continue fitting the
+            existing one if one exists.
+        """
+        self._fit(generator=generator, epochs=epochs, inner_epochs=inner_epochs,
+                  log_callbacks=log_callbacks,
+                  validation_split=validation_split, verbose=verbose,
+                  global_lr=global_lr, global_momentum=global_momentum,
+                  min_bucket_size=min_bucket_size, refit=refit, **kwargs)
 
     def get_set_representaion(self, X, kwargs):
         n_instances, n_objects, n_features = X.shape
