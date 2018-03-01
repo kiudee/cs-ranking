@@ -332,6 +332,10 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
              log_callbacks=None, validation_split=0.1, verbose=0, global_lr=1.0,
              global_momentum=0.9, min_bucket_size=500, refit=False, **kwargs):
         if isinstance(X, dict):
+            if generator is not None:
+                self.logger.error("Variadic training does not support"
+                                  " generators yet.")
+                raise NotImplementedError
             self.is_variadic = True
             decay_rate = global_lr / epochs
             learning_rate = global_lr
@@ -386,9 +390,13 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
                 learning_rate /= 1 + decay_rate * epoch
         else:
             self.is_variadic = False
-            n_inst, n_objects, n_features = X.shape
 
             if not self.model is not None or refit:
+                if generator is not None:
+                    X, Y = next(iter(generator))
+
+                n_inst, n_objects, n_features = X.shape
+
                 input_layer = Input(shape=(n_objects,
                                            n_features),
                                     name="input_node")
@@ -416,10 +424,16 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
                 ', '.join([c.__name__ for c in callbacks])))
 
             self.logger.info("Fitting started")
-            self.model.fit(
-                x=X, y=Y, callbacks=callbacks, epochs=epochs,
-                validation_split=validation_split, batch_size=self.batch_size,
-                verbose=verbose, **kwargs)
+            if generator is None:
+                self.model.fit(
+                    x=X, y=Y, callbacks=callbacks, epochs=epochs,
+                    validation_split=validation_split, batch_size=self.batch_size,
+                    verbose=verbose, **kwargs)
+            else:
+                self.model.fit_generator(
+                    generator=generator, callbacks=callbacks, epochs=epochs,
+                    # validation_split=validation_split, # TODO: fix
+                    verbose=verbose, **kwargs)
             self.logger.info("Fitting complete")
 
     def fit(self, X, Y, epochs=35, inner_epochs=1, log_callbacks=None,
