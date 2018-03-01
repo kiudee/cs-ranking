@@ -9,3 +9,4 @@ from .objectranking.sushi_object_ranking_dataset_reader import SushiObjectRankin
 from .objectranking.synthetic_data_generator import SyntheticDatasetGenerator
 from .objectranking.tag_genome_dataset_reader import TagGenomeDatasetReader
 from .sushi_dataset_reader import SushiDatasetReader
+from .util import SyntheticIterator
