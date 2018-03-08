@@ -17,7 +17,7 @@ class ObjectRanker(metaclass=ABCMeta):
     @abstractmethod
     def fit(self, X, Y, **kwargs):
         """ Fit the object ranking algorithm to a set of objects X and
-        orderings Y of those objects.
+        rankings Y of those objects.
 
         Parameters
         ----------
@@ -35,17 +35,23 @@ class ObjectRanker(metaclass=ABCMeta):
 
     @abstractmethod
     def predict(self, X, **kwargs):
-        """ Predict orderings for a given collection of sets of objects.
+        """ Predict rankings for a given collection of sets of objects.
 
         Parameters
         ----------
-        X : array-like, shape (n_samples, n_objects, n_features)
+        X : dict or numpy array
+            Dictionary with a mapping from ranking size to numpy arrays
+            or a single numpy array of size:
+            (n_instances, n_objects, n_features)
 
 
         Returns
         -------
-        Y : array-like, shape (n_samples, n_objects)
-            Predicted rankings
+        Y : dict or numpy array
+            Dictionary with a mapping from ranking size to numpy arrays
+            or a single numpy array of size:
+            (n_instances, n_objects)
+            Predicted ranking
         """
         self.logger.debug('Predicting started')
 
@@ -78,7 +84,15 @@ class ObjectRanker(metaclass=ABCMeta):
             Dictionary with a mapping from ranking size to numpy arrays
             or a single numpy array of size:
             (n_instances, n_objects, n_features)
-         """
+
+        Returns
+        -------
+        Y : dict or numpy array
+            Dictionary with a mapping from ranking size to numpy arrays
+            or a single numpy array of size:
+            (n_instances, n_objects)
+            Predicted scores
+        """
         self.logger.info("Predicting scores")
 
         if isinstance(X, dict):
@@ -86,7 +100,7 @@ class ObjectRanker(metaclass=ABCMeta):
             for ranking_size, x in X.items():
                 scores[ranking_size] = self._predict_scores_fixed(x, **kwargs)
         else:
-            scores = self._predict_scores_fixed(X, **kwargs)
+                scores = self._predict_scores_fixed(X, **kwargs)
         return scores
 
     @abstractmethod
@@ -107,16 +121,24 @@ class ObjectRanker(metaclass=ABCMeta):
         raise NotImplementedError
 
     def __call__(self, X, *args, **kwargs):
-        """ Predicts orderings for a new set of points X.
+        """
+        Predicts rankings for a new set of points X.
 
         Parameters
         ----------
-        X : array-like, shape (n_samples, n_objects, n_features)
+        X : dict or numpy array
+            Dictionary with a mapping from ranking size to numpy arrays
+            or a single numpy array of size:
+            (n_instances, n_objects, n_features)
+
 
         Returns
         -------
-        Y : array-like, shape (n_samples, n_objects)
-            Predicted orderings"""
+        Y : Dictionary with a mapping from ranking size to numpy arrays
+            or a single numpy array of size:
+            (n_instances, n_objects)
+            Predicted ranking
+        """
         return self.predict(X, **kwargs)
 
     def set_init_lr_callback(self, callbacks):

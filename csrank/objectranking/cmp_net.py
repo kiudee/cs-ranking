@@ -39,7 +39,53 @@ class CmpNet(ObjectRanker, Tunable):
                  kernel_regularizer=l2(l=0.02), non_linearities='relu',
                  optimizer=Adam(), metrics=[top_k_categorical_accuracy, binary_accuracy],
                  use_early_stopping=False, es_patience=300, batch_size=256, random_state=None, **kwargs):
+        """
+            Create an instance of the CmpNet architecture.
 
+            CmpNet breaks the rankings into pairwise comparisons and learns a
+            pairwise model for the each pair of object in the ranking.
+
+            Parameters
+            ----------
+            n_features : int
+                Number of features of the object space
+            n_hidden : int
+                Number of hidden layers used in the scoring network
+            n_units : int
+                Number of hidden units in each layer of the scoring network
+            loss_function : function or string
+                Loss function to be used for the binary decision task of the
+                pairwise comparisons
+            batch_normalization : bool
+                Whether to use batch normalization in each hidden layer
+            kernel_regularizer : function
+                Regularizer function applied to all the hidden weight matrices.
+            non_linearities : function or string
+                Type of activation function to use in each hidden layer
+            optimizer : function or string
+                Optimizer to use during stochastic gradient descent
+            metrics : list
+                List of metrics to evaluate during training (can be
+                non-differentiable)
+            use_early_stopping : bool
+                If True, stop the training early, if no progress has been made for
+                es_patience many iterations
+            es_patience : int
+                If early stopping is enabled, wait for this many iterations without
+                progress until stopping the training
+            batch_size : int
+                Batch size to use during training
+            random_state : int, RandomState instance or None
+                Seed of the pseudorandom generator or a RandomState instance
+            **kwargs
+                Keyword arguments for the algorithms
+
+            References
+            ----------
+            .. [1] Leonardo Rigutini, Tiziano Papini, Marco Maggini, and Franco Scarselli. 2011.
+               SortNet: Learning to Rank by a Neural Preference Function.
+               IEEE Trans. Neural Networks 22, 9 (2011), 1368–1380. https://doi.org/10.1109/TNN.2011.2160875
+        """
         self.logger = logging.getLogger("CmpNet")
         self.n_features = n_features
         self.batch_normalization = batch_normalization
