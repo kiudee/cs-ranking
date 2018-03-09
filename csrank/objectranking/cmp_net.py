@@ -44,12 +44,14 @@ class CmpNet(ObjectRanker, Tunable):
 
             CmpNet breaks the rankings into pairwise comparisons and learns a pairwise model for the each pair of object in the ranking.
             For prediction list of objects is converted in pair of objects and the pairwise predicate is evaluated using them.
-            The outputs of the network for each pair of objects $U(x_1,x_2), U(x_2,x_1)$ are evaluated.
-            $U(x_1,x_2) is a measure of how favorable it is for $x_1$ than $x_2$.
-            Ranking for the given set of objects $Q = \{ \vec{x}_1 , \ldots , \vec{x}_n \}$  is evaluted as follows:
-            \begin{equation}
-                \rho(\mathcal{Q}) = \argsort_{i \in [n]}  \; \biggl\{\frac{1}{n-1} \sum_{j \in [n] \setminus \{i\}} U_1(\vec{x}_i , \vec{x}_j)
-            \end{equation}
+            The outputs of the network for each pair of objects :math:`U(x_1,x_2), U(x_2,x_1)` are evaluated.
+            :math:`U(x_1,x_2)` is a measure of how favorable it is for :math:`x_1` than :math:`x_2`.
+            Ranking for the given set of objects :math:`Q = \{ x_1 , \ldots , x_n \}`  is evaluted as follows:
+
+            .. math::
+
+               ρ(Q) = \operatorname{argsort}_{i \in [n]}  \; \left\{ \\frac{1}{n-1} \sum_{j \in [n] \setminus \{i\}} U_1(x_i , x_j)\\right\}
+            
 
             Parameters
             ----------
