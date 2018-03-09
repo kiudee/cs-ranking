@@ -22,7 +22,7 @@ then
 fi
 
 
-conda install --yes numpy scipy joblib pytest pytest-cov coverage tensorflow scikit-learn pandas h5py
+conda install --yes numpy scipy joblib pytest pytest-cov coverage tensorflow scikit-learn pandas h5py seaborn
 pip install -r requirements.txt
 
 python setup.py build_ext --inplace
