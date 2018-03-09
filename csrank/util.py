@@ -9,10 +9,13 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import numpy as np
+import seaborn as sns
 import tensorflow as tf
 from keras import backend as K
 from keras.layers import Lambda
+from matplotlib import pyplot as plt
 from scipy.stats import spearmanr, rankdata
+from sklearn.covariance import GraphLasso
 from sklearn.utils import check_random_state
 from tensorflow.python.client import device_lib
 
@@ -373,3 +376,26 @@ def get_loss_for_array(metric, y_true, y_pred):
     x = metric(y_true, y_pred)
     x = tensorify(x)
     return get_tensor_value(K.mean(x))
+
+
+def heat_map(file_path, X, headers, cmap=sns.color_palette("Blues")):
+    model = GraphLasso()
+    model.fit(X)
+    Cov = model.covariance_
+    std = np.diag(1. / np.sqrt(np.diag(Cov)))
+    Cor = std.dot(Cov).dot(std)
+
+    fig, ax = plt.subplots()
+    # the size of A4 paper
+    fig.set_size_inches(10, 8)
+    ax = sns.heatmap(Cor, cmap=cmap, square=True, xticklabels=1, yticklabels=1, linewidths=.5)
+    ax.set_yticklabels(headers, rotation=0, fontsize=12)
+    ax.set_xticklabels(headers, rotation=90, fontsize=12)
+    plt.subplots_adjust(bottom=0.4, left=0.2)
+
+    sns.despine(left=True, bottom=True)
+
+    plt.tight_layout()
+
+    plt.savefig(file_path)
+    plt.show()
