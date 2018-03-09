@@ -10,5 +10,5 @@ Benchmark algorithms
    RankSVM
    CmpNet
 .. automodule:: csrank.objectranking
-   :members: ExpectedRankRegression, RankNet, RankSVM
+   :members: ExpectedRankRegression, RankNet, RankSVM, CmpNet
    :undoc-members:
