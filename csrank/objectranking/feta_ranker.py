@@ -20,23 +20,13 @@ from csrank.objectranking.constants import N_UNITS_DEFAULT_RANGES, N_HIDDEN_LAYE
     N_HIDDEN_LAYERS
 from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.tunable import Tunable
-from csrank.util import deprecated, tunable_parameters_ranges, tensorify
+from csrank.util import tunable_parameters_ranges, tensorify
 
 __all__ = ['FETANetwork']
 
 
 class FETANetwork(ObjectRanker, Tunable):
-    _tunable = None
-    _use_early_stopping = None
-
-    def __init__(self, n_objects, n_features, n_hidden=2, n_units=8,
-                 add_zeroth_order_model=False, max_number_of_objects=5,
-                 num_subsample=5,
-                 loss_function=hinged_rank_loss, batch_normalization=False,
-                 kernel_regularizer=l2(l=0.01), non_linearities='selu',
-                 optimizer="adam", metrics=None, use_early_stopping=False,
-                 es_patience=300, batch_size=256, random_state=None, **kwargs):
-        """
+    """
         Create a FETA-network architecture for object ranking.
         Training and prediction complexity is quadratic in the number of objects.
 
@@ -78,7 +68,17 @@ class FETANetwork(ObjectRanker, Tunable):
             Numpy random state
         **kwargs
             Keyword arguments for the hidden units
-        """
+    """
+    _tunable = None
+    _use_early_stopping = None
+
+    def __init__(self, n_objects, n_features, n_hidden=2, n_units=8,
+                 add_zeroth_order_model=False, max_number_of_objects=5,
+                 num_subsample=5,
+                 loss_function=hinged_rank_loss, batch_normalization=False,
+                 kernel_regularizer=l2(l=0.01), non_linearities='selu',
+                 optimizer="adam", metrics=None, use_early_stopping=False,
+                 es_patience=300, batch_size=256, random_state=None, **kwargs):
         self.logger = logging.getLogger("FETANetwork")
 
         self.random_state = check_random_state(random_state)
@@ -355,21 +355,3 @@ class FETANetwork(ObjectRanker, Tunable):
             ])
             if cls._use_early_stopping:
                 cls._tunable[EARLY_STOPPING_PATIENCE] = EARLY_STOPPING_PATIENCE_DEFAULT_RANGE
-
-    @deprecated
-    def get_scores(self, X1):
-        assert X1.shape[1] == self.n_features
-        objects = np.arange(X1.shape[0])
-        feature_ranks = np.concatenate((X1, np.array([objects]).T), axis=1)
-        pairs = np.array(list(combinations(feature_ranks, 2)))
-        predictions = self._predict_pair(pairs[:, 0, :-1], pairs[:, 1, :-1])
-        score_total = {key: [] for key in objects}
-        for objs, scores in zip(pairs[:, :, -1], predictions):
-            score_total[int(objs[0])].append(scores[0])
-            score_total[int(objs[1])].append(scores[1])
-        scores_borda = dict()
-        for key, value in score_total.items():
-            scores_borda[key] = np.mean(np.array(value))
-        scores_borda = np.array(sorted(scores_borda.items(), key=operator.itemgetter(0)))
-        scores = scores_borda[:, 1]
-        return scores

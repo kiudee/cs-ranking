@@ -24,7 +24,7 @@ from csrank.objectranking.constants import THRESHOLD, N_HIDDEN_LAYERS, N_HIDDEN_
     N_UNITS_DEFAULT_RANGES
 from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.tunable import Tunable
-from csrank.util import deprecated, tunable_parameters_ranges
+from csrank.util import tunable_parameters_ranges
 from ..dataset_reader.objectranking.util import generate_complete_pairwise_dataset
 
 __all__ = ['CmpNet']
@@ -209,34 +209,6 @@ class CmpNet(ObjectRanker, Tunable):
 
     def evaluate(self, X1_test, X2_test, Y_test, **kwd):
         return self.model.evaluate([X1_test, X2_test], Y_test, **kwd)
-
-    @deprecated
-    def get_scores(self, X1, **kwd):
-        assert X1.shape[1] == self.n_features
-        objects = np.arange(X1.shape[0])
-        feature_ranks = np.concatenate((X1, np.array([objects]).T), axis=1)
-        pairs = np.array(list(combinations(feature_ranks, 2)))
-
-        predictions = self.predict_pair(pairs[:, 0, :-1], pairs[:, 1, :-1], **kwd)
-        score_total = {key: [] for key in objects}
-        for objs, scores in zip(pairs[:, :, -1], predictions):
-            score_total[int(objs[0])].append(scores[0])
-            score_total[int(objs[1])].append(scores[1])
-        scores_borda = dict()
-        for key, value in score_total.items():
-            scores_borda[key] = np.mean(np.array(value))
-        scores_borda = np.array(sorted(scores_borda.items(), key=operator.itemgetter(0)))
-        scores = scores_borda[:, 1]
-        return scores
-
-    @deprecated
-    def predict_ranks(self, X, **kwd):
-        Y = []
-        for X1 in X:
-            scores = self.get_scores(X1, **kwd)
-            r1 = len(scores) - rankdata(scores)
-            Y.append(r1)
-        return np.array(Y)
 
     @classmethod
     def set_tunable_parameter_ranges(cls, param_ranges_dict):
