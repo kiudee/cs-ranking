@@ -330,7 +330,10 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
 
     def _fit(self, X=None, Y=None, generator=None, epochs=35, inner_epochs=1,
              log_callbacks=None, validation_split=0.1, verbose=0, global_lr=1.0,
-             global_momentum=0.9, min_bucket_size=500, refit=False, **kwargs):
+             global_momentum=0.9, min_bucket_size=500, refit=False,
+             optimizer=None, **kwargs):
+        if optimizer is not None:
+            self.optimizer = optimizer
         if isinstance(X, dict):
             if generator is not None:
                 self.logger.error("Variadic training does not support"
