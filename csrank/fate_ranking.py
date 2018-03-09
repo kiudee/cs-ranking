@@ -237,33 +237,6 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
         else:
             self.set_layer = None
 
-    @deprecated
-    def _construct_scoring_model(self, n_objects_test, X, **kwargs):
-        """
-        Construct a scoring model for prediction on the given number of objects.
-
-        The existing layers of the networks are used during the construction
-        and the weights are shared.
-
-        Parameters
-        ----------
-        n_objects_test : int
-            Number of objects for which to compute scores
-        """
-        input_layer_scorer = Input(shape=(n_objects_test,
-                                          self.n_object_features),
-                                   name="input_node")
-        if self.n_hidden_set_layers >= 1:
-            set_repr = self.set_layer(input_layer_scorer)
-        else:
-            set_repr = None
-
-        scores = self.join_input_layers(input_layer_scorer, set_repr,
-                                        n_layers=self.n_hidden_set_layers,
-                                        n_objects=n_objects_test)
-        scoring_model = Model(inputs=input_layer_scorer, outputs=scores)
-        return scoring_model
-
     @staticmethod
     def _bucket_frequencies(X, min_bucket_size=32):
         """
