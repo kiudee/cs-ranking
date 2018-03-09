@@ -26,7 +26,7 @@ __all__ = ['FETANetwork']
 
 
 class FETANetwork(ObjectRanker, Tunable):
-        """
+    """
         Create a FETA-network architecture for object ranking.
         Training and prediction complexity is quadratic in the number of objects.
 
@@ -68,9 +68,7 @@ class FETANetwork(ObjectRanker, Tunable):
             Numpy random state
         **kwargs
             Keyword arguments for the hidden units
-        """
-
-
+    """
     _tunable = None
     _use_early_stopping = None
 
