@@ -1,8 +1,8 @@
 |Build Status| |Coverage| |Binder|
 
-************
-Introduction
-************
+*******
+CS-Rank
+*******
 CS-Rank is a Python package for context-sensitive ranking algorithms.
 
 We implement the following new object ranking architectures:
