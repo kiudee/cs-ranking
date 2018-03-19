@@ -1,15 +1,36 @@
 import logging
-import pytest
+import os
 from abc import ABCMeta
 
 import numpy as np
+import pytest
+import tensorflow as tf
 from keras.layers import Input
 from keras.models import Model
 from keras.optimizers import SGD
 from keras.regularizers import l2
 
+from csrank import FETANetwork, RankNet, CmpNet, ExpectedRankRegression, RankSVM
 from ..fate_ranking import FATERankingCore, FATEObjectRanker
-from ..util import tunable_parameters_ranges
+from ..util import tunable_parameters_ranges, zero_one_rank_loss_for_scores_ties_np
+
+RANKSVM = 'ranksvm'
+ERR = 'err'
+CMPNET = "cmpnet"
+RANKNET = 'ranknet'
+FETA_RANKER = 'feta_ranker'
+FATE_RANKER = "fate_ranker"
+
+object_rankers = {FETA_RANKER: FETANetwork, RANKNET: RankNet, CMPNET: CmpNet,
+                  ERR: ExpectedRankRegression, RANKSVM: RankSVM,
+                  FATE_RANKER: FATEObjectRanker}
+object_rankers_params = {
+    FETA_RANKER: {"add_zeroth_order_model": True, "optimizer": SGD(lr=1e-3, momentum=0.9, nesterov=True)},
+    RANKNET: {"optimizer": SGD(lr=1e-3, momentum=0.9, nesterov=True)},
+    CMPNET: {"optimizer": SGD(lr=1e-3, momentum=0.9, nesterov=True)},
+    FATE_RANKER: {"n_hidden_joint_layers": 1, "n_hidden_set_layers": 1, "n_hidden_joint_units": 5,
+                  "n_hidden_set_units": 5, "optimizer": SGD(lr=1e-3, momentum=0.9, nesterov=True)},
+    ERR: {}, RANKSVM: {}}
 
 
 def test_construction_core():
@@ -62,17 +83,35 @@ def trivial_ranking_problem():
 
 
 def test_fate_object_ranker_fixed(trivial_ranking_problem):
+    tf.set_random_seed(0)
+    os.environ["KERAS_BACKEND"] = "tensorflow"
+    np.random.seed(123)
+    for ranker_name in object_rankers.keys():
+        loss = 0.0
+        rtol = 1e-2
+        atol = 1e-8
+        if ranker_name == ERR:
+            loss = 0.5
+            rtol = 1e-2
+            atol = 1e-2
+        if ranker_name == RANKSVM:
+            rtol = 1e-2
+            atol = 1e-2
+        assert object_ranker_fixed(trivial_ranking_problem, ranker_name=ranker_name, loss=loss, rtol=rtol, atol=atol)
+
+
+def object_ranker_fixed(trivial_ranking_problem, ranker_name=FATE_RANKER, loss=0.0, rtol=1e-2,
+                        atol=1e-8):
     x, y = trivial_ranking_problem
-    fate = FATEObjectRanker(n_object_features=1,
-                            n_hidden_joint_layers=1,
-                            n_hidden_set_layers=1,
-                            n_hidden_joint_units=5,
-                            n_hidden_set_units=5,
-                            kernel_regularizer=l2(1e-4),
-                            optimizer=SGD(lr=1e-3, momentum=0.9, nesterov=True))
-    fate.fit(x, y, epochs=50, validation_split=0, verbose=False)
-    pred = fate.predict(x)
-    assert np.all(pred == y)
+    ranker_params = object_rankers_params[ranker_name]
+    ranker_params['n_object_features'] = ranker_params['n_features'] = 1
+    ranker_params['n_objects'] = 5
+    ranker = object_rankers[ranker_name](**ranker_params)
+    ranker.fit(x, y, epochs=50, validation_split=0, verbose=False)
+    pred_scores = ranker.predict_scores(x)
+    pred_loss = zero_one_rank_loss_for_scores_ties_np(y, pred_scores)
+    print("ranker : {} and 0/1 pred loss: {}".format(ranker_name, pred_loss))
+    return np.isclose(loss, pred_loss, rtol=rtol, atol=atol, equal_nan=False)
 
 
 def test_fate_object_ranker_fixed_generator():
@@ -82,6 +121,7 @@ def test_fate_object_ranker_fixed_generator():
             x = rand.randn(10, 5, 1)
             y_true = x.argsort(axis=1).argsort(axis=1).squeeze(axis=-1)
             yield x, y_true
+
     fate = FATEObjectRanker(n_object_features=1,
                             n_hidden_joint_layers=1,
                             n_hidden_set_layers=1,
@@ -90,5 +130,5 @@ def test_fate_object_ranker_fixed_generator():
                             kernel_regularizer=l2(1e-4),
                             optimizer=SGD(lr=1e-3, momentum=0.9, nesterov=True))
     fate.fit_generator(generator=trivial_ranking_problem_generator(),
-             epochs=1, validation_split=0, verbose=False,
-             steps_per_epoch=10)
+                       epochs=1, validation_split=0, verbose=False,
+                       steps_per_epoch=10)

@@ -12,7 +12,7 @@ from skopt.space import check_dimension
 from skopt.utils import cook_estimator, normalize_dimensions
 
 from csrank.util import print_dictionary
-from experiments.util import CMPNET, BORDA_ZERO, BORDA, RANKNET, object_rankers
+from experiments.util import CMPNET, FETA_RANKER_ZERO, FETA_RANKER, RANKNET, object_rankers
 
 OPTIMIZER_SINGLE_FOLD = "optimizer_single_fold"
 
@@ -46,7 +46,7 @@ def renew_optimizer(log_file):
     opt_path = os.path.join(DIR_PATH, OPTIMIZER_SINGLE_FOLD, file_name)
     lines = [line.rstrip('\n') for line in open(log_file)]
     model_name = os.path.split(log_file)[-1].split('_')[-1].split(".")[0]
-    if model_name == "zero": model_name = BORDA_ZERO
+    if model_name == "zero": model_name = FETA_RANKER_ZERO
     try:
         optimizer = load(opt_path)
     except EOFError:
@@ -78,7 +78,7 @@ def renew_optimizer(log_file):
                 if "ps" in optimizer.acq_func:
                     optimizer.tell(parameters, [loss, time])
                 else:
-                    if model_name in [BORDA_ZERO, BORDA, RANKNET, CMPNET]:
+                    if model_name in [FETA_RANKER_ZERO, FETA_RANKER, RANKNET, CMPNET]:
                         parameters = parameters[0:-1]
                         parameters.extend([0.01, 1024, 300])
                     try:
