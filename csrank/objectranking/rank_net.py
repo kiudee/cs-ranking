@@ -32,7 +32,7 @@ class RankNet(ObjectRanker, Tunable):
 
     def __init__(self, n_features, n_hidden=2, n_units=8,
                  loss_function=binary_crossentropy, batch_normalization=True,
-                 kernel_regularizer=l2(l=0.01), non_linearities='relu',
+                 kernel_regularizer=l2(l=1e-4), non_linearities='relu',
                  optimizer="adam", metrics=[top_k_categorical_accuracy, binary_accuracy],
                  use_early_stopping=False, es_patience=300, batch_size=256, random_state=None, **kwargs):
         """Create an instance of the RankNet architecture.

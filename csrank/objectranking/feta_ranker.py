@@ -1,5 +1,4 @@
 import logging
-import operator
 from collections import OrderedDict
 from itertools import combinations, permutations
 
@@ -20,7 +19,7 @@ from csrank.objectranking.constants import N_UNITS_DEFAULT_RANGES, N_HIDDEN_LAYE
     N_HIDDEN_LAYERS
 from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.tunable import Tunable
-from csrank.util import deprecated, tunable_parameters_ranges, tensorify
+from csrank.util import tunable_parameters_ranges, tensorify
 
 __all__ = ['FETANetwork']
 
@@ -33,7 +32,7 @@ class FETANetwork(ObjectRanker, Tunable):
                  add_zeroth_order_model=False, max_number_of_objects=5,
                  num_subsample=5,
                  loss_function=hinged_rank_loss, batch_normalization=False,
-                 kernel_regularizer=l2(l=0.01), non_linearities='selu',
+                 kernel_regularizer=l2(l=1e-4), non_linearities='selu',
                  optimizer="adam", metrics=None, use_early_stopping=False,
                  es_patience=300, batch_size=256, random_state=None, **kwargs):
         """
@@ -355,4 +354,3 @@ class FETANetwork(ObjectRanker, Tunable):
             ])
             if cls._use_early_stopping:
                 cls._tunable[EARLY_STOPPING_PATIENCE] = EARLY_STOPPING_PATIENCE_DEFAULT_RANGE
-

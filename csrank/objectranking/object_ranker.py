@@ -100,7 +100,7 @@ class ObjectRanker(metaclass=ABCMeta):
             for ranking_size, x in X.items():
                 scores[ranking_size] = self._predict_scores_fixed(x, **kwargs)
         else:
-                scores = self._predict_scores_fixed(X, **kwargs)
+            scores = self._predict_scores_fixed(X, **kwargs)
         return scores
 
     @abstractmethod
