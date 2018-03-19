@@ -17,7 +17,7 @@ __all__ = ['ExpectedRankRegression']
 class ExpectedRankRegression(ObjectRanker, Tunable):
     _tunable = None
 
-    def __init__(self, n_features, alpha=1.0, l1_ratio=0.5, tol=1e-4,
+    def __init__(self, n_features, alpha=0.0, l1_ratio=0.5, tol=1e-4,
                  normalize=True, fit_intercept=True, random_state=None,
                  **kwargs):
         """Create an expected rank regression model.

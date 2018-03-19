@@ -76,8 +76,8 @@ def test_construction_core():
 
 @pytest.fixture(scope="module")
 def trivial_ranking_problem():
-    rand = np.random.RandomState(123)
-    x = rand.randn(100, 5, 1)
+    random_state = np.random.RandomState(123)
+    x = random_state.randn(200, 5, 1)
     y_true = x.argsort(axis=1).argsort(axis=1).squeeze(axis=-1)
     return x, y_true
 
@@ -90,13 +90,6 @@ def test_fate_object_ranker_fixed(trivial_ranking_problem):
         loss = 0.0
         rtol = 1e-2
         atol = 1e-8
-        if ranker_name == ERR:
-            loss = 0.5
-            rtol = 1e-2
-            atol = 1e-2
-        if ranker_name == RANKSVM:
-            rtol = 1e-2
-            atol = 1e-2
         assert object_ranker_fixed(trivial_ranking_problem, ranker_name=ranker_name, loss=loss, rtol=rtol, atol=atol)
 
 
