@@ -65,7 +65,22 @@ For data processing and generation you will also need PyGMO, H5Py and pandas.
 
 Citing CS-Rank
 ----------------
-To be announced.
+Our paper is currently under review for the SIGKDD 2018.
+For now you can cite our `arXiv paper`_::
+
+  @ARTICLE{csrank2018,
+         author = {{Pfannschmidt}, K. and {Gupta}, P. and {H{\"u}llermeier}, E.},
+          title = "{Deep architectures for learning context-dependent ranking functions}",
+        journal = {ArXiv e-prints},
+  archivePrefix = "arXiv",
+         eprint = {1803.05796},
+   primaryClass = "stat.ML",
+       keywords = {Statistics - Machine Learning, Computer Science - Information Retrieval, Computer Science - Learning, Computer Science - Neural and Evolutionary Computing},
+           year = 2018,
+          month = mar,
+         adsurl = {http://adsabs.harvard.edu/abs/2018arXiv180305796P},
+        adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+  }
 
 License
 --------
@@ -81,3 +96,4 @@ License
    :target: https://coveralls.io/github/kiudee/cs-ranking
 
 .. _interactive notebooks: https://mybinder.org/v2/gh/kiudee/cs-ranking/master?filepath=notebooks
+.. _arXiv paper: https://arxiv.org/abs/1803.05796
