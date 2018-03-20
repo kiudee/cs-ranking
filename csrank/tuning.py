@@ -148,7 +148,7 @@ class ParameterOptimizer(ObjectRanker):
             param_dict = dict()
             for j, p in enumerate(ranges.keys()):
                 param_dict[p] = point[i + j]
-            print('obj: {}, current parameters {}'.format(type(obj).__name__, param_dict))
+            self.logger.info('obj: {}, current parameters {}'.format(type(obj).__name__, param_dict))
             obj.set_tunable_parameters(**param_dict)
             i += len(ranges)
 
@@ -165,7 +165,7 @@ class ParameterOptimizer(ObjectRanker):
         time_taken = duration_tillnow(start)
         return loss, time_taken
 
-    def fit(self, X, Y, total_duration, n_iter=100, cv_iter=None, optimizer=None, acq_func='gp_hedge', **kwargs):
+    def fit(self, X, Y, total_duration=6e7, n_iter=100, cv_iter=None, optimizer=None, acq_func='gp_hedge', **kwargs):
         start = datetime.now()
 
         def splitter(itr):
@@ -243,9 +243,7 @@ class ParameterOptimizer(ObjectRanker):
         time_taken = duration_tillnow(start)
         total_duration -= time_taken
         max_fit_duration = -10000
-        self.logger.info('Time left for {} iterations is {}'.format(
-            n_iter,
-            microsec_to_time(total_duration)))
+        self.logger.info('Time left for {} iterations is {}'.format(n_iter, microsec_to_time(total_duration)))
 
         try:
             for t in range(n_iter):
@@ -309,11 +307,9 @@ class ParameterOptimizer(ObjectRanker):
 
                 if (total_duration - max_fit_duration) < 0:
                     self.logger.info(
-                        'At iteration {} maximum time required by model to validate a parameter values'.format(
-                            microsec_to_time(max_fit_duration)))
+                        'At iteration {} maximum time required by model to validate a parameter values'.format(microsec_to_time(max_fit_duration)))
                     self.logger.info(
-                        'At iteration {} simulation stops, due to time deficiency'.format(
-                            t))
+                        'At iteration {} simulation stops, due to time deficiency'.format(t))
                     break
 
         except KeyboardInterrupt:
@@ -325,8 +321,7 @@ class ParameterOptimizer(ObjectRanker):
             self.logger.debug(
                 'Finally, fit a model on the complete training set and storing the model at {}'.format(
                     self.optimizer_path))
-            self._fit_params["epochs"] = self._fit_params.get("epochs",
-                                                              1000) * 2
+            self._fit_params["epochs"] = self._fit_params.get("epochs", 1000)
             if "ps" in opt.acq_func:
                 best_point = opt.Xi[np.argmin(np.array(opt.yi)[:, 0])]
             else:

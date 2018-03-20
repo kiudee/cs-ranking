@@ -12,8 +12,7 @@ from csrank.constants import OBJECT_RANKING, LABEL_RANKING, DYAD_RANKING, DISCRE
     LOG_UNIFORM
 from csrank.dataset_reader import DepthDatasetReader, ImageDatasetReader, SushiObjectRankingDatasetReader, \
     SyntheticDatasetGenerator, TagGenomeDatasetReader, SentenceOrderingDatasetReader, LetorObjectRankingDatasetReader
-from csrank.fate_ranking import FATEObjectRanker, N_HIDDEN_SET_LAYERS, N_HIDDEN_JOINT_LAYERS, \
-    N_HIDDEN_SET_UNITS, N_HIDDEN_JOINT_UNITS
+from csrank.fate_ranking import FATEObjectRanker
 from csrank.losses import smooth_rank_loss
 from csrank.metrics import zero_one_rank_loss_for_scores_ties, zero_one_rank_loss_for_scores, \
     spearman_correlation_for_scores, kendalls_tau_for_scores, zero_one_accuracy_for_scores
@@ -33,17 +32,13 @@ SENTENCE_ORDERING = "sentence_ordering"
 
 LETOR = "letor"
 
-BORDA_RANKNET = "bordaranknet"
-
-BORDA_RANKNET_ZERO = "bordaranknet_zero"
-
 RANKSVM = 'ranksvm'
 ERR = 'err'
 CMPNET = "cmpnet"
 RANKNET = 'ranknet'
-BORDA_ZERO = 'borda_zero'
-BORDA = 'borda'
-GENERAL_RANKER = "general_ranker"
+FETA_RANKER_ZERO = 'feta_ranker_zero'
+FETA_RANKER = 'feta_ranker'
+FATE_RANKER = "fate_ranker"
 
 object_ranking_datasets = {'medoid': SyntheticDatasetGenerator, HYPER_VOLUME: SyntheticDatasetGenerator,
                            DEPTH: DepthDatasetReader,
@@ -55,9 +50,9 @@ dataset_arg_options = {HYPER_VOLUME: None, 'medoid': None, DEPTH: "dataset_type"
                        'sushi': None, 'image_dataset': None,
                        'tag_genome': None,
                        SENTENCE_ORDERING: ["n_dims", "train_obj"], LETOR: ["year", "train_obj"]}
-object_rankers = {BORDA: FETANetwork, BORDA_ZERO: FETANetwork, RANKNET: RankNet, CMPNET: CmpNet,
+object_rankers = {FETA_RANKER: FETANetwork, FETA_RANKER_ZERO: FETANetwork, RANKNET: RankNet, CMPNET: CmpNet,
                   ERR: ExpectedRankRegression, RANKSVM: RankSVM,
-                  GENERAL_RANKER: FATEObjectRanker}  # , "bordaranknet_zero", "bordaranknet"
+                  FATE_RANKER: FATEObjectRanker}  # , "bordaranknet_zero", "bordaranknet"
 
 ranking_metrics = OrderedDict(
     {'KendallsTau': kendalls_tau_for_scores, 'SpearmanCorrelation': spearman_correlation_for_scores,
@@ -93,7 +88,7 @@ def get_applicable_ranker_dataset(dataset_name, ranker_name, problem):
     rankers = rankers_dict[problem]
     datasets = dataset_options_dict[problem]
     if ranker_name not in rankers:
-        ranker_name = BORDA_ZERO
+        ranker_name = FETA_RANKER_ZERO
     if dataset_name not in datasets:
         dataset_name = 'medoid'
     return dataset_name, ranker_name
@@ -103,7 +98,7 @@ def get_ranker_parameters(ranker_name, n_features, n_objects, dataset_name, data
     parameter_ranges = dict()
 
     ranker_params = {'n_objects': n_objects, "n_object_features": n_features, "n_features": n_features}
-    if ranker_name == BORDA_ZERO or ranker_name == BORDA_RANKNET_ZERO:
+    if ranker_name == FETA_RANKER_ZERO:
         ranker_params['add_zeroth_order_model'] = True
     fit_params = {'epochs': epochs}
     fit_params['log_callbacks'] = []
@@ -113,9 +108,8 @@ def get_ranker_parameters(ranker_name, n_features, n_objects, dataset_name, data
         parameter_ranges[LEARNING_RATE] = (1e-5, 1e-4, LOG_UNIFORM)
         ranker_params["optimizer"] = SGD(lr=1e-5, momentum=0.9, nesterov=True)
 
-        if ranker_name in [GENERAL_RANKER, BORDA_ZERO, BORDA, BORDA_RANKNET_ZERO,
-                           BORDA_RANKNET] and dataset_name not in [DEPTH,
-                                                                   HYPER_VOLUME, LETOR]:
+        if ranker_name in [FATE_RANKER, FETA_RANKER_ZERO, FETA_RANKER] and dataset_name not in [DEPTH,
+                                                                                                HYPER_VOLUME, LETOR]:
             ranker_params["loss_function"] = smooth_rank_loss
 
         if dataset_name == LETOR:
@@ -125,15 +119,15 @@ def get_ranker_parameters(ranker_name, n_features, n_objects, dataset_name, data
         if dataset_name == DEPTH:
             parameter_ranges[LEARNING_RATE] = (1e-5, 1e-3, LOG_UNIFORM)
             parameter_ranges[BATCH_SIZE] = (256, 1024)
-            if ranker_name in [BORDA_ZERO, BORDA, BORDA_RANKNET_ZERO, BORDA_RANKNET, RANKNET, CMPNET]:
+            if ranker_name in [FETA_RANKER_ZERO, FETA_RANKER, RANKNET, CMPNET]:
                 ranker_params["optimizer"] = "adam"
-            parameter_ranges[N_HIDDEN_SET_LAYERS] = parameter_ranges[N_HIDDEN_JOINT_LAYERS] = (5, 20)
-            parameter_ranges[N_HIDDEN_SET_UNITS] = parameter_ranges[N_HIDDEN_JOINT_UNITS] = (256, 1024)
+            parameter_ranges["n_hidden_set_layers"] = parameter_ranges["n_hidden_joint_layers"] = (5, 20)
+            parameter_ranges["n_hidden_set_units"] = parameter_ranges["n_hidden_joint_units"] = (256, 1024)
 
-    if ranker_name in [BORDA_ZERO, BORDA, GENERAL_RANKER, RANKNET, CMPNET, BORDA_RANKNET_ZERO, BORDA_RANKNET]:
+    if ranker_name in [FETA_RANKER_ZERO, FETA_RANKER, FATE_RANKER, RANKNET, CMPNET]:
         fit_params['log_callbacks'].append(DebugOutput())
         ranker_params["use_early_stopping"] = True
-    if ranker_name == GENERAL_RANKER and dataset_name == SENTENCE_ORDERING and dataset_function_params.get(
+    if ranker_name == FATE_RANKER and dataset_name == SENTENCE_ORDERING and dataset_function_params.get(
             "train_obj", 0) == 0:
         fit_params = {'epochs': 35, "inner_epochs": 1, "min_bucket_size": 500, "validation_split": None}
 

@@ -11,7 +11,6 @@ from keras.regularizers import l2
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_random_state
 
-from csrank.callbacks import LRScheduler
 from csrank.discretechoice.discrete_choice import ObjectChooser
 from csrank.dyadranking.contextual_ranking import ContextualRanker
 from csrank.labelranking.label_ranker import LabelRanker
