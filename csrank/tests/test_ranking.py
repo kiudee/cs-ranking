@@ -1,16 +1,37 @@
 import logging
-import pytest
+import os
 from abc import ABCMeta
 
 import numpy as np
+import pytest
+import tensorflow as tf
 from keras.layers import Input
 from keras.models import Model
 from keras.optimizers import SGD
 from keras.regularizers import l2
 
+from csrank import FETANetwork, RankNet, CmpNet, ExpectedRankRegression, RankSVM
 from ..fate_ranking import FATERankingCore, FATEObjectRanker
-from ..util import tunable_parameters_ranges
+from ..util import tunable_parameters_ranges, zero_one_rank_loss_for_scores_ties_np
 
+RANKSVM = 'ranksvm'
+ERR = 'err'
+CMPNET = "cmpnet"
+RANKNET = 'ranknet'
+FETA_RANKER = 'feta_ranker'
+FATE_RANKER = "fate_ranker"
+
+object_rankers = {FETA_RANKER: FETANetwork, RANKNET: RankNet, CMPNET: CmpNet,
+                  ERR: ExpectedRankRegression, RANKSVM: RankSVM,
+                  FATE_RANKER: FATEObjectRanker}
+optimizer = SGD(lr=1e-3, momentum=0.9, nesterov=True)
+object_rankers_params = {
+    FETA_RANKER: {"add_zeroth_order_model": True, "optimizer": optimizer},
+    RANKNET: {"optimizer": optimizer},
+    CMPNET: {"optimizer": optimizer},
+    FATE_RANKER: {"n_hidden_joint_layers": 1, "n_hidden_set_layers": 1, "n_hidden_joint_units": 5,
+                  "n_hidden_set_units": 5, "optimizer": optimizer},
+    ERR: {}, RANKSVM: {}}
 
 def test_construction_core():
     n_objects = 3
@@ -55,24 +76,28 @@ def test_construction_core():
 
 @pytest.fixture(scope="module")
 def trivial_ranking_problem():
-    rand = np.random.RandomState(123)
-    x = rand.randn(100, 5, 1)
+    random_state = np.random.RandomState(123)
+    x = random_state.randn(200, 5, 1)
     y_true = x.argsort(axis=1).argsort(axis=1).squeeze(axis=-1)
     return x, y_true
 
 
-def test_fate_object_ranker_fixed(trivial_ranking_problem):
+@pytest.mark.parametrize("ranker_name, loss", zip(list(object_rankers.keys()), [0.0] * len(object_rankers)))
+def test_object_ranker_fixed(trivial_ranking_problem, ranker_name, loss):
+    tf.set_random_seed(0)
+    os.environ["KERAS_BACKEND"] = "tensorflow"
+    np.random.seed(123)
     x, y = trivial_ranking_problem
-    fate = FATEObjectRanker(n_object_features=1,
-                            n_hidden_joint_layers=1,
-                            n_hidden_set_layers=1,
-                            n_hidden_joint_units=5,
-                            n_hidden_set_units=5,
-                            kernel_regularizer=l2(1e-4),
-                            optimizer=SGD(lr=1e-3, momentum=0.9, nesterov=True))
-    fate.fit(x, y, epochs=50, validation_split=0, verbose=False)
-    pred = fate.predict(x)
-    assert np.all(pred == y)
+    ranker_params = object_rankers_params[ranker_name]
+    ranker_params['n_object_features'] = ranker_params['n_features'] = 1
+    ranker_params['n_objects'] = 5
+    ranker = object_rankers[ranker_name](**ranker_params)
+    ranker.fit(x, y, epochs=100, validation_split=0, verbose=False)
+    pred_scores = ranker.predict_scores(x)
+    pred_loss = zero_one_rank_loss_for_scores_ties_np(y, pred_scores)
+    rtol = 1e-2
+    atol = 1e-4
+    assert np.isclose(loss, pred_loss, rtol=rtol, atol=atol, equal_nan=False)
 
 
 def test_fate_object_ranker_fixed_generator():
@@ -82,13 +107,14 @@ def test_fate_object_ranker_fixed_generator():
             x = rand.randn(10, 5, 1)
             y_true = x.argsort(axis=1).argsort(axis=1).squeeze(axis=-1)
             yield x, y_true
+
     fate = FATEObjectRanker(n_object_features=1,
                             n_hidden_joint_layers=1,
                             n_hidden_set_layers=1,
                             n_hidden_joint_units=5,
                             n_hidden_set_units=5,
                             kernel_regularizer=l2(1e-4),
-                            optimizer=SGD(lr=1e-3, momentum=0.9, nesterov=True))
+                            optimizer=optimizer)
     fate.fit_generator(generator=trivial_ranking_problem_generator(),
-             epochs=1, validation_split=0, verbose=False,
-             steps_per_epoch=10)
+                       epochs=1, validation_split=0, verbose=False,
+                       steps_per_epoch=10)

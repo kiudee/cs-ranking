@@ -30,7 +30,7 @@ from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.tunable import Tunable
 from csrank.util import scores_to_rankings, create_input_lambda, \
     tunable_parameters_ranges, tensorify, \
-    print_dictionary, deprecated
+    print_dictionary
 
 GENERAL_OBJECT_CHOOSER = "FATEObjectChooser"
 GENERAL_LABEL_RANKER = "FATELabelRanker"
@@ -54,9 +54,9 @@ class FATERankingCore(Tunable, metaclass=ABCMeta):
     _tunable = None
     _use_early_stopping = None
 
-    def __init__(self, n_hidden_joint_layers=32, n_hidden_joint_units=32,
+    def __init__(self, n_hidden_joint_layers=2, n_hidden_joint_units=2,
                  activation='selu', kernel_initializer='lecun_normal',
-                 kernel_regularizer=l2(l=0.01),
+                 kernel_regularizer=l2(l=1e-4),
                  optimizer="adam",
                  es_patience=300, use_early_stopping=False, batch_size=256,
                  random_state=None, **kwargs):
@@ -383,8 +383,8 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
                                                 n_layers=self.n_hidden_set_layers)
                 self.model = Model(inputs=input_layer, outputs=scores)
             self.model.compile(loss=self.loss_function,
-                                optimizer=self.optimizer,
-                                 metrics=self.metrics)
+                               optimizer=self.optimizer,
+                               metrics=self.metrics)
             callbacks = []
             if log_callbacks is None:
                 log_callbacks = []
@@ -668,7 +668,7 @@ class FATEObjectRanker(FATEObjectRankingCore, ObjectRanker):
 
     def __init__(self, n_object_features,
                  n_hidden_set_layers=2,
-                 n_hidden_set_units=32,
+                 n_hidden_set_units=2,
                  loss_function=smooth_rank_loss,
                  metrics=None,
                  **kwargs):

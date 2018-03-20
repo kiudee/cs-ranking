@@ -1,6 +1,6 @@
 import autograd.numpy as npa
+from autograd import hessian_vector_product as hvp
 from autograd import value_and_grad
-from autograd.convenience_wrappers import hessian_vector_product as hvp
 from autograd.core import primitive
 from numpy.random import normal
 from scipy.optimize import minimize

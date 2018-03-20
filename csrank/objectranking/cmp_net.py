@@ -1,7 +1,6 @@
 import logging
-import operator
 from collections import OrderedDict
-from itertools import combinations, permutations
+from itertools import permutations
 
 import numpy as np
 from keras import backend as K, optimizers
@@ -11,7 +10,6 @@ from keras.metrics import top_k_categorical_accuracy, binary_accuracy
 from keras.models import Model
 from keras.optimizers import Adam
 from keras.regularizers import l2
-from scipy.stats import rankdata
 from sklearn.utils import check_random_state
 
 from csrank.callbacks import EarlyStoppingWithWeights
@@ -36,7 +34,7 @@ class CmpNet(ObjectRanker, Tunable):
 
     def __init__(self, n_features, n_hidden=2, n_units=8,
                  loss_function=binary_crossentropy, batch_normalization=True,
-                 kernel_regularizer=l2(l=0.02), non_linearities='relu',
+                 kernel_regularizer=l2(l=1e-4), non_linearities='relu',
                  optimizer=Adam(), metrics=[top_k_categorical_accuracy, binary_accuracy],
                  use_early_stopping=False, es_patience=300, batch_size=256, random_state=None, **kwargs):
         """

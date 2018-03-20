@@ -19,8 +19,8 @@
 #
 import os
 import sys
-sys.path.append(os.path.abspath('..'))
 
+sys.path.append(os.path.abspath('..'))
 
 # -- General configuration ------------------------------------------------
 
@@ -32,13 +32,13 @@ sys.path.append(os.path.abspath('..'))
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinx.ext.autodoc',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.napoleon',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.githubpages',
-    'sphinx.ext.autosummary',
-    'nbsphinx',
-    'IPython.sphinxext.ipython_console_highlighting']
+              'sphinx.ext.mathjax',
+              'sphinx.ext.napoleon',
+              'sphinx.ext.viewcode',
+              'sphinx.ext.githubpages',
+              'sphinx.ext.autosummary',
+              'nbsphinx',
+              'IPython.sphinxext.ipython_console_highlighting']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -94,8 +94,6 @@ autoclass_content = 'both'
 # Do not show the return type as seperate section
 napoleon_use_rtype = False
 
-
-
 # -- Options for HTML output ----------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -114,12 +112,10 @@ html_theme = 'sphinx_rtd_theme'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'csrankdoc'
-
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -149,7 +145,6 @@ latex_documents = [
      'Karlson Pfannschmidt, Pritha Gupta, Eyke Hüllermeier', 'manual'),
 ]
 
-
 # -- Options for manual page output ---------------------------------------
 
 # One entry per manual page. List of tuples
@@ -158,7 +153,6 @@ man_pages = [
     (master_doc, 'csrank', 'csrank Documentation',
      [author], 1)
 ]
-
 
 # -- Options for Texinfo output -------------------------------------------
 
@@ -170,6 +164,3 @@ texinfo_documents = [
      author, 'csrank', 'One line description of project.',
      'Miscellaneous'),
 ]
-
-
-
