@@ -1,6 +1,7 @@
 from pytest import fixture
 from ..tuning import ParameterOptimizer
 
+
 @fixture
 def optimizer():
     from ..tunable import Tunable

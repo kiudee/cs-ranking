@@ -20,7 +20,8 @@ from csrank.metrics import zero_one_rank_loss_for_scores_ties, \
     zero_one_rank_loss_for_scores
 from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.tunable import Tunable
-from csrank.util import scores_to_rankings, create_input_lambda, tensorify
+from csrank.util import scores_to_rankings, create_input_lambda, tensorify, \
+                        print_dictionary
 
 __all__ = ['FATELabelRanker', 'FATEObjectRanker', 'FATEContextualRanker', 'FATEObjectChooser']
 
@@ -109,33 +110,29 @@ class FATERankingCore(Tunable, metaclass=ABCMeta):
 
         return scores
 
-    def set_tunable_parameters(self, point):
-        # TODO: Adjust for new dict input
-        hidden_layers_created = False
+    def set_tunable_parameters(self,
+                               n_hidden_joint_units=32,
+                               n_hidden_joint_layers=2,
+                               reg_strength=1e-4,
+                               learning_rate=1e-3,
+                               batch_size=128,
+                               **point):
+        self.n_hidden_joint_layers = n_hidden_joint_layers
+        self.n_hidden_joint_units = n_hidden_joint_units
+        self.kernel_regularizer = l2(reg_strength)
+        self.batch_size = batch_size
+        K.set_value(self.optimizer.lr, learning_rate)
 
-        layer_keys = ["n_hidden_joint_units", "n_hidden_joint_layers"]
+        self._construct_layers(
+            activation=self.activation,
+            kernel_initializer=self.kernel_initializer,
+            kernel_regularizer=self.kernel_regularizer
+        )
 
-        for name, param in point.items():
-            if name in layer_keys + ["reg_strength"]:
-                selected_params = {k: v for k, v in point.items()
-                                   if k in layer_keys}
-                self.__dict__.update(selected_params)
-                # TODO: Make this passable:
-                self.kernel_regularizer = l2(l=point["reg_strength"])
-                if not hidden_layers_created:
-                    self._construct_layers(
-                        activation=self.activation,
-                        kernel_initializer=self.kernel_initializer,
-                        kernel_regularizer=self.kernel_regularizer)
-                hidden_layers_created = True
-            elif name == "learning_rate":
-                K.set_value(self.optimizer.lr, param)
-            elif name == "batch_size":
-                self.batch_size = param
-            else:
-                self.logger.warning('This ranking algorithm does not support'
-                                    ' a tunable parameter'
-                                    ' called {}'.format(name))
+        if len(point) > 0:
+            self.logger.warning('This ranking algorithm does not support'
+                                ' tunable parameters'
+                                ' called: {}'.format(print_dictionary(point)))
 
     @abstractmethod
     def fit(self, *args, **kwargs):
@@ -536,8 +533,8 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
             scores = self._predict_scores_fixed(X, **kwargs)
         return scores
 
-    def set_tunable_parameters(self, point):
-        FATERankingCore.set_tunable_parameters(self, point)
+    def set_tunable_parameters(self, **point):
+        FATERankingCore.set_tunable_parameters(self, **point)
         hidden_layers_created = False
 
         SET_LAYER_KEYS = ["n_hidden_set_units", "n_hidden_set_layers"]
