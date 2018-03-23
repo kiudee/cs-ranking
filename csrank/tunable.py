@@ -5,23 +5,17 @@ from csrank.util import print_dictionary
 
 
 class Tunable(metaclass=ABCMeta):
-    @classmethod
-    @abstractmethod
-    def tunable_parameters(cls):
-        raise NotImplementedError
 
     @abstractmethod
     def set_tunable_parameters(self, point):
-        keys = self._tunable.copy().keys()
+        """ Set tunable parameters of the algorithm to the values provided.
 
-        named = dict(zip(keys, point))
+        Parameters
+        ----------
+        point : dict
+            Dictionary containing parameter values
 
-        self.logger.info("Setting Tunable Parameters: " + print_dictionary(named))
-        return named
-
-    @classmethod
-    @abstractmethod
-    def set_tunable_parameter_ranges(cls, param_ranges_dict):
+        """
         raise NotImplementedError
 
     @classmethod
