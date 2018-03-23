@@ -1,6 +1,5 @@
 import logging
 from abc import ABCMeta, abstractmethod
-from collections import OrderedDict
 
 import keras.backend as K
 import numpy as np
@@ -12,13 +11,6 @@ from keras.regularizers import l2
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_random_state
 
-from csrank.callbacks import EarlyStoppingWithWeights, LRScheduler
-from csrank.constants import BATCH_SIZE, BATCH_SIZE_DEFAULT_RANGE, \
-    LEARNING_RATE, LR_DEFAULT_RANGE, \
-    REGULARIZATION_FACTOR, \
-    REGULARIZATION_FACTOR_DEFAULT_RANGE, \
-    EARLY_STOPPING_PATIENCE_DEFAULT_RANGE, \
-    EARLY_STOPPING_PATIENCE
 from csrank.discretechoice.discrete_choice import ObjectChooser
 from csrank.dyadranking.contextual_ranking import ContextualRanker
 from csrank.labelranking.label_ranker import LabelRanker
@@ -28,39 +20,19 @@ from csrank.metrics import zero_one_rank_loss_for_scores_ties, \
     zero_one_rank_loss_for_scores
 from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.tunable import Tunable
-from csrank.util import scores_to_rankings, create_input_lambda, \
-    tunable_parameters_ranges, tensorify, \
-    print_dictionary, deprecated
-
-GENERAL_OBJECT_CHOOSER = "FATEObjectChooser"
-GENERAL_LABEL_RANKER = "FATELabelRanker"
-GENERAL_OBJECT_RANKER = "FATEObjectRanker"
-GENERAL_RANKING_CORE = "FATERankingCore"
-GENERAL_OBJECT_RANKING_CORE = "FATEObjectRankingCore"
-
-N_HIDDEN_SET_LAYERS = "n_hidden_set_layers"
-N_HIDDEN_SET_UNITS = "n_hidden_set_units"
-N_HIDDEN_JOINT_UNITS = 'n_hidden_joint_units'
-N_HIDDEN_JOINT_LAYERS = 'n_hidden_joint_layers'
-SET_LAYERS_DEFAULT_RANGES = (1, 20)
-SET_HIDDEN_UNITS_DEFAULT_RANGE = (8, 256)
-JOINT_HIDDEN_LAYERS_DEFAULT_RANGE = (1, 20)
-JOINT_HIDDEN_UNITS_DEFAULT_RANGE = (8, 256)
+from csrank.util import scores_to_rankings, create_input_lambda, tensorify
 
 __all__ = ['FATELabelRanker', 'FATEObjectRanker', 'FATEContextualRanker', 'FATEObjectChooser']
 
 
 class FATERankingCore(Tunable, metaclass=ABCMeta):
-    _tunable = None
-    _use_early_stopping = None
 
     def __init__(self, n_hidden_joint_layers=32, n_hidden_joint_units=32,
                  activation='selu', kernel_initializer='lecun_normal',
                  kernel_regularizer=l2(l=0.01),
-                 optimizer="adam",
-                 es_patience=300, use_early_stopping=False, batch_size=256,
+                 optimizer="adam", batch_size=256,
                  random_state=None, **kwargs):
-        self.logger = logging.getLogger(GENERAL_RANKING_CORE)
+        self.logger = logging.getLogger(FATERankingCore.__name__)
         self.random_state = check_random_state(random_state)
 
         self.n_hidden_joint_layers = n_hidden_joint_layers
@@ -71,8 +43,6 @@ class FATERankingCore(Tunable, metaclass=ABCMeta):
         self.kernel_regularizer = kernel_regularizer
         self.batch_size = batch_size
         self.optimizer = optimizers.get(optimizer)
-        self.early_stopping = EarlyStoppingWithWeights(patience=es_patience)
-        self._use_early_stopping = use_early_stopping
         self.__kwargs__ = kwargs
         self._construct_layers(activation=self.activation,
                                kernel_initializer=self.kernel_initializer,
@@ -140,50 +110,32 @@ class FATERankingCore(Tunable, metaclass=ABCMeta):
         return scores
 
     def set_tunable_parameters(self, point):
-        named = Tunable.set_tunable_parameters(self, point)
+        # TODO: Adjust for new dict input
         hidden_layers_created = False
 
-        LAYER_KEYS = [N_HIDDEN_JOINT_UNITS, N_HIDDEN_JOINT_LAYERS]
-        del named[N_HIDDEN_SET_UNITS]
-        del named[N_HIDDEN_SET_LAYERS]
+        layer_keys = ["n_hidden_joint_units", "n_hidden_joint_layers"]
 
-        for name, param in named.items():
-            if name in LAYER_KEYS + [REGULARIZATION_FACTOR]:
-                selected_params = {k: v for k, v in named.items()
-                                   if k in LAYER_KEYS}
+        for name, param in point.items():
+            if name in layer_keys + ["reg_strength"]:
+                selected_params = {k: v for k, v in point.items()
+                                   if k in layer_keys}
                 self.__dict__.update(selected_params)
-                self.kernel_regularizer = l2(l=named[REGULARIZATION_FACTOR])
+                # TODO: Make this passable:
+                self.kernel_regularizer = l2(l=point["reg_strength"])
                 if not hidden_layers_created:
                     self._construct_layers(
                         activation=self.activation,
                         kernel_initializer=self.kernel_initializer,
                         kernel_regularizer=self.kernel_regularizer)
                 hidden_layers_created = True
-            elif name == LEARNING_RATE:
+            elif name == "learning_rate":
                 K.set_value(self.optimizer.lr, param)
-            elif name == EARLY_STOPPING_PATIENCE:
-                self.early_stopping.patience = param
-            elif name == BATCH_SIZE:
+            elif name == "batch_size":
                 self.batch_size = param
             else:
                 self.logger.warning('This ranking algorithm does not support'
                                     ' a tunable parameter'
                                     ' called {}'.format(name))
-
-    @classmethod
-    def tunable_parameters(cls):
-        logger = logging.getLogger(GENERAL_RANKING_CORE)
-        logger.info("Tunable parameters")
-        if cls._tunable is None:
-            logger.info("tunable is None")
-            cls._tunable = dict([
-                (N_HIDDEN_JOINT_UNITS, JOINT_HIDDEN_UNITS_DEFAULT_RANGE),
-                (N_HIDDEN_JOINT_LAYERS, JOINT_HIDDEN_LAYERS_DEFAULT_RANGE),
-                (LEARNING_RATE, LR_DEFAULT_RANGE),
-                (REGULARIZATION_FACTOR, REGULARIZATION_FACTOR_DEFAULT_RANGE),
-                (BATCH_SIZE, BATCH_SIZE_DEFAULT_RANGE),
-            ])
-        logger.info("Core ranking params {}".format(print_dictionary(cls._tunable)))
 
     @abstractmethod
     def fit(self, *args, **kwargs):
@@ -208,7 +160,7 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
                  n_hidden_set_layers=1, n_hidden_set_units=1,
                  **kwargs):
         FATERankingCore.__init__(self, **kwargs)
-        self.logger_gorc = logging.getLogger(GENERAL_OBJECT_RANKING_CORE)
+        self.logger_gorc = logging.getLogger(FATEObjectRankingCore.__name__)
 
         self.n_hidden_set_layers = n_hidden_set_layers
         self.n_hidden_set_units = n_hidden_set_units
@@ -224,11 +176,13 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
 
         The actual connection of the layers is done during fitting, since we
         do not know the size(s) of the set(s) in advance."""
-        self.logger_gorc = logging.getLogger(GENERAL_OBJECT_RANKING_CORE)
-        self.logger_gorc.info("Creating set layers with set units {} "
-                              "set layer {} ".format(
-            self.n_hidden_set_units,
-            self.n_hidden_set_layers))
+        self.logger_gorc = logging.getLogger(self.__class__.__name__)
+        self.logger_gorc.info(
+            "Creating set layers with set units {} set layer {} ".format(
+                self.n_hidden_set_units,
+                self.n_hidden_set_layers
+            )
+        )
 
         if self.n_hidden_set_layers >= 1:
             self.set_layer = DeepSet(units=self.n_hidden_set_units,
@@ -302,7 +256,7 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
             self.model.set_weights(weights)
 
     def _fit(self, X=None, Y=None, generator=None, epochs=35, inner_epochs=1,
-             log_callbacks=None, validation_split=0.1, verbose=0, global_lr=1.0,
+             callbacks=None, validation_split=0.1, verbose=0, global_lr=1.0,
              global_momentum=0.9, min_bucket_size=500, refit=False,
              optimizer=None, **kwargs):
         if optimizer is not None:
@@ -345,7 +299,6 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
                     # self.set_weights(start)
                     x = X[bucket_id]
                     y = Y[bucket_id]
-                    # TODO: How to do callbacks fit here?
 
                     # Save weight vector for momentum:
                     w_old = w_before
@@ -367,7 +320,7 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
         else:
             self.is_variadic = False
 
-            if not self.model is not None or refit:
+            if self.model is None or refit:
                 if generator is not None:
                     X, Y = next(iter(generator))
 
@@ -383,21 +336,8 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
                                                 n_layers=self.n_hidden_set_layers)
                 self.model = Model(inputs=input_layer, outputs=scores)
             self.model.compile(loss=self.loss_function,
-                                optimizer=self.optimizer,
-                                 metrics=self.metrics)
-            callbacks = []
-            if log_callbacks is None:
-                log_callbacks = []
-            callbacks.extend(log_callbacks)
-            for c in callbacks:
-                if isinstance(c, LRScheduler):
-                    c.initial_lr = K.get_value(self.optimizer.lr)
-                    self.logger.info("Setting lr {} for {}".format(c.initial_lr, c.__name__))
-            if self._use_early_stopping:
-                callbacks.append(self.early_stopping)
-
-            self.logger.info("Callbacks {}".format(
-                ', '.join([c.__name__ for c in callbacks])))
+                               optimizer=self.optimizer,
+                               metrics=self.metrics)
 
             self.logger.info("Fitting started")
             if generator is None:
@@ -411,7 +351,7 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
                     verbose=verbose, **kwargs)
             self.logger.info("Fitting complete")
 
-    def fit(self, X, Y, epochs=35, inner_epochs=1, log_callbacks=None,
+    def fit(self, X, Y, epochs=35, inner_epochs=1, callbacks=None,
             validation_split=0.1, verbose=0,
             global_lr=1.0, global_momentum=0.9,
             min_bucket_size=500, refit=False, **kwargs):
@@ -437,7 +377,7 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
         inner_epochs : int
             Number of epochs to train for each query size inside the variadic
             model
-        log_callbacks : list
+        callbacks : list
             List of callbacks to be called during optimization
         validation_split : float
             Percentage of instances to split off to validate on
@@ -454,13 +394,13 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
             existing one if one exists.
         """
         self._fit(X=X, Y=Y, epochs=epochs, inner_epochs=inner_epochs,
-                  log_callbacks=log_callbacks,
+                  callbacks=callbacks,
                   validation_split=validation_split, verbose=verbose,
                   global_lr=global_lr, global_momentum=global_momentum,
                   min_bucket_size=min_bucket_size, refit=refit, **kwargs)
 
     def fit_generator(self, generator, epochs=35, steps_per_epoch=10,
-                      inner_epochs=1, log_callbacks=None, verbose=0,
+                      inner_epochs=1, callbacks=None, verbose=0,
                       global_lr=1.0, global_momentum=0.9, min_bucket_size=500,
                       refit=False, **kwargs):
         """Fit a generic object ranking model on a set of queries provided by
@@ -488,7 +428,7 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
         inner_epochs : int
             Number of epochs to train for each query size inside the variadic
             model
-        log_callbacks : list
+        callbacks : list
             List of callbacks to be called during optimization
         verbose : bool
             Print verbose information
@@ -504,11 +444,11 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
         """
         self._fit(generator=generator, epochs=epochs,
                   steps_per_epoch=steps_per_epoch, inner_epochs=inner_epochs,
-                  log_callbacks=log_callbacks, verbose=verbose,
+                  callbacks=callbacks, verbose=verbose,
                   global_lr=global_lr, global_momentum=global_momentum,
                   min_bucket_size=min_bucket_size, refit=refit, **kwargs)
 
-    def get_set_representaion(self, X, kwargs):
+    def get_set_representation(self, X, kwargs):
         n_instances, n_objects, n_features = X.shape
         self.logger.info("Test Set instances {} objects {} features {}".format(n_instances, n_objects, n_features))
         input_layer_scorer = Input(shape=(n_objects,
@@ -518,7 +458,9 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
             self.set_layer(input_layer_scorer)
             fr = self.set_layer.cached_models[n_objects].predict(X, **kwargs)
             del self.set_layer.cached_models[n_objects]
-            X_n = np.empty((fr.shape[0], n_objects, fr.shape[1] + self.n_object_features), dtype="float")
+            X_n = np.empty((fr.shape[0], n_objects,
+                            fr.shape[1] + self.n_object_features),
+                           dtype="float")
             for i in range(n_objects):
                 X_n[:, i] = np.concatenate((X[:, i], fr), axis=1)
             X = np.copy(X_n)
@@ -540,12 +482,13 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
 
         """
         # model = self._construct_scoring_model(n_objects)
-        X = self.get_set_representaion(X, kwargs)
+        X = self.get_set_representation(X, kwargs)
         n_instances, n_objects, n_features = X.shape
         self.logger.info(
-            "After applying the set representations instances {} objects {} features {}".format(n_instances, n_objects,
-                                                                                                n_features))
-        input_layer_joint = Input(shape=(n_objects, n_features), name="input_joint_model")
+            "After applying the set representations instances {} objects {}"
+            "features {}".format(n_instances, n_objects, n_features))
+        input_layer_joint = Input(shape=(n_objects, n_features),
+                                  name="input_joint_model")
         scores = []
 
         inputs = [create_input_lambda(i)(input_layer_joint) for i in
@@ -596,21 +539,15 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
     def set_tunable_parameters(self, point):
         FATERankingCore.set_tunable_parameters(self, point)
         hidden_layers_created = False
-        self.logger_gorc = logging.getLogger(GENERAL_OBJECT_RANKING_CORE)
-        keys = self._tunable.copy().keys()
-        named = dict(zip(keys, point))
 
-        SET_LAYER_KEYS = [N_HIDDEN_SET_UNITS, N_HIDDEN_SET_LAYERS]
-        for key in keys:
-            if key not in SET_LAYER_KEYS + [REGULARIZATION_FACTOR]:
-                del named[key]
+        SET_LAYER_KEYS = ["n_hidden_set_units", "n_hidden_set_layers"]
 
-        for name, param in named.items():
-            if name in SET_LAYER_KEYS + [REGULARIZATION_FACTOR]:
-                selected_params = {k: v for k, v in named.items()
+        for name, param in point.items():
+            if name in SET_LAYER_KEYS + ["reg_strength"]:
+                selected_params = {k: v for k, v in point.items()
                                    if k in SET_LAYER_KEYS}
                 self.__dict__.update(selected_params)
-                self.kernel_regularizer = l2(l=named[REGULARIZATION_FACTOR])
+                self.kernel_regularizer = l2(l=point["reg_strength"])
                 if not hidden_layers_created:
                     self._create_set_layers(
                         activation=self.activation,
@@ -618,30 +555,9 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
                         kernel_regularizer=self.kernel_regularizer)
                 hidden_layers_created = True
             else:
-                self.logger_gorc.warning(
-                    "This ranking algorithm does not support a tunable parameter called {}".format(name))
-
-    @classmethod
-    def tunable_parameters(cls):
-        logger = logging.getLogger(GENERAL_OBJECT_RANKING_CORE)
-        if cls._tunable is None:
-            FATERankingCore.tunable_parameters()
-        logger.info("Use Early Stopping {}".format(cls._use_early_stopping))
-        if cls._use_early_stopping:
-            cls._tunable[EARLY_STOPPING_PATIENCE] = EARLY_STOPPING_PATIENCE_DEFAULT_RANGE
-        dict_params = dict([
-            (N_HIDDEN_SET_UNITS, SET_HIDDEN_UNITS_DEFAULT_RANGE),
-            (N_HIDDEN_SET_LAYERS, SET_LAYERS_DEFAULT_RANGES),
-            (REGULARIZATION_FACTOR, REGULARIZATION_FACTOR_DEFAULT_RANGE)])
-        logger.info("Set params {}".format(print_dictionary(dict_params)))
-        for k, v in dict_params.items():
-            cls._tunable[k] = v
-        cls._tunable = OrderedDict(sorted(cls._tunable.items()))
-
-    @classmethod
-    def set_tunable_parameter_ranges(cls, param_ranges_dict):
-        logger = logging.getLogger(GENERAL_OBJECT_RANKING_CORE)
-        return tunable_parameters_ranges(cls, logger, param_ranges_dict)
+                self.logger.warning(
+                    "This ranking algorithm does not support a tunable"
+                    "parameter called {}".format(name))
 
 
 class FATEObjectRanker(FATEObjectRankingCore, ObjectRanker):
@@ -678,7 +594,7 @@ class FATEObjectRanker(FATEObjectRankingCore, ObjectRanker):
                                        n_hidden_set_units=n_hidden_set_units,
                                        **kwargs)
         self.loss_function = loss_function
-        self.logger = logging.getLogger(GENERAL_OBJECT_RANKER)
+        self.logger = logging.getLogger(FATEObjectRanker.__name__)
         if metrics is None:
             metrics = [zero_one_rank_loss_for_scores_ties,
                        zero_one_rank_loss_for_scores]
@@ -710,7 +626,7 @@ class FATEObjectChooser(FATEObjectRankingCore, ObjectChooser):
             metrics = ['categorical_accuracy']
         self.metrics = metrics
         self.model = None
-        self.logger = logging.getLogger(GENERAL_OBJECT_CHOOSER)
+        self.logger = logging.getLogger(FATEObjectChooser.__name__)
 
     def predict(self, X, **kwargs):
         scores = self.predict_scores(X, **kwargs)
@@ -729,7 +645,7 @@ class FATELabelRanker(FATERankingCore, LabelRanker):
                  **kwargs):
         super().__init__(self, label_ranker=True, **kwargs)
         self.loss_function = loss_function
-        self.logger = logging.getLogger(GENERAL_LABEL_RANKER)
+        self.logger = logging.getLogger(FATELabelRanker.__name__)
         if metrics is None:
             metrics = [zero_one_rank_loss_for_scores_ties,
                        zero_one_rank_loss_for_scores]

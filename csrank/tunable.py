@@ -1,13 +1,11 @@
 import logging
 from abc import ABCMeta, abstractmethod
 
-from csrank.util import print_dictionary
-
 
 class Tunable(metaclass=ABCMeta):
 
     @abstractmethod
-    def set_tunable_parameters(self, point):
+    def set_tunable_parameters(self, **point):
         """ Set tunable parameters of the algorithm to the values provided.
 
         Parameters

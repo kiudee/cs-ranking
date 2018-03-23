@@ -37,7 +37,7 @@ def generate_medoid_dataset(n_objects=5, random_state=42):
 
 
 def get_evaluation_result(gor, X_train, Y_train, epochs):
-    gor.fit(X_train, Y_train, log_callbacks=[DebugOutput()], epochs=epochs)
+    gor.fit(X_train, Y_train, callbacks=[DebugOutput()], epochs=epochs)
     eval_results = {}
     for n_objects in np.arange(3, 25):
         _, _, X_test, Y_test = generate_medoid_dataset(n_objects=n_objects, random_state=seed + n_objects * 5)
