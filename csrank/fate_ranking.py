@@ -533,28 +533,16 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
             scores = self._predict_scores_fixed(X, **kwargs)
         return scores
 
-    def set_tunable_parameters(self, **point):
+    def set_tunable_parameters(self, n_hidden_set_units=32, n_hidden_set_layers=2, **point):
         FATERankingCore.set_tunable_parameters(self, **point)
-        hidden_layers_created = False
+        self.n_hidden_set_units = n_hidden_set_units
+        self.n_hidden_set_layers = n_hidden_set_layers
 
-        SET_LAYER_KEYS = ["n_hidden_set_units", "n_hidden_set_layers"]
+        self._create_set_layers(
+            activation=self.activation,
+            kernel_initializer=self.kernel_initializer,
+            kernel_regularizer=self.kernel_regularizer)
 
-        for name, param in point.items():
-            if name in SET_LAYER_KEYS + ["reg_strength"]:
-                selected_params = {k: v for k, v in point.items()
-                                   if k in SET_LAYER_KEYS}
-                self.__dict__.update(selected_params)
-                self.kernel_regularizer = l2(l=point["reg_strength"])
-                if not hidden_layers_created:
-                    self._create_set_layers(
-                        activation=self.activation,
-                        kernel_initializer=self.kernel_initializer,
-                        kernel_regularizer=self.kernel_regularizer)
-                hidden_layers_created = True
-            else:
-                self.logger.warning(
-                    "This ranking algorithm does not support a tunable"
-                    "parameter called {}".format(name))
 
 
 class FATEObjectRanker(FATEObjectRankingCore, ObjectRanker):
