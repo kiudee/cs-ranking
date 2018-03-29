@@ -9,7 +9,7 @@ from sklearn.utils import check_random_state
 
 from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.tunable import Tunable
-from csrank.util import tunable_parameters_ranges
+from csrank.util import print_dictionary
 from ..dataset_reader.objectranking.util import \
     generate_complete_pairwise_dataset
 
@@ -115,29 +115,10 @@ class RankSVM(ObjectRanker, Tunable):
         score_b = np.sum(weights * b, axis=1)
         return [score_a / (score_a + score_b), score_b / (score_a + score_b)]
 
-    @classmethod
-    def set_tunable_parameter_ranges(cls, param_ranges_dict):
-        logger = logging.getLogger('RankSVM')
-        return tunable_parameters_ranges(cls, logger, param_ranges_dict)
-
-    def set_tunable_parameters(self, point):
-        named = Tunable.set_tunable_parameters(self, point)
-
-        for name, param in named.items():
-            if name == 'C':
-                self.C = param
-            elif name == 'tolerance':
-                self.tol = param
-            else:
-                self.logger.warning('This ranking algorithm does not support'
-                                    'a tunable parameter called {}'.format(
-                    name))
-
-    @classmethod
-    def tunable_parameters(cls):
-        if cls._tunable is None:
-            cls._tunable = OrderedDict([
-                ('C', (1, 12)),
-                ('tolerance', (1e-4, 5e-1, "log-uniform"))
-            ])
-        return list(cls._tunable.values())
+    def set_tunable_parameters(self, C=1.0, tol=1e-4, **point):
+        self.tol = tol
+        self.C = C
+        if len(point) > 0:
+            self.logger.warning('This ranking algorithm does not support'
+                                ' tunable parameters'
+                                ' called: {}'.format(print_dictionary(point)))

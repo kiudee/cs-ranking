@@ -19,14 +19,13 @@ class Tunable(metaclass=ABCMeta):
     @classmethod
     def __subclasshook__(cls, C):
         if cls is Tunable:
-            has_set_param = hasattr(C, 'set_tunable_parameters')
+            has_set_param = any("set_tunable_parameters" in B.__dict__ for B in C.__mro__)
             if has_set_param:
                 return True
         return NotImplemented
 
 
 def check_ranker_class(ranker):
-    # TODO: Add the check for correct learning problem
-    if not issubclass(ranker, Tunable):
+    if not isinstance(ranker, Tunable) and hasattr(ranker, 'set_tunable_parameters'):
         logging.error('The given object ranker is not tunable')
         raise AttributeError

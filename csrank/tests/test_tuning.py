@@ -8,6 +8,9 @@ def optimizer():
     from ..tunable import Tunable
 
     class RankerStub(Tunable):
+        def __init__(self):
+            pass
+
         def set_tunable_parameters(self, point):
             self.__dict__.update(point)
 

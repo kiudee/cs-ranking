@@ -1,4 +1,3 @@
-import logging
 from abc import ABCMeta
 
 import numpy as np
@@ -9,7 +8,6 @@ from keras.optimizers import SGD
 from keras.regularizers import l2
 
 from ..fate_ranking import FATERankingCore, FATEObjectRanker
-from ..util import tunable_parameters_ranges
 
 
 def test_construction_core():
@@ -26,15 +24,6 @@ def test_construction_core():
 
         def fit(self, *args, **kwargs):
             pass
-
-        def set_tunable_parameter_ranges(cls, param_ranges_dict):
-            logger = logging.getLogger("MockClass")
-            logger.info("Setting parameter ranges: " + repr(param_ranges_dict))
-            return tunable_parameters_ranges(cls, logger, param_ranges_dict)
-
-        def tunable_parameters(cls):
-            if cls._tunable is None:
-                super().tunable_parameters()
 
     grc = MockClass(n_objects=n_objects, n_features=n_features)
     grc._construct_layers(activation=grc.activation,

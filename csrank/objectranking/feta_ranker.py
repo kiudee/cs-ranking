@@ -12,7 +12,7 @@ from csrank.layers import NormalizedDense
 from csrank.losses import hinged_rank_loss
 from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.tunable import Tunable
-from csrank.util import tensorify
+from csrank.util import tensorify, print_dictionary
 
 __all__ = ['FETANetwork']
 
@@ -302,9 +302,13 @@ class FETANetwork(ObjectRanker, Tunable):
                                reg_strength=1e-4,
                                learning_rate=1e-3,
                                batch_size=128, **point):
-        self.n_hidden_set_units = n_hidden
-        self.n_hidden_set_layers = n_units
+        self.n_hidden = n_hidden
+        self.n_units = n_units
         self.kernel_regularizer = l2(reg_strength)
         self.batch_size = batch_size
         K.set_value(self.optimizer.lr, learning_rate)
         self._construct_layers()
+        if len(point) > 0:
+            self.logger.warning('This ranking algorithm does not support'
+                                ' tunable parameters'
+                                ' called: {}'.format(print_dictionary(point)))

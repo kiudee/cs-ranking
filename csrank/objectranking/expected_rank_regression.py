@@ -7,7 +7,7 @@ from sklearn.utils import check_random_state
 
 from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.tunable import Tunable
-from csrank.util import normalize, tunable_parameters_ranges
+from csrank.util import normalize, print_dictionary
 from ..dataset_reader.objectranking.util import \
     complete_linear_regression_dataset
 
@@ -116,31 +116,14 @@ class ExpectedRankRegression(ObjectRanker, Tunable):
         score_b = self.model.predict(b, **kwargs) * -1
         return [score_a / (score_a + score_b), score_b / (score_a + score_b)]
 
-    @classmethod
-    def set_tunable_parameter_ranges(cls, param_ranges_dict):
-        logger = logging.getLogger('ERR')
-        return tunable_parameters_ranges(cls, logger, param_ranges_dict)
 
-    def set_tunable_parameters(self, point):
-        named = Tunable.set_tunable_parameters(self, point)
+    def set_tunable_parameters(self, alpha=1.0, l1_ratio=0.5, tol=1e-4,**point):
+        self.tol = tol
+        self.alpha = alpha
+        self.l1_ratio = l1_ratio
+        if len(point) > 0:
+            self.logger.warning('This ranking algorithm does not support'
+                                ' tunable parameters'
+                                ' called: {}'.format(print_dictionary(point)))
 
-        for name, param in named.items():
-            if name == 'tolerance':
-                self.tol = param
-            elif name == 'alpha':
-                self.alpha = param
-            elif name == 'l1_ratio':
-                self.l1_ratio = param
-            else:
-                self.logger.warning('This ranking algorithm does not support'
-                                    'a tunable parameter called {}'.format(
-                    name))
 
-    @classmethod
-    def tunable_parameters(cls):
-        if cls._tunable is None:
-            cls._tunable = OrderedDict([
-                ('tolerance', (1e-4, 5e-1, "log-uniform")),
-                ('alpha', (1e-7, 1e0, "log-uniform")),
-                ('l1_ratio', (0.0, 1.0))])
-        return list(cls._tunable.values())

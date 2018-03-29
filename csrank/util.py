@@ -231,6 +231,7 @@ def print_dictionary(dictionary):
         output = output + str(key) + " => " + str(value) + "\n"
     return output
 
+
 def create_dir_recursively(path, is_file_path=False):
     if is_file_path:
         path = os.path.dirname(path)
