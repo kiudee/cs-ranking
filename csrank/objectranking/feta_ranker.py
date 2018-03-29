@@ -1,6 +1,4 @@
 import logging
-import operator
-from collections import OrderedDict
 from itertools import combinations, permutations
 
 import numpy as np
@@ -11,30 +9,23 @@ from keras.regularizers import l2
 from sklearn.utils import check_random_state
 
 from csrank.callbacks import EarlyStoppingWithWeights
-from csrank.constants import LEARNING_RATE, LR_DEFAULT_RANGE, BATCH_SIZE, \
-    REGULARIZATION_FACTOR, BATCH_SIZE_DEFAULT_RANGE, REGULARIZATION_FACTOR_DEFAULT_RANGE, EARLY_STOPPING_PATIENCE, \
-    EARLY_STOPPING_PATIENCE_DEFAULT_RANGE
 from csrank.layers import NormalizedDense
 from csrank.losses import hinged_rank_loss
-from csrank.objectranking.constants import N_UNITS_DEFAULT_RANGES, N_HIDDEN_LAYERS_DEFAULT_RANGES, N_HIDDEN_UNITS, \
-    N_HIDDEN_LAYERS
 from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.tunable import Tunable
-from csrank.util import deprecated, tunable_parameters_ranges, tensorify
+from csrank.util import tensorify
 
 __all__ = ['FETANetwork']
 
 
 class FETANetwork(ObjectRanker, Tunable):
-    _tunable = None
-    _use_early_stopping = None
 
     def __init__(self, n_objects, n_features, n_hidden=2, n_units=8,
                  add_zeroth_order_model=False, max_number_of_objects=5,
                  num_subsample=5,
                  loss_function=hinged_rank_loss, batch_normalization=False,
                  kernel_regularizer=l2(l=0.01), non_linearities='selu',
-                 optimizer="adam", metrics=None, use_early_stopping=False,
+                 optimizer="adam", metrics=None,
                  es_patience=300, batch_size=256, random_state=None, **kwargs):
         """
         Create a FETA-network architecture for object ranking.
@@ -92,13 +83,14 @@ class FETANetwork(ObjectRanker, Tunable):
         self.max_number_of_objects = max_number_of_objects
         self.num_subsample = num_subsample
         self.n_features = n_features
-        self._use_early_stopping = use_early_stopping
         self.batch_size = batch_size
 
         self.optimizer = optimizers.get(optimizer)
         self._use_zeroth_model = add_zeroth_order_model
         self.early_stopping = EarlyStoppingWithWeights(patience=es_patience)
-        self._construct_layers(n_hidden, n_units)
+        self.n_hidden = n_hidden
+        self.n_units = n_units
+        self._construct_layers()
 
     @property
     def n_objects(self):
@@ -106,41 +98,41 @@ class FETANetwork(ObjectRanker, Tunable):
             return self.max_number_of_objects
         return self._n_objects
 
-    def _construct_layers(self, n_hidden=2, n_units=16, **kwargs):
+    def _construct_layers(self, **kwargs):
         self.input_layer = Input(shape=(self.n_objects, self.n_features))
         # Todo: Variable sized input
         # X = Input(shape=(None, n_features))
         if self.batch_normalization:
             if self._use_zeroth_model:
                 self.hidden_layers_zeroth = [
-                    NormalizedDense(n_units, name="hidden_zeroth_{}".format(x),
+                    NormalizedDense(self.n_units, name="hidden_zeroth_{}".format(x),
                                     kernel_regularizer=self.kernel_regularizer,
-                                    activation=self.non_linearities
-                                    )
-                    for x in range(n_hidden)
+                                    activation=self.non_linearities,
+                                    **kwargs)
+                    for x in range(self.n_hidden)
                 ]
             self.hidden_layers = [
-                NormalizedDense(n_units, name="hidden_{}".format(x),
+                NormalizedDense(self.n_units, name="hidden_{}".format(x),
                                 kernel_regularizer=self.kernel_regularizer,
-                                activation=self.non_linearities
-                                )
-                for x in range(n_hidden)
+                                activation=self.non_linearities,
+                                **kwargs)
+                for x in range(self.n_hidden)
             ]
         else:
             if self._use_zeroth_model:
                 self.hidden_layers_zeroth = [
-                    Dense(n_units, name="hidden_zeroth_{}".format(x),
+                    Dense(self.n_units, name="hidden_zeroth_{}".format(x),
                           kernel_regularizer=self.kernel_regularizer,
                           activation=self.non_linearities)
-                    for x in range(n_hidden)
+                    for x in range(self.n_hidden)
                 ]
             self.hidden_layers = [
-                Dense(n_units, name="hidden_{}".format(x),
+                Dense(self.n_units, name="hidden_{}".format(x),
                       kernel_regularizer=self.kernel_regularizer,
                       activation=self.non_linearities)
-                for x in range(n_hidden)
+                for x in range(self.n_hidden)
             ]
-        assert len(self.hidden_layers) == n_hidden
+        assert len(self.hidden_layers) == self.n_hidden
         self.output_node = Dense(1, activation='sigmoid',
                                  kernel_regularizer=self.kernel_regularizer)
         if self._use_zeroth_model:
@@ -204,7 +196,7 @@ class FETANetwork(ObjectRanker, Tunable):
         del pairs
         return scores
 
-    def fit(self, X, Y, epochs=10, log_callbacks=None,
+    def fit(self, X, Y, epochs=10, callbacks=None,
             validation_split=0.1, verbose=0, **kwd):
         self.logger.debug('Enter fit function...')
 
@@ -216,14 +208,6 @@ class FETANetwork(ObjectRanker, Tunable):
         if self._use_zeroth_model:
             self.zero_order_model = self._create_zeroth_order_model()
 
-        callbacks = []
-        if log_callbacks is None:
-            log_callbacks = []
-        callbacks.extend(log_callbacks)
-        callbacks = self.set_init_lr_callback(callbacks)
-
-        if self._use_early_stopping:
-            callbacks.append(self.early_stopping)
         self.logger.info("Callbacks {}".format(', '.join([c.__name__ for c in callbacks])))
 
         self.logger.debug('Compiling complete model...')
@@ -319,40 +303,14 @@ class FETANetwork(ObjectRanker, Tunable):
     def predict(self, X, **kwargs):
         return ObjectRanker.predict(self, X, **kwargs)
 
-    @classmethod
-    def set_tunable_parameter_ranges(cls, param_ranges_dict):
-        logger = logging.getLogger("FETANetwork")
-        return tunable_parameters_ranges(cls, logger, param_ranges_dict)
-
-    def set_tunable_parameters(self, point):
-        named = Tunable.set_tunable_parameters(self, point)
-        hidden_layers_created = False
-        for name, param in named.items():
-            if name in [N_HIDDEN_LAYERS, N_HIDDEN_UNITS, REGULARIZATION_FACTOR]:
-                self.kernel_regularizer = l2(l=named[REGULARIZATION_FACTOR])
-                if not hidden_layers_created:
-                    self._construct_layers(**named)
-                hidden_layers_created = True
-            elif name == LEARNING_RATE:
-                K.set_value(self.optimizer.lr, param)
-            elif name == EARLY_STOPPING_PATIENCE:
-                self.early_stopping.patience = param
-            elif name == BATCH_SIZE:
-                self.batch_size = param
-            else:
-                self.logger.warning('This ranking algorithm does not support'
-                                    ' a tunable parameter called {}'.format(name))
-
-    @classmethod
-    def tunable_parameters(cls):
-        if cls._tunable is None:
-            cls._tunable = OrderedDict([
-                (N_HIDDEN_LAYERS, N_HIDDEN_LAYERS_DEFAULT_RANGES),
-                (N_HIDDEN_UNITS, N_UNITS_DEFAULT_RANGES),
-                (LEARNING_RATE, LR_DEFAULT_RANGE),
-                (REGULARIZATION_FACTOR, REGULARIZATION_FACTOR_DEFAULT_RANGE),
-                (BATCH_SIZE, BATCH_SIZE_DEFAULT_RANGE),
-            ])
-            if cls._use_early_stopping:
-                cls._tunable[EARLY_STOPPING_PATIENCE] = EARLY_STOPPING_PATIENCE_DEFAULT_RANGE
-
+    def set_tunable_parameters(self, n_hidden=32,
+                               n_units=2,
+                               reg_strength=1e-4,
+                               learning_rate=1e-3,
+                               batch_size=128, **point):
+        self.n_hidden_set_units = n_hidden
+        self.n_hidden_set_layers = n_units
+        self.kernel_regularizer = l2(reg_strength)
+        self.batch_size = batch_size
+        K.set_value(self.optimizer.lr, learning_rate)
+        self._construct_layers()

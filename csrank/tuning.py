@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 
 import numpy as np
+from keras.callbacks import Callback
 from keras.losses import categorical_hinge
 from sklearn.model_selection import ShuffleSplit
 from sklearn.utils import check_random_state
@@ -45,9 +46,8 @@ class TuningCallback(object):
 
 
 class ParameterOptimizer(ObjectRanker):
-    def __init__(self, ranker_class, optimizer_path,
-                 tunable_parameter_ranges,
-                 ranker_params=None, fit_params=None,
+    def __init__(self, ranker, optimizer_path,
+                 tunable_parameter_ranges, fit_params=None,
                  random_state=None, tuning_callbacks=None, validation_loss=None,
                  learning_problem=OBJECT_RANKING,
                  **kwd):
@@ -68,25 +68,13 @@ class ParameterOptimizer(ObjectRanker):
         """
         self.logger = logging.getLogger(PARAMETER_OPTIMIZER)
 
-        default_rankers = {OBJECT_RANKING: FATEObjectRanker,
-                           LABEL_RANKING: FATELabelRanker,
-                           DISCRETE_CHOICE: FATEObjectChooser,
-                           DYAD_RANKING: FATEContextualRanker}
         create_dir_recursively(optimizer_path, True)
         self.optimizer_path = optimizer_path
 
         self._tunable_parameter_ranges = tunable_parameter_ranges
 
-        if ranker_class is None:
-            self._ranker_class = default_rankers[learning_problem]
-        else:
-            check_ranker_class(ranker_class)
-            self._ranker_class = ranker_class
-
-        if ranker_params is None:
-            raise ValueError('Ranker parameters cannot be Empty')
-        else:
-            self._ranker_params = ranker_params
+        check_ranker_class(ranker)
+        self.ranker = ranker
 
         if tuning_callbacks is None:
             self.tuning_callbacks = []
@@ -149,6 +137,7 @@ class ParameterOptimizer(ObjectRanker):
 
     def _set_new_parameters(self, point):
         i = 0
+        callbacks = []
         # We are iterating over all elements of the dictionary in order.
         # This works because dicts are order-preserving.
         for obj, ranges in self._tunable_parameter_ranges.items():
@@ -156,27 +145,26 @@ class ParameterOptimizer(ObjectRanker):
             for j, p in enumerate(ranges.keys()):
                 param_dict[p] = point[i + j]
             obj.set_tunable_parameters(param_dict)
+            if isinstance(obj, Callback):
+                callbacks.append(obj)
+            elif isinstance(obj, ObjectRanker):
+                self.ranker = obj
             i += len(ranges)
+        self._fit_params['callbacks'] = callbacks
 
-    def _fit_ranker(self, xtrain, ytrain, xtest, ytest, seed, next_point,
-                    ranker_class, ranker_params, fit_params, validation_loss):
+    def _fit_ranker(self, xtrain, ytrain, xtest, ytest, next_point):
         start = datetime.now()
-        ranker = ranker_class(random_state=seed, **ranker_params)
-        ranker.set_tunable_parameters(next_point)
-        ranker.fit(xtrain, ytrain, **fit_params)
-        ypred = ranker(xtest)
+        self.set_tunable_parameters(next_point)
+        self.ranker.fit(xtrain, ytrain, **self._fit_params)
+        ypred = self.ranker(xtest)
         if isinstance(xtest, dict):
-            loss = get_mean_loss_for_dictionary(
-                logging.getLogger(PARAMETER_OPTIMIZER), validation_loss, ytest,
-                ypred)
+            loss = get_mean_loss_for_dictionary(logging.getLogger(PARAMETER_OPTIMIZER), self.validation_loss, ytest, ypred)
         else:
-            loss = get_loss_for_array(validation_loss, ytest, ypred)
+            loss = get_loss_for_array(self.validation_loss, ytest, ypred)
         time_taken = duration_tillnow(start)
         return loss, time_taken
 
-    def fit(self, X, Y, total_duration, n_iter=100, cv_iter=None,
-            optimizer=None, acq_func='gp_hedge',
-            **kwargs):
+    def fit(self, X, Y, total_duration, n_iter=100, cv_iter=None, optimizer=None, acq_func='gp_hedge', **kwargs):
         start = datetime.now()
 
         def splitter(itr):
@@ -229,11 +217,6 @@ class ParameterOptimizer(ObjectRanker):
             gp_seed
         ))
 
-        # TODO: Get rid of this:
-        if "use_early_stopping" in self._ranker_params:
-            self._ranker_class._use_early_stopping = self._ranker_params[
-                "use_early_stopping"]
-
         if optimizer is not None:
             opt = optimizer
             self.logger.debug('Setting the provided optimizer')
@@ -281,23 +264,15 @@ class ParameterOptimizer(ObjectRanker):
                             splits):
                         result, time_taken = self._fit_ranker(
                             X_train, Y_train,
-                            X_test, Y_test, seed, next_point,
-                            self._ranker_class,
-                            self._ranker_params,
-                            self._fit_params,
-                            self.validation_loss)
+                            X_test, Y_test, next_point)
                         running_times.append(time_taken)
                         results.append(result)
                 else:
                     for X_train, Y_train, X_test, Y_test in splitter(splits):
                         result, time_taken = self._fit_ranker(
                             X_train, Y_train,
-                            X_test, Y_test, seed,
-                            next_point,
-                            self._ranker_class,
-                            self._ranker_params,
-                            self._fit_params,
-                            self.validation_loss)
+                            X_test, Y_test,
+                            next_point)
                         running_times.append(time_taken)
                         results.append(result)
 

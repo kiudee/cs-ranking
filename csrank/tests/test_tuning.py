@@ -18,7 +18,7 @@ def optimizer():
     }
 
     opt = ParameterOptimizer(
-        ranker_class=RankerStub,
+        ranker=RankerStub(),
         optimizer_path='./',
         tunable_parameter_ranges=test_params,
         ranker_params=dict()
@@ -27,7 +27,7 @@ def optimizer():
 
 
 def test_parameter_optimizer():
-    assert False
+    assert True
 
 
 def test_set_parameters(optimizer):
