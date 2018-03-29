@@ -21,7 +21,7 @@ from csrank.metrics import zero_one_rank_loss_for_scores_ties, \
 from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.tunable import Tunable
 from csrank.util import scores_to_rankings, create_input_lambda, tensorify, \
-                        print_dictionary
+    print_dictionary
 
 __all__ = ['FATELabelRanker', 'FATEObjectRanker', 'FATEContextualRanker', 'FATEObjectChooser']
 
@@ -544,7 +544,6 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
             kernel_regularizer=self.kernel_regularizer)
 
 
-
 class FATEObjectRanker(FATEObjectRankingCore, ObjectRanker):
     """ Create a FATE-network architecture for object ranking.
 
@@ -660,7 +659,7 @@ class FATELabelRanker(FATERankingCore, LabelRanker):
         self.set_input_layers(self.inputs, self.set_repr,
                               self.n_hidden_set_layers)
 
-    def fit(self, X, Y, log_callbacks=None, validation_split=0.1, verbose=0,
+    def fit(self, X, Y, callbacks=None, validation_split=0.1, verbose=0,
             **kwargs):
         self.logger.info("Fitting started")
         X_trans = self.one_hot_encoder_lr_data_conversion(X, Y)
@@ -668,12 +667,6 @@ class FATELabelRanker(FATERankingCore, LabelRanker):
         self.model = Model(inputs=self.input_layer, outputs=self.scores)
         self.model.compile(loss=self.loss_function, optimizer=self.optimizer,
                            metrics=self.metrics)
-        callbacks = []
-        if log_callbacks is None:
-            log_callbacks = []
-        callbacks.extend(log_callbacks)
-        if self._use_early_stopping:
-            callbacks.append(self.early_stopping)
 
         self.logger.info("Callbacks {}".format(
             ', '.join([c.__name__ for c in callbacks])))

@@ -2,8 +2,8 @@ import numpy as np
 import tensorflow as tf
 from keras import backend as K
 
-from ..util import tensorify
 from ..dataset_reader.util import SyntheticIterator
+from ..util import tensorify
 
 
 def test_tensorify():
@@ -19,6 +19,7 @@ def test_tensorify():
 def test_synthetic_iterator():
     def func(a, b):
         return (b, a)
+
     it = SyntheticIterator(dataset_function=func,
                            a=41, b=2)
     for i, (x, y) in enumerate(it):

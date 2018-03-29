@@ -1,8 +1,8 @@
 import logging
-import pytest
 from abc import ABCMeta
 
 import numpy as np
+import pytest
 from keras.layers import Input
 from keras.models import Model
 from keras.optimizers import SGD
@@ -82,6 +82,7 @@ def test_fate_object_ranker_fixed_generator():
             x = rand.randn(10, 5, 1)
             y_true = x.argsort(axis=1).argsort(axis=1).squeeze(axis=-1)
             yield x, y_true
+
     fate = FATEObjectRanker(n_object_features=1,
                             n_hidden_joint_layers=1,
                             n_hidden_set_layers=1,
@@ -90,5 +91,5 @@ def test_fate_object_ranker_fixed_generator():
                             kernel_regularizer=l2(1e-4),
                             optimizer=SGD(lr=1e-3, momentum=0.9, nesterov=True))
     fate.fit_generator(generator=trivial_ranking_problem_generator(),
-             epochs=1, validation_split=0, verbose=False,
-             steps_per_epoch=10)
+                       epochs=1, validation_split=0, verbose=False,
+                       steps_per_epoch=10)

@@ -8,7 +8,6 @@ from keras.layers import Dense, concatenate, Lambda, add
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
 
-from csrank.callbacks import EarlyStoppingWithWeights
 from csrank.layers import NormalizedDense
 from csrank.losses import hinged_rank_loss
 from csrank.objectranking.object_ranker import ObjectRanker
@@ -26,7 +25,7 @@ class FETANetwork(ObjectRanker, Tunable):
                  loss_function=hinged_rank_loss, batch_normalization=False,
                  kernel_regularizer=l2(l=0.01), non_linearities='selu',
                  optimizer="adam", metrics=None,
-                 es_patience=300, batch_size=256, random_state=None, **kwargs):
+                 batch_size=256, random_state=None, **kwargs):
         """
         Create a FETA-network architecture for object ranking.
         Training and prediction complexity is quadratic in the number of objects.
@@ -59,10 +58,6 @@ class FETANetwork(ObjectRanker, Tunable):
             Stochastic gradient optimizer
         metrics : list
             List of evaluation metrics (can be non-differentiable)
-        use_early_stopping : bool
-            Whether to use early stopping during training
-        es_patience : int
-            Number of iterations to wait for no improvement in early stopping
         batch_size : int
             Batch size to use for training
         random_state : int or object
@@ -87,7 +82,6 @@ class FETANetwork(ObjectRanker, Tunable):
 
         self.optimizer = optimizers.get(optimizer)
         self._use_zeroth_model = add_zeroth_order_model
-        self.early_stopping = EarlyStoppingWithWeights(patience=es_patience)
         self.n_hidden = n_hidden
         self.n_units = n_units
         self._construct_layers()

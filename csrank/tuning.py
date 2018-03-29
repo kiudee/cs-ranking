@@ -12,9 +12,6 @@ from skopt.utils import cook_estimator, normalize_dimensions, dump
 
 from csrank.constants import OBJECT_RANKING, LABEL_RANKING, DISCRETE_CHOICE, \
     DYAD_RANKING
-from csrank.fate_ranking import FATEObjectRanker, FATEContextualRanker, \
-    FATEObjectChooser, \
-    FATELabelRanker
 from csrank.metrics import zero_one_rank_loss
 from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.tunable import check_ranker_class
@@ -158,7 +155,8 @@ class ParameterOptimizer(ObjectRanker):
         self.ranker.fit(xtrain, ytrain, **self._fit_params)
         ypred = self.ranker(xtest)
         if isinstance(xtest, dict):
-            loss = get_mean_loss_for_dictionary(logging.getLogger(PARAMETER_OPTIMIZER), self.validation_loss, ytest, ypred)
+            loss = get_mean_loss_for_dictionary(logging.getLogger(PARAMETER_OPTIMIZER), self.validation_loss, ytest,
+                                                ypred)
         else:
             loss = get_loss_for_array(self.validation_loss, ytest, ypred)
         time_taken = duration_tillnow(start)

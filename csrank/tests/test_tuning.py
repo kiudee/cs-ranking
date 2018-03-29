@@ -1,4 +1,5 @@
 from pytest import fixture
+
 from ..tuning import ParameterOptimizer
 
 

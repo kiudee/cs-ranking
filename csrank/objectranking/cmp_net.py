@@ -1,7 +1,6 @@
 import logging
-import operator
 from collections import OrderedDict
-from itertools import combinations, permutations
+from itertools import permutations
 
 import numpy as np
 from keras import backend as K, optimizers
@@ -11,10 +10,8 @@ from keras.metrics import top_k_categorical_accuracy, binary_accuracy
 from keras.models import Model
 from keras.optimizers import Adam
 from keras.regularizers import l2
-from scipy.stats import rankdata
 from sklearn.utils import check_random_state
 
-from csrank.callbacks import EarlyStoppingWithWeights
 from csrank.constants import REGULARIZATION_FACTOR, LEARNING_RATE, BATCH_SIZE, \
     LR_DEFAULT_RANGE, REGULARIZATION_FACTOR_DEFAULT_RANGE, \
     BATCH_SIZE_DEFAULT_RANGE, EARLY_STOPPING_PATIENCE, EARLY_STOPPING_PATIENCE_DEFAULT_RANGE
@@ -38,7 +35,7 @@ class CmpNet(ObjectRanker, Tunable):
                  loss_function=binary_crossentropy, batch_normalization=True,
                  kernel_regularizer=l2(l=0.02), non_linearities='relu',
                  optimizer=Adam(), metrics=[top_k_categorical_accuracy, binary_accuracy],
-                 use_early_stopping=False, es_patience=300, batch_size=256, random_state=None, **kwargs):
+                 batch_size=256, random_state=None, **kwargs):
         """
             Create an instance of the CmpNet architecture.
 
@@ -75,12 +72,6 @@ class CmpNet(ObjectRanker, Tunable):
             metrics : list
                 List of metrics to evaluate during training (can be
                 non-differentiable)
-            use_early_stopping : bool
-                If True, stop the training early, if no progress has been made for
-                es_patience many iterations
-            es_patience : int
-                If early stopping is enabled, wait for this many iterations without
-                progress until stopping the training
             batch_size : int
                 Batch size to use during training
             random_state : int, RandomState instance or None
@@ -98,8 +89,6 @@ class CmpNet(ObjectRanker, Tunable):
         self.n_features = n_features
         self.batch_normalization = batch_normalization
         self.non_linearities = non_linearities
-        self.early_stopping = EarlyStoppingWithWeights(patience=es_patience)
-        self._use_early_stopping = use_early_stopping
 
         self.batch_size = batch_size
 
@@ -135,7 +124,7 @@ class CmpNet(ObjectRanker, Tunable):
             ]
         assert len(self.hidden_layers) == n_hidden
 
-    def fit(self, X, Y, epochs=10, log_callbacks=None,
+    def fit(self, X, Y, epochs=10, callbacks=None,
             validation_split=0.1, verbose=0, **kwd):
 
         self.logger.debug('Creating the Dataset')
@@ -149,14 +138,6 @@ class CmpNet(ObjectRanker, Tunable):
             Y_double = Y_double[indicies, :]
 
         merged_output = self.construct_model()
-
-        callbacks = []
-        if log_callbacks is None:
-            log_callbacks = []
-        callbacks.extend(log_callbacks)
-        callbacks = self.set_init_lr_callback(callbacks)
-        if self._use_early_stopping:
-            callbacks.append(self.early_stopping)
 
         self.logger.info("Callbacks {}".format(', '.join([c.__name__ for c in callbacks])))
         self.model = Model(inputs=[self.x1, self.x2], outputs=merged_output)

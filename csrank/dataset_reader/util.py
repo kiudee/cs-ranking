@@ -1,6 +1,3 @@
-import collections
-
-
 class SyntheticIterator(object):
 
     def __init__(self, dataset_function, **params):

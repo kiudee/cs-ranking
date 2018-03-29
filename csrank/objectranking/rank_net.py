@@ -10,7 +10,6 @@ from keras.metrics import top_k_categorical_accuracy, binary_accuracy
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
 
-from csrank.callbacks import EarlyStoppingWithWeights
 from csrank.constants import REGULARIZATION_FACTOR, LEARNING_RATE, BATCH_SIZE, \
     LR_DEFAULT_RANGE, REGULARIZATION_FACTOR_DEFAULT_RANGE, \
     BATCH_SIZE_DEFAULT_RANGE, EARLY_STOPPING_PATIENCE, EARLY_STOPPING_PATIENCE_DEFAULT_RANGE
@@ -27,14 +26,12 @@ __all__ = ['RankNet']
 
 
 class RankNet(ObjectRanker, Tunable):
-    _tunable = None
-    _use_early_stopping = None
 
     def __init__(self, n_features, n_hidden=2, n_units=8,
                  loss_function=binary_crossentropy, batch_normalization=True,
                  kernel_regularizer=l2(l=0.01), non_linearities='relu',
                  optimizer="adam", metrics=[top_k_categorical_accuracy, binary_accuracy],
-                 use_early_stopping=False, es_patience=300, batch_size=256, random_state=None, **kwargs):
+                 batch_size=256, random_state=None, **kwargs):
         """Create an instance of the RankNet architecture.
 
         RankNet breaks the rankings into pairwise comparisons and learns a
@@ -62,12 +59,6 @@ class RankNet(ObjectRanker, Tunable):
         metrics : list
             List of metrics to evaluate during training (can be
             non-differentiable)
-        use_early_stopping : bool
-            If True, stop the training early, if no progress has been made for
-            es_patience many iterations
-        es_patience : int
-            If early stopping is enabled, wait for this many iterations without
-            progress until stopping the training
         batch_size : int
             Batch size to use during training
         random_state : int, RandomState instance or None
@@ -89,8 +80,6 @@ class RankNet(ObjectRanker, Tunable):
         self.n_features = n_features
         self.batch_normalization = batch_normalization
         self.non_linearities = non_linearities
-        self.early_stopping = EarlyStoppingWithWeights(patience=es_patience)
-        self._use_early_stopping = use_early_stopping
         self.metrics = metrics
         self.kernel_regularizer = kernel_regularizer
         self.loss_function = loss_function
@@ -118,7 +107,7 @@ class RankNet(ObjectRanker, Tunable):
                                   for x in range(n_hidden)]
         assert len(self.hidden_layers) == n_hidden
 
-    def fit(self, X, Y, epochs=10, log_callbacks=None,
+    def fit(self, X, Y, epochs=10, callbacks=None,
             validation_split=0.1, verbose=0, **kwd):
 
         self.logger.debug('Creating the Dataset')
@@ -136,15 +125,6 @@ class RankNet(ObjectRanker, Tunable):
         self.logger.debug('Creating the model')
 
         output = self.construct_model()
-
-        callbacks = []
-        if log_callbacks is None:
-            log_callbacks = []
-        callbacks.extend(log_callbacks)
-        callbacks = self.set_init_lr_callback(callbacks)
-
-        if self._use_early_stopping:
-            callbacks.append(self.early_stopping)
 
         self.logger.info("Callbacks {}".format(', '.join([c.__name__ for c in callbacks])))
         # Model with input as two objects and output as probability of x1>x2

@@ -24,8 +24,7 @@ __all__ = ['scores_to_rankings', 'strongly_connected_components', 'create_graph_
            'deprecated', "print_dictionary", "configure_logging_numpy_keras",
            "create_input_lambda", 'files_with_same_name', 'rename_file_if_exist', "create_dir_recursively",
            'generate_seed', 'get_tensor_value', "spearman_mean_np", "zero_one_accuracy_np", "kendalls_mean_np",
-           "zero_one_rank_loss_for_scores_ties_np", "normalize",
-           "tunable_parameters_ranges", "zero_one_rank_loss_for_scores_np"]
+           "zero_one_rank_loss_for_scores_ties_np", "normalize", "zero_one_rank_loss_for_scores_np"]
 
 
 def deprecated(func):
@@ -231,23 +230,6 @@ def print_dictionary(dictionary):
     for key, value in dictionary.items():
         output = output + str(key) + " => " + str(value) + "\n"
     return output
-
-
-def tunable_parameters_ranges(cls, logger, ranges):
-    if (cls._tunable is None):
-        cls.tunable_parameters()
-    logger.info("Final tunable parameters with ranges {} ".format(print_dictionary(cls._tunable)))
-
-    for name, new_range in ranges.items():
-        if name in cls._tunable.keys():
-            logger.info("New range for parameter: {} => {}".format(name, new_range))
-            cls._tunable[name] = new_range
-        else:
-            logger.warning('This ranking algorithm does not support a tunable parameter called {}'.format(name))
-    if len(ranges) > 0:
-        logger.info("Customized tunable parameter ranges {}".format(print_dictionary(cls._tunable)))
-    return list(cls._tunable.values())
-
 
 def create_dir_recursively(path, is_file_path=False):
     if is_file_path:
