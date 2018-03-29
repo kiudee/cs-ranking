@@ -142,12 +142,7 @@ class ParameterOptimizer(ObjectRanker):
             for j, p in enumerate(ranges.keys()):
                 param_dict[p] = point[i + j]
             obj.set_tunable_parameters(param_dict)
-            if isinstance(obj, Callback):
-                callbacks.append(obj)
-            elif isinstance(obj, ObjectRanker):
-                self.ranker = obj
             i += len(ranges)
-        self._fit_params['callbacks'] = callbacks
 
     def _fit_ranker(self, xtrain, ytrain, xtest, ytest, next_point):
         start = datetime.now()
