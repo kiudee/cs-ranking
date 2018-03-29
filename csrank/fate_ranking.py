@@ -11,6 +11,7 @@ from keras.regularizers import l2
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_random_state
 
+from csrank.callbacks import LRScheduler
 from csrank.discretechoice.discrete_choice import ObjectChooser
 from csrank.dyadranking.contextual_ranking import ContextualRanker
 from csrank.labelranking.label_ranker import LabelRanker
@@ -332,9 +333,12 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
                                                 n_objects=n_objects,
                                                 n_layers=self.n_hidden_set_layers)
                 self.model = Model(inputs=input_layer, outputs=scores)
-            self.model.compile(loss=self.loss_function,
-                               optimizer=self.optimizer,
-                               metrics=self.metrics)
+                if callbacks is not None:
+                    for c in callbacks:
+                        if isinstance(c, LRScheduler):
+                            c.initial_lr = K.get_value(self.optimizer.lr)
+
+            self.model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
 
             self.logger.info("Fitting started")
             if generator is None:
@@ -533,8 +537,18 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
             scores = self._predict_scores_fixed(X, **kwargs)
         return scores
 
-    def set_tunable_parameters(self, n_hidden_set_units=32, n_hidden_set_layers=2, **point):
-        FATERankingCore.set_tunable_parameters(self, **point)
+    def set_tunable_parameters(self, n_hidden_set_units=32,
+                               n_hidden_set_layers=2,
+                               n_hidden_joint_units=32,
+                               n_hidden_joint_layers=2,
+                               reg_strength=1e-4,
+                               learning_rate=1e-3,
+                               batch_size=128,
+                               **point):
+        FATERankingCore.set_tunable_parameters(self, n_hidden_joint_units=n_hidden_joint_units,
+                                               n_hidden_joint_layers=n_hidden_joint_layers, reg_strength=reg_strength,
+                                               learning_rate=learning_rate,
+                                               batch_size=batch_size, **point)
         self.n_hidden_set_units = n_hidden_set_units
         self.n_hidden_set_layers = n_hidden_set_layers
 
@@ -667,10 +681,6 @@ class FATELabelRanker(FATERankingCore, LabelRanker):
         self.model = Model(inputs=self.input_layer, outputs=self.scores)
         self.model.compile(loss=self.loss_function, optimizer=self.optimizer,
                            metrics=self.metrics)
-
-        self.logger.info("Callbacks {}".format(
-            ', '.join([c.__name__ for c in callbacks])))
-
         self.model.fit(
             x=X_trans, y=Y, callbacks=callbacks,
             validation_split=validation_split,

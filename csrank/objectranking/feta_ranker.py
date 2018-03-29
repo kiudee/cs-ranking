@@ -65,7 +65,7 @@ class FETANetwork(ObjectRanker, Tunable):
         **kwargs
             Keyword arguments for the hidden units
         """
-        self.logger = logging.getLogger("FETANetwork")
+        self.logger = logging.getLogger(FETANetwork.__name__)
 
         self.random_state = check_random_state(random_state)
 
@@ -202,12 +202,14 @@ class FETANetwork(ObjectRanker, Tunable):
         if self._use_zeroth_model:
             self.zero_order_model = self._create_zeroth_order_model()
 
-        self.logger.info("Callbacks {}".format(', '.join([c.__name__ for c in callbacks])))
 
         self.logger.debug('Compiling complete model...')
         self.model.compile(loss=self.loss_function, optimizer=self.optimizer,
                            metrics=self.metrics)
         self.logger.debug('Starting gradient descent...')
+        if callbacks is not None:
+            callbacks = self.set_initial_lr_for_scheduler(callbacks)
+
         self.model.fit(x=X, y=Y, batch_size=self.batch_size, epochs=epochs,
                        callbacks=callbacks, validation_split=validation_split,
                        verbose=verbose, **kwd)

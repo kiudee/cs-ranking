@@ -8,13 +8,11 @@ def optimizer():
     from ..tunable import Tunable
 
     class RankerStub(Tunable):
-        def __init__(self):
-            pass
-
-        def set_tunable_parameters(self, point):
+        def set_tunable_parameters(self, **point):
             self.__dict__.update(point)
 
-    rankers = [RankerStub() for _ in range(3)]
+    ranker = RankerStub()
+    rankers = [ranker for _ in range(3)]
     test_params = {
         rankers[0]: dict(a=(0, 3)),
         rankers[1]: dict(b=(0, 3), c=(0, 3)),
@@ -22,7 +20,7 @@ def optimizer():
     }
 
     opt = ParameterOptimizer(
-        ranker=RankerStub(),
+        ranker=ranker,
         optimizer_path='./',
         tunable_parameter_ranges=test_params,
         ranker_params=dict()

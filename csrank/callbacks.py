@@ -28,7 +28,6 @@ class EarlyStoppingWithWeights(EarlyStopping, Tunable):
             mode, the direction is automatically inferred
             from the name of the monitored quantity.
     """
-    __name__ = "EarlyStoppingWithWeights"
 
     def __init__(self, **kwargs):
         super(EarlyStoppingWithWeights, self).__init__(**kwargs)
@@ -69,8 +68,8 @@ class EarlyStoppingWithWeights(EarlyStopping, Tunable):
         self.min_delta = min_delta
         if len(point) > 0:
             self.logger.warning('This callback does not support'
-                            ' tunable parameters'
-                            ' called: {}'.format(print_dictionary(point)))
+                                ' tunable parameters'
+                                ' called: {}'.format(print_dictionary(point)))
 
 
 class weightHistory(Callback):
@@ -91,7 +90,6 @@ class weightHistory(Callback):
 
 
 class LRScheduler(LearningRateScheduler):
-    __name__ = "LRScheduler"
 
     def __init__(self, initial_lr=1e-5, epochs_drop=300, drop=0.1, **kwargs):
         super(LRScheduler, self).__init__(self.step_decay, **kwargs)
@@ -110,11 +108,11 @@ class LRScheduler(LearningRateScheduler):
         self.drop = drop
         if len(point) > 0:
             self.logger.warning('This callback does not support'
-                            ' tunable parameters'
-                            ' called: {}'.format(print_dictionary(point)))
+                                ' tunable parameters'
+                                ' called: {}'.format(print_dictionary(point)))
+
 
 class DebugOutput(Callback):
-    __name__ = "DebugOutput"
 
     def __init__(self, delta=100, **kwargs):
         super(DebugOutput, self).__init__(**kwargs)

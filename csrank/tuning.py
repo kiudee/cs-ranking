@@ -2,7 +2,6 @@ import logging
 from datetime import datetime
 
 import numpy as np
-from keras.callbacks import Callback
 from keras.losses import categorical_hinge
 from sklearn.model_selection import ShuffleSplit
 from sklearn.utils import check_random_state
@@ -18,7 +17,7 @@ from csrank.tunable import check_ranker_class
 from csrank.util import duration_tillnow, create_dir_recursively, \
     microsec_to_time, \
     get_mean_loss_for_dictionary, get_loss_for_array
-
+import copy
 PARAMETER_OPTIMIZER = "ParameterOptimizer"
 
 
@@ -134,19 +133,19 @@ class ParameterOptimizer(ObjectRanker):
 
     def _set_new_parameters(self, point):
         i = 0
-        callbacks = []
         # We are iterating over all elements of the dictionary in order.
         # This works because dicts are order-preserving.
         for obj, ranges in self._tunable_parameter_ranges.items():
             param_dict = dict()
             for j, p in enumerate(ranges.keys()):
                 param_dict[p] = point[i + j]
-            obj.set_tunable_parameters(param_dict)
+            print('obj: {}, current parameters {}'.format(type(obj).__name__, param_dict))
+            obj.set_tunable_parameters(**param_dict)
             i += len(ranges)
 
     def _fit_ranker(self, xtrain, ytrain, xtest, ytest, next_point):
         start = datetime.now()
-        self.set_tunable_parameters(next_point)
+        self._set_new_parameters(next_point)
         self.ranker.fit(xtrain, ytrain, **self._fit_params)
         ypred = self.ranker(xtest)
         if isinstance(xtest, dict):
@@ -313,27 +312,19 @@ class ParameterOptimizer(ObjectRanker):
                 'Optimizer interrupted saving the model at {}'.format(
                     self.optimizer_path))
             self.log_best_params(opt)
-            self.optimizer = opt
-            if np.array(opt.yi).shape[0] != 0:
-                dump(opt, self.optimizer_path)
-
         else:
             self.logger.debug(
                 'Finally, fit a model on the complete training set and storing the model at {}'.format(
                     self.optimizer_path))
             self._fit_params["epochs"] = self._fit_params.get("epochs",
                                                               1000) * 2
-            self.model = self._ranker_class(random_state=self.random_state,
-                                            **self._ranker_params)
             if "ps" in opt.acq_func:
                 best_point = opt.Xi[np.argmin(np.array(opt.yi)[:, 0])]
             else:
                 best_point = opt.Xi[np.argmin(opt.yi)]
-            self.model.set_tunable_parameters(best_point)
+            self._set_new_parameters(best_point)
+            self.model = copy.copy(self.ranker)
             self.model.fit(X, Y, **self._fit_params)
-            self.optimizer = opt
-            if np.array(opt.yi).shape[0] != 0:
-                dump(opt, self.optimizer_path)
 
         finally:
             self._callbacks_on_optimization_end()

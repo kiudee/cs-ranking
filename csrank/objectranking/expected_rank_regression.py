@@ -1,5 +1,4 @@
 import logging
-from collections import OrderedDict
 
 import numpy as np
 from sklearn.linear_model import LinearRegression, ElasticNet, Ridge
@@ -116,8 +115,7 @@ class ExpectedRankRegression(ObjectRanker, Tunable):
         score_b = self.model.predict(b, **kwargs) * -1
         return [score_a / (score_a + score_b), score_b / (score_a + score_b)]
 
-
-    def set_tunable_parameters(self, alpha=1.0, l1_ratio=0.5, tol=1e-4,**point):
+    def set_tunable_parameters(self, alpha=1.0, l1_ratio=0.5, tol=1e-4, **point):
         self.tol = tol
         self.alpha = alpha
         self.l1_ratio = l1_ratio
@@ -125,5 +123,3 @@ class ExpectedRankRegression(ObjectRanker, Tunable):
             self.logger.warning('This ranking algorithm does not support'
                                 ' tunable parameters'
                                 ' called: {}'.format(print_dictionary(point)))
-
-

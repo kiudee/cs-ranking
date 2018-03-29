@@ -70,7 +70,7 @@ class RankNet(ObjectRanker, Tunable):
                "From ranknet to lambdarank to lambdamart: An overview.",
                Learning, 11(23-581), 81.
         """
-        self.logger = logging.getLogger("RankNet")
+        self.logger = logging.getLogger(RankNet.__name__)
         self.n_features = n_features
         self.batch_normalization = batch_normalization
         self.non_linearities = non_linearities
@@ -122,12 +122,13 @@ class RankNet(ObjectRanker, Tunable):
 
         output = self.construct_model()
 
-        self.logger.info("Callbacks {}".format(', '.join([c.__name__ for c in callbacks])))
         # Model with input as two objects and output as probability of x1>x2
         self.model = Model(inputs=[self.x1, self.x2], outputs=output)
 
         self.model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
         self.logger.debug('Finished Creating the model, now fitting started')
+        if callbacks is not None:
+            callbacks = self.set_initial_lr_for_scheduler(callbacks)
 
         self.model.fit([X1, X2], Y_single, batch_size=self.batch_size, epochs=epochs,
                        callbacks=callbacks, validation_split=validation_split,

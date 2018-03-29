@@ -79,7 +79,7 @@ class CmpNet(ObjectRanker, Tunable):
                SortNet: Learning to Rank by a Neural Preference Function.
                IEEE Trans. Neural Networks 22, 9 (2011), 1368–1380. https://doi.org/10.1109/TNN.2011.2160875
         """
-        self.logger = logging.getLogger("CmpNet")
+        self.logger = logging.getLogger(CmpNet.__name__)
         self.n_features = n_features
         self.batch_normalization = batch_normalization
         self.non_linearities = non_linearities
@@ -135,11 +135,12 @@ class CmpNet(ObjectRanker, Tunable):
 
         merged_output = self.construct_model()
 
-        self.logger.info("Callbacks {}".format(', '.join([c.__name__ for c in callbacks])))
         self.model = Model(inputs=[self.x1, self.x2], outputs=merged_output)
         self.model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
 
         self.logger.debug('Finished Creating the model, now fitting started')
+        if callbacks is not None:
+            callbacks = self.set_initial_lr_for_scheduler(callbacks)
 
         self.model.fit([X1, X2], Y_double, batch_size=self.batch_size, epochs=epochs,
                        callbacks=callbacks, validation_split=validation_split,

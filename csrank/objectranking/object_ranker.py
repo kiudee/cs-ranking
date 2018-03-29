@@ -1,5 +1,8 @@
 from abc import ABCMeta, abstractmethod
 
+from keras import backend as K
+
+from csrank.callbacks import LRScheduler
 from csrank.constants import OBJECT_RANKING
 from csrank.util import scores_to_rankings
 
@@ -138,6 +141,12 @@ class ObjectRanker(metaclass=ABCMeta):
             Predicted ranking
         """
         return self.predict(X, **kwargs)
+
+    def set_initial_lr_for_scheduler(self, callbacks):
+        for c in callbacks:
+            if isinstance(c, LRScheduler):
+                c.initial_lr = K.get_value(self.optimizer.lr)
+        return callbacks
 
     @classmethod
     def __subclasshook__(cls, C):
