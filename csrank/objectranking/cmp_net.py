@@ -22,8 +22,6 @@ __all__ = ['CmpNet']
 
 
 class CmpNet(ObjectRanker, Tunable):
-    _tunable = None
-    _use_early_stopping = None
 
     def __init__(self, n_features, n_hidden=2, n_units=8,
                  loss_function=binary_crossentropy, batch_normalization=True,
