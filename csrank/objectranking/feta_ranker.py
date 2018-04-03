@@ -202,7 +202,6 @@ class FETANetwork(ObjectRanker, Tunable):
         if self._use_zeroth_model:
             self.zero_order_model = self._create_zeroth_order_model()
 
-
         self.logger.debug('Compiling complete model...')
         self.model.compile(loss=self.loss_function, optimizer=self.optimizer,
                            metrics=self.metrics)

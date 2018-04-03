@@ -1,3 +1,4 @@
+import copy
 import logging
 from datetime import datetime
 
@@ -17,7 +18,7 @@ from csrank.tunable import check_ranker_class
 from csrank.util import duration_tillnow, create_dir_recursively, \
     microsec_to_time, \
     get_mean_loss_for_dictionary, get_loss_for_array
-import copy
+
 PARAMETER_OPTIMIZER = "ParameterOptimizer"
 
 
@@ -51,16 +52,24 @@ class ParameterOptimizer(ObjectRanker):
 
         Parameters
         ----------
-        ranker_class :
-        optimizer_path :
-        tunable_parameter_ranges :
-        ranker_params :
-        fit_params :
-        random_state :
-        tuning_callbacks :
-        validation_loss :
-        learning_problem :
-        kwd :
+        ranker : object
+            The ranker object for which the hyper parameters needs to optimized.
+        optimizer_path : string
+            The path where the complete optimizer pickle object can be stored.
+        tunable_parameter_ranges : dict
+            Dictionary with keys as the object needs to be tuned. Values is the dictionary of tunable parameters with ranges in which they should be tuned.
+        fit_params : dict
+            The fitting parameters for the ranker
+        random_state : int or object
+            Numpy random state
+        tuning_callbacks : list of object
+            Callbacks for the parameter optimizer
+        validation_loss : function
+            Differentiable loss function for the ranker
+        learning_problem : string
+            The learning problem under which the ranker comes
+        **kwd :
+            Keyword arguments for the hidden units
         """
         self.logger = logging.getLogger(PARAMETER_OPTIMIZER)
 
