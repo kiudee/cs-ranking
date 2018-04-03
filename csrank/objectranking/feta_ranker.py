@@ -206,8 +206,6 @@ class FETANetwork(ObjectRanker, Tunable):
         self.model.compile(loss=self.loss_function, optimizer=self.optimizer,
                            metrics=self.metrics)
         self.logger.debug('Starting gradient descent...')
-        if callbacks is not None:
-            callbacks = self.set_initial_lr_for_scheduler(callbacks)
 
         self.model.fit(x=X, y=Y, batch_size=self.batch_size, epochs=epochs,
                        callbacks=callbacks, validation_split=validation_split,

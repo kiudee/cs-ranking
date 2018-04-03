@@ -127,8 +127,6 @@ class RankNet(ObjectRanker, Tunable):
 
         self.model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
         self.logger.debug('Finished Creating the model, now fitting started')
-        if callbacks is not None:
-            callbacks = self.set_initial_lr_for_scheduler(callbacks)
 
         self.model.fit([X1, X2], Y_single, batch_size=self.batch_size, epochs=epochs,
                        callbacks=callbacks, validation_split=validation_split,

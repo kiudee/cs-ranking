@@ -91,16 +91,15 @@ class weightHistory(Callback):
 
 class LRScheduler(LearningRateScheduler):
 
-    def __init__(self, initial_lr=1e-5, epochs_drop=300, drop=0.1, **kwargs):
+    def __init__(self, epochs_drop=300, drop=0.1, **kwargs):
         super(LRScheduler, self).__init__(self.step_decay, **kwargs)
 
-        self.initial_lr = initial_lr
         self.epochs_drop = epochs_drop
         self.drop = drop
 
-    def step_decay(self, epoch):
+    def step_decay(self, epoch, lr):
         step = math.floor((1 + epoch) / self.epochs_drop)
-        lrate = self.initial_lr * math.pow(self.drop, step)
+        lrate = lr * math.pow(self.drop, step)
         return lrate
 
     def set_tunable_parameters(self, epochs_drop=300, drop=0.1, **point):

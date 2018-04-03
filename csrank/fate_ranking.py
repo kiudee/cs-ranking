@@ -333,11 +333,6 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
                                                 n_objects=n_objects,
                                                 n_layers=self.n_hidden_set_layers)
                 self.model = Model(inputs=input_layer, outputs=scores)
-                if callbacks is not None:
-                    for c in callbacks:
-                        if isinstance(c, LRScheduler):
-                            c.initial_lr = K.get_value(self.optimizer.lr)
-
             self.model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
 
             self.logger.info("Fitting started")
