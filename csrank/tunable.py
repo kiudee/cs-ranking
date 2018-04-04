@@ -24,8 +24,3 @@ class Tunable(metaclass=ABCMeta):
                 return True
         return NotImplemented
 
-
-def check_ranker_class(ranker):
-    if not isinstance(ranker, Tunable) and hasattr(ranker, 'set_tunable_parameters'):
-        logging.error('The given object ranker is not tunable')
-        raise AttributeError

@@ -1,3 +1,4 @@
+import pytest
 import numpy as np
 import tensorflow as tf
 from keras import backend as K
@@ -35,8 +36,5 @@ def test_check_ranker_class():
             pass
 
     ranker = MockClass()
-    try:
+    with pytest.raises(AttributeError):
         check_ranker_class(ranker)
-        assert False
-    except AttributeError:
-        assert True

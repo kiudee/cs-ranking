@@ -14,10 +14,9 @@ from csrank.constants import OBJECT_RANKING, LABEL_RANKING, DISCRETE_CHOICE, \
     DYAD_RANKING
 from csrank.metrics import zero_one_rank_loss
 from csrank.objectranking.object_ranker import ObjectRanker
-from csrank.tunable import check_ranker_class
 from csrank.util import duration_tillnow, create_dir_recursively, \
     microsec_to_time, \
-    get_mean_loss_for_dictionary, get_loss_for_array
+    get_mean_loss_for_dictionary, get_loss_for_array, check_ranker_class
 
 PARAMETER_OPTIMIZER = "ParameterOptimizer"
 

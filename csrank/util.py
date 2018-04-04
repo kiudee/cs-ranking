@@ -385,3 +385,17 @@ def heat_map(file_path, X, headers, cmap=sns.color_palette("Blues")):
 
     plt.savefig(file_path)
     plt.show()
+
+
+def check_ranker_class(ranker):
+    """ Function which checks if the ranker is an instance of the :class:`csrank.tunning.Tunable` class
+ 
+    Parameters
+    ----------
+    ranker: object
+        The ranker object to be checked
+    """
+    if not (isinstance(ranker, Tunable) and hasattr(ranker, 'set_tunable_parameters')):
+        logging.error('The given object ranker is not tunable')
+        raise AttributeError 
+
