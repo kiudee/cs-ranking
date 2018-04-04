@@ -5,8 +5,11 @@ import warnings
 import numpy as np
 from keras.callbacks import Callback, LearningRateScheduler, EarlyStopping
 
+from csrank.tunable import Tunable
+from csrank.util import print_dictionary
 
-class EarlyStoppingWithWeights(EarlyStopping):
+
+class EarlyStoppingWithWeights(EarlyStopping, Tunable):
     """Stop training when a monitored quantity has stopped improving.
     # Arguments
         monitor: quantity to be monitored.
@@ -25,7 +28,6 @@ class EarlyStoppingWithWeights(EarlyStopping):
             mode, the direction is automatically inferred
             from the name of the monitored quantity.
     """
-    __name__ = "EarlyStoppingWithWeights"
 
     def __init__(self, **kwargs):
         super(EarlyStoppingWithWeights, self).__init__(**kwargs)
@@ -61,6 +63,14 @@ class EarlyStoppingWithWeights(EarlyStopping):
             self.logger.info("Setting best weights for final epoch {}".format(self.epoch))
             self.model.set_weights(self.best_weights)
 
+    def set_tunable_parameters(self, patience=300, min_delta=2, **point):
+        self.patience = patience
+        self.min_delta = min_delta
+        if len(point) > 0:
+            self.logger.warning('This callback does not support'
+                                ' tunable parameters'
+                                ' called: {}'.format(print_dictionary(point)))
+
 
 class weightHistory(Callback):
     def on_train_begin(self, logs={}):
@@ -80,23 +90,28 @@ class weightHistory(Callback):
 
 
 class LRScheduler(LearningRateScheduler):
-    __name__ = "LRScheduler"
 
-    def __init__(self, initial_lr=1e-5, epochs_drop=300, drop=0.1, **kwargs):
+    def __init__(self, epochs_drop=300, drop=0.1, **kwargs):
         super(LRScheduler, self).__init__(self.step_decay, **kwargs)
 
-        self.initial_lr = initial_lr
         self.epochs_drop = epochs_drop
         self.drop = drop
 
-    def step_decay(self, epoch):
+    def step_decay(self, epoch, lr):
         step = math.floor((1 + epoch) / self.epochs_drop)
-        lrate = self.initial_lr * math.pow(self.drop, step)
+        lrate = lr * math.pow(self.drop, step)
         return lrate
+
+    def set_tunable_parameters(self, epochs_drop=300, drop=0.1, **point):
+        self.epochs_drop = epochs_drop
+        self.drop = drop
+        if len(point) > 0:
+            self.logger.warning('This callback does not support'
+                                ' tunable parameters'
+                                ' called: {}'.format(print_dictionary(point)))
 
 
 class DebugOutput(Callback):
-    __name__ = "DebugOutput"
 
     def __init__(self, delta=100, **kwargs):
         super(DebugOutput, self).__init__(**kwargs)

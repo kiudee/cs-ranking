@@ -21,7 +21,7 @@ class SyntheticDatasetGenerator(DatasetReader):
         self.random_state = check_random_state(random_state)
         dataset_function_options = {'linear': self.make_linear_transitive,
                                     'medoid': self.make_intransitive_medoids,
-                                    'gp_intransitive': self.make_gp_transitive,
+                                    'gp_transitive': self.make_gp_transitive,
                                     'gp_non_transitive': self.make_gp_non_transitive,
                                     "hyper_volume": self.make_hv_dataset}
         if dataset_type not in dataset_function_options.keys():

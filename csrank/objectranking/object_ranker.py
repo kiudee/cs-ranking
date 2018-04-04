@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 
-import keras.backend as K
+from keras import backend as K
 
 from csrank.callbacks import LRScheduler
 from csrank.constants import OBJECT_RANKING
@@ -10,6 +10,7 @@ __all__ = ['ObjectRanker']
 
 
 class ObjectRanker(metaclass=ABCMeta):
+
     @property
     def learning_problem(self):
         return OBJECT_RANKING
@@ -141,11 +142,10 @@ class ObjectRanker(metaclass=ABCMeta):
         """
         return self.predict(X, **kwargs)
 
-    def set_init_lr_callback(self, callbacks):
+    def set_initial_lr_for_scheduler(self, callbacks):
         for c in callbacks:
             if isinstance(c, LRScheduler):
                 c.initial_lr = K.get_value(self.optimizer.lr)
-                self.logger.info("Setting lr {} for {}".format(c.initial_lr, c.__name__))
         return callbacks
 
     @classmethod

@@ -1,5 +1,4 @@
 import logging
-from collections import OrderedDict
 
 import numpy as np
 from keras import Input, backend as K, optimizers
@@ -10,31 +9,23 @@ from keras.metrics import top_k_categorical_accuracy, binary_accuracy
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
 
-from csrank.callbacks import EarlyStoppingWithWeights
-from csrank.constants import REGULARIZATION_FACTOR, LEARNING_RATE, BATCH_SIZE, \
-    LR_DEFAULT_RANGE, REGULARIZATION_FACTOR_DEFAULT_RANGE, \
-    BATCH_SIZE_DEFAULT_RANGE, EARLY_STOPPING_PATIENCE, EARLY_STOPPING_PATIENCE_DEFAULT_RANGE
 from csrank.layers import NormalizedDense
-from csrank.objectranking.constants import THRESHOLD, N_HIDDEN_LAYERS, N_HIDDEN_UNITS, \
-    N_HIDDEN_LAYERS_DEFAULT_RANGES, \
-    N_UNITS_DEFAULT_RANGES
+from csrank.objectranking.constants import THRESHOLD
 from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.tunable import Tunable
-from csrank.util import tunable_parameters_ranges
+from csrank.util import print_dictionary
 from ..dataset_reader.objectranking.util import generate_complete_pairwise_dataset
 
 __all__ = ['RankNet']
 
 
 class RankNet(ObjectRanker, Tunable):
-    _tunable = None
-    _use_early_stopping = None
 
     def __init__(self, n_features, n_hidden=2, n_units=8,
                  loss_function=binary_crossentropy, batch_normalization=True,
                  kernel_regularizer=l2(l=1e-4), non_linearities='relu',
                  optimizer="adam", metrics=[top_k_categorical_accuracy, binary_accuracy],
-                 use_early_stopping=False, es_patience=300, batch_size=256, random_state=None, **kwargs):
+                 batch_size=256, random_state=None, **kwargs):
         """Create an instance of the RankNet architecture.
 
         RankNet breaks the rankings into pairwise comparisons and learns a
@@ -62,12 +53,6 @@ class RankNet(ObjectRanker, Tunable):
         metrics : list
             List of metrics to evaluate during training (can be
             non-differentiable)
-        use_early_stopping : bool
-            If True, stop the training early, if no progress has been made for
-            es_patience many iterations
-        es_patience : int
-            If early stopping is enabled, wait for this many iterations without
-            progress until stopping the training
         batch_size : int
             Batch size to use during training
         random_state : int, RandomState instance or None
@@ -85,40 +70,40 @@ class RankNet(ObjectRanker, Tunable):
                "From ranknet to lambdarank to lambdamart: An overview.",
                Learning, 11(23-581), 81.
         """
-        self.logger = logging.getLogger("RankNet")
+        self.logger = logging.getLogger(RankNet.__name__)
         self.n_features = n_features
         self.batch_normalization = batch_normalization
         self.non_linearities = non_linearities
-        self.early_stopping = EarlyStoppingWithWeights(patience=es_patience)
-        self._use_early_stopping = use_early_stopping
         self.metrics = metrics
         self.kernel_regularizer = kernel_regularizer
         self.loss_function = loss_function
         self.optimizer = optimizers.get(optimizer)
-        self._construct_layers(n_hidden, n_units)
+        self.n_hidden = n_hidden
+        self.n_units = n_units
+        self._construct_layers()
         self.threshold_instances = THRESHOLD
         self.batch_size = batch_size
         self.random_state = check_random_state(random_state)
 
-    def _construct_layers(self, n_hidden=2, n_units=8, **kwargs):
+    def _construct_layers(self, **kwargs):
         self.x1 = Input(shape=(self.n_features,))
         self.x2 = Input(shape=(self.n_features,))
         self.output_node = Dense(1, activation='sigmoid',
                                  kernel_regularizer=self.kernel_regularizer)
         self.output_layer_score = Dense(1, activation='linear')
         if self.batch_normalization:
-            self.hidden_layers = [NormalizedDense(n_units, name="hidden_{}".format(x),
+            self.hidden_layers = [NormalizedDense(self.n_units, name="hidden_{}".format(x),
                                                   kernel_regularizer=self.kernel_regularizer,
                                                   activation=self.non_linearities
-                                                  ) for x in range(n_hidden)]
+                                                  ) for x in range(self.n_hidden)]
         else:
-            self.hidden_layers = [Dense(n_units, name="hidden_{}".format(x),
+            self.hidden_layers = [Dense(self.n_units, name="hidden_{}".format(x),
                                         kernel_regularizer=self.kernel_regularizer,
                                         activation=self.non_linearities)
-                                  for x in range(n_hidden)]
-        assert len(self.hidden_layers) == n_hidden
+                                  for x in range(self.n_hidden)]
+        assert len(self.hidden_layers) == self.n_hidden
 
-    def fit(self, X, Y, epochs=10, log_callbacks=None,
+    def fit(self, X, Y, epochs=10, callbacks=None,
             validation_split=0.1, verbose=0, **kwd):
 
         self.logger.debug('Creating the Dataset')
@@ -137,16 +122,6 @@ class RankNet(ObjectRanker, Tunable):
 
         output = self.construct_model()
 
-        callbacks = []
-        if log_callbacks is None:
-            log_callbacks = []
-        callbacks.extend(log_callbacks)
-        callbacks = self.set_init_lr_callback(callbacks)
-
-        if self._use_early_stopping:
-            callbacks.append(self.early_stopping)
-
-        self.logger.info("Callbacks {}".format(', '.join([c.__name__ for c in callbacks])))
         # Model with input as two objects and output as probability of x1>x2
         self.model = Model(inputs=[self.x1, self.x2], outputs=output)
 
@@ -209,39 +184,18 @@ class RankNet(ObjectRanker, Tunable):
     def evaluate(self, X1_test, X2_test, Y_test, **kwargs):
         return self.model.evaluate([X1_test, X2_test], Y_test, **kwargs)
 
-    @classmethod
-    def set_tunable_parameter_ranges(cls, param_ranges_dict):
-        logger = logging.getLogger('RankNet')
-        return tunable_parameters_ranges(cls, logger, param_ranges_dict)
-
-    def set_tunable_parameters(self, point):
-        named = Tunable.set_tunable_parameters(self, point)
-        hidden_layers_created = False
-        for name, param in named.items():
-            if name in [N_HIDDEN_LAYERS, N_HIDDEN_UNITS, REGULARIZATION_FACTOR]:
-                self.kernel_regularizer = l2(l=named[REGULARIZATION_FACTOR])
-                if not hidden_layers_created:
-                    self._construct_layers(**named)
-                hidden_layers_created = True
-            elif name == LEARNING_RATE:
-                K.set_value(self.optimizer.lr, param)
-            elif name == EARLY_STOPPING_PATIENCE:
-                self.early_stopping.patience = param
-            elif name == BATCH_SIZE:
-                self.batch_size = param
-            else:
-                self.logger.warning(
-                    'This ranking algorithm does not support a tunable parameter called {}'.format(name))
-
-    @classmethod
-    def tunable_parameters(cls):
-        if cls._tunable is None:
-            cls._tunable = OrderedDict([
-                (N_HIDDEN_LAYERS, N_HIDDEN_LAYERS_DEFAULT_RANGES),
-                (N_HIDDEN_UNITS, N_UNITS_DEFAULT_RANGES),
-                (LEARNING_RATE, LR_DEFAULT_RANGE),
-                (REGULARIZATION_FACTOR, REGULARIZATION_FACTOR_DEFAULT_RANGE),
-                (BATCH_SIZE, BATCH_SIZE_DEFAULT_RANGE),
-            ])
-            if cls._use_early_stopping:
-                cls._tunable[EARLY_STOPPING_PATIENCE] = EARLY_STOPPING_PATIENCE_DEFAULT_RANGE
+    def set_tunable_parameters(self, n_hidden=32,
+                               n_units=2,
+                               reg_strength=1e-4,
+                               learning_rate=1e-3,
+                               batch_size=128, **point):
+        self.n_hidden = n_hidden
+        self.n_units = n_units
+        self.kernel_regularizer = l2(reg_strength)
+        self.batch_size = batch_size
+        K.set_value(self.optimizer.lr, learning_rate)
+        self._construct_layers()
+        if len(point) > 0:
+            self.logger.warning('This ranking algorithm does not support'
+                                ' tunable parameters'
+                                ' called: {}'.format(print_dictionary(point)))

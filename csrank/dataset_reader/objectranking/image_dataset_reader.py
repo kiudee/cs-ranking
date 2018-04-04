@@ -1,9 +1,9 @@
-import collections
 import glob
 import logging
 import os
 from itertools import combinations, product
 
+import collections
 import h5py
 import numpy as np
 import pandas as pd

@@ -1,4 +1,3 @@
-import logging
 import os
 from abc import ABCMeta
 
@@ -12,7 +11,7 @@ from keras.regularizers import l2
 
 from csrank import FETANetwork, RankNet, CmpNet, ExpectedRankRegression, RankSVM
 from ..fate_ranking import FATERankingCore, FATEObjectRanker
-from ..util import tunable_parameters_ranges, zero_one_rank_loss_for_scores_ties_np
+from ..util import zero_one_rank_loss_for_scores_ties_np
 
 RANKSVM = 'ranksvm'
 ERR = 'err'
@@ -33,6 +32,7 @@ object_rankers_params = {
                   "n_hidden_set_units": 5, "optimizer": optimizer},
     ERR: {}, RANKSVM: {}}
 
+
 def test_construction_core():
     n_objects = 3
     n_features = 2
@@ -47,15 +47,6 @@ def test_construction_core():
 
         def fit(self, *args, **kwargs):
             pass
-
-        def set_tunable_parameter_ranges(cls, param_ranges_dict):
-            logger = logging.getLogger("MockClass")
-            logger.info("Setting parameter ranges: " + repr(param_ranges_dict))
-            return tunable_parameters_ranges(cls, logger, param_ranges_dict)
-
-        def tunable_parameters(cls):
-            if cls._tunable is None:
-                super().tunable_parameters()
 
     grc = MockClass(n_objects=n_objects, n_features=n_features)
     grc._construct_layers(activation=grc.activation,
