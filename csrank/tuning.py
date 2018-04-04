@@ -307,7 +307,8 @@ class ParameterOptimizer(ObjectRanker):
 
                 if (total_duration - max_fit_duration) < 0:
                     self.logger.info(
-                        'At iteration {} maximum time required by model to validate a parameter values'.format(microsec_to_time(max_fit_duration)))
+                        'At iteration {} maximum time required by model to validate a parameter values'.format(
+                            microsec_to_time(max_fit_duration)))
                     self.logger.info(
                         'At iteration {} simulation stops, due to time deficiency'.format(t))
                     break

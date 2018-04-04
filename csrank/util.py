@@ -26,7 +26,8 @@ __all__ = ['scores_to_rankings', 'strongly_connected_components', 'create_graph_
            'deprecated', "print_dictionary", "configure_logging_numpy_keras",
            "create_input_lambda", 'files_with_same_name', 'rename_file_if_exist', "create_dir_recursively",
            'generate_seed', 'get_tensor_value', "spearman_mean_np", "zero_one_accuracy_np", "kendalls_mean_np",
-           "zero_one_rank_loss_for_scores_ties_np", "normalize", "zero_one_rank_loss_for_scores_np", "check_ranker_class"]
+           "zero_one_rank_loss_for_scores_ties_np", "normalize", "zero_one_rank_loss_for_scores_np",
+           "check_ranker_class"]
 
 
 def deprecated(func):
