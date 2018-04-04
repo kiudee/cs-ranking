@@ -46,7 +46,7 @@ Predictions can then be obtained using:
 
 .. code-block:: python
 
-   fate.predict(X_test, Y_test)
+   fate.predict(X_test)
 
 
 Installation
