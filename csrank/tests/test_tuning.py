@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 from keras.metrics import binary_accuracy
 
+from csrank.util import check_ranker_class
 from ..tuning import ParameterOptimizer
 
 OPTIMIZER_PATH = os.path.join(os.getcwd(), 'opt')
@@ -34,6 +35,7 @@ def optimizer():
             return self.predict(X, **kwargs)
 
     ranker = RankerStub()
+
     rankers = [RankerStub() for _ in range(2)]
     test_params = {
         rankers[0]: dict(a=(1.0, 4.0)),
@@ -84,6 +86,10 @@ def test_set_parameters(optimizer):
     opt._set_new_parameters(point)
     i = 0
     for ranker in test_params.keys():
+        try:
+            check_ranker_class(ranker)
+        except AttributeError as exc:
+            pytest.fail(exc, pytrace=True)
         for param in test_params[ranker]:
             assert ranker.__dict__[param] == point[i]
             i += 1

@@ -19,12 +19,14 @@ from sklearn.covariance import GraphLasso
 from sklearn.utils import check_random_state
 from tensorflow.python.client import device_lib
 
+from csrank.tunable import Tunable
+
 __all__ = ['scores_to_rankings', 'strongly_connected_components', 'create_graph_pairwise_matrix',
            'create_pairwise_prob_matrix', 'quicksort', 'get_rankings_tensor', 'get_instances_objects', 'tensorify',
            'deprecated', "print_dictionary", "configure_logging_numpy_keras",
            "create_input_lambda", 'files_with_same_name', 'rename_file_if_exist', "create_dir_recursively",
            'generate_seed', 'get_tensor_value', "spearman_mean_np", "zero_one_accuracy_np", "kendalls_mean_np",
-           "zero_one_rank_loss_for_scores_ties_np", "normalize", "zero_one_rank_loss_for_scores_np"]
+           "zero_one_rank_loss_for_scores_ties_np", "normalize", "zero_one_rank_loss_for_scores_np", "check_ranker_class"]
 
 
 def deprecated(func):
@@ -382,3 +384,16 @@ def heat_map(file_path, X, headers, cmap=sns.color_palette("Blues")):
 
     plt.savefig(file_path)
     plt.show()
+
+
+def check_ranker_class(ranker):
+    """ Function which checks if the ranker is an instance of the :class:`csrank.tunning.Tunable` class
+
+    Parameters
+    ----------
+    ranker: object
+        The ranker object to be checked
+    """
+    if not (isinstance(ranker, Tunable) and hasattr(ranker, 'set_tunable_parameters')):
+        logging.error('The given object ranker is not tunable')
+        raise AttributeError
