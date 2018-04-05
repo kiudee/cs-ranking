@@ -24,6 +24,7 @@ class FATEChoiceFunction(FATEObjectRankingCore):
                          n_hidden_set_layers=n_hidden_set_layers,
                          n_hidden_set_units=n_hidden_set_units,
                          metrics=metrics,
+                         kernel_regularizer=kernel_regularizer,
                          **kwargs)
         self.loss_function = loss_function
         self.metrics = metrics
