@@ -101,3 +101,7 @@ class FATEChoiceFunction(FATEObjectRankingCore):
     def predict(self, X, **kwargs):
         scores = self.predict_scores(X, **kwargs)
         return scores > self.threshold
+
+    def __call__(self, X, **kwargs):
+        return self.predict(X, **kwargs)
+
