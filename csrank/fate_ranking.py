@@ -550,6 +550,11 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
             activation=self.activation,
             kernel_initializer=self.kernel_initializer,
             kernel_regularizer=self.kernel_regularizer)
+        if self.model is not None:
+            self.model = None
+        if self.models is not None:
+            self.models = None
+
 
 
 class FATEObjectRanker(FATEObjectRankingCore, ObjectRanker):
