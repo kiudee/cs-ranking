@@ -67,10 +67,10 @@ class FATEChoiceFunction(FATEObjectRankingCore):
         scores = self.predict_scores(X_val)
         probs = np.unique(scores)[::thin_thresholds]
         threshold = 0.0
-        best = f1_score(Y_val, scores > threshold, average='micro')
+        best = f1_score(Y_val, scores > threshold, average='samples')
         for i, p in enumerate(probs):
             pred = scores > p
-            f1 = f1_score(Y_val, pred, average='micro')
+            f1 = f1_score(Y_val, pred, average='samples')
             if f1 > best:
                 threshold = p
                 best = f1
