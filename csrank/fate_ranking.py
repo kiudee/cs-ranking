@@ -44,6 +44,7 @@ class FATERankingCore(Tunable, metaclass=ABCMeta):
         self.kernel_regularizer = kernel_regularizer
         self.batch_size = batch_size
         self.optimizer = optimizers.get(optimizer)
+        self._optimizer_config = self.optimizer.get_config()
         self.__kwargs__ = kwargs
         self._construct_layers(activation=self.activation,
                                kernel_initializer=self.kernel_initializer,
@@ -121,6 +122,8 @@ class FATERankingCore(Tunable, metaclass=ABCMeta):
         self.n_hidden_joint_units = n_hidden_joint_units
         self.kernel_regularizer = l2(reg_strength)
         self.batch_size = batch_size
+        # Hack to fix memory leak:
+        self.optimizer = self.optimizer.from_config(self._optimizer_config)
         K.set_value(self.optimizer.lr, learning_rate)
 
         self._construct_layers(

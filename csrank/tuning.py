@@ -3,6 +3,8 @@ import logging
 from datetime import datetime
 
 import numpy as np
+import tensorflow as tf
+from keras import backend as K
 from keras.losses import categorical_hinge
 from sklearn.model_selection import ShuffleSplit
 from sklearn.utils import check_random_state
@@ -252,6 +254,11 @@ class ParameterOptimizer(ObjectRanker):
                     'Starting optimization iteration: {}'.format(t))
                 if t > 0:
                     self.log_best_params(opt)
+
+                # Delete Tensorflow graph, to prevent memory leaks:
+                K.clear_session()
+                sess = tf.Session()
+                K.set_session(sess)
 
                 next_point = opt.ask()
                 self.logger.info('Next parameters:\n{}'.format(next_point))

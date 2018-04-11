@@ -81,6 +81,7 @@ class FETANetwork(ObjectRanker, Tunable):
         self.batch_size = batch_size
 
         self.optimizer = optimizers.get(optimizer)
+        self._optimizer_config = self.optimizer.get_config()
         self._use_zeroth_model = add_zeroth_order_model
         self.n_hidden = n_hidden
         self.n_units = n_units
@@ -305,6 +306,7 @@ class FETANetwork(ObjectRanker, Tunable):
         self.n_units = n_units
         self.kernel_regularizer = l2(reg_strength)
         self.batch_size = batch_size
+        self.optimizer = self.optimizer.from_config(self._optimizer_config)
         K.set_value(self.optimizer.lr, learning_rate)
         self._construct_layers()
         if len(point) > 0:
