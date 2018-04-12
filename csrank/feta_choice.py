@@ -68,3 +68,40 @@ class FETAChoiceFunction(FETANetwork):
 
     def __call__(self, X, **kwargs):
         return self.predict(X, **kwargs)
+
+    def sub_sampling(self, X, Y):
+        if self._n_objects <= self.max_number_of_objects:
+            return X, Y
+        n_objects = self.max_number_of_objects
+        bucket_size = int(X.shape[1] / n_objects) + 2
+        X_train = []
+        Y_train = []
+        rs = self.random_state
+        for x, y in zip(X, Y):
+            ind_1 = np.where(y == 1)[0]
+            p_1 = np.zeros(len(ind_1)) + 1 / len(ind_1)
+            ind_0 = np.where(y == 0)[0]
+            p_0 = np.zeros(len(ind_0)) + 1 / len(ind_0)
+            positves = (y == 1).sum() if n_objects > (
+                    y == 1).sum() else n_objects
+            cp = rs.choice(positves, size=bucket_size) + 1
+            idx = []
+            for c in cp:
+                pos = rs.choice(len(ind_1), size=c, replace=False, p=p_1)
+                neg = rs.choice(len(ind_0), size=n_objects - c,
+                                replace=False, p=p_0)
+                i = np.concatenate((ind_1[pos], ind_0[neg]))
+                rs.shuffle(i)
+                p_1[pos] = 0.2 * p_1[pos]
+                p_1 = p_1 / p_1.sum()
+                p_0[neg] = 0.2 * p_0[neg]
+                p_0 = p_0 / p_0.sum()
+                idx.append(i)
+            idx = np.array(idx)
+            if len(X_train) == 0:
+                X_train = x[idx]
+                Y_train = y[idx]
+            else:
+                Y_train = np.concatenate([Y_train, y[idx]], axis=0)
+                X_train = np.concatenate([X_train, x[idx]], axis=0)
+        return X_train, Y_train
