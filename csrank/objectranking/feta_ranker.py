@@ -4,7 +4,7 @@ from itertools import combinations, permutations
 import numpy as np
 from keras import Input, backend as K, optimizers
 from keras.engine import Model
-from keras.layers import Dense, concatenate, Lambda, add
+from keras.layers import Dense, concatenate, Lambda, add, Activation
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
 
@@ -100,7 +100,8 @@ class FETANetwork(ObjectRanker, Tunable):
         if self.batch_normalization:
             if self._use_zeroth_model:
                 self.hidden_layers_zeroth = [
-                    NormalizedDense(self.n_units, name="hidden_zeroth_{}".format(x),
+                    NormalizedDense(self.n_units,
+                                    name="hidden_zeroth_{}".format(x),
                                     kernel_regularizer=self.kernel_regularizer,
                                     activation=self.non_linearities,
                                     **kwargs)
@@ -118,20 +119,22 @@ class FETANetwork(ObjectRanker, Tunable):
                 self.hidden_layers_zeroth = [
                     Dense(self.n_units, name="hidden_zeroth_{}".format(x),
                           kernel_regularizer=self.kernel_regularizer,
-                          activation=self.non_linearities)
+                          activation=self.non_linearities,
+                          **kwargs)
                     for x in range(self.n_hidden)
                 ]
             self.hidden_layers = [
                 Dense(self.n_units, name="hidden_{}".format(x),
                       kernel_regularizer=self.kernel_regularizer,
-                      activation=self.non_linearities)
+                      activation=self.non_linearities,
+                      **kwargs)
                 for x in range(self.n_hidden)
             ]
         assert len(self.hidden_layers) == self.n_hidden
-        self.output_node = Dense(1, activation='sigmoid',
+        self.output_node = Dense(1, activation="linear",
                                  kernel_regularizer=self.kernel_regularizer)
         if self._use_zeroth_model:
-            self.output_node_zeroth = Dense(1, activation='sigmoid',
+            self.output_node_zeroth = Dense(1, activation="linear",
                                             kernel_regularizer=self.kernel_regularizer)
 
     def _create_zeroth_order_model(self):
@@ -187,6 +190,7 @@ class FETANetwork(ObjectRanker, Tunable):
             result = self._predict_pair(pairs[:, 0], pairs[:, 1],
                                         only_pairwise=True, **kwd)[:, 0]
             scores[n] += result.reshape(n_objects, n_objects - 1).mean(axis=1)
+            scores[n] = 1. / (1. + np.exp(-scores[n]))
             del result
         del pairs
         return scores
@@ -261,7 +265,7 @@ class FETANetwork(ObjectRanker, Tunable):
         self.logger.debug('1st order model finished')
         if self._use_zeroth_model:
             scores = add([scores, zeroth_order_scores])
-        return scores
+        return Activation('sigmoid')(scores)
 
     def sub_sampling(self, X, Y):
         if self._n_objects > self.max_number_of_objects:
@@ -269,7 +273,8 @@ class FETANetwork(ObjectRanker, Tunable):
             idx = self.random_state.randint(bucket_size,
                                             size=(len(X), self.n_objects))
             # TODO: subsampling multiple rankings
-            idx += np.arange(start=0, stop=self._n_objects, step=bucket_size)[:self.n_objects]
+            idx += np.arange(start=0, stop=self._n_objects, step=bucket_size)[
+                   :self.n_objects]
             X = X[np.arange(X.shape[0])[:, None], idx]
             Y = Y[np.arange(X.shape[0])[:, None], idx]
             tmp_sort = Y.argsort(axis=-1)
@@ -279,7 +284,10 @@ class FETANetwork(ObjectRanker, Tunable):
 
     def _predict_scores_fixed(self, X, **kwargs):
         n_instances, n_objects, n_features = tensorify(X).get_shape().as_list()
-        self.logger.info("For Test instances {} objects {} features {}".format(n_instances, n_objects, n_features))
+        self.logger.info(
+            "For Test instances {} objects {} features {}".format(n_instances,
+                                                                  n_objects,
+                                                                  n_features))
         if self.max_number_of_objects < self._n_objects or self.n_objects != n_objects:
             scores = self._predict_scores_using_pairs(X, **kwargs)
         else:
