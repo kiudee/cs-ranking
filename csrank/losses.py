@@ -10,7 +10,7 @@ def identifiable(loss_function):
         alpha = 1e-10
         scores_i = K.sum(y_pred, axis=1)
         sum_of_scores = K.cast(y_pred.get_shape().as_list()[1] / 2,
-                               dtype='float32')
+            dtype='float32')
         deviation = K.sum(K.square(scores_i - sum_of_scores))
         return alpha * deviation + loss_function(y_true, y_pred)
 
@@ -21,7 +21,7 @@ def identifiable(loss_function):
 def hinged_rank_loss(y_true, y_pred):
     y_true, y_pred = tensorify(y_true), tensorify(y_pred)
     mask = K.cast(K.greater(y_true[:, None] - y_true[:, :, None], 0),
-                  dtype='float32')
+        dtype='float32')
     diff = y_pred[:, :, None] - y_pred[:, None]
     hinge = K.maximum(mask * (1 - diff), 0)
     n = K.sum(mask, axis=(1, 2))
@@ -32,7 +32,7 @@ def hinged_rank_loss(y_true, y_pred):
 def smooth_rank_loss(y_true, y_pred):
     y_true, y_pred = tensorify(y_true), tensorify(y_pred)
     mask = K.cast(K.greater(y_true[:, None] - y_true[:, :, None], 0),
-                  dtype='float32')
+        dtype='float32')
     exped = K.exp(y_pred[:, None] - y_pred[:, :, None])
     result = K.sum(exped * mask, axis=[1, 2])
     return result / K.sum(mask, axis=(1, 2))

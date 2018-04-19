@@ -79,7 +79,7 @@ def make_ndcg_at_k_loss(k=5):
         row_ind = K.cumsum(K.ones_like(toppred_ind), axis=0) - 1
         ind = K.stack([row_ind, toppred_ind], axis=-1)
         pred_rel = K.sum(tf.gather_nd(relevance, ind) / log_term, axis=-1,
-                         keepdims=True)
+            keepdims=True)
         gain = pred_rel / idcg
         return gain
 

@@ -34,7 +34,7 @@ class RankingbyPairwiseComparison(LabelRanker, Tunable):
             else:
                 Y_train.append(0)
         model = LogisticRegression(C=self.C, tol=self.tol, fit_intercept=self.fit_intercept,
-                                   random_state=self.random_state)
+            random_state=self.random_state)
         model.fit(X, Y_train)
         return model
 

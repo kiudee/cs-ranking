@@ -31,23 +31,23 @@ class TripAdviosrDataset(object):
         self.datasets_dictionaries[BERLIN] = full_dataset[full_dataset.berlin == 1].drop(
             full_dataset.columns[city_indices],
             axis=1).sort_values(by=[POPINDEX],
-                                ascending=[True])
+            ascending=[True])
         self.datasets_dictionaries[DUSSLEDORF] = full_dataset[full_dataset.duesseldorf == 1].drop(
             full_dataset.columns[city_indices], axis=1).sort_values(by=[POPINDEX], ascending=[True])
         self.datasets_dictionaries[FRANKFURT] = full_dataset[full_dataset.frankfurt == 1].drop(
             full_dataset.columns[city_indices],
             axis=1).sort_values(by=[POPINDEX],
-                                ascending=[
-                                    True])
+            ascending=[
+                True])
         self.datasets_dictionaries[HAMBURG] = full_dataset[full_dataset.hamburg == 1].drop(
             full_dataset.columns[city_indices],
             axis=1).sort_values(by=[POPINDEX],
-                                ascending=[
-                                    True])
+            ascending=[
+                True])
         self.datasets_dictionaries[MUENCHEN] = full_dataset[full_dataset.muenchen == 1].drop(
             full_dataset.columns[city_indices],
             axis=1).sort_values(by=[POPINDEX],
-                                ascending=[True])
+            ascending=[True])
         for key, value in self.datasets_dictionaries.items():
             popindex = value[POPINDEX]
             value.drop(POPINDEX, axis=1, inplace=True)

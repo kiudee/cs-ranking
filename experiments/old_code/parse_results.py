@@ -22,7 +22,7 @@ if __name__ == '__main__':
         for ranker_name in rankers_dict[OBJECT_RANKING].keys():
             one_row = ["{}".format(ranker_name.upper())]
             df_path = os.path.join(DIR_PATH, "multiple_cv_results",
-                                   ('{}_{}' + '.csv').format(dataset_name, ranker_name))
+                ('{}_{}' + '.csv').format(dataset_name, ranker_name))
             if os.path.isfile(df_path):
                 df = pd.read_csv(df_path)
                 df[ZERO_ONE_RANK_ACCURACY] = 1.0 - df["ZeroOneRankLossTies"]
@@ -32,7 +32,7 @@ if __name__ == '__main__':
                 data.append(one_row)
         if (len(data) > 0):
             df_path = os.path.join(DIR_PATH, "multiple_cv_results",
-                                   ('{}_{}' + '.csv').format(dataset_name, "dataset"))
+                ('{}_{}' + '.csv').format(dataset_name, "dataset"))
             create_dir_recursively(df_path, is_file_path=True)
             dataFrame = pd.DataFrame(data, columns=columns)
             dataFrame.to_csv(df_path)

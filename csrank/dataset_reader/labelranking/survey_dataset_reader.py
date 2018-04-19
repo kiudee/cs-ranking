@@ -14,7 +14,7 @@ from ..dataset_reader import DatasetReader
 class SurveyDatasetReader(DatasetReader):
     def __init__(self, random_state=None, **kwargs):
         super(SurveyDatasetReader, self).__init__(learning_problem=LABEL_RANKING, dataset_folder='survey_data',
-                                                  **kwargs)
+            **kwargs)
         self.train_file = os.path.join(self.dirname, 'rawdata_all.dta')
         self.random_state = check_random_state(random_state)
         self.__load_dataset__()

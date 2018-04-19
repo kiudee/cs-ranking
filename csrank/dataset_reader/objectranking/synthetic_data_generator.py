@@ -38,11 +38,11 @@ class SyntheticDatasetGenerator(DatasetReader):
     def splitter(self, iter):
         for i in iter:
             X_train, Y_train = self.dataset_function(**self.kwargs,
-                                                     n_instances=self.n_train_instances,
-                                                     seed=10 * i + 32)
+                n_instances=self.n_train_instances,
+                seed=10 * i + 32)
             X_test, Y_test = self.dataset_function(**self.kwargs,
-                                                   n_instances=self.n_test_instances,
-                                                   seed=10 * i + 32)
+                n_instances=self.n_test_instances,
+                seed=10 * i + 32)
         yield X_train, Y_train, X_test, Y_test
 
     def get_complete_dataset(self):
@@ -71,10 +71,10 @@ class SyntheticDatasetGenerator(DatasetReader):
                                seed=42, **kwd):
         random_state = np.random.RandomState(seed=seed)
         X, y, coeff = make_regression(n_samples=n_instances * n_objects,
-                                      n_features=n_features,
-                                      n_informative=n_informative, coef=True,
-                                      noise=noise,
-                                      random_state=random_state)
+            n_features=n_features,
+            n_informative=n_informative, coef=True,
+            noise=noise,
+            random_state=random_state)
         X = X.reshape(n_instances, n_objects, n_features)
         y = y.reshape(n_instances, n_objects)
         rankings = scores_to_rankings(y)
@@ -108,9 +108,9 @@ class SyntheticDatasetGenerator(DatasetReader):
         n_samples = n_instances * n_objects
         random_state = np.random.RandomState(seed=seed)
         x, y = make_blobs(n_samples=n_samples, centers=n_objects,
-                          n_features=n_features, cluster_std=cluster_std,
-                          center_box=center_box, random_state=random_state,
-                          shuffle=True)
+            n_features=n_features, cluster_std=cluster_std,
+            center_box=center_box, random_state=random_state,
+            shuffle=True)
         y = np.array([y])
         samples = np.append(x, y.T, axis=1)
         samples = samples[samples[:, n_features].argsort()]

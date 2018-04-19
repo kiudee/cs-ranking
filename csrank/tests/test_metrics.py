@@ -9,8 +9,8 @@ from csrank.metrics import zero_one_rank_loss, zero_one_rank_loss_for_scores, \
 
 
 @pytest.fixture(scope="module",
-                params=[(True, False), (False, True)],
-                ids=['NoTies', 'Ties'])
+    params=[(True, False), (False, True)],
+    ids=['NoTies', 'Ties'])
 def problem_for_pred(request):
     is_numpy, ties = request.param
     y_true = np.arange(5)[None, :]
@@ -27,8 +27,8 @@ def problem_for_pred(request):
 
 
 @pytest.fixture(scope="module",
-                params=[(True, False), (False, True)],
-                ids=['NoTies', 'Ties'])
+    params=[(True, False), (False, True)],
+    ids=['NoTies', 'Ties'])
 def problem_for_scores(request):
     is_numpy, ties = request.param
     y_true = np.arange(5)[None, :]
@@ -83,8 +83,8 @@ def test_ndcg(problem_for_pred):
     expected_dcg = 15. + 3. / np.log2(3.)
     expected_idcg = 15. + 7. / np.log2(3.)
     assert_almost_equal(actual=real_gain,
-                        desired=np.array([[expected_dcg / expected_idcg]]),
-                        decimal=5)
+        desired=np.array([[expected_dcg / expected_idcg]]),
+        decimal=5)
 
 
 def test_kendalls_tau_for_scores(problem_for_scores):

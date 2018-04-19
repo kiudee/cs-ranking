@@ -1,11 +1,10 @@
-from csrank import FETANetwork
-
 import numpy as np
-
 from keras.losses import binary_crossentropy
 from keras.regularizers import l2
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
+from sklearn.model_selection import train_test_split
+
+from csrank import FETANetwork
 
 
 class FETAChoiceFunction(FETANetwork):
@@ -17,11 +16,11 @@ class FETAChoiceFunction(FETANetwork):
                  use_early_stopping=False, es_patience=300, batch_size=256,
                  random_state=None, **kwargs):
         super().__init__(n_objects, n_features, n_hidden, n_units,
-                         add_zeroth_order_model, max_number_of_objects,
-                         num_subsample, loss_function, batch_normalization,
-                         kernel_regularizer, non_linearities, optimizer,
-                         metrics, use_early_stopping, es_patience, batch_size,
-                         random_state, **kwargs)
+            add_zeroth_order_model, max_number_of_objects,
+            num_subsample, loss_function, batch_normalization,
+            kernel_regularizer, non_linearities, optimizer,
+            metrics, use_early_stopping, es_patience, batch_size,
+            random_state, **kwargs)
         self.threshold = 0.5
 
     def _tune_threshold(self, X_val, Y_val, thin_thresholds=1):
@@ -47,7 +46,7 @@ class FETAChoiceFunction(FETANetwork):
                 X, Y, test_size=tune_size)
             try:
                 super().fit(X_train, Y_train, epochs, callbacks,
-                            validation_split, verbose, **kwd)
+                    validation_split, verbose, **kwd)
             finally:
                 self.logger.info('Fitting utility function finished.'
                                  ' Start tuning threshold.')
@@ -56,7 +55,7 @@ class FETAChoiceFunction(FETANetwork):
                     thin_thresholds=thin_thresholds)
         else:
             super().fit(X, Y, epochs, callbacks, validation_split, verbose,
-                        **kwd)
+                **kwd)
             self.threshold = 0.5
 
     def predict_scores(self, X, **kwargs):
@@ -86,22 +85,22 @@ class FETAChoiceFunction(FETANetwork):
                         y == 1).sum() else n_objects
                 if positives > bucket_size:
                     cp = self.random_state.choice(positives, size=bucket_size,
-                                                  replace=False) + 1
+                        replace=False) + 1
                 else:
                     cp = self.random_state.choice(positives,
-                                                  size=bucket_size) + 1
+                        size=bucket_size) + 1
                 idx = []
                 for c in cp:
                     pos = self.random_state.choice(len(ind_1), size=c,
-                                                   replace=False, p=p_1)
+                        replace=False, p=p_1)
                     if n_objects - c > len(ind_0):
                         neg = self.random_state.choice(len(ind_0),
-                                                       size=n_objects - c,
-                                                       p=p_0)
+                            size=n_objects - c,
+                            p=p_0)
                     else:
                         neg = self.random_state.choice(len(ind_0),
-                                                       size=n_objects - c,
-                                                       replace=False, p=p_0)
+                            size=n_objects - c,
+                            replace=False, p=p_0)
                     p_0[neg] = 0.2 * p_0[neg]
                     p_0 = p_0 / p_0.sum()
                     i = np.concatenate((ind_1[pos], ind_0[neg]))
@@ -114,7 +113,7 @@ class FETAChoiceFunction(FETANetwork):
                 idx = np.array(idx)
             else:
                 idx = self.random_state.choice(ind_1,
-                                               size=(bucket_size, n_objects))
+                    size=(bucket_size, n_objects))
                 idx = np.array(idx)
             if len(X_train) == 0:
                 X_train = x[idx]
@@ -123,5 +122,5 @@ class FETAChoiceFunction(FETANetwork):
                 Y_train = np.concatenate([Y_train, y[idx]], axis=0)
                 X_train = np.concatenate([X_train, x[idx]], axis=0)
         print("Sampled instances {} objects {}".format(X_train.shape[0],
-                                                       X_train.shape[1]))
+            X_train.shape[1]))
         return X_train, Y_train

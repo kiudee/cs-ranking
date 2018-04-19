@@ -39,7 +39,7 @@ if __name__ == '__main__':
     cindex = int(arguments['--cindex'])
     problem = arguments['--problem']
     dataset_name, ranker_name = get_applicable_ranker_dataset(dataset_name=dataset_name, ranker_name=ranker_name,
-                                                              problem=problem)
+        problem=problem)
     dataset_function_params, dataset_str = get_dataset_str(dataset_function_params, dataset_name)
     file_name_format = '{}_{}'
 
@@ -60,13 +60,13 @@ if __name__ == '__main__':
     logger.debug(arguments)
     dataset_function_params['random_state'] = random_state
     ranker, dataset_reader = get_ranker_and_dataset_functions(ranker_name, dataset_name, dataset_function_params,
-                                                              problem)
+        problem)
 
     X_train, Y_train, X_test, Y_test = dataset_reader.get_single_train_test_split()
     n_features, n_objects = log_test_train_data(X_train, X_test, logger)
     ranker_params, fit_params, parameter_ranges = get_ranker_parameters(ranker_name, n_features, n_objects,
-                                                                        dataset_name,
-                                                                        dataset_function_params)
+        dataset_name,
+        dataset_function_params)
 
     logger.info("ranker_params {} fit_params {}".format(ranker_params, fit_params))
     # Finally, fit a model on the complete training set:

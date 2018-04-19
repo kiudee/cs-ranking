@@ -3,7 +3,6 @@ from .objectranking.depth_dataset_reader import DepthDatasetReader
 from .objectranking.image_dataset_reader import ImageDatasetReader
 from .objectranking.letor_object_ranking_dataset_reader import LetorObjectRankingDatasetReader
 from .objectranking.neural_sentence_ordering_reader import SentenceOrderingDatasetReader
-from .objectranking.neural_sentence_ordering_reader import SentenceOrderingDatasetReader
 from .objectranking.rcv_dataset_reader import RCVDatasetReader
 from .objectranking.sushi_object_ranking_dataset_reader import SushiObjectRankingDatasetReader
 from .objectranking.synthetic_data_generator import SyntheticDatasetGenerator

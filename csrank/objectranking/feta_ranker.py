@@ -24,8 +24,7 @@ class FETANetwork(ObjectRanker, Tunable):
                  num_subsample=5,
                  loss_function=hinged_rank_loss, batch_normalization=False,
                  kernel_regularizer=l2(l=1e-4), non_linearities='selu',
-                 optimizer="adam", metrics=None, use_early_stopping=False,
-                 es_patience=300, batch_size=256, random_state=None, **kwargs):
+                 optimizer="adam", metrics=None, batch_size=256, random_state=None, **kwargs):
         """
         Create a FETA-network architecture for object ranking.
         Training and prediction complexity is quadratic in the number of objects.
@@ -101,41 +100,41 @@ class FETANetwork(ObjectRanker, Tunable):
             if self._use_zeroth_model:
                 self.hidden_layers_zeroth = [
                     NormalizedDense(self.n_units,
-                                    name="hidden_zeroth_{}".format(x),
-                                    kernel_regularizer=self.kernel_regularizer,
-                                    activation=self.non_linearities,
-                                    **kwargs)
+                        name="hidden_zeroth_{}".format(x),
+                        kernel_regularizer=self.kernel_regularizer,
+                        activation=self.non_linearities,
+                        **kwargs)
                     for x in range(self.n_hidden)
                 ]
             self.hidden_layers = [
                 NormalizedDense(self.n_units, name="hidden_{}".format(x),
-                                kernel_regularizer=self.kernel_regularizer,
-                                activation=self.non_linearities,
-                                **kwargs)
+                    kernel_regularizer=self.kernel_regularizer,
+                    activation=self.non_linearities,
+                    **kwargs)
                 for x in range(self.n_hidden)
             ]
         else:
             if self._use_zeroth_model:
                 self.hidden_layers_zeroth = [
                     Dense(self.n_units, name="hidden_zeroth_{}".format(x),
-                          kernel_regularizer=self.kernel_regularizer,
-                          activation=self.non_linearities,
-                          **kwargs)
+                        kernel_regularizer=self.kernel_regularizer,
+                        activation=self.non_linearities,
+                        **kwargs)
                     for x in range(self.n_hidden)
                 ]
             self.hidden_layers = [
                 Dense(self.n_units, name="hidden_{}".format(x),
-                      kernel_regularizer=self.kernel_regularizer,
-                      activation=self.non_linearities,
-                      **kwargs)
+                    kernel_regularizer=self.kernel_regularizer,
+                    activation=self.non_linearities,
+                    **kwargs)
                 for x in range(self.n_hidden)
             ]
         assert len(self.hidden_layers) == self.n_hidden
         self.output_node = Dense(1, activation="linear",
-                                 kernel_regularizer=self.kernel_regularizer)
+            kernel_regularizer=self.kernel_regularizer)
         if self._use_zeroth_model:
             self.output_node_zeroth = Dense(1, activation="linear",
-                                            kernel_regularizer=self.kernel_regularizer)
+                kernel_regularizer=self.kernel_regularizer)
 
     def _create_zeroth_order_model(self):
         inp = Input(shape=(self.n_features,))
@@ -188,7 +187,7 @@ class FETANetwork(ObjectRanker, Tunable):
             for k, (i, j) in enumerate(permutations(range(n_objects), 2)):
                 pairs[k] = (X[n, i], X[n, j])
             result = self._predict_pair(pairs[:, 0], pairs[:, 1],
-                                        only_pairwise=True, **kwd)[:, 0]
+                only_pairwise=True, **kwd)[:, 0]
             scores[n] += result.reshape(n_objects, n_objects - 1).mean(axis=1)
             scores[n] = 1. / (1. + np.exp(-scores[n]))
             del result
@@ -209,12 +208,12 @@ class FETANetwork(ObjectRanker, Tunable):
 
         self.logger.debug('Compiling complete model...')
         self.model.compile(loss=self.loss_function, optimizer=self.optimizer,
-                           metrics=self.metrics)
+            metrics=self.metrics)
         self.logger.debug('Starting gradient descent...')
 
         self.model.fit(x=X, y=Y, batch_size=self.batch_size, epochs=epochs,
-                       callbacks=callbacks, validation_split=validation_split,
-                       verbose=verbose, **kwd)
+            callbacks=callbacks, validation_split=validation_split,
+            verbose=verbose, **kwd)
 
     def construct_model(self):
         def create_input_lambda(i):
@@ -271,7 +270,7 @@ class FETANetwork(ObjectRanker, Tunable):
         if self._n_objects > self.max_number_of_objects:
             bucket_size = int(self._n_objects / self.max_number_of_objects)
             idx = self.random_state.randint(bucket_size,
-                                            size=(len(X), self.n_objects))
+                size=(len(X), self.n_objects))
             # TODO: subsampling multiple rankings
             idx += np.arange(start=0, stop=self._n_objects, step=bucket_size)[
                    :self.n_objects]
@@ -286,8 +285,8 @@ class FETANetwork(ObjectRanker, Tunable):
         n_instances, n_objects, n_features = tensorify(X).get_shape().as_list()
         self.logger.info(
             "For Test instances {} objects {} features {}".format(n_instances,
-                                                                  n_objects,
-                                                                  n_features))
+                n_objects,
+                n_features))
         if self.max_number_of_objects < self._n_objects or self.n_objects != n_objects:
             scores = self._predict_scores_using_pairs(X, **kwargs)
         else:

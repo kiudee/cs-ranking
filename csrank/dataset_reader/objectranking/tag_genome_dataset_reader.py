@@ -19,7 +19,7 @@ DOC_FREQUENCY = "DocFrequency"
 class TagGenomeDatasetReader(DatasetReader):
     def __init__(self, n_train_instances=10000, n_test_instances=10000, n_objects=5, random_state=None, **kwargs):
         super(TagGenomeDatasetReader, self).__init__(learning_problem=OBJECT_RANKING, dataset_folder='tag_genome',
-                                                     **kwargs)
+            **kwargs)
 
         movies_dat = os.path.join(self.dirname, 'movies.dat')
         tag_rel_dat = os.path.join(self.dirname, 'tag_relevance.dat')
@@ -80,8 +80,8 @@ class TagGenomeDatasetReader(DatasetReader):
 
         for i, j in combinations_list:
             similarity_matrix_lin_list[get_key_for_indices(i, j)] = weighted_cosine_similarity(weights,
-                                                                                               movie_features[i],
-                                                                                               movie_features[j])
+                movie_features[i],
+                movie_features[j])
             # self.logger.info("calculating similarity {},{},{}".format(i, j, sim))
         for i in range(num_of_movies):
             similarity_matrix_lin_list[get_key_for_indices(i, i)] = 1.0
@@ -132,6 +132,6 @@ class TagGenomeDatasetReader(DatasetReader):
         self.__check_dataset_validity__()
 
         self.X, self.rankings = X_test, Y_test = self.make_similarity_based_dataset(self.n_test_instances,
-                                                                                    seed=seed + 1)
+            seed=seed + 1)
         self.__check_dataset_validity__()
         return X_train, Y_train, X_test, Y_test

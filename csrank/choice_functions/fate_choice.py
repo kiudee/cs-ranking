@@ -1,15 +1,13 @@
 import logging
 
 import numpy as np
-
 from keras.layers import Dense
 from keras.losses import binary_crossentropy
 from keras.regularizers import l2
-
 from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
 
-from csrank.fate_ranking import FATEObjectRankingCore
+from csrank.fate_network import FATEObjectRankingCore
 
 
 class FATEChoiceFunction(FATEObjectRankingCore):
@@ -24,13 +22,13 @@ class FATEChoiceFunction(FATEObjectRankingCore):
                  metrics=None,
                  **kwargs):
         super().__init__(n_object_features=n_object_features,
-                         n_hidden_joint_layers=n_hidden_joint_layers,
-                         n_hidden_joint_units=n_hidden_joint_units,
-                         n_hidden_set_layers=n_hidden_set_layers,
-                         n_hidden_set_units=n_hidden_set_units,
-                         metrics=metrics,
-                         kernel_regularizer=kernel_regularizer,
-                         **kwargs)
+            n_hidden_joint_layers=n_hidden_joint_layers,
+            n_hidden_joint_units=n_hidden_joint_units,
+            n_hidden_set_layers=n_hidden_set_layers,
+            n_hidden_set_units=n_hidden_set_units,
+            metrics=metrics,
+            kernel_regularizer=kernel_regularizer,
+            **kwargs)
         self.loss_function = loss_function
         self.metrics = metrics
         self.logger = logging.Logger('FATEChoiceFunction')
@@ -55,13 +53,13 @@ class FATEChoiceFunction(FATEObjectRankingCore):
         for i in range(self.n_hidden_joint_layers):
             self.joint_layers.append(
                 Dense(self.n_hidden_joint_units,
-                      name="joint_layer_{}".format(i),
-                      **kwargs)
+                    name="joint_layer_{}".format(i),
+                    **kwargs)
             )
 
         self.logger.info('Construct output score node')
         self.scorer = Dense(1, name="output_node", activation='sigmoid',
-                            kernel_regularizer=self.kernel_regularizer)
+            kernel_regularizer=self.kernel_regularizer)
 
     def _tune_threshold(self, X_val, Y_val, thin_thresholds=1):
         scores = self.predict_scores(X_val)
@@ -104,4 +102,3 @@ class FATEChoiceFunction(FATEObjectRankingCore):
 
     def __call__(self, X, **kwargs):
         return self.predict(X, **kwargs)
-

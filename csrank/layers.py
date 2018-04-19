@@ -1,10 +1,8 @@
 import logging
 
-from keras.layers import BatchNormalization, Dense, Activation, Input
+from keras.layers import BatchNormalization, Dense, Activation, Input, Lambda
 from keras.layers.merge import average
 from keras.models import Model
-
-from csrank.util import create_input_lambda
 
 __all__ = ['NormalizedDense', 'DeepSet']
 
@@ -95,9 +93,9 @@ class DeepSet(object):
 
         self.cached_models = dict()
         self._construct_layers(kernel_initializer=kernel_initializer,
-                               kernel_regularizer=kernel_regularizer,
-                               activation=activation,
-                               **kwargs)
+            kernel_regularizer=kernel_regularizer,
+            activation=activation,
+            **kwargs)
 
     def _construct_layers(self, **kwargs):
         # Create set representation layers:
@@ -128,7 +126,7 @@ class DeepSet(object):
         feature_repr = average([x for (j, x) in set_mappings])
 
         self.cached_models[n_objects] = Model(inputs=input_layer,
-                                              outputs=feature_repr)
+            outputs=feature_repr)
 
     def __call__(self, x):
         shape = x.shape
@@ -144,3 +142,8 @@ class DeepSet(object):
     def set_weights(self, weights):
         for i, layer in enumerate(self.set_mapping_layers):
             layer.set_weights(weights[i])
+
+
+def create_input_lambda(i):
+    """Extracts off an object tensor from an input tensor"""
+    return Lambda(lambda x: x[:, i])

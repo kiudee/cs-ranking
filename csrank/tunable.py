@@ -1,4 +1,3 @@
-import logging
 from abc import ABCMeta, abstractmethod
 
 
@@ -23,4 +22,3 @@ class Tunable(metaclass=ABCMeta):
             if has_set_param:
                 return True
         return NotImplemented
-

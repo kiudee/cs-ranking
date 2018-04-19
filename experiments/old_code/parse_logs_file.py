@@ -6,13 +6,13 @@ from collections import OrderedDict
 from datetime import datetime, timedelta
 
 import numpy as np
-from skopt import Optimizer
-from skopt import load, dump
+from skopt import Optimizer, load, dump
 from skopt.space import check_dimension
 from skopt.utils import cook_estimator, normalize_dimensions
 
+from csrank.constants import CMPNET, RANKNET, FETA_RANKER_ZERO, FETA_RANKER
 from csrank.util import print_dictionary
-from experiments.util import CMPNET, FETA_RANKER_ZERO, FETA_RANKER, RANKNET, object_rankers
+from experiments.util import learners
 
 OPTIMIZER_SINGLE_FOLD = "optimizer_single_fold"
 
@@ -28,7 +28,7 @@ def get_seed(lines):
 
 def create_opt(lines, ranker_name):
     gp_seed, opt_seed = get_seed(lines)
-    _ranker_class = object_rankers[ranker_name]
+    _ranker_class = learners[ranker_name]
     _ranker_class._use_early_stopping = True
     param_ranges = _ranker_class.set_tunable_parameter_ranges({})
     transformed = []
@@ -37,7 +37,7 @@ def create_opt(lines, ranker_name):
     space = normalize_dimensions(transformed)
     base_estimator = cook_estimator("GP", space=space, random_state=gp_seed, noise="gaussian")
     optimizer = Optimizer(dimensions=param_ranges, random_state=opt_seed,
-                          base_estimator=base_estimator)
+        base_estimator=base_estimator)
     return optimizer
 
 
@@ -93,8 +93,8 @@ def renew_optimizer(log_file):
         best_params = optimizer.Xi[best_i]
         print(
             "Best parameters so far with a loss of {:.4f} time of {:.4f}:\n {}".format(best_loss[0],
-                                                                                       best_loss[1],
-                                                                                       best_params))
+                best_loss[1],
+                best_params))
     else:
 
         best_i = np.argmin(optimizer.yi)
@@ -114,7 +114,7 @@ def check_optimizers(opt_path):
             best_loss = optimizer.yi[best_i]
             best_params = optimizer.Xi[best_i]
             print("Best parameters so far with a loss of {:.4f} time of {:.4f}:\n {}".format(best_loss[0], best_loss[1],
-                                                                                             best_params))
+                best_params))
         else:
             best_i = np.argmin(optimizer.yi)
             best_loss = optimizer.yi[best_i]

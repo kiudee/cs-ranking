@@ -20,8 +20,8 @@ from docopt import docopt
 
 from csrank.callbacks import DebugOutput
 from csrank.dataset_reader import SyntheticDatasetGenerator
-from csrank.fate_ranking import FATEObjectRanker
 from csrank.metrics import zero_one_rank_loss_for_scores
+from csrank.objectranking.fate_object_ranker import FATEObjectRanker
 from csrank.util import rename_file_if_exist, configure_logging_numpy_keras, get_tensor_value
 
 MODEL = "aModel"

@@ -8,22 +8,13 @@ from keras.layers import Input, Dense
 from keras.layers.merge import concatenate
 from keras.models import Model
 from keras.regularizers import l2
-from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_random_state
 
-from csrank.discretechoice.discrete_choice import ObjectChooser
-from csrank.dyadranking.contextual_ranking import ContextualRanker
-from csrank.labelranking.label_ranker import LabelRanker
-from csrank.layers import DeepSet
-from csrank.losses import hinged_rank_loss, smooth_rank_loss
-from csrank.metrics import zero_one_rank_loss_for_scores_ties, \
-    zero_one_rank_loss_for_scores
-from csrank.objectranking.object_ranker import ObjectRanker
+from csrank.layers import DeepSet, create_input_lambda
 from csrank.tunable import Tunable
-from csrank.util import scores_to_rankings, create_input_lambda, tensorify, \
-    print_dictionary
+from csrank.util import print_dictionary
 
-__all__ = ['FATELabelRanker', 'FATEObjectRanker', 'FATEContextualRanker', 'FATEObjectChooser']
+__all__ = []
 
 
 class FATERankingCore(Tunable, metaclass=ABCMeta):
@@ -47,8 +38,8 @@ class FATERankingCore(Tunable, metaclass=ABCMeta):
         self._optimizer_config = self.optimizer.get_config()
         self.__kwargs__ = kwargs
         self._construct_layers(activation=self.activation,
-                               kernel_initializer=self.kernel_initializer,
-                               kernel_regularizer=self.kernel_regularizer)
+            kernel_initializer=self.kernel_initializer,
+            kernel_regularizer=self.kernel_regularizer)
 
     def _construct_layers(self, **kwargs):
         """ Construct basic layers shared by all ranking algorithms:
@@ -67,13 +58,13 @@ class FATERankingCore(Tunable, metaclass=ABCMeta):
         for i in range(self.n_hidden_joint_layers):
             self.joint_layers.append(
                 Dense(self.n_hidden_joint_units,
-                      name="joint_layer_{}".format(i),
-                      **kwargs)
+                    name="joint_layer_{}".format(i),
+                    **kwargs)
             )
 
         self.logger.info('Construct output score node')
         self.scorer = Dense(1, name="output_node", activation='linear',
-                            kernel_regularizer=self.kernel_regularizer)
+            kernel_regularizer=self.kernel_regularizer)
 
     def join_input_layers(self, input_layer, *layers, n_layers, n_objects):
         """
@@ -168,8 +159,8 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
         self.model = None
         self.logger_gorc.info("args: {}".format(repr(kwargs)))
         self._create_set_layers(activation=self.activation,
-                                kernel_initializer=self.kernel_initializer,
-                                kernel_regularizer=self.kernel_regularizer)
+            kernel_initializer=self.kernel_initializer,
+            kernel_regularizer=self.kernel_regularizer)
         self.is_variadic = True
 
     def _create_set_layers(self, **kwargs):
@@ -187,8 +178,8 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
 
         if self.n_hidden_set_layers >= 1:
             self.set_layer = DeepSet(units=self.n_hidden_set_units,
-                                     layers=self.n_hidden_set_layers,
-                                     **kwargs)
+                layers=self.n_hidden_set_layers,
+                **kwargs)
         else:
             self.set_layer = None
 
@@ -230,17 +221,17 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
 
         for n_objects in buckets.keys():
             input_layer = Input(shape=(n_objects, n_features),
-                                name="input_node")
+                name="input_node")
 
             set_repr = self.set_layer(input_layer)
 
             scores = self.join_input_layers(input_layer, set_repr,
-                                            n_objects=n_objects,
-                                            n_layers=self.n_hidden_set_layers)
+                n_objects=n_objects,
+                n_layers=self.n_hidden_set_layers)
             model = Model(inputs=input_layer, outputs=scores)
             model.compile(loss=self.loss_function,
-                          optimizer=self.optimizer,
-                          metrics=self.metrics)
+                optimizer=self.optimizer,
+                metrics=self.metrics)
             models[n_objects] = model
         return models
 
@@ -283,7 +274,7 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
             for epoch in range(epochs):
 
                 self.logger.info("Epoch: {}, Learning rate: {}"
-                                 .format(epoch, learning_rate))
+                    .format(epoch, learning_rate))
 
                 # In the spirit of mini-batch SGD we also shuffle the buckets
                 # each epoch:
@@ -329,12 +320,12 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
 
                 input_layer = Input(shape=(n_objects,
                                            n_features),
-                                    name="input_node")
+                    name="input_node")
 
                 set_repr = self.set_layer(input_layer)
                 scores = self.join_input_layers(input_layer, set_repr,
-                                                n_objects=n_objects,
-                                                n_layers=self.n_hidden_set_layers)
+                    n_objects=n_objects,
+                    n_layers=self.n_hidden_set_layers)
                 self.model = Model(inputs=input_layer, outputs=scores)
             self.model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
 
@@ -393,10 +384,10 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
             existing one if one exists.
         """
         self._fit(X=X, Y=Y, epochs=epochs, inner_epochs=inner_epochs,
-                  callbacks=callbacks,
-                  validation_split=validation_split, verbose=verbose,
-                  global_lr=global_lr, global_momentum=global_momentum,
-                  min_bucket_size=min_bucket_size, refit=refit, **kwargs)
+            callbacks=callbacks,
+            validation_split=validation_split, verbose=verbose,
+            global_lr=global_lr, global_momentum=global_momentum,
+            min_bucket_size=min_bucket_size, refit=refit, **kwargs)
 
     def fit_generator(self, generator, epochs=35, steps_per_epoch=10,
                       inner_epochs=1, callbacks=None, verbose=0,
@@ -442,24 +433,24 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
             existing one if one exists.
         """
         self._fit(generator=generator, epochs=epochs,
-                  steps_per_epoch=steps_per_epoch, inner_epochs=inner_epochs,
-                  callbacks=callbacks, verbose=verbose,
-                  global_lr=global_lr, global_momentum=global_momentum,
-                  min_bucket_size=min_bucket_size, refit=refit, **kwargs)
+            steps_per_epoch=steps_per_epoch, inner_epochs=inner_epochs,
+            callbacks=callbacks, verbose=verbose,
+            global_lr=global_lr, global_momentum=global_momentum,
+            min_bucket_size=min_bucket_size, refit=refit, **kwargs)
 
     def get_set_representation(self, X, kwargs):
         n_instances, n_objects, n_features = X.shape
         self.logger.info("Test Set instances {} objects {} features {}".format(n_instances, n_objects, n_features))
         input_layer_scorer = Input(shape=(n_objects,
                                           self.n_object_features),
-                                   name="input_node")
+            name="input_node")
         if self.n_hidden_set_layers >= 1:
             self.set_layer(input_layer_scorer)
             fr = self.set_layer.cached_models[n_objects].predict(X, **kwargs)
             del self.set_layer.cached_models[n_objects]
             X_n = np.empty((fr.shape[0], n_objects,
                             fr.shape[1] + self.n_object_features),
-                           dtype="float")
+                dtype="float")
             for i in range(n_objects):
                 X_n[:, i] = np.concatenate((X[:, i], fr), axis=1)
             X = np.copy(X_n)
@@ -487,7 +478,7 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
             "After applying the set representations instances {} objects {}"
             "features {}".format(n_instances, n_objects, n_features))
         input_layer_joint = Input(shape=(n_objects, n_features),
-                                  name="input_joint_model")
+            name="input_joint_model")
         scores = []
 
         inputs = [create_input_lambda(i)(input_layer_joint) for i in
@@ -544,9 +535,9 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
                                batch_size=128,
                                **point):
         FATERankingCore.set_tunable_parameters(self, n_hidden_joint_units=n_hidden_joint_units,
-                                               n_hidden_joint_layers=n_hidden_joint_layers, reg_strength=reg_strength,
-                                               learning_rate=learning_rate,
-                                               batch_size=batch_size, **point)
+            n_hidden_joint_layers=n_hidden_joint_layers, reg_strength=reg_strength,
+            learning_rate=learning_rate,
+            batch_size=batch_size, **point)
         self.n_hidden_set_units = n_hidden_set_units
         self.n_hidden_set_layers = n_hidden_set_layers
 
@@ -558,160 +549,3 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
             self.model = None
         if hasattr(self, 'models'):
             self.models = None
-
-
-
-class FATEObjectRanker(FATEObjectRankingCore, ObjectRanker):
-    """ Create a FATE-network architecture for object ranking.
-
-        Training complexity is quadratic in the number of objects and
-        prediction complexity is only linear.
-
-        Parameters
-        ----------
-        n_object_features : int
-            Dimensionality of the feature space of each object
-        n_hidden_set_layers : int
-            Number of hidden layers for the context representation
-        n_hidden_set_units : int
-            Number of hidden units in each layer of the context representation
-        loss_function : function
-            Differentiable loss function for the score vector
-        metrics : list
-            List of evaluation metrics (can be non-differentiable)
-        **kwargs
-            Keyword arguments for the hidden units
-        """
-
-    def __init__(self, n_object_features,
-                 n_hidden_set_layers=2,
-                 n_hidden_set_units=32,
-                 loss_function=smooth_rank_loss,
-                 metrics=None,
-                 **kwargs):
-        FATEObjectRankingCore.__init__(self,
-                                       n_object_features=n_object_features,
-                                       n_hidden_set_layers=n_hidden_set_layers,
-                                       n_hidden_set_units=n_hidden_set_units,
-                                       **kwargs)
-        self.loss_function = loss_function
-        self.logger = logging.getLogger(FATEObjectRanker.__name__)
-        if metrics is None:
-            metrics = [zero_one_rank_loss_for_scores_ties,
-                       zero_one_rank_loss_for_scores]
-        self.metrics = metrics
-        self.logger.info("Initializing network with object features {}".format(
-            self.n_object_features))
-
-    def predict(self, X, **kwargs):
-        self.logger.info("Predicting ranks")
-        if isinstance(X, dict):
-            result = dict()
-            for n, scores in self.predict_scores(X, **kwargs).items():
-                predicted_rankings = scores_to_rankings(scores)
-                result[n] = predicted_rankings
-            return result
-        return ObjectRanker.predict(self, X, **kwargs)
-
-    def _predict_scores_fixed(self, X, **kwargs):
-        return FATEObjectRankingCore._predict_scores_fixed(self, X, **kwargs)
-
-
-class FATEObjectChooser(FATEObjectRankingCore, ObjectChooser):
-    def __init__(self, loss_function='categorical_hinge', metrics=None,
-                 **kwargs):
-        FATEObjectRankingCore.__init__(self, **kwargs)
-        self.loss_function = loss_function
-        if metrics is None:
-            metrics = ['categorical_accuracy']
-        self.metrics = metrics
-        self.model = None
-        self.logger = logging.getLogger(FATEObjectChooser.__name__)
-
-    def predict(self, X, **kwargs):
-        scores = self.predict_scores(X, **kwargs)
-        if self.is_variadic:
-            result = dict()
-            for n, s in scores.items():
-                result[n] = s.argmax(axis=1)
-        else:
-            self.logger.info("Predicting chosen object")
-            result = scores.argmax(axis=1)
-        return result
-
-
-class FATELabelRanker(FATERankingCore, LabelRanker):
-    def __init__(self, loss_function=hinged_rank_loss, metrics=None,
-                 **kwargs):
-        super().__init__(self, label_ranker=True, **kwargs)
-        self.loss_function = loss_function
-        self.logger = logging.getLogger(FATELabelRanker.__name__)
-        if metrics is None:
-            metrics = [zero_one_rank_loss_for_scores_ties,
-                       zero_one_rank_loss_for_scores]
-        self.metrics = metrics
-        self.model = None
-        self.logger.info("Initializing network with object features {}".format(
-            self.n_object_features))
-        self._connect_layers()
-
-    def one_hot_encoder_lr_data_conversion(self, X, Y):
-        X_trans = []
-        for i, x in enumerate(X):
-            x = x[None, :]
-            x = np.repeat(x, len(Y[i]), axis=0)
-            label_binarizer = LabelBinarizer()
-            label_binarizer.fit(range(max(Y[i]) + 1))
-            b = label_binarizer.transform(Y[i])
-            x = np.concatenate((x, b), axis=1)
-            X_trans.append(x)
-        X_trans = np.array(X_trans)
-        return X_trans
-
-    def _create_set_layers(self, **kwargs):
-        FATEObjectRankingCore._create_set_layers(self, **kwargs)
-
-    def _connect_layers(self):
-        self.set_input_layers(self.inputs, self.set_repr,
-                              self.n_hidden_set_layers)
-
-    def fit(self, X, Y, callbacks=None, validation_split=0.1, verbose=0,
-            **kwargs):
-        self.logger.info("Fitting started")
-        X_trans = self.one_hot_encoder_lr_data_conversion(X, Y)
-
-        self.model = Model(inputs=self.input_layer, outputs=self.scores)
-        self.model.compile(loss=self.loss_function, optimizer=self.optimizer,
-                           metrics=self.metrics)
-        self.model.fit(
-            x=X_trans, y=Y, callbacks=callbacks,
-            validation_split=validation_split,
-            batch_size=self.batch_size,
-            verbose=verbose, **kwargs)
-        self.logger.info("Fitting completed")
-
-    def predict_scores(self, X, **kwargs):
-        self.logger.info("Predicting scores")
-        n_instances, n_objects, n_features = tensorify(X).get_shape().as_list()
-        Y = []
-        for i in range(n_instances):
-            Y.append(np.arange(n_objects))
-        Y = np.array(Y)
-        X_trans = self.one_hot_encoder_lr_data_conversion(X, Y)
-        return self.model.predict(X_trans, **kwargs)
-
-    def predict(self, X, **kwargs):
-        self.logger.info("Predicting ranks")
-        return LabelRanker.predict(self, X, **kwargs)
-
-
-class FATEContextualRanker(FATEObjectRankingCore, ContextualRanker):
-    def fit(self, Xo, Xc, Y, **kwargs):
-        pass
-
-    def predict_scores(self, Xo, Xc, **kwargs):
-        return self.model.predict([Xo, Xc], **kwargs)
-
-    def predict(self, Xo, Xc, **kwargs):
-        s = self.predict_scores(Xo, Xc, **kwargs)
-        return scores_to_rankings(s)

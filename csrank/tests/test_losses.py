@@ -13,7 +13,7 @@ def test_hinged_rank_loss():
     assert_almost_equal(
         actual=K.eval(
             hinged_rank_loss(y_true_tensor,
-                             K.constant(np.array([[0., 0., 0., 0., 0.]])))),
+                K.constant(np.array([[0., 0., 0., 0., 0.]])))),
         desired=np.array([1.]))
 
     # Predicting the correct ranking improves, but penalizes by difference of
@@ -21,7 +21,7 @@ def test_hinged_rank_loss():
     assert_almost_equal(
         actual=K.eval(
             hinged_rank_loss(y_true_tensor,
-                             K.constant(np.array([[.2, .1, .0, -0.1, -0.2]])))),
+                K.constant(np.array([[.2, .1, .0, -0.1, -0.2]])))),
         desired=np.array([0.8]))
 
 
@@ -33,7 +33,7 @@ def test_smooth_rank_loss():
     assert_almost_equal(
         actual=K.eval(
             smooth_rank_loss(y_true_tensor,
-                             K.constant(np.array([[0., 0., 0., 0., 0.]])))),
+                K.constant(np.array([[0., 0., 0., 0., 0.]])))),
         desired=np.array([1.]))
 
     # Predicting the correct ranking improves, but penalizes by difference of
@@ -41,5 +41,5 @@ def test_smooth_rank_loss():
     assert_almost_equal(
         actual=K.eval(
             smooth_rank_loss(y_true_tensor,
-                             K.constant(np.array([[.2, .1, .0, -0.1, -0.2]])))),
+                K.constant(np.array([[.2, .1, .0, -0.1, -0.2]])))),
         desired=np.array([0.822749841877]))

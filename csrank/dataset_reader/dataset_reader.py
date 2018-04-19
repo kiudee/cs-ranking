@@ -17,7 +17,7 @@ class DatasetReader(metaclass=ABCMeta):
         self.Xc = None
         self.learning_problem = learning_problem
         dirname = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))).replace("dataset_reader",
-                                                                                                    "datasets")
+            "datasets")
         if dataset_folder is not None:
             self.dirname = os.path.join(dirname, dataset_folder)
             if not os.path.exists(self.dirname):
@@ -52,7 +52,7 @@ class DatasetReader(metaclass=ABCMeta):
 
             if self.learning_problem == DYAD_RANKING:
                 assert len(self.Xc.shape) == 2, EXCEPTION_CONTEXT_ARRAY_SHAPE.format(self.learning_problem,
-                                                                                     self.Xc.shape)
+                    self.Xc.shape)
                 n_instances, n_features = self.Xc.shape
                 assert (n_instances == self.rankings.shape[0]), EXCEPTION_RANKINGS_FEATURES_INSTANCES.format(
                     self.learning_problem, self.rankings.shape[0], n_instances)

@@ -105,10 +105,10 @@ class DepthDatasetReader(DatasetReader):
             for i in range(order_length):
                 if i != order_length - 1:
                     objs = random_state.choice(obj_indices[i * interval:(i + 1) * interval], num_of_orderings_per_image,
-                                               replace=False)
+                        replace=False)
                 else:
                     objs = random_state.choice(obj_indices[i * interval:len(obj_indices)], num_of_orderings_per_image,
-                                               replace=False)
+                        replace=False)
                 objects_i[i] = objs
             for i in range(num_of_orderings_per_image):
                 indices = objects_i[:, i]

@@ -14,7 +14,7 @@ NAME = 'SentenceOrderingDatasetReader'
 class SentenceOrderingDatasetReader(DatasetReader):
     def __init__(self, n_dims=25, train_obj=None, **kwargs):
         super(SentenceOrderingDatasetReader, self).__init__(learning_problem=OBJECT_RANKING,
-                                                            dataset_folder='sentence_ordering', **kwargs)
+            dataset_folder='sentence_ordering', **kwargs)
         self.logger = logging.getLogger(name=NAME)
         dimensions = [25, 50, 100, 200]
         d_files = ["test_{}_dim.h5", "train_{}_dim.h5"]
