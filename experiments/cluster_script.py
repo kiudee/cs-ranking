@@ -50,8 +50,8 @@ if __name__ == "__main__":
     is_gpu = bool(int(arguments["--isgpu"]))
     schema = arguments["--schema"]
     ###################### POSTGRESQL PARAMETERS ###############################
-    config_filePath = os.path.join(DIR_PATH, 'config', config_fileName)
-    dbConnector = DBConnector(config_file_path=config_filePath, is_gpu=is_gpu, random_state=seed, schema=schema)
+    config_file_path = os.path.join(DIR_PATH, 'config', config_fileName)
+    dbConnector = DBConnector(config_file_path=config_file_path, is_gpu=is_gpu, random_state=seed, schema=schema)
     if 'CCS_REQID' in os.environ.keys():
         cluster_id = int(os.environ['CCS_REQID'])
     dbConnector.fetch_job_arguments(cluster_id=cluster_id)
@@ -83,6 +83,7 @@ if __name__ == "__main__":
             create_dir_recursively(log_path, True)
             configure_logging_numpy_keras(seed=seed, log_path=log_path)
             logger = logging.getLogger('Experiment')
+            logger.info("DB config filePath {}".format(config_file_path))
             logger.info("Arguments {}".format(arguments))
             logger.info("Job Description {}".format(print_dictionary(dbConnector.job_description)))
             duration = get_duration_seconds(duration)

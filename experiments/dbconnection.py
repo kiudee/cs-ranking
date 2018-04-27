@@ -1,5 +1,4 @@
 import hashlib
-import inspect
 import json
 import logging
 import os
@@ -13,8 +12,7 @@ from sklearn.utils import check_random_state
 class DBConnector(metaclass=ABCMeta):
 
     def __init__(self, config_file_path, is_gpu=False, random_state=None, schema='master', **kwargs):
-        self.setup_logging()
-        self.logger.info("Path {}".format(config_file_path))
+        self.logger = logging.getLogger('DBConnector')
         self.random_state = check_random_state(random_state)
         self.is_gpu = is_gpu
         self.schema = schema
@@ -30,18 +28,6 @@ class DBConnector(metaclass=ABCMeta):
             self.logger.info("Connection Successful")
         else:
             raise ValueError('File does not exist for the configuration of the database')
-
-    def setup_logging(self):
-        self.logger = logging.getLogger('DBConnector')
-        dirname = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-        log_path = os.path.join(dirname, "logs", "dblogs.log")
-        FORMAT = '%(asctime)s %(name)s %(levelname)-8s %(message)s'
-        datefmt = '%Y-%m-%d %H:%M:%S'
-        stream_formatter = logging.Formatter(fmt=FORMAT, datefmt=datefmt)
-        file_handler = logging.FileHandler(log_path)
-        file_handler.setLevel('DEBUG')
-        file_handler.setFormatter(stream_formatter)
-        self.logger.addHandler(file_handler)
 
     def init_connection(self, cursor_factory=DictCursor):
         self.connection = psycopg2.connect(**self.connect_params)
@@ -77,7 +63,7 @@ class DBConnector(metaclass=ABCMeta):
         while self.job_description is None:
             try:
                 run_job_id = int(self.random_state.choice(job_ids))
-                self.logger.info("Job selected : {}".format(run_job_id))
+                print("Job selected : {}".format(run_job_id))
                 select_job = "SELECT * FROM {0} WHERE {0}.job_id = {1}".format(avail_jobs, run_job_id)
                 self.cursor_db.execute(select_job)
                 self.job_description = self.cursor_db.fetchone()
@@ -86,12 +72,12 @@ class DBConnector(metaclass=ABCMeta):
                 self.job_description["hash_value"] = hash_value
                 self.close_connection()
             except psycopg2.IntegrityError as e:
-                self.logger.info(
+                print(
                     "IntegrityError for the job {}, it was already assigned to another node error {}".format(run_job_id,
                         str(e)))
                 job_ids.remove(run_job_id)
             except ValueError as e:
-                self.logger.info("ValueError as the all jobs are already assigned to another nodes {}".format(str(e)))
+                print("ValueError as the all jobs are already assigned to another nodes {}".format(str(e)))
                 break
         if self.job_description is not None:
             try:
@@ -106,17 +92,17 @@ class DBConnector(metaclass=ABCMeta):
                         running_jobs, run_job_id, cluster_id)
                     self.cursor_db.execute(insert_job)
                     if self.cursor_db.rowcount == 1:
-                        self.logger.info("The job {} is inserted".format(run_job_id))
+                        print("The job {} is inserted".format(run_job_id))
                 else:
                     update_job = """UPDATE {} set cluster_id = %s, interrupted = %s WHERE job_id = %s""".format(
                         running_jobs)
                     self.cursor_db.execute(update_job, (cluster_id, 'FALSE', run_job_id))
                     if self.cursor_db.rowcount == 1:
-                        self.logger.info("The job {} is updated".format(run_job_id))
+                        print("The job {} is updated".format(run_job_id))
 
                 self.close_connection()
             except (psycopg2.IntegrityError, psycopg2.DatabaseError) as e:
-                self.logger.info("IntegrityError for the job {} error {}".format(run_job_id, str(e)))
+                print("IntegrityError for the job {} error {}".format(run_job_id, str(e)))
                 self.job_description = None
 
     def mark_running_job_finished(self, job_id, **kwargs):
