@@ -29,9 +29,9 @@ from sklearn.model_selection import ShuffleSplit
 from csrank import ParameterOptimizer
 from csrank.util import configure_logging_numpy_keras, create_dir_recursively, duration_tillnow, seconds_to_time, \
     get_mean_loss_for_dictionary, \
-    get_loss_for_array, print_dictionary
+    get_loss_for_array, print_dictionary, get_duration_seconds
 from experiments.dbconnection import DBConnector
-from experiments.util import get_duration_seconds, get_dataset_reader, log_test_train_data, create_optimizer_parameters, \
+from experiments.util import get_dataset_reader, log_test_train_data, create_optimizer_parameters, \
     lp_metric_dict, ERROR_OUTPUT_STRING, \
     metrics_on_predictions
 

@@ -1,5 +1,3 @@
-import re
-
 from keras.losses import categorical_crossentropy, categorical_hinge
 from keras.metrics import categorical_accuracy
 from sklearn.metrics import hamming_loss, zero_one_loss
@@ -17,13 +15,6 @@ from csrank.dataset_reader import DepthDatasetReader, SushiObjectRankingDatasetR
 from csrank.metrics import zero_one_rank_loss, zero_one_accuracy, make_ndcg_at_k_loss
 from csrank.metrics_np import *
 from csrank.objectranking.fate_object_ranker import FATEObjectRanker
-
-
-def get_duration_seconds(duration):
-    time = int(re.findall(r'\d+', duration)[0])
-    d = duration.split(str(time))[1].upper()
-    options = {"D": 24 * 60 * 60, "H": 60 * 60, "M": 60}
-    return options[d] * time
 
 
 def log_test_train_data(X_train, X_test, logger):

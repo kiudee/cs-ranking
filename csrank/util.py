@@ -3,6 +3,7 @@ import itertools as iter
 import logging
 import multiprocessing
 import os
+import re
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -308,3 +309,10 @@ def check_learner_class(ranker):
     if not (isinstance(ranker, Tunable) and hasattr(ranker, 'set_tunable_parameters')):
         logging.error('The given object ranker is not tunable')
         raise AttributeError
+
+
+def get_duration_seconds(duration):
+    time = int(re.findall(r'\d+', duration)[0])
+    d = duration.split(str(time))[1].upper()
+    options = {"D": 24 * 60 * 60, "H": 60 * 60, "M": 60}
+    return options[d] * time

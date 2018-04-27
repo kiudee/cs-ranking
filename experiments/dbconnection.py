@@ -8,6 +8,7 @@ import psycopg2
 from psycopg2.extras import DictCursor
 from sklearn.utils import check_random_state
 
+
 class DBConnector(metaclass=ABCMeta):
 
     def __init__(self, config_filePath, is_gpu=False, random_state=None, schema='master', **kwargs):
@@ -71,7 +72,9 @@ class DBConnector(metaclass=ABCMeta):
                 self.job_description["hash_value"] = hash_value
                 self.close_connection()
             except psycopg2.IntegrityError as e:
-                self.logger.info("IntegrityError for the job {}, it was already assigned to another node error {}".format(run_job_id, str(e)))
+                self.logger.info(
+                    "IntegrityError for the job {}, it was already assigned to another node error {}".format(run_job_id,
+                        str(e)))
                 job_ids.remove(run_job_id)
             except ValueError as e:
                 self.logger.info("ValueError as the all jobs are already assigned to another nodes {}".format(str(e)))
@@ -101,8 +104,6 @@ class DBConnector(metaclass=ABCMeta):
             except (psycopg2.IntegrityError, psycopg2.DatabaseError) as e:
                 self.logger.info("IntegrityError for the job {} error {}".format(run_job_id, str(e)))
                 self.job_description = None
-
-
 
     def mark_running_job_finished(self, job_id, **kwargs):
         self.init_connection()
