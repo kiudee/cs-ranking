@@ -17,6 +17,7 @@ Options:
   --schema=<schema>                     Schema containing the job information
 """
 import inspect
+import logging
 import os
 import sys
 from datetime import datetime
@@ -80,7 +81,8 @@ if __name__ == "__main__":
             log_path = os.path.join(DIR_PATH, LOGS_FOLDER, "{}.log".format(hash_value))
             optimizer_path = os.path.join(DIR_PATH, OPTIMIZER_FOLDER, "{}".format(hash_value))
             create_dir_recursively(log_path, True)
-            logger = configure_logging_numpy_keras(seed=seed, log_path=log_path)
+            configure_logging_numpy_keras(seed=seed, log_path=log_path)
+            logger = logging.getLogger('Experiment')
             logger.info("Arguments {}".format(arguments))
             logger.info("Job Description {}".format(print_dictionary(dbConnector.job_description)))
             duration = get_duration_seconds(duration)

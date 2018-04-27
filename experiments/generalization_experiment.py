@@ -12,6 +12,7 @@ Options:
   --n_objects=<n_objects>         No of Objects of the random generator [default: 5]
 """
 import inspect
+import logging
 import os
 
 import numpy as np
@@ -61,8 +62,8 @@ if __name__ == '__main__':
 
     rows_list = []
 
-    logger = configure_logging_numpy_keras(seed=seed, log_path=log_path)
-
+    configure_logging_numpy_keras(seed=seed, log_path=log_path)
+    logger = logging.getLogger('Generalization Experiment')
     X_train, Y_train, _, _ = generate_medoid_dataset(n_objects=n_objects, random_state=seed)
     n_instances, n_objects, n_features = X_train.shape
     epochs = 1000

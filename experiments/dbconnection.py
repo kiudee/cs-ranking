@@ -1,5 +1,7 @@
 import hashlib
+import inspect
 import json
+import logging
 import os
 from abc import ABCMeta
 
@@ -7,13 +9,11 @@ import psycopg2
 from psycopg2.extras import DictCursor
 from sklearn.utils import check_random_state
 
-from csrank.util import setup_logger
-
 
 class DBConnector(metaclass=ABCMeta):
 
-    def __init__(self, config_file_path, is_gpu=False, random_state=None, schema='master', log_file=None, **kwargs):
-        self.logger = setup_logger('DBConnector')
+    def __init__(self, config_file_path, is_gpu=False, random_state=None, schema='master', **kwargs):
+        self.setup_logging()
         self.logger.info("Path {}".format(config_file_path))
         self.random_state = check_random_state(random_state)
         self.is_gpu = is_gpu
@@ -30,6 +30,18 @@ class DBConnector(metaclass=ABCMeta):
             self.logger.info("Connection Successful")
         else:
             raise ValueError('File does not exist for the configuration of the database')
+
+    def setup_logging(self):
+        self.logger = logging.getLogger('DBConnector')
+        dirname = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+        log_path = os.path.join(dirname, "logs", "dblogs.log")
+        FORMAT = '%(asctime)s %(name)s %(levelname)-8s %(message)s'
+        datefmt = '%Y-%m-%d %H:%M:%S'
+        stream_formatter = logging.Formatter(fmt=FORMAT, datefmt=datefmt)
+        file_handler = logging.FileHandler(log_path)
+        file_handler.setLevel('DEBUG')
+        file_handler.setFormatter(stream_formatter)
+        self.logger.addHandler(file_handler)
 
     def init_connection(self, cursor_factory=DictCursor):
         self.connection = psycopg2.connect(**self.connect_params)
@@ -139,5 +151,5 @@ class DBConnector(metaclass=ABCMeta):
         update_job = "UPDATE {0} SET error_history = %s, interrupted = %s WHERE job_id = %s".format(running_jobs)
         self.cursor_db.execute(update_job, (error_message, True, job_id))
         if self.cursor_db.rowcount == 1:
-            self.logger.info("The job {} is finished".format(job_id))
+            self.logger.info("The job {} is interrupted".format(job_id))
         self.close_connection()

@@ -208,31 +208,27 @@ def files_with_same_name(file_path):
     return files_list
 
 
-def setup_logger(name, log_file=None, level=logging.INFO):
+def setup_logger(log_path=None):
     """Function setup as many loggers as you want"""
-    if log_file is None:
+    if log_path is None:
         dirname = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
         dirname = os.path.dirname(dirname)
-        log_file = os.path.join(dirname, "experiments", "logs", "logs.log")
-        create_dir_recursively(log_file, True)
+        log_path = os.path.join(dirname, "experiments", "logs", "logs.log")
+        create_dir_recursively(log_path, True)
 
-    handler = logging.FileHandler(log_file)
-    formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)-8s %(message)s')
-
-    handler.setFormatter(formatter)
-
-    logger = logging.getLogger(name)
-    logger.setLevel(level)
-    logger.addHandler(handler)
-
-    return logger
+    FORMAT = '%(asctime)s %(name)s %(levelname)-8s %(message)s'
+    datefmt = '%Y-%m-%d %H:%M:%S'
+    logging.basicConfig(filename=log_path, level=logging.DEBUG,
+        format=FORMAT,
+        datefmt=datefmt)
 
 
-def configure_logging_numpy_keras(seed=42, log_path=None, name='Experiment'):
-    logger = setup_logger(name=name, log_file=log_path)
+def configure_logging_numpy_keras(seed=42, log_path=None):
+    setup_logger(log_path=log_path)
     tf.set_random_seed(seed)
     os.environ["KERAS_BACKEND"] = "tensorflow"
     devices = [x.name for x in device_lib.list_local_devices()]
+    logger = logging.getLogger("Configure Keras")
     logger.info("Devices {}".format(devices))
     n_gpus = len([x.name for x in device_lib.list_local_devices() if x.device_type == 'GPU'])
     if (n_gpus == 0):
@@ -247,9 +243,7 @@ def configure_logging_numpy_keras(seed=42, log_path=None, name='Experiment'):
     K.set_session(sess)
     np.random.seed(seed)
     logger.info("Number of GPUS {}".format(n_gpus))
-    logger.info('tf session configuration: {}'.format(repr(sess._config)))
     logger.info("log file path: {}".format(log_path))
-    return logger
 
 
 def duration_tillnow(start):
