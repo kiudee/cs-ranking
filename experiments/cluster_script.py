@@ -17,6 +17,7 @@ Options:
   --schema=<schema>                     Schema containing the job information
 """
 import inspect
+import logging
 import os
 import sys
 from datetime import datetime
@@ -35,10 +36,9 @@ from experiments.util import get_duration_seconds, get_dataset_reader, log_test_
     metrics_on_predictions
 
 DIR_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-
-FILE_FORMAT = '{}_{}_{}'
 LOGS_FOLDER = 'logs'
 OPTIMIZER_FOLDER = 'optimizers'
+
 if __name__ == "__main__":
     start = datetime.now()
 
@@ -49,6 +49,9 @@ if __name__ == "__main__":
     config_fileName = arguments["--config_fileName"]
     is_gpu = bool(int(arguments["--isgpu"]))
     schema = arguments["--schema"]
+    log = os.path.join(DIR_PATH, LOGS_FOLDER, "dblogs.log")
+    logging.basicConfig(level=logging.DEBUG, filename=log, filemode="a+",
+        format="%(asctime)-15s %(levelname)-8s %(message)s")
     ###################### POSTGRESQL PARAMETERS ###############################
     config_filePath = os.path.join(DIR_PATH, 'config', config_fileName)
     dbConnector = DBConnector(config_filePath=config_filePath, is_gpu=is_gpu, random_state=seed, schema=schema)
@@ -81,7 +84,6 @@ if __name__ == "__main__":
             log_path = os.path.join(DIR_PATH, LOGS_FOLDER, "{}.log".format(hash_value))
             optimizer_path = os.path.join(DIR_PATH, OPTIMIZER_FOLDER, "{}".format(hash_value))
             create_dir_recursively(log_path, True)
-            print(log_path)
             logger = configure_logging_numpy_keras(seed=seed, log_path=log_path)
             logger.info("Arguments {}".format(arguments))
             logger.info("Job Description {}".format(print_dictionary(dbConnector.job_description)))
