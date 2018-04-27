@@ -227,6 +227,7 @@ def setup_logger(name, log_file=None, level=logging.INFO):
 
     return logger
 
+
 def configure_logging_numpy_keras(seed=42, log_path=None, name='Experiment'):
     logger = setup_logger(name=name, log_file=log_path)
     tf.set_random_seed(seed)
