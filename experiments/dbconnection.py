@@ -1,6 +1,5 @@
 import hashlib
 import json
-import logging
 import os
 from abc import ABCMeta
 
@@ -8,20 +7,23 @@ import psycopg2
 from psycopg2.extras import DictCursor
 from sklearn.utils import check_random_state
 
+from csrank.util import setup_logger
+
 
 class DBConnector(metaclass=ABCMeta):
 
-    def __init__(self, config_filePath, is_gpu=False, random_state=None, schema='master', **kwargs):
-        self.logger = logging.getLogger('DBConnector')
-        self.logger.info("Path {}".format(config_filePath))
+    def __init__(self, config_file_path, is_gpu=False, random_state=None, schema='master', log_file=None, **kwargs):
+        self.logger = setup_logger('DBConnector')
+        self.logger.info("Path {}".format(config_file_path))
         self.random_state = check_random_state(random_state)
         self.is_gpu = is_gpu
         self.schema = schema
         self.job_description = None
         self.connection = None
         self.cursor_db = None
-        if os.path.isfile(config_filePath):
-            config_file = open(config_filePath, "r")
+
+        if os.path.isfile(config_file_path):
+            config_file = open(config_file_path, "r")
             config = config_file.read().replace('\n', '')
             self.logger.info("Config {}".format(config))
             self.connect_params = json.loads(config)

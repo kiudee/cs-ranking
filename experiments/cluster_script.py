@@ -29,7 +29,7 @@ from sklearn.model_selection import ShuffleSplit
 from csrank import ParameterOptimizer
 from csrank.util import configure_logging_numpy_keras, create_dir_recursively, duration_tillnow, seconds_to_time, \
     get_mean_loss_for_dictionary, \
-    get_loss_for_array, print_dictionary, get_duration_seconds
+    get_loss_for_array, print_dictionary, get_duration_seconds, setup_logger
 from experiments.dbconnection import DBConnector
 from experiments.util import get_dataset_reader, log_test_train_data, create_optimizer_parameters, \
     lp_metric_dict, ERROR_OUTPUT_STRING, \
@@ -49,12 +49,9 @@ if __name__ == "__main__":
     config_fileName = arguments["--config_fileName"]
     is_gpu = bool(int(arguments["--isgpu"]))
     schema = arguments["--schema"]
-    log = os.path.join(DIR_PATH, LOGS_FOLDER, "dblogs.log")
-    logging.basicConfig(level=logging.DEBUG, filename=log, filemode="a+",
-        format="%(asctime)-15s %(levelname)-8s %(message)s")
     ###################### POSTGRESQL PARAMETERS ###############################
     config_filePath = os.path.join(DIR_PATH, 'config', config_fileName)
-    dbConnector = DBConnector(config_filePath=config_filePath, is_gpu=is_gpu, random_state=seed, schema=schema)
+    dbConnector = DBConnector(config_file_path=config_filePath, is_gpu=is_gpu, random_state=seed, schema=schema)
     if 'CCS_REQID' in os.environ.keys():
         cluster_id = int(os.environ['CCS_REQID'])
     dbConnector.fetch_job_arguments(cluster_id=cluster_id)

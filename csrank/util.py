@@ -208,14 +208,27 @@ def files_with_same_name(file_path):
     return files_list
 
 
-def configure_logging_numpy_keras(seed=42, log_path=None, name='Experiment'):
-    if log_path is None:
+def setup_logger(name, log_file=None, level=logging.INFO):
+    """Function setup as many loggers as you want"""
+    if log_file is None:
         dirname = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-        log_path = os.path.join(dirname, "logs", "logs.log")
-    logging.basicConfig(filename=log_path, level=logging.DEBUG,
-        format='%(asctime)s %(name)s %(levelname)-8s %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S')
-    logger = logging.getLogger(name=name)
+        dirname = os.path.dirname(dirname)
+        log_file = os.path.join(dirname, "experiments", "logs", "logs.log")
+        create_dir_recursively(log_file, True)
+
+    handler = logging.FileHandler(log_file)
+    formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)-8s %(message)s')
+
+    handler.setFormatter(formatter)
+
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    logger.addHandler(handler)
+
+    return logger
+
+def configure_logging_numpy_keras(seed=42, log_path=None, name='Experiment'):
+    logger = setup_logger(name=name, log_file=log_path)
     tf.set_random_seed(seed)
     os.environ["KERAS_BACKEND"] = "tensorflow"
     devices = [x.name for x in device_lib.list_local_devices()]
