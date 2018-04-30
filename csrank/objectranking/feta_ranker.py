@@ -14,10 +14,10 @@ from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.tunable import Tunable
 from csrank.util import tensorify, print_dictionary
 
-__all__ = ['FETANetwork']
+__all__ = ['FETAObjectRanker']
 
 
-class FETANetwork(ObjectRanker, Tunable):
+class FETAObjectRanker(ObjectRanker, Tunable):
 
     def __init__(self, n_objects, n_features, n_hidden=2, n_units=8,
                  add_zeroth_order_model=False, max_number_of_objects=5,
@@ -64,7 +64,7 @@ class FETANetwork(ObjectRanker, Tunable):
         **kwargs
             Keyword arguments for the hidden units
         """
-        self.logger = logging.getLogger(FETANetwork.__name__)
+        self.logger = logging.getLogger(FETAObjectRanker.__name__)
 
         self.random_state = check_random_state(random_state)
 

@@ -20,7 +20,7 @@ import pandas as pd
 from docopt import docopt
 
 from csrank.callbacks import DebugOutput
-from csrank.dataset_reader import SyntheticDatasetGenerator
+from csrank.dataset_reader import ObjectRankingDatasetGenerator
 from csrank.metrics import zero_one_rank_loss_for_scores
 from csrank.objectranking.fate_object_ranker import FATEObjectRanker
 from csrank.util import rename_file_if_exist, configure_logging_numpy_keras, get_tensor_value
@@ -33,7 +33,7 @@ ERROR_OUTPUT_STRING = 'Out of sample error {} : {} for n_objects {}'
 def generate_medoid_dataset(n_objects=5, random_state=42):
     parameters = {"n_features": 2, "n_objects": n_objects, "n_train_instances": 10000, "n_test_instances": 100000,
                   "dataset_type": "medoid", "random_state": random_state}
-    generator = SyntheticDatasetGenerator(**parameters)
+    generator = ObjectRankingDatasetGenerator(**parameters)
     return generator.get_single_train_test_split()
 
 

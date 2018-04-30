@@ -1,6 +1,7 @@
 import inspect
 import logging
 import os
+
 from csrank.util import configure_logging_numpy_keras
 
 if __name__ == '__main__':

@@ -4,10 +4,10 @@ from keras.regularizers import l2
 from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
 
-from csrank import FETANetwork
+from csrank import FETAObjectRanker
 
 
-class FETAChoiceFunction(FETANetwork):
+class FETAChoiceFunction(FETAObjectRanker):
     def __init__(self, n_objects, n_features, n_hidden=2, n_units=8,
                  add_zeroth_order_model=False, max_number_of_objects=5,
                  num_subsample=5, loss_function=binary_crossentropy,

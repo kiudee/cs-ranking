@@ -7,18 +7,15 @@ from sklearn.gaussian_process.kernels import Matern
 from sklearn.utils import check_random_state
 
 from csrank.constants import OBJECT_RANKING
-from csrank.dataset_reader.dataset_reader import DatasetReader
+from csrank.dataset_reader.synthetic_dataset_generator import SyntheticDatasetGenerator
 from csrank.util import scores_to_rankings, create_pairwise_prob_matrix, \
     quicksort
 
 
-class SyntheticDatasetGenerator(DatasetReader):
-    def __init__(self, dataset_type='medoid', n_train_instances=10000,
-                 n_test_instances=10000, random_state=None,
-                 **kwargs):
-        super(SyntheticDatasetGenerator, self).__init__(
-            learning_problem=OBJECT_RANKING, dataset_folder=None, **kwargs)
-        self.random_state = check_random_state(random_state)
+class ObjectRankingDatasetGenerator(SyntheticDatasetGenerator):
+    def __init__(self, dataset_type='medoid', **kwargs):
+        super(ObjectRankingDatasetGenerator, self).__init__(
+            learning_problem=OBJECT_RANKING, **kwargs)
         dataset_function_options = {'linear': self.make_linear_transitive,
                                     'medoid': self.make_intransitive_medoids,
                                     'gp_transitive': self.make_gp_transitive,
@@ -27,49 +24,17 @@ class SyntheticDatasetGenerator(DatasetReader):
         if dataset_type not in dataset_function_options.keys():
             dataset_type = "medoid"
         self.dataset_function = dataset_function_options[dataset_type]
-        self.kwargs = kwargs
-        self.dr_logger.info("Key word arguments {}".format(kwargs))
-        self.n_train_instances = n_train_instances
-        self.n_test_instances = n_test_instances
-
-    def __load_dataset__(self):
-        pass
-
-    def splitter(self, iter):
-        for i in iter:
-            X_train, Y_train = self.dataset_function(**self.kwargs,
-                n_instances=self.n_train_instances,
-                seed=10 * i + 32)
-            X_test, Y_test = self.dataset_function(**self.kwargs,
-                n_instances=self.n_test_instances,
-                seed=10 * i + 32)
-        yield X_train, Y_train, X_test, Y_test
-
-    def get_complete_dataset(self):
-        pass
-
-    def get_train_test_datasets(self, n_datasets=5):
-        splits = np.array(n_datasets)
-        return self.splitter(splits)
 
     def get_single_train_test_split(self):
-        seed = self.random_state.randint(2 ** 32, dtype='uint32')
-        self.X, self.rankings = X_train, Y_train = self.dataset_function(
-            **self.kwargs,
-            n_instances=self.n_train_instances, seed=seed)
-        self.__check_dataset_validity__()
+        return super(ObjectRankingDatasetGenerator, self).get_single_train_test_split()
 
-        seed = self.random_state.randint(2 ** 32, dtype='uint32')
-        self.X, self.rankings = X_test, Y_test = self.dataset_function(
-            **self.kwargs, n_instances=self.n_test_instances,
-            seed=seed)
-        self.__check_dataset_validity__()
-        return X_train, Y_train, X_test, Y_test
+    def get_train_test_datasets(self, n_datasets=5):
+        return super(ObjectRankingDatasetGenerator, self).get_train_test_datasets(n_datasets=n_datasets)
 
     def make_linear_transitive(self, n_instances=1000, n_objects=5, noise=0.0,
                                n_features=100, n_informative=10,
                                seed=42, **kwd):
-        random_state = np.random.RandomState(seed=seed)
+        random_state = check_random_state(seed=seed)
         X, y, coeff = make_regression(n_samples=n_instances * n_objects,
             n_features=n_features,
             n_informative=n_informative, coef=True,
@@ -87,7 +52,7 @@ class SyntheticDatasetGenerator(DatasetReader):
         Note that this function needs to compute a kernel matrix of size
         (n_instances * n_objects) ** 2, which could allocate a large chunk of the
         memory."""
-        random_state = np.random.RandomState(seed=seed)
+        random_state = check_random_state(seed=seed)
 
         if kernel_params is None:
             kernel_params = dict()
@@ -106,7 +71,7 @@ class SyntheticDatasetGenerator(DatasetReader):
                                n_features=100, center_box=(-10.0, 10.0),
                                cluster_std=2.0, seed=42, **kwd):
         n_samples = n_instances * n_objects
-        random_state = np.random.RandomState(seed=seed)
+        random_state = check_random_state(seed=seed)
         x, y = make_blobs(n_samples=n_samples, centers=n_objects,
             n_features=n_features, cluster_std=cluster_std,
             center_box=center_box, random_state=random_state,
@@ -133,7 +98,7 @@ class SyntheticDatasetGenerator(DatasetReader):
 
     def make_intransitive_medoids(self, n_instances=100, n_objects=5,
                                   n_features=100, seed=42, **kwd):
-        random_state = np.random.RandomState(seed=seed)
+        random_state = check_random_state(seed=seed)
         X = random_state.uniform(size=(n_instances, n_objects, n_features))
         rankings = np.empty((n_instances, n_objects))
         for i in range(n_instances):
@@ -149,7 +114,7 @@ class SyntheticDatasetGenerator(DatasetReader):
 
     def make_hv_dataset(self, n_instances=1000, n_objects=5, n_features=5,
                         seed=42, **kwd):
-        random_state = np.random.RandomState(seed=seed)
+        random_state = check_random_state(seed=seed)
         X = random_state.randn(n_instances, n_objects, n_features)
         # Normalize to unit circle and fold to lower quadrant
         X = -np.abs(X / np.sqrt(np.power(X, 2).sum(axis=2))[..., None])

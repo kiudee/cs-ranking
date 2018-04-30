@@ -9,7 +9,7 @@ from keras.models import Model
 from keras.optimizers import SGD
 from keras.regularizers import l2
 
-from csrank import FETANetwork, RankNet, CmpNet, ExpectedRankRegression, RankSVM
+from csrank import FETAObjectRanker, RankNet, CmpNet, ExpectedRankRegression, RankSVM
 from csrank.metrics_np import zero_one_rank_loss_for_scores_ties_np
 from csrank.objectranking.fate_object_ranker import FATEObjectRanker
 from ..fate_network import FATERankingCore
@@ -21,7 +21,7 @@ RANKNET = 'ranknet'
 FETA_RANKER = 'feta_ranker'
 FATE_RANKER = "fate_ranker"
 
-object_rankers = {FETA_RANKER: FETANetwork, RANKNET: RankNet, CMPNET: CmpNet,
+object_rankers = {FETA_RANKER: FETAObjectRanker, RANKNET: RankNet, CMPNET: CmpNet,
                   ERR: ExpectedRankRegression, RANKSVM: RankSVM,
                   FATE_RANKER: FATEObjectRanker}
 optimizer = SGD(lr=1e-3, momentum=0.9, nesterov=True)

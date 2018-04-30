@@ -8,6 +8,8 @@ EXCEPTION_OBJECT_ARRAY_SHAPE = "Invalid shape for {} dataset objects features ar
 EXCEPTION_CONTEXT_ARRAY_SHAPE = "Invalid shape for {} dataset context features array! shape is: {}"
 EXCEPTION_UNWANTED_CONTEXT_FEATURES = "Unwanted extra context features in {} dataset"
 EXCEPTION_RANKINGS_FEATURES_NO_OF_OBJECTS = "Number of objects inconsistent! in rankings:{} objects and features array: {} objects"
+EXCEPTION_RANKINGS = "Unwanted rankings in {} dataset"
+EXCEPTION_SET_INCLUSION = "Set inclusion binary code not present for all the objects in the set."
 
 IMAGE_DATASET = 'image_dataset'
 SUSHI = 'sushi'

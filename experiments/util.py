@@ -2,7 +2,7 @@ from keras.losses import categorical_crossentropy, categorical_hinge
 from keras.metrics import categorical_accuracy
 from sklearn.metrics import hamming_loss, zero_one_loss
 
-from csrank import SyntheticDatasetGenerator, FETANetwork, RankNet, CmpNet, ExpectedRankRegression, RankSVM
+from csrank import ObjectRankingDatasetGenerator, FETAObjectRanker, RankNet, CmpNet, ExpectedRankRegression, RankSVM
 from csrank.callbacks import EarlyStoppingWithWeights, LRScheduler, DebugOutput
 from csrank.choice_functions import FATEChoiceFunction, FETAChoiceFunction
 from csrank.constants import SYNTHETIC_OR, DEPTH, SUSHI, IMAGE_DATASET, TAG_GENOME, SENTENCE_ORDERING, LETOR, \
@@ -60,13 +60,13 @@ def create_optimizer_parameters(fit_params, hp_ranges, learner_params, learner_n
     return hp_params
 
 
-datasets = {SYNTHETIC_OR: SyntheticDatasetGenerator,
+datasets = {SYNTHETIC_OR: ObjectRankingDatasetGenerator,
             DEPTH: DepthDatasetReader,
             SUSHI: SushiObjectRankingDatasetReader, IMAGE_DATASET: ImageDatasetReader,
             TAG_GENOME: TagGenomeDatasetReader,
             SENTENCE_ORDERING: SentenceOrderingDatasetReader,
             LETOR: LetorObjectRankingDatasetReader}
-learners = {FETA_RANKER: FETANetwork, RANKNET: RankNet, CMPNET: CmpNet, ERR: ExpectedRankRegression, RANKSVM: RankSVM,
+learners = {FETA_RANKER: FETAObjectRanker, RANKNET: RankNet, CMPNET: CmpNet, ERR: ExpectedRankRegression, RANKSVM: RankSVM,
             FATE_RANKER: FATEObjectRanker, FETA_CHOICE: FETAChoiceFunction, FATE_CHOICE: FATEChoiceFunction}
 
 ranking_metrics = {'kendalls_tau': kendalls_mean_np, 'spearman_correlation': spearman_mean_np,

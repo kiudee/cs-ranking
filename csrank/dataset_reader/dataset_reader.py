@@ -5,7 +5,8 @@ from abc import ABCMeta, abstractmethod
 
 from csrank.constants import OBJECT_RANKING, DYAD_RANKING, EXCEPTION_OBJECT_ARRAY_SHAPE, \
     EXCEPTION_RANKINGS_FEATURES_INSTANCES, EXCEPTION_RANKINGS_FEATURES_NO_OF_OBJECTS, \
-    EXCEPTION_UNWANTED_CONTEXT_FEATURES, LABEL_RANKING, DISCRETE_CHOICE, EXCEPTION_CONTEXT_ARRAY_SHAPE
+    EXCEPTION_UNWANTED_CONTEXT_FEATURES, LABEL_RANKING, DISCRETE_CHOICE, EXCEPTION_CONTEXT_ARRAY_SHAPE, \
+    CHOICE_FUNCTIONS, EXCEPTION_SET_INCLUSION
 
 
 class DatasetReader(metaclass=ABCMeta):
@@ -36,19 +37,27 @@ class DatasetReader(metaclass=ABCMeta):
                 n_instances, n_objects, n_features = self.X.shape
                 assert (n_instances == self.rankings.shape[0]), EXCEPTION_RANKINGS_FEATURES_INSTANCES.format(
                     self.learning_problem, self.rankings.shape[0], n_instances)
-                assert (n_objects == self.rankings.shape[
-                    1]), EXCEPTION_RANKINGS_FEATURES_NO_OF_OBJECTS.format(
-                    self.rankings.shape[1],
-                    n_objects)
+                assert (n_objects == self.rankings.shape[1]), EXCEPTION_RANKINGS_FEATURES_NO_OF_OBJECTS.format(
+                    self.rankings.shape[1], n_objects)
                 if self.learning_problem == OBJECT_RANKING:
                     assert self.Xc is None, EXCEPTION_UNWANTED_CONTEXT_FEATURES.format(self.learning_problem)
 
-            if self.learning_problem == LABEL_RANKING or self.learning_problem == DISCRETE_CHOICE:
+            if self.learning_problem == LABEL_RANKING:
                 assert len(self.X.shape) == 2, EXCEPTION_CONTEXT_ARRAY_SHAPE.format(self.learning_problem, self.X.shape)
                 n_instances, n_features = self.X.shape
                 assert (n_instances == self.rankings.shape[0]), EXCEPTION_RANKINGS_FEATURES_INSTANCES.format(
                     self.learning_problem, self.rankings.shape[0], n_instances)
                 assert self.Xc is None, EXCEPTION_UNWANTED_CONTEXT_FEATURES.format(self.learning_problem)
+
+            if self.learning_problem in [DISCRETE_CHOICE, CHOICE_FUNCTIONS]:
+                assert len(self.X.shape) == 3, EXCEPTION_OBJECT_ARRAY_SHAPE.format(self.learning_problem, self.X.shape)
+                n_instances, n_objects, n_features = self.X.shape
+                assert (n_instances == self.choice_set.shape[0]), EXCEPTION_RANKINGS_FEATURES_INSTANCES.format(
+                    self.learning_problem, self.choice_set.shape[0], n_instances)
+                assert self.Xc is None, EXCEPTION_UNWANTED_CONTEXT_FEATURES.format(self.learning_problem)
+                assert self.rankings is None, EXCEPTION_UNWANTED_CONTEXT_FEATURES.format(self.learning_problem)
+                if self.learning_problem == CHOICE_FUNCTIONS:
+                    assert (n_objects == self.choice_set.shape[1]), EXCEPTION_SET_INCLUSION
 
             if self.learning_problem == DYAD_RANKING:
                 assert len(self.Xc.shape) == 2, EXCEPTION_CONTEXT_ARRAY_SHAPE.format(self.learning_problem,
