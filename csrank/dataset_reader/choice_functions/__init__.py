@@ -1,1 +1,2 @@
 from .choice_data_generator import ChoiceDatasetGenerator
+from .mnist_choice_dataset import MNISTChoiceDatasetReader

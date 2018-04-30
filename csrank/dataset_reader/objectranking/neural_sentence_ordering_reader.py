@@ -8,6 +8,7 @@ from csrank.constants import OBJECT_RANKING
 from csrank.dataset_reader.objectranking.util import sub_sampling
 from ..dataset_reader import DatasetReader
 
+
 class SentenceOrderingDatasetReader(DatasetReader):
     def __init__(self, n_dims=25, train_obj=None, **kwargs):
         super(SentenceOrderingDatasetReader, self).__init__(learning_problem=OBJECT_RANKING,

@@ -66,7 +66,8 @@ datasets = {SYNTHETIC_OR: ObjectRankingDatasetGenerator,
             TAG_GENOME: TagGenomeDatasetReader,
             SENTENCE_ORDERING: SentenceOrderingDatasetReader,
             LETOR: LetorObjectRankingDatasetReader}
-learners = {FETA_RANKER: FETAObjectRanker, RANKNET: RankNet, CMPNET: CmpNet, ERR: ExpectedRankRegression, RANKSVM: RankSVM,
+learners = {FETA_RANKER: FETAObjectRanker, RANKNET: RankNet, CMPNET: CmpNet, ERR: ExpectedRankRegression,
+            RANKSVM: RankSVM,
             FATE_RANKER: FATEObjectRanker, FETA_CHOICE: FETAChoiceFunction, FATE_CHOICE: FATEChoiceFunction}
 
 ranking_metrics = {'kendalls_tau': kendalls_mean_np, 'spearman_correlation': spearman_mean_np,
