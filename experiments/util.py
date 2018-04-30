@@ -2,16 +2,14 @@ from keras.losses import categorical_crossentropy, categorical_hinge
 from keras.metrics import categorical_accuracy
 from sklearn.metrics import hamming_loss, zero_one_loss
 
-from csrank import ObjectRankingDatasetGenerator, FETAObjectRanker, RankNet, CmpNet, ExpectedRankRegression, RankSVM
+from csrank import ObjectRankingDatasetGenerator, FETAObjectRanker, RankNet, CmpNet, ExpectedRankRegression, RankSVM, \
+    FATEChoiceFunction, FETAChoiceFunction, DepthDatasetReader, SushiObjectRankingDatasetReader, ImageDatasetReader, \
+    TagGenomeDatasetReader, SentenceOrderingDatasetReader, LetorObjectRankingDatasetReader, ChoiceDatasetGenerator
 from csrank.callbacks import EarlyStoppingWithWeights, LRScheduler, DebugOutput
-from csrank.choice_functions import FATEChoiceFunction, FETAChoiceFunction
 from csrank.constants import SYNTHETIC_OR, DEPTH, SUSHI, IMAGE_DATASET, TAG_GENOME, SENTENCE_ORDERING, LETOR, \
     FETA_RANKER, RANKNET, CMPNET, \
     ERR, RANKSVM, FATE_RANKER, OBJECT_RANKING, LABEL_RANKING, DYAD_RANKING, DISCRETE_CHOICE, CHOICE_FUNCTIONS, \
-    FETA_CHOICE, FATE_CHOICE
-from csrank.dataset_reader import DepthDatasetReader, SushiObjectRankingDatasetReader, ImageDatasetReader, \
-    TagGenomeDatasetReader, \
-    SentenceOrderingDatasetReader, LetorObjectRankingDatasetReader
+    FETA_CHOICE, FATE_CHOICE, SYNTHETIC_CHOICE
 from csrank.metrics import zero_one_rank_loss, zero_one_accuracy, make_ndcg_at_k_loss
 from csrank.metrics_np import *
 from csrank.objectranking.fate_object_ranker import FATEObjectRanker
@@ -65,7 +63,8 @@ datasets = {SYNTHETIC_OR: ObjectRankingDatasetGenerator,
             SUSHI: SushiObjectRankingDatasetReader, IMAGE_DATASET: ImageDatasetReader,
             TAG_GENOME: TagGenomeDatasetReader,
             SENTENCE_ORDERING: SentenceOrderingDatasetReader,
-            LETOR: LetorObjectRankingDatasetReader}
+            LETOR: LetorObjectRankingDatasetReader,
+            SYNTHETIC_CHOICE: ChoiceDatasetGenerator}
 learners = {FETA_RANKER: FETAObjectRanker, RANKNET: RankNet, CMPNET: CmpNet, ERR: ExpectedRankRegression,
             RANKSVM: RankSVM,
             FATE_RANKER: FATEObjectRanker, FETA_CHOICE: FETAChoiceFunction, FATE_CHOICE: FATEChoiceFunction}

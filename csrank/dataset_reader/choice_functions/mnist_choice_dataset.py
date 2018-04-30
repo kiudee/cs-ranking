@@ -44,4 +44,5 @@ class MNISTChoiceDatasetReader(DatasetReader):
         self.__check_dataset_validity__()
 
     def get_single_train_test_split(self):
-        return train_test_split(self.X, self.choice_set, random_state=self.random_state, test_size=self.n_test_instances)
+        return train_test_split(self.X, self.choice_set, random_state=self.random_state,
+            test_size=self.n_test_instances)

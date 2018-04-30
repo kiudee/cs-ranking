@@ -14,6 +14,7 @@ EXCEPTION_SET_INCLUSION = "Set inclusion binary code not present for all the obj
 IMAGE_DATASET = 'image_dataset'
 SUSHI = 'sushi'
 SYNTHETIC_OR = 'synthetic_or'
+SYNTHETIC_CHOICE = 'synthetic_choice'
 HYPER_VOLUME = "hyper_volume"
 DEPTH = 'depth'
 SENTENCE_ORDERING = "sentence_ordering"
