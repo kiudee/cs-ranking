@@ -16,6 +16,7 @@ class DatasetReader(metaclass=ABCMeta):
         self.X = None
         self.rankings = None
         self.Xc = None
+        self.choice_set = None
         self.learning_problem = learning_problem
         dirname = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))).replace("dataset_reader",
             "datasets")

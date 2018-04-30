@@ -14,9 +14,10 @@ NAME = "LetorObjectRankingDatasetReader"
 class LetorObjectRankingDatasetReader(LetorDatasetReader):
     def __init__(self, random_state=None, train_obj=5, **kwargs):
         super(LetorObjectRankingDatasetReader, self).__init__(learning_problem=OBJECT_RANKING, **kwargs)
-        self.logger = logging.getLogger(NAME)
+        self.logger = logging.getLogger(LetorObjectRankingDatasetReader.__name__)
         self.random_state = check_random_state(random_state)
         self.train_obj = train_obj
+
         self.__load_dataset__()
 
     def __load_dataset__(self):

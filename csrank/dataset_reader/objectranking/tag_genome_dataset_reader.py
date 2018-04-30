@@ -38,7 +38,7 @@ class TagGenomeDatasetReader(DatasetReader):
         self.n_features = 1128
         self.n_test_instances = n_test_instances
         self.n_train_instances = n_train_instances
-        self.logger = logging.getLogger(name='TagGenomeDataset')
+        self.logger = logging.getLogger(TagGenomeDatasetReader.__name__)
         self.random_state = check_random_state(random_state)
 
         if (not (os.path.isfile(self.movies_file) and os.path.isfile(self.similarity_matrix_file) and os.path.isfile(

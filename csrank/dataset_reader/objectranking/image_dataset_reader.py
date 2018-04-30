@@ -28,10 +28,8 @@ class ImageDatasetReader(DatasetReader):
         # self.test_file = os.path.join(dirname, DATASET_FOLDER, "test.hd5")
         # self.labels_test_files = glob.glob(os.path.join(dirname, DATASET_FOLDER, TEST_LABEL, "*.txt"))
         # self.labels_test_files.sort()
+        self.logger = logging.getLogger(ImageDatasetReader.__name__)
 
-        self.logger = logging.getLogger(name='ImageDatasetReader')
-        self.type = OBJECT_RANKING
-        self.Xc = None
         self.train_file = os.path.join(self.dirname, "train.hd5")
         self.similarity_matrix_train_file = os.path.join(self.dirname, "train_similarity_matrix.csv")
         self.labels_train_files = glob.glob(os.path.join(self.dirname, TRAIN_LABEL, "*.txt"))
@@ -56,9 +54,8 @@ class ImageDatasetReader(DatasetReader):
         self.logger.info('Image Labels Test File {}'.format(self.labels_test_files))
         self.logger.info('Image Labels Names {}'.format(self.label_names))
         self.random_state = check_random_state(random_state)
-        if (
-                not (os.path.isfile(self.similarity_matrix_test_file) and os.path.isfile(
-                    self.similarity_matrix_train_file))):
+        if (not (os.path.isfile(self.similarity_matrix_test_file) and
+                 os.path.isfile(self.similarity_matrix_train_file))):
             self.__load_dataset__()
 
     def __load_dataset__(self):

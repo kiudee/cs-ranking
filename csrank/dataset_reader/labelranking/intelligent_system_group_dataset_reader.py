@@ -17,7 +17,7 @@ class IntelligentSystemGroupDatasetReader(DatasetReader):
         super(IntelligentSystemGroupDatasetReader, self).__init__(learning_problem=LABEL_RANKING,
             dataset_folder='intelligent_system_data', **kwargs)
 
-        self.logger = logging.getLogger("FATERankingCore")
+        self.logger = logging.getLogger(IntelligentSystemGroupDatasetReader.__name__)
         self.train_files = glob.glob(os.path.join(self.dirname, '*.txt'))
         self.train_files.sort()
         self.train_files_names = []

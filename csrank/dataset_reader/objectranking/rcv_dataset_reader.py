@@ -15,7 +15,7 @@ class RCVDatasetReader(DatasetReader):
 
     def __init__(self, n_instances=10000, n_objects=5, query_based=False, random_state=None, **kwargs):
         super(RCVDatasetReader, self).__init__(learning_problem=OBJECT_RANKING, dataset_folder='textual_data', **kwargs)
-        self.logger = logging.getLogger(name='RCVDatasetReader')
+        self.logger = logging.getLogger(name=RCVDatasetReader.__name__)
         if n_instances not in [10000]:
             raise ValueError('The number of instances should be in %s', str([100, 1000, 10000]))
         if n_objects not in [5, 10]:
