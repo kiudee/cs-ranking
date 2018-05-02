@@ -284,9 +284,7 @@ class FETAObjectRanker(ObjectRanker, Tunable):
     def _predict_scores_fixed(self, X, **kwargs):
         n_instances, n_objects, n_features = tensorify(X).get_shape().as_list()
         self.logger.info(
-            "For Test instances {} objects {} features {}".format(n_instances,
-                n_objects,
-                n_features))
+            "For Test instances {} objects {} features {}".format(n_instances, n_objects, n_features))
         if self.max_number_of_objects < self._n_objects or self.n_objects != n_objects:
             scores = self._predict_scores_using_pairs(X, **kwargs)
         else:

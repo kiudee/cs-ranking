@@ -21,14 +21,9 @@ class FATEChoiceFunction(FATEObjectRankingCore):
                  kernel_regularizer=l2(1e-10),
                  metrics=None,
                  **kwargs):
-        super().__init__(n_object_features=n_object_features,
-            n_hidden_joint_layers=n_hidden_joint_layers,
-            n_hidden_joint_units=n_hidden_joint_units,
-            n_hidden_set_layers=n_hidden_set_layers,
-            n_hidden_set_units=n_hidden_set_units,
-            metrics=metrics,
-            kernel_regularizer=kernel_regularizer,
-            **kwargs)
+        super().__init__(n_object_features=n_object_features, n_hidden_joint_layers=n_hidden_joint_layers,
+            n_hidden_joint_units=n_hidden_joint_units, n_hidden_set_layers=n_hidden_set_layers,
+            n_hidden_set_units=n_hidden_set_units, metrics=metrics, kernel_regularizer=kernel_regularizer, **kwargs)
         self.loss_function = loss_function
         self.metrics = metrics
         self.logger = logging.Logger('FATEChoiceFunction')
@@ -58,29 +53,26 @@ class FATEChoiceFunction(FATEObjectRankingCore):
             )
 
         self.logger.info('Construct output score node')
-        self.scorer = Dense(1, name="output_node", activation='sigmoid',
-            kernel_regularizer=self.kernel_regularizer)
+        self.scorer = Dense(1, name="output_node", activation='sigmoid', kernel_regularizer=self.kernel_regularizer)
 
     def _tune_threshold(self, X_val, Y_val, thin_thresholds=1):
         scores = self.predict_scores(X_val)
-        probs = np.unique(scores)[::thin_thresholds]
+        probabilities = np.unique(scores)[::thin_thresholds]
         threshold = 0.0
         best = f1_score(Y_val, scores > threshold, average='samples')
-        for i, p in enumerate(probs):
-            pred = scores > p
-            f1 = f1_score(Y_val, pred, average='samples')
+        for i, p in enumerate(probabilities):
+            predictions = scores > p
+            f1 = f1_score(Y_val, predictions, average='samples')
             if f1 > best:
                 threshold = p
                 best = f1
         self.logger.info('Tuned threshold, obtained {:.2f} which achieved'
-                         ' a micro F1-measure of {:.2f}'.format(
-            threshold, best))
+                         ' a micro F1-measure of {:.2f}'.format(threshold, best))
         return threshold
 
     def fit(self, X, Y, tune_size=0.1, thin_thresholds=1, **kwargs):
         if tune_size > 0:
-            X_train, X_val, Y_train, Y_val = train_test_split(
-                X, Y, test_size=tune_size)
+            X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=tune_size)
             try:
                 super().fit(X_train, Y_train, **kwargs)
             finally:

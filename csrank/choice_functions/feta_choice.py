@@ -4,7 +4,7 @@ from keras.regularizers import l2
 from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
 
-from csrank import FETAObjectRanker
+from csrank.objectranking import FETAObjectRanker
 
 
 class FETAChoiceFunction(FETAObjectRanker):

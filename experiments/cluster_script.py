@@ -26,7 +26,7 @@ import numpy as np
 from docopt import docopt
 from sklearn.model_selection import ShuffleSplit
 
-from csrank import ParameterOptimizer
+from csrank import *
 from csrank.util import configure_logging_numpy_keras, create_dir_recursively, duration_tillnow, seconds_to_time, \
     get_mean_loss_for_dictionary, \
     get_loss_for_array, print_dictionary, get_duration_seconds
