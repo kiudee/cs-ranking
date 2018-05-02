@@ -123,7 +123,7 @@ class DBConnector(metaclass=ABCMeta):
         self.cursor_db.execute("select to_regclass(%s)", [results_table])
         is_table_exist = bool(self.cursor_db.fetchone()[0])
         if not is_table_exist:
-            self.logger.info("Table {} does not exist creating with columns {}".format(columns))
+            self.logger.info("Table {} does not exist creating with columns {}".format(results_table, columns))
             create_command = "CREATE TABLE {} (job_id INTEGER PRIMARY KEY, cluster_id INTEGER NOT NULL)".format(results_table)
             self.cursor_db.execute(create_command)
             for column in results.keys():
