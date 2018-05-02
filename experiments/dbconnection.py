@@ -3,9 +3,7 @@ import json
 import logging
 import os
 from abc import ABCMeta
-
 import psycopg2
-from psycopg2.extras import DictCursor
 from sklearn.utils import check_random_state
 
 
@@ -29,7 +27,7 @@ class DBConnector(metaclass=ABCMeta):
         else:
             raise ValueError('File does not exist for the configuration of the database')
 
-    def init_connection(self, cursor_factory=DictCursor):
+    def init_connection(self, cursor_factory=psycopg2.extras.DictCursor):
         self.connection = psycopg2.connect(**self.connect_params)
         if cursor_factory is None:
             self.cursor_db = self.connection.cursor()
@@ -120,6 +118,19 @@ class DBConnector(metaclass=ABCMeta):
         results_table = "{}.{}".format(experiment_schema, experiment_table)
         columns = ', '.join(list(results.keys()))
         values_str = ', '.join(list(results.values()))
+
+        self.cursor_db.execute("select * from {}.tables where table_name=%s".format(experiment_schema), (experiment_table,))
+        is_table_exist = bool(self.cursor_db.execute.rowcount)
+        if not is_table_exist:
+            create_command = "CREATE TABLE {} (job_id INTEGER PRIMARY KEY, cluster_id INTEGER NOT NULL)".format(results_table)
+            self.cursor_db.execute(create_command)
+            for column in results.keys():
+                if column not in ["job_id", "cluster_id"]:
+                    alter_table_command = 'ALTER TABLE %s ADD COLUMN %s double precision' % (results_table, column)
+                    self.cursor_db.execute(alter_table_command)
+            self.close_connection()
+            self.init_connection(cursor_factory=None)
+
         insert_result = "INSERT INTO {0} ({1}) VALUES ({2})".format(results_table, columns, values_str)
         self.cursor_db.execute(insert_result)
         if self.cursor_db.rowcount == 1:
