@@ -76,8 +76,8 @@ ranking_metrics = {'kendalls_tau': kendalls_mean_np, 'spearman_correlation': spe
 discrete_choice_metrics = {'CategoricalAccuracy': categorical_accuracy,
                            'CategoricalCrossEntropy': categorical_crossentropy,
                            'CategoricalHinge': categorical_hinge}
-choice_metrics = {'F1_Score': f1_measure, 'Precision': precision, 'Recall': recall,
-                  'Subset01loss': zero_one_loss, 'Hamming-Loss': hamming_loss, 'Informedness': instance_informedness,
+choice_metrics = {'F1Score': f1_measure, 'Precision': precision, 'Recall': recall,
+                  'Subset01loss': zero_one_loss, 'HammingLoss': hamming_loss, 'Informedness': instance_informedness,
                   "AucScore": auc_score, "AveragePrecisionScore": average_precision}
 callbacks_dictionary = {'EarlyStoppingWithWeights': EarlyStoppingWithWeights, 'LRScheduler': LRScheduler,
                         'DebugOutput': DebugOutput}

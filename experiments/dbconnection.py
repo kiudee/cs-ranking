@@ -5,6 +5,7 @@ import os
 from abc import ABCMeta
 import psycopg2
 from sklearn.utils import check_random_state
+from psycopg2.extras import DictCursor
 
 
 class DBConnector(metaclass=ABCMeta):
@@ -27,7 +28,7 @@ class DBConnector(metaclass=ABCMeta):
         else:
             raise ValueError('File does not exist for the configuration of the database')
 
-    def init_connection(self, cursor_factory=psycopg2.extras.DictCursor):
+    def init_connection(self, cursor_factory=DictCursor):
         self.connection = psycopg2.connect(**self.connect_params)
         if cursor_factory is None:
             self.cursor_db = self.connection.cursor()
@@ -119,9 +120,10 @@ class DBConnector(metaclass=ABCMeta):
         columns = ', '.join(list(results.keys()))
         values_str = ', '.join(list(results.values()))
 
-        self.cursor_db.execute("select * from {}.tables where table_name=%s".format(experiment_schema), (experiment_table,))
-        is_table_exist = bool(self.cursor_db.execute.rowcount)
+        self.cursor_db.execute("select to_regclass(%s)", [results_table])
+        is_table_exist = bool(self.cursor_db.fetchone()[0])
         if not is_table_exist:
+            self.logger.info("Table {} does not exist creating with columns {}".format(columns))
             create_command = "CREATE TABLE {} (job_id INTEGER PRIMARY KEY, cluster_id INTEGER NOT NULL)".format(results_table)
             self.cursor_db.execute(create_command)
             for column in results.keys():
