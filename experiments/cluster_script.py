@@ -50,7 +50,7 @@ if __name__ == "__main__":
     schema = arguments["--schema"]
     ###################### POSTGRESQL PARAMETERS ###############################
     config_file_path = os.path.join(DIR_PATH, 'config', config_fileName)
-    dbConnector = DBConnector(config_file_path=config_file_path, is_gpu=is_gpu, random_state=seed, schema=schema)
+    dbConnector = DBConnector(config_file_path=config_file_path, is_gpu=is_gpu, schema=schema)
     if 'CCS_REQID' in os.environ.keys():
         cluster_id = int(os.environ['CCS_REQID'])
     dbConnector.fetch_job_arguments(cluster_id=cluster_id)
