@@ -3,22 +3,20 @@ import json
 import logging
 import os
 from abc import ABCMeta
+
 import psycopg2
-from sklearn.utils import check_random_state
 from psycopg2.extras import DictCursor
 
 
 class DBConnector(metaclass=ABCMeta):
 
-    def __init__(self, config_file_path, is_gpu=False, random_state=None, schema='master', **kwargs):
+    def __init__(self, config_file_path, is_gpu=False, schema='master', **kwargs):
         self.logger = logging.getLogger('DBConnector')
-        self.random_state = check_random_state(random_state)
         self.is_gpu = is_gpu
         self.schema = schema
         self.job_description = None
         self.connection = None
         self.cursor_db = None
-
         if os.path.isfile(config_file_path):
             config_file = open(config_file_path, "r")
             config = config_file.read().replace('\n', '')
@@ -61,7 +59,7 @@ class DBConnector(metaclass=ABCMeta):
         job_ids = [j for i in self.cursor_db.fetchall() for j in i]
         while self.job_description is None:
             try:
-                run_job_id = int(self.random_state.choice(job_ids))
+                run_job_id = job_ids[0]
                 print("Job selected : {}".format(run_job_id))
                 select_job = "SELECT * FROM {0} WHERE {0}.job_id = {1}".format(avail_jobs, run_job_id)
                 self.cursor_db.execute(select_job)
@@ -71,11 +69,9 @@ class DBConnector(metaclass=ABCMeta):
                 self.job_description["hash_value"] = hash_value
                 self.close_connection()
             except psycopg2.IntegrityError as e:
-                print(
-                    "IntegrityError for the job {}, it was already assigned to another node error {}".format(run_job_id,
-                        str(e)))
+                print("IntegrityError for the job {}, it was already assigned to another node error {}".format(run_job_id, str(e)))
                 job_ids.remove(run_job_id)
-            except ValueError as e:
+            except (ValueError, IndexError) as e:
                 print("ValueError as the all jobs are already assigned to another nodes {}".format(str(e)))
                 break
         if self.job_description is not None:

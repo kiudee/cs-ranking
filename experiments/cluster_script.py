@@ -44,7 +44,6 @@ if __name__ == "__main__":
 
     ######################## DOCOPT ARGUMENTS: #################################
     arguments = docopt(__doc__)
-    seed = int(arguments["--seed"])
     cluster_id = int(arguments["--cindex"])
     config_fileName = arguments["--config_fileName"]
     is_gpu = bool(int(arguments["--isgpu"]))
