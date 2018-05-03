@@ -11,7 +11,7 @@ from csrank.dataset_reader import DatasetReader
 
 class MNISTChoiceDatasetReader(DatasetReader):
 
-    def __init__(self, n_train_instances=10000, n_test_instances=10000, n_objects=5, random_state=None, **kwargs):
+    def __init__(self, n_train_instances=10000, n_test_instances=10000, n_objects=10, random_state=None, **kwargs):
         super(MNISTChoiceDatasetReader, self).__init__(learning_problem=CHOICE_FUNCTIONS, dataset_folder='mnist',
             **kwargs)
         self.logger = logging.getLogger(MNISTChoiceDatasetReader.__name__)

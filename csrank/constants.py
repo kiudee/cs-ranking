@@ -16,6 +16,7 @@ SUSHI = 'sushi'
 SYNTHETIC_OR = 'synthetic_or'
 SYNTHETIC_CHOICE = 'synthetic_choice'
 HYPER_VOLUME = "hyper_volume"
+MNIST = "mnist"
 DEPTH = 'depth'
 SENTENCE_ORDERING = "sentence_ordering"
 LETOR = "letor"

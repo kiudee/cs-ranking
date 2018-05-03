@@ -4,12 +4,13 @@ from sklearn.metrics import hamming_loss, zero_one_loss
 
 from csrank import ObjectRankingDatasetGenerator, FETAObjectRanker, RankNet, CmpNet, ExpectedRankRegression, RankSVM, \
     FATEChoiceFunction, FETAChoiceFunction, DepthDatasetReader, SushiObjectRankingDatasetReader, ImageDatasetReader, \
-    TagGenomeDatasetReader, SentenceOrderingDatasetReader, LetorObjectRankingDatasetReader, ChoiceDatasetGenerator
+    TagGenomeDatasetReader, SentenceOrderingDatasetReader, LetorObjectRankingDatasetReader, ChoiceDatasetGenerator, \
+    MNISTChoiceDatasetReader
 from csrank.callbacks import EarlyStoppingWithWeights, LRScheduler, DebugOutput
 from csrank.constants import SYNTHETIC_OR, DEPTH, SUSHI, IMAGE_DATASET, TAG_GENOME, SENTENCE_ORDERING, LETOR, \
     FETA_RANKER, RANKNET, CMPNET, \
     ERR, RANKSVM, FATE_RANKER, OBJECT_RANKING, LABEL_RANKING, DYAD_RANKING, DISCRETE_CHOICE, CHOICE_FUNCTIONS, \
-    FETA_CHOICE, FATE_CHOICE, SYNTHETIC_CHOICE
+    FETA_CHOICE, FATE_CHOICE, SYNTHETIC_CHOICE, MNIST
 from csrank.metrics import zero_one_rank_loss, zero_one_accuracy, make_ndcg_at_k_loss
 from csrank.metrics_np import *
 from csrank.objectranking.fate_object_ranker import FATEObjectRanker
@@ -64,7 +65,8 @@ datasets = {SYNTHETIC_OR: ObjectRankingDatasetGenerator,
             TAG_GENOME: TagGenomeDatasetReader,
             SENTENCE_ORDERING: SentenceOrderingDatasetReader,
             LETOR: LetorObjectRankingDatasetReader,
-            SYNTHETIC_CHOICE: ChoiceDatasetGenerator}
+            SYNTHETIC_CHOICE: ChoiceDatasetGenerator,
+            MNIST: MNISTChoiceDatasetReader}
 learners = {FETA_RANKER: FETAObjectRanker, RANKNET: RankNet, CMPNET: CmpNet, ERR: ExpectedRankRegression,
             RANKSVM: RankSVM,
             FATE_RANKER: FATEObjectRanker, FETA_CHOICE: FETAChoiceFunction, FATE_CHOICE: FATEChoiceFunction}
