@@ -56,13 +56,16 @@ class ObjectRanker(metaclass=ABCMeta):
         """
         self.logger.debug('Predicting started')
 
-        predicted_scores = self.predict_scores(X, **kwargs)
+        scores = self.predict_scores(X, **kwargs)
         self.logger.debug('Predicting scores complete')
-
-        predicted_rankings = scores_to_rankings(predicted_scores)
-        self.logger.debug('Predicting ranks complete')
-        del predicted_scores
-        return predicted_rankings
+        if isinstance(X, dict):
+            result = dict()
+            for n, scores in self.predict_scores(X, **kwargs).items():
+                rankings = scores_to_rankings(scores)
+                result[n] = rankings
+        else:
+            result = scores_to_rankings(scores)
+        return result
 
     @abstractmethod
     def predict_scores(self, X, **kwargs):

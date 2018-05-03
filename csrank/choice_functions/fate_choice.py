@@ -21,12 +21,11 @@ class FATEChoiceFunction(FATEObjectRankingCore):
                  kernel_regularizer=l2(1e-10),
                  metrics=None,
                  **kwargs):
-        super().__init__(n_object_features=n_object_features, n_hidden_joint_layers=n_hidden_joint_layers,
-            n_hidden_joint_units=n_hidden_joint_units, n_hidden_set_layers=n_hidden_set_layers,
-            n_hidden_set_units=n_hidden_set_units, metrics=metrics, kernel_regularizer=kernel_regularizer, **kwargs)
+        super().__init__(n_object_features=n_object_features, n_hidden_joint_layers=n_hidden_joint_layers, n_hidden_joint_units=n_hidden_joint_units,
+            n_hidden_set_layers=n_hidden_set_layers, n_hidden_set_units=n_hidden_set_units, metrics=metrics, kernel_regularizer=kernel_regularizer, **kwargs)
         self.loss_function = loss_function
         self.metrics = metrics
-        self.logger = logging.Logger('FATEChoiceFunction')
+        self.logger = logging.Logger(FATEChoiceFunction.__name__)
         self.threshold = 0.5
 
     def _construct_layers(self, **kwargs):
@@ -46,12 +45,7 @@ class FATEChoiceFunction(FATEObjectRankingCore):
         # Create joint hidden layers:
         self.joint_layers = []
         for i in range(self.n_hidden_joint_layers):
-            self.joint_layers.append(
-                Dense(self.n_hidden_joint_units,
-                    name="joint_layer_{}".format(i),
-                    **kwargs)
-            )
-
+            self.joint_layers.append(Dense(self.n_hidden_joint_units, name="joint_layer_{}".format(i), **kwargs))
         self.logger.info('Construct output score node')
         self.scorer = Dense(1, name="output_node", activation='sigmoid', kernel_regularizer=self.kernel_regularizer)
 
@@ -66,8 +60,7 @@ class FATEChoiceFunction(FATEObjectRankingCore):
             if f1 > best:
                 threshold = p
                 best = f1
-        self.logger.info('Tuned threshold, obtained {:.2f} which achieved'
-                         ' a micro F1-measure of {:.2f}'.format(threshold, best))
+        self.logger.info('Tuned threshold, obtained {:.2f} which achieved a micro F1-measure of {:.2f}'.format(threshold, best))
         return threshold
 
     def fit(self, X, Y, tune_size=0.1, thin_thresholds=1, **kwargs):
@@ -89,8 +82,17 @@ class FATEChoiceFunction(FATEObjectRankingCore):
         return super().predict_scores(X, **kwargs)
 
     def predict(self, X, **kwargs):
+        self.logger.debug('Predicting started')
+
         scores = self.predict_scores(X, **kwargs)
-        return scores > self.threshold
+        self.logger.debug('Predicting scores complete')
+        if isinstance(X, dict):
+            result = dict()
+            for n, s in self.predict_scores(X, **kwargs).items():
+                result[n] = s > self.threshold
+        else:
+            result = scores > self.threshold
+        return result
 
     def __call__(self, X, **kwargs):
         return self.predict(X, **kwargs)

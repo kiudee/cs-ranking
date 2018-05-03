@@ -48,8 +48,7 @@ class FETAChoiceFunction(FETAObjectRanker):
                 super().fit(X_train, Y_train, epochs, callbacks,
                     validation_split, verbose, **kwd)
             finally:
-                self.logger.info('Fitting utility function finished.'
-                                 ' Start tuning threshold.')
+                self.logger.info('Fitting utility function finished. Start tuning threshold.')
                 self.threshold = self._tune_threshold(
                     X_val, Y_val,
                     thin_thresholds=thin_thresholds)
@@ -62,8 +61,17 @@ class FETAChoiceFunction(FETAObjectRanker):
         return super().predict_scores(X, **kwargs)
 
     def predict(self, X, **kwargs):
+        self.logger.debug('Predicting started')
+
         scores = self.predict_scores(X, **kwargs)
-        return scores > self.threshold
+        self.logger.debug('Predicting scores complete')
+        if isinstance(X, dict):
+            result = dict()
+            for n, s in self.predict_scores(X, **kwargs).items():
+                result[n] = s > self.threshold
+        else:
+            result = scores > self.threshold
+        return result
 
     def __call__(self, X, **kwargs):
         return self.predict(X, **kwargs)
