@@ -55,7 +55,7 @@ class DBConnector(metaclass=ABCMeta):
         self.init_connection()
         avail_jobs = "{}.avail_jobs".format(self.schema)
         running_jobs = "{}.running_jobs".format(self.schema)
-        select_job = """SELECT * FROM {0} row WHERE EXISTS(SELECT job_id FROM {1} r WHERE r.interrupted = FALSE AND r.job_id = row.job_id)""".format(
+        select_job = """SELECT * FROM {0} row WHERE EXISTS(SELECT job_id FROM {1} r WHERE r.interrupted = FALSE AND r.finished = FALSE AND r.job_id = row.job_id)""".format(
             avail_jobs, running_jobs)
         self.cursor_db.execute(select_job)
         all_jobs = self.cursor_db.fetchall()

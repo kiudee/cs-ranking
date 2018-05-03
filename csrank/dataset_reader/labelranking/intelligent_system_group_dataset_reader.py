@@ -23,7 +23,7 @@ class IntelligentSystemGroupDatasetReader(DatasetReader):
         self.train_files_names = []
         self.random_state = check_random_state(random_state)
         self.X = dict()
-        self.rankings = dict()
+        self.Y = dict()
         self.__load_dataset__()
 
     def __load_dataset__(self):
@@ -39,14 +39,14 @@ class IntelligentSystemGroupDatasetReader(DatasetReader):
             name = os.path.basename(file).split('.')[0]
             self.train_files_names.append(name)
             self.X[name] = features.as_matrix()
-            self.rankings[name] = labels.as_matrix()
+            self.Y[name] = labels.as_matrix()
         self.logger.info("Dataset files: " + repr(self.train_files_names))
 
     def get_train_test_dataset(self, name="cold"):
         cv_iter = ShuffleSplit(n_splits=1, test_size=0.3, random_state=self.random_state)
-        (train_idx, test_idx) = list(cv_iter.split(self.X))[0]
-        return self.X[name][train_idx], self.rankings[name][train_idx], self.X[name][test_idx], self.rankings[name][
+        (train_idx, test_idx) = list(cv_iter.split(self.X[name]))[0]
+        return self.X[name][train_idx], self.Y[name][train_idx], self.X[name][test_idx], self.Y[name][
             test_idx]
 
     def get_complete_dataset(self, name="cold"):
-        return self.X[name], self.rankings[name]
+        return self.X[name], self.Y[name]

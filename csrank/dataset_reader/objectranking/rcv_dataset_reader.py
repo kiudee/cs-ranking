@@ -42,7 +42,7 @@ class RCVDatasetReader(DatasetReader):
         for indices in object_indices:
             X.append(features[indices])
         self.X = np.array(X)
-        self.rankings = np.array(orderings)
+        self.Y = np.array(orderings)
         for i, x in enumerate(self.X):
             x = StandardScaler().fit_transform(x)
             self.X[i] = x
@@ -54,14 +54,14 @@ class RCVDatasetReader(DatasetReader):
         return self.splitter(splits)
 
     def get_complete_dataset(self):
-        return self.X, self.rankings
+        return self.X, self.Y
 
     def splitter(self, iter):
         for train_idx, test_idx in iter:
-            yield self.X[train_idx], self.rankings[train_idx], self.X[test_idx], self.rankings[test_idx]
+            yield self.X[train_idx], self.Y[train_idx], self.X[test_idx], self.Y[test_idx]
 
     def get_train_test_datasets(self, n_datasets):
         pass
 
     def get_single_train_test_split(self):
-        return self.X, self.rankings
+        return self.X, self.Y

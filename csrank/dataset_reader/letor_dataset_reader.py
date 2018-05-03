@@ -68,18 +68,5 @@ class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
                 array = np.array([len(i) for i in dataset.values()])
 
             self.logger.info('File name {}'.format(os.path.basename(file)))
-            # print(array)
             self.logger.info('Maximum length of ranking: {}'.format(np.max(array)))
         return dataset, test_dataset
-
-    def splitter(self, iter):
-        pass
-
-    def get_complete_dataset(self):
-        pass
-
-    def get_train_test_datasets(self, n_datasets):
-        pass
-
-    def get_single_train_test_split(self):
-        pass

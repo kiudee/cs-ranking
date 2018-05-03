@@ -42,8 +42,8 @@ class ObjectRankingDatasetGenerator(SyntheticDatasetGenerator):
             random_state=random_state)
         X = X.reshape(n_instances, n_objects, n_features)
         y = y.reshape(n_instances, n_objects)
-        rankings = scores_to_rankings(y)
-        return X, rankings
+        Y = scores_to_rankings(y)
+        return X, Y
 
     def make_gp_transitive(self, n_instances=1000, n_objects=5, noise=0.0,
                            n_features=100, kernel_params=None, seed=42, **kwd):
@@ -63,9 +63,9 @@ class ObjectRankingDatasetGenerator(SyntheticDatasetGenerator):
              random_state.normal(scale=noise, size=n_total))
         X = X.reshape(n_instances, n_objects, n_features)
         f = f.reshape(n_instances, n_objects)
-        rankings = scores_to_rankings(f)
+        Y = scores_to_rankings(f)
 
-        return X, rankings
+        return X, Y
 
     def make_gp_non_transitive(self, n_instances=1000, n_objects=5,
                                n_features=100, center_box=(-10.0, 10.0),
@@ -81,7 +81,7 @@ class ObjectRankingDatasetGenerator(SyntheticDatasetGenerator):
         samples = samples[samples[:, n_features].argsort()]
         pairwise_prob = create_pairwise_prob_matrix(n_objects)
         X = []
-        rankings = []
+        Y = []
         for inst in range(n_instances):
             feature = np.array([samples[inst + i * n_instances, 0:-1] for i in
                                 range(n_objects)])
@@ -91,26 +91,26 @@ class ObjectRankingDatasetGenerator(SyntheticDatasetGenerator):
             ordering = np.array(
                 [np.where(obj == ranking)[0][0] for obj in objects])
             X.append(feature)
-            rankings.append(ordering)
+            Y.append(ordering)
         X = np.array(X)
-        rankings = np.array(rankings)
-        return X, rankings
+        Y = np.array(Y)
+        return X, Y
 
     def make_intransitive_medoids(self, n_instances=100, n_objects=5,
                                   n_features=100, seed=42, **kwd):
         random_state = check_random_state(seed=seed)
         X = random_state.uniform(size=(n_instances, n_objects, n_features))
-        rankings = np.empty((n_instances, n_objects))
+        Y = np.empty((n_instances, n_objects))
         for i in range(n_instances):
             D = squareform(pdist(X[i], metric='euclidean'))
             sum_dist = D.mean(axis=0)
             medoid = np.argmin(sum_dist)
             ordering = np.argsort(D[medoid])
             ranking = np.argsort(ordering)
-            rankings[i] = ranking
+            Y[i] = ranking
         X = np.array(X)
-        rankings = np.array(rankings)
-        return X, rankings
+        Y = np.array(Y)
+        return X, Y
 
     def make_hv_dataset(self, n_instances=1000, n_objects=5, n_features=5,
                         seed=42, **kwd):

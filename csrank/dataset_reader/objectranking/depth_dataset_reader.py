@@ -56,34 +56,34 @@ class DepthDatasetReader(DatasetReader):
         yield X_train, Y_train, X_test, Y_test
 
     def get_test_dataset_sampled_partial_rankings(self, **kwargs):
-        self.X, self.rankings = self.get_dataset_sampled_partial_rankings(datatype='test', **kwargs)
+        self.X, self.Y = self.get_dataset_sampled_partial_rankings(datatype='test', **kwargs)
         self.__check_dataset_validity__()
-        return self.X, self.rankings
+        return self.X, self.Y
 
     def get_train_dataset_sampled_partial_rankings(self, **kwargs):
-        self.X, self.rankings = self.get_dataset_sampled_partial_rankings(datatype='train', **kwargs)
+        self.X, self.Y = self.get_dataset_sampled_partial_rankings(datatype='train', **kwargs)
         self.__check_dataset_validity__()
-        return self.X, self.rankings
+        return self.X, self.Y
 
     def get_test_dataset(self):
-        self.X, self.rankings = self.get_dataset(datatype='test')
+        self.X, self.Y = self.get_dataset(datatype='test')
         self.__check_dataset_validity__()
-        return self.X, self.rankings
+        return self.X, self.Y
 
     def get_train_dataset(self):
-        self.X, self.rankings = self.get_dataset(datatype='train')
+        self.X, self.Y = self.get_dataset(datatype='train')
         self.__check_dataset_validity__()
-        return self.X, self.rankings
+        return self.X, self.Y
 
     def get_test_dataset_ties(self):
-        self.X, self.rankings = self.get_dataset_ties(datatype='test')
+        self.X, self.Y = self.get_dataset_ties(datatype='test')
         self.__check_dataset_validity__()
-        return self.X, self.rankings
+        return self.X, self.Y
 
     def get_train_dataset_ties(self):
-        self.X, self.rankings = self.get_dataset_ties(datatype='train')
+        self.X, self.Y = self.get_dataset_ties(datatype='train')
         self.__check_dataset_validity__()
-        return self.X, self.rankings
+        return self.X, self.Y
 
     def get_dataset_sampled_partial_rankings(self, datatype='train', max_number_of_rankings_per_image=10, seed=42):
         random_state = np.random.RandomState(seed=seed)

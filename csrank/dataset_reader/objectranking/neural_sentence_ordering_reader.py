@@ -50,7 +50,7 @@ class SentenceOrderingDatasetReader(DatasetReader):
         Y = []
         for n in self.X_train.keys():
             if n > self.train_obj:
-                x, y = sub_sampling(NAME, self.X_train[n], self.Y_train[n], n_objects=self.train_obj)
+                x, y = sub_sampling(SentenceOrderingDatasetReader.__name__, self.X_train[n], self.Y_train[n], n_objects=self.train_obj)
                 if len(X) == 0:
                     X = np.copy(x)
                     Y = np.copy(y)

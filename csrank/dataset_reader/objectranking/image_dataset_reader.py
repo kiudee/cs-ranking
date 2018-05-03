@@ -77,10 +77,10 @@ class ImageDatasetReader(DatasetReader):
 
     def get_single_train_test_split(self):
         seed = self.random_state.randint(2 ** 32, dtype='uint32')
-        self.X, self.rankings = X_train, Y_train = self.make_similarity_based_dataset(datatype='train', seed=seed)
+        self.X, self.Y = X_train, Y_train = self.make_similarity_based_dataset(datatype='train', seed=seed)
         self.__check_dataset_validity__()
 
-        self.X, self.rankings = X_test, Y_test = self.make_similarity_based_dataset(datatype='test', seed=seed + 1)
+        self.X, self.Y = X_test, Y_test = self.make_similarity_based_dataset(datatype='test', seed=seed + 1)
         self.__check_dataset_validity__()
         return X_train, Y_train, X_test, Y_test
 
@@ -110,11 +110,11 @@ class ImageDatasetReader(DatasetReader):
             one_row = [similarity_matrix_lin_list[get_key_for_indices(i, j)] for i, j in product(subset[query], subset)]
             similarity_scores[i] = np.array(one_row)
 
-        rankings = scores_to_rankings(similarity_scores)
+        Y = scores_to_rankings(similarity_scores)
         for i, x in enumerate(X):
             x = StandardScaler().fit_transform(x)
             X[i] = x
-        return X, rankings
+        return X, Y
 
     def create_multilabel_dataset(self, datatype='train'):
         if datatype == 'train':

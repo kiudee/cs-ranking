@@ -8,7 +8,6 @@ from csrank.constants import OBJECT_RANKING
 from csrank.dataset_reader import LetorDatasetReader
 from csrank.dataset_reader.objectranking.util import sub_sampling
 
-NAME = "LetorObjectRankingDatasetReader"
 
 
 class LetorObjectRankingDatasetReader(LetorDatasetReader):
@@ -46,7 +45,7 @@ class LetorObjectRankingDatasetReader(LetorDatasetReader):
         Y = []
         for n in self.X_train.keys():
             if n > self.train_obj:
-                x, y = sub_sampling(NAME, self.X_train[n], self.Y_train[n], n_objects=self.train_obj)
+                x, y = sub_sampling(LetorObjectRankingDatasetReader.__name__, self.X_train[n], self.Y_train[n], n_objects=self.train_obj)
                 if len(X) == 0:
                     X = np.copy(x)
                     Y = np.copy(y)
@@ -70,18 +69,3 @@ class LetorObjectRankingDatasetReader(LetorDatasetReader):
 
     def get_single_train_test_split(self):
         return self.X_train, self.Y_train, self.X_test, self.Y_test
-
-# if __name__ == '__main__':
-#     import sys
-#     import os
-#     import inspect
-#     dirname = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-#     logging.basicConfig(filename=os.path.join(dirname, 'log.log'), level=logging.DEBUG,
-#                         format='%(asctime)s %(name)s %(levelname)-8s %(message)s',
-#                         datefmt='%Y-%m-%d %H:%M:%S')
-#     logger = logging.getLogger(name='letor')
-#     sys.path.append("..")
-#     for n in [2008, 2007]:
-#         ds = LetorObjectRankingDatasetReader(year=n)
-#         logger.info(ds.X_train.shape)
-#         logger.info(np.array(ds.X_test.keys).shape)

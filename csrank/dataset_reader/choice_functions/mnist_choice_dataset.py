@@ -40,9 +40,9 @@ class MNISTChoiceDatasetReader(DatasetReader):
                 y_number[i] = y_labels[y_labels <= largest_numbers[i]][indices]
                 if largest_numbers[i] in y_number[i]:
                     break
-        self.choice_set = (y_number == largest_numbers[:, None]).astype(int)
+        self.Y = (y_number == largest_numbers[:, None]).astype(int)
         self.__check_dataset_validity__()
 
     def get_single_train_test_split(self):
-        return train_test_split(self.X, self.choice_set, random_state=self.random_state,
+        return train_test_split(self.X, self.Y, random_state=self.random_state,
             test_size=self.n_test_instances)
