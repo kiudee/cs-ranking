@@ -19,6 +19,7 @@ import inspect
 import logging
 import os
 import sys
+import traceback
 from datetime import datetime
 
 import numpy as np
@@ -137,8 +138,10 @@ if __name__ == "__main__":
                 message = e.message
             else:
                 message = e
+            logger.error(traceback.format_exc())
             message = "exception{}".format(str(message))
             dbConnector.append_error_string_in_running_job(job_id=job_id, error_message=message)
         except:
+            logger.error(traceback.format_exc())
             message = "exception{}".format(sys.exc_info()[0].__name__)
             dbConnector.append_error_string_in_running_job(job_id=job_id, error_message=message)
