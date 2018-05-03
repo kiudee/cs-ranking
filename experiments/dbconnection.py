@@ -64,7 +64,7 @@ class DBConnector(metaclass=ABCMeta):
             date_time = job['job_allocated_time']
             duration = get_duration_seconds(job['duration'])
             new_date = date_time + timedelta(seconds=duration)
-            if new_date > datetime.now():
+            if new_date < datetime.now():
                 job_id = int(job['job_id'])
                 print("Duration for the Job {} expired so marking it as failed".format(job_id))
                 error_message = "exception{}".format("InterruptedDueToSomeError")
