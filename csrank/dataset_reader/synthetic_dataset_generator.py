@@ -37,7 +37,8 @@ class SyntheticDatasetGenerator(DatasetReader):
 
     def get_single_train_test_split(self):
         seed = self.random_state.randint(2 ** 32, dtype='uint32')
-        self.X, self.Y = X_train, Y_train = self.dataset_function(**self.kwargs, n_instances=self.n_train_instances, seed=seed)
+        self.X, self.Y = X_train, Y_train = self.dataset_function(**self.kwargs, n_instances=self.n_train_instances,
+            seed=seed)
         self.__check_dataset_validity__()
 
         seed = self.random_state.randint(2 ** 32, dtype='uint32')
