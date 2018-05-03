@@ -1,7 +1,7 @@
 """Thin experiment runner which takes all simulation parameters from a database.
 
 Usage:
-  experiment_cv.py --seed=<seed> --cindex=<id> --config_fileName=<config_fileName> --isgpu=<bool> --schema=<schema>
+  experiment_cv.py --cindex=<id> --config_fileName=<config_fileName> --isgpu=<bool> --schema=<schema>
   experiment_cv.py (-h | --help)
 
 Arguments:
@@ -9,7 +9,6 @@ Arguments:
 
 Options:
   -h --help                             Show this screen.
-  --seed=<seed>                         Seed for the job pickings
   --cindex=<cindex>                     Index given by the cluster to specify which job
                                         is to be executed [default: 0]
   --config_fileName=<config_fileName>   File name of the database config
@@ -138,8 +137,8 @@ if __name__ == "__main__":
                 message = e.message
             else:
                 message = e
-            message = "cluster{}exception{}".format(cluster_id, str(message))
+            message = "exception{}".format(str(message))
             dbConnector.append_error_string_in_running_job(job_id=job_id, error_message=message)
         except:
-            message = "cluster{}exception{}".format(cluster_id, sys.exc_info()[0].__name__)
+            message = "exception{}".format(sys.exc_info()[0].__name__)
             dbConnector.append_error_string_in_running_job(job_id=job_id, error_message=message)

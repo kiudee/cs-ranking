@@ -3,9 +3,12 @@ import json
 import logging
 import os
 from abc import ABCMeta
+from datetime import timedelta, datetime
 
 import psycopg2
 from psycopg2.extras import DictCursor
+
+from csrank.util import get_duration_seconds
 
 
 class DBConnector(metaclass=ABCMeta):
@@ -48,7 +51,27 @@ class DBConnector(metaclass=ABCMeta):
         hex_dig = hash_object.hexdigest()
         return str(hex_dig)
 
+    def add_jobs_in_avail_which_failed(self):
+        self.init_connection()
+        avail_jobs = "{}.avail_jobs".format(self.schema)
+        running_jobs = "{}.running_jobs".format(self.schema)
+        select_job = """SELECT * FROM {0} row WHERE EXISTS(SELECT job_id FROM {1} r WHERE r.interrupted = FALSE AND r.job_id = row.job_id)""".format(
+            avail_jobs, running_jobs)
+        self.cursor_db.execute(select_job)
+        all_jobs = self.cursor_db.fetchall()
+        self.close_connection()
+        for job in all_jobs:
+            date_time = job['job_allocated_time']
+            duration = get_duration_seconds(job['duration'])
+            new_date = date_time + timedelta(seconds=duration)
+            if new_date > datetime.now():
+                job_id = int(job['job_id'])
+                print("Duration for the Job {} expired so marking it as failed".format(job_id))
+                error_message = "exception{}".format("InterruptedDueToSomeError")
+                self.append_error_string_in_running_job(job_id=job_id, error_message=error_message)
+
     def fetch_job_arguments(self, cluster_id):
+        self.add_jobs_in_avail_which_failed()
         self.init_connection()
         avail_jobs = "{}.avail_jobs".format(self.schema)
         running_jobs = "{}.running_jobs".format(self.schema)
@@ -72,13 +95,14 @@ class DBConnector(metaclass=ABCMeta):
                 print("IntegrityError for the job {}, it was already assigned to another node error {}".format(run_job_id, str(e)))
                 job_ids.remove(run_job_id)
             except (ValueError, IndexError) as e:
-                print("ValueError as the all jobs are already assigned to another nodes {}".format(str(e)))
+                print("Error as the all jobs are already assigned to another nodes {}".format(str(e)))
                 break
         if self.job_description is not None:
             try:
                 self.init_connection(cursor_factory=None)
-                update_job = """UPDATE {} set hash_value = %s WHERE job_id = %s""".format(avail_jobs)
-                self.cursor_db.execute(update_job, (hash_value, run_job_id))
+                start = datetime.now()
+                update_job = """UPDATE {} set hash_value = %s, job_allocated_time = %s WHERE job_id = %s""".format(avail_jobs)
+                self.cursor_db.execute(update_job, (hash_value, start, run_job_id))
                 select_job = """SELECT count(*) FROM {0} WHERE {0}.job_id = {1}""".format(running_jobs, run_job_id)
                 self.cursor_db.execute(select_job)
                 count_ = self.cursor_db.fetchone()[0]
@@ -138,11 +162,12 @@ class DBConnector(metaclass=ABCMeta):
     def append_error_string_in_running_job(self, job_id, error_message, **kwargs):
         self.init_connection(cursor_factory=None)
         running_jobs = "{}.running_jobs".format(self.schema)
-        current_message = "SELECT error_history from {0} WHERE {0}.job_id = {1}".format(running_jobs, job_id)
+        current_message = "SELECT cluster_id, error_history from {0} WHERE {0}.job_id = {1}".format(running_jobs, job_id)
         self.cursor_db.execute(current_message)
         cur_message = self.cursor_db.fetchone()
-        if cur_message[0] != 'NA':
-            error_message = error_message + ';\n' + cur_message[0]
+        error_message = "cluster{}".format(cur_message[0])+error_message
+        if cur_message[1] != 'NA':
+            error_message = error_message + ';\n' + cur_message[1]
         update_job = "UPDATE {0} SET error_history = %s, interrupted = %s WHERE job_id = %s".format(running_jobs)
         self.cursor_db.execute(update_job, (error_message, True, job_id))
         if self.cursor_db.rowcount == 1:
