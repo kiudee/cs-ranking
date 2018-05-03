@@ -2,10 +2,10 @@ from abc import ABCMeta, abstractmethod
 
 from csrank.constants import DISCRETE_CHOICE
 
-__all__ = ['ObjectChooser']
+__all__ = ['DiscreteObjectChooser']
 
 
-class ObjectChooser(metaclass=ABCMeta):
+class DiscreteObjectChooser(metaclass=ABCMeta):
     @property
     def learning_problem(self):
         return DISCRETE_CHOICE
@@ -40,10 +40,23 @@ class ObjectChooser(metaclass=ABCMeta):
 
         Returns
         -------
-        Y : array-like, shape (n_samples, n_objects)
-            Predicted choices
+        Y : array-like, shape (n_samples, 1)
+            Predicted discrete choice out of given n_objects
         """
-        raise NotImplementedError
+
+        self.logger.debug('Predicting started')
+
+        scores = self.predict_scores(X, **kwargs)
+        self.logger.debug('Predicting scores complete')
+
+        if isinstance(X, dict):
+            result = dict()
+            for n, s in scores.items():
+                result[n] = s.argmax(axis=1)
+            self.logger.debug()
+        else:
+            result = scores.argmax(axis=1)
+        return result
 
     @abstractmethod
     def predict_scores(self, X, **kwargs):
@@ -76,7 +89,7 @@ class ObjectChooser(metaclass=ABCMeta):
 
     @classmethod
     def __subclasshook__(cls, C):
-        if cls is ObjectChooser:
+        if cls is DiscreteObjectChooser:
             has_fit = any("fit" in B.__dict__ for B in C.__mro__)
             has_predict = any("predict" in B.__dict__ for B in C.__mro__)
             has_scores = any("predict_scores" in B.__dict__ for B in C.__mro__)

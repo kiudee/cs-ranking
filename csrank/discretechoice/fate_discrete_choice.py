@@ -1,10 +1,10 @@
 import logging
 
-from csrank.discretechoice.discrete_choice import ObjectChooser
+from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 from csrank.fate_network import FATEObjectRankingCore
 
 
-class FATEObjectChooser(FATEObjectRankingCore, ObjectChooser):
+class FATEDiscreteObjectChooser(FATEObjectRankingCore, DiscreteObjectChooser):
     def __init__(self, loss_function='categorical_hinge', metrics=None,
                  **kwargs):
         FATEObjectRankingCore.__init__(self, **kwargs)
@@ -13,11 +13,11 @@ class FATEObjectChooser(FATEObjectRankingCore, ObjectChooser):
             metrics = ['categorical_accuracy']
         self.metrics = metrics
         self.model = None
-        self.logger = logging.getLogger(FATEObjectChooser.__name__)
+        self.logger = logging.getLogger(FATEDiscreteObjectChooser.__name__)
 
     def predict(self, X, **kwargs):
         scores = self.predict_scores(X, **kwargs)
-        if self.is_variadic:
+        if isinstance(X, dict):
             result = dict()
             for n, s in scores.items():
                 result[n] = s.argmax(axis=1)
