@@ -6,7 +6,7 @@ from sklearn.utils import check_random_state
 
 from csrank.constants import OBJECT_RANKING
 from csrank.dataset_reader import LetorDatasetReader
-from csrank.dataset_reader.objectranking.util import sub_sampling
+from csrank.dataset_reader.objectranking.util import sub_sampling_rankings
 
 
 class LetorObjectRankingDatasetReader(LetorDatasetReader):
@@ -41,7 +41,7 @@ class LetorObjectRankingDatasetReader(LetorDatasetReader):
         Y = []
         for n in self.X_train.keys():
             if n > self.n_objects:
-                x, y = sub_sampling(LetorObjectRankingDatasetReader.__name__, self.X_train[n], self.Y_train[n], n_objects=self.n_objects)
+                x, y = sub_sampling_rankings(LetorObjectRankingDatasetReader.__name__, self.X_train[n], self.Y_train[n], n_objects=self.n_objects)
                 if len(X) == 0:
                     X = np.copy(x)
                     Y = np.copy(y)

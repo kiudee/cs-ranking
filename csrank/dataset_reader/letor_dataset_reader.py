@@ -44,19 +44,20 @@ class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
 
     def create_rankings_dataset(self, dataset, hdf5file_path):
 
-        def _build_training_buckets(X, Y):
+        def _build_training_buckets(X, Y, scores):
             """Separates object ranking data into buckets of the same ranking
                size."""
             result = dict()
             freq = dict()
 
-            for x, y in zip(X, Y):
+            for x, y, s in zip(X, Y, scores):
                 n_objects = len(x)
                 if n_objects not in result:
-                    result[n_objects] = ([], [])
+                    result[n_objects] = ([], [], [])
                 bucket = result[n_objects]
                 bucket[0].append(x)
                 bucket[1].append(y)
+                bucket[2].append(s)
                 if n_objects not in freq:
                     freq[n_objects] = 1
                 else:
@@ -65,7 +66,7 @@ class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
             # Convert all buckets to numpy arrays:
             n_instances = sum(freq.values())
             for k, v in result.items():
-                result[k] = np.array(v[0]), np.array(v[1])
+                result[k] = np.array(v[0]), np.array(v[1]), np.array(v[2])
                 freq[k] /= n_instances
 
             return result, freq
@@ -89,15 +90,17 @@ class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
             Y.append(rankdata(x[:, -1], method='max') - 1)
         X = np.array(X)
         Y = np.array(Y)
-        result, freq = _build_training_buckets(X, Y)
+        scores = np.array(scores)
+        result, freq = _build_training_buckets(X, Y, scores)
         h5f = h5py.File(hdf5file_path, 'w')
         self.logger.info("Frequencies of rankings: {}".format(print_dictionary(freq)))
         self.logger.info("Writing in hd5 {}".format(hdf5file_path))
         for key, value in result.items():
-            x, y = value
+            x, y, s = value
             x, y = reprocess(x, y)
             h5f.create_dataset('X_' + str(key), data=x, compression='gzip', compression_opts=9)
             h5f.create_dataset('Y_' + str(key), data=y, compression='gzip', compression_opts=9)
+            h5f.create_dataset('score_' + str(key), data=s, compression='gzip', compression_opts=9)
             self.logger.info("length {}".format(key))
         lengths = np.array(list(result.keys()))
         h5f.create_dataset('lengths', data=lengths, compression='gzip', compression_opts=9)
