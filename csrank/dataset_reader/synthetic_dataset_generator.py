@@ -28,12 +28,8 @@ class SyntheticDatasetGenerator(DatasetReader):
                 seed=10 * i + 32)
         yield X_train, Y_train, X_test, Y_test
 
-    def get_complete_dataset(self):
+    def get_dataset_dictionaries(self):
         pass
-
-    def get_train_test_datasets(self, n_datasets=5):
-        splits = np.array(n_datasets)
-        return self.splitter(splits)
 
     def get_single_train_test_split(self):
         seed = self.random_state.randint(2 ** 32, dtype='uint32')

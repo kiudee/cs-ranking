@@ -3,6 +3,8 @@ import logging
 import os
 from abc import ABCMeta, abstractmethod
 
+import numpy as np
+
 from csrank.constants import OBJECT_RANKING, DYAD_RANKING, EXCEPTION_OBJECT_ARRAY_SHAPE, \
     EXCEPTION_RANKINGS_FEATURES_INSTANCES, EXCEPTION_RANKINGS_FEATURES_NO_OF_OBJECTS, \
     EXCEPTION_UNWANTED_CONTEXT_FEATURES, LABEL_RANKING, DISCRETE_CHOICE, EXCEPTION_CONTEXT_ARRAY_SHAPE, \
@@ -70,13 +72,14 @@ class DatasetReader(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def get_train_test_datasets(self, n_datasets):
-        raise NotImplementedError
-
-    @abstractmethod
-    def get_complete_dataset(self):
+    def get_dataset_dictionaries(self, lengths=[5, 6]):
         raise NotImplementedError
 
     @abstractmethod
     def get_single_train_test_split(self):
         raise NotImplementedError
+
+    @abstractmethod
+    def get_train_test_datasets(self, n_datasets=5):
+        splits = np.array(n_datasets)
+        return self.splitter(splits)

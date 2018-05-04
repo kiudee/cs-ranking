@@ -46,7 +46,7 @@ class DepthDatasetReader(DatasetReader):
         X_test, Y_test = self.get_test_dataset_ties()
         return X_train, Y_train, X_test, Y_test
 
-    def get_complete_dataset(self):
+    def get_dataset_dictionaries(self):
         pass
 
     def splitter(self, iter):

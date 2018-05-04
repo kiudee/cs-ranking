@@ -48,5 +48,5 @@ class IntelligentSystemGroupDatasetReader(DatasetReader):
         return self.X[name][train_idx], self.Y[name][train_idx], self.X[name][test_idx], self.Y[name][
             test_idx]
 
-    def get_complete_dataset(self, name="cold"):
+    def get_dataset_dictionaries(self, name="cold"):
         return self.X[name], self.Y[name]
