@@ -1,5 +1,5 @@
-from .choice_functions import *
-from .dataset_reader.choice_functions import *
+from .choicefunctions import *
+from .dataset_reader.choicefunctions import *
 from .dataset_reader.dyadranking import *
 from .dataset_reader.labelranking import *
 from .dataset_reader.objectranking import *
