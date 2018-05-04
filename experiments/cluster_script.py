@@ -123,6 +123,7 @@ if __name__ == "__main__":
             for name, evaluation_metric in lp_metric_dict[learning_problem].items():
                 pred = s_pred
                 if evaluation_metric in metrics_on_predictions:
+                    logger.info("Metric on predictions")
                     pred = y_pred
                 if isinstance(Y_test, dict):
                     metric_loss = get_mean_loss_for_dictionary(logger, evaluation_metric, Y_test, pred)
@@ -130,8 +131,7 @@ if __name__ == "__main__":
                     metric_loss = get_loss_for_array(evaluation_metric, Y_test, pred)
                 logger.info(ERROR_OUTPUT_STRING % (name, metric_loss))
                 results[name] = "{0:.4f}".format(metric_loss)
-            dbConnector.insert_results(experiment_schema=experiment_schema, experiment_table=experiment_table,
-                results=results)
+            dbConnector.insert_results(experiment_schema=experiment_schema, experiment_table=experiment_table, results=results)
             dbConnector.mark_running_job_finished(job_id)
         except Exception as e:
             if hasattr(e, 'message'):
