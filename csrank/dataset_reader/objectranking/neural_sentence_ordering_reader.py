@@ -5,7 +5,7 @@ import h5py
 import numpy as np
 
 from csrank.constants import OBJECT_RANKING
-from csrank.dataset_reader.objectranking.util import sub_sampling
+from csrank.dataset_reader.objectranking.util import sub_sampling_rankings
 from ..dataset_reader import DatasetReader
 
 
@@ -48,7 +48,7 @@ class SentenceOrderingDatasetReader(DatasetReader):
         Y = []
         for n in self.X_train.keys():
             if n > self.n_objects:
-                x, y = sub_sampling(SentenceOrderingDatasetReader.__name__, self.X_train[n], self.Y_train[n],
+                x, y = sub_sampling_rankings(SentenceOrderingDatasetReader.__name__, self.X_train[n], self.Y_train[n],
                     n_objects=self.n_objects)
                 if len(X) == 0:
                     X = np.copy(x)

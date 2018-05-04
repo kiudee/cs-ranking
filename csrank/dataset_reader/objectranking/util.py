@@ -96,7 +96,7 @@ def initialize_similarity_matrix(mypath):
     return similarity_dictionary
 
 
-def sub_sampling(name, Xt, Yt, n_objects=5):
+def sub_sampling_rankings(name, Xt, Yt, n_objects=5):
     logger = logging.getLogger(name=name)
     bucket_size = int(Xt.shape[1] / n_objects)
     # logger.info("#########################################################################")

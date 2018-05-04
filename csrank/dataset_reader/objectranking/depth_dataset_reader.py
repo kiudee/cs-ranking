@@ -7,7 +7,7 @@ from scipy.stats import rankdata
 from sklearn.utils import check_random_state
 
 from csrank.constants import OBJECT_RANKING
-from csrank.dataset_reader.objectranking.util import sub_sampling
+from csrank.dataset_reader.objectranking.util import sub_sampling_rankings
 from ..dataset_reader import DatasetReader
 
 __all__ = ['DepthDatasetReader']
@@ -42,7 +42,7 @@ class DepthDatasetReader(DatasetReader):
     def get_single_train_test_split(self):
         seed = self.random_state.randint(2 ** 32, dtype='uint32')
         X_train, Y_train = self.get_train_dataset_sampled_partial_rankings(seed=seed)
-        X_train, Y_train = sub_sampling("DepthDataset", X_train, Y_train, n_objects=5)
+        X_train, Y_train = sub_sampling_rankings("DepthDataset", X_train, Y_train, n_objects=5)
         X_test, Y_test = self.get_test_dataset_ties()
         return X_train, Y_train, X_test, Y_test
 
