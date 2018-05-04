@@ -117,7 +117,7 @@ class TagGenomeDatasetReader(DatasetReader):
             X_test, Y_test = self.make_similarity_based_dataset(self.n_test_instances, seed=10 * i + 32)
         yield X_train, Y_train, X_test, Y_test
 
-    def get_complete_dataset(self):
+    def get_dataset_dictionaries(self):
         pass
 
     def get_train_test_datasets(self, n_datasets=5):

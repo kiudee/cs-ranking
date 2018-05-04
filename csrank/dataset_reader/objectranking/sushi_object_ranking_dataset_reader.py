@@ -19,7 +19,7 @@ class SushiObjectRankingDatasetReader(SushiDatasetReader):
         splits = list(cv_iter.split(self.X))
         return self.splitter(splits)
 
-    def get_complete_dataset(self):
+    def get_dataset_dictionaries(self):
         return self.X, self.Y
 
     def get_single_train_test_split(self):

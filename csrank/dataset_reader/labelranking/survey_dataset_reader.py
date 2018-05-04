@@ -41,5 +41,5 @@ class SurveyDatasetReader(DatasetReader):
         (train_idx, test_idx) = list(cv_iter.split(self.X))[0]
         return self.X[train_idx], self.Y[train_idx], self.X[test_idx], self.Y[test_idx]
 
-    def get_complete_dataset(self):
+    def get_dataset_dictionaries(self):
         return self.X, self.Y

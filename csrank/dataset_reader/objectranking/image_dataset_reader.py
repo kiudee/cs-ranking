@@ -64,11 +64,15 @@ class ImageDatasetReader(DatasetReader):
 
     def splitter(self, iter):
         for i in iter:
-            X_train, Y_train = self.make_similarity_based_dataset(datatype='train', seed=10 * i + 32)
-            X_test, Y_test = self.make_similarity_based_dataset(datatype='test', seed=10 * i + 32)
+            self.X, self.Y = X_train, Y_train = self.make_similarity_based_dataset(datatype='train', seed=10 * i + 32)
+            self.__check_dataset_validity__()
+
+            self.X, self.Y = X_test, Y_test = self.make_similarity_based_dataset(datatype='test', seed=10 * i + 32)
+            self.__check_dataset_validity__()
+
         yield X_train, Y_train, X_test, Y_test
 
-    def get_complete_dataset(self):
+    def get_dataset_dictionaries(self):
         pass
 
     def get_train_test_datasets(self, n_datasets=5):
