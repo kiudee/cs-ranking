@@ -71,14 +71,15 @@ class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
 
             return result, freq
 
-        def reprocess(features, rankings):
+        def reprocess(features, rankings, scores):
             rankings = rankings - 1
             features = np.flip(features, 1)
             rankings = np.flip(rankings, 1)
-            for c in rankings:
-                np.random.shuffle(c)
+            for i, r in enumerate(rankings):
+                np.random.shuffle(r)
+                scores[i] = scores[i][r]
             features = np.array([features[i][rankings[i], :] for i in range(rankings.shape[0])])
-            return features, rankings
+            return features, rankings, scores
 
         X = []
         Y = []
@@ -97,7 +98,7 @@ class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
         self.logger.info("Writing in hd5 {}".format(hdf5file_path))
         for key, value in result.items():
             x, y, s = value
-            x, y = reprocess(x, y)
+            x, y, s = reprocess(x, y, s)
             h5f.create_dataset('X_' + str(key), data=x, compression='gzip', compression_opts=9)
             h5f.create_dataset('Y_' + str(key), data=y, compression='gzip', compression_opts=9)
             h5f.create_dataset('score_' + str(key), data=s, compression='gzip', compression_opts=9)

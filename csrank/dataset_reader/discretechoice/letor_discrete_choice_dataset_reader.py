@@ -5,7 +5,7 @@ from csrank.dataset_reader import LetorDatasetReader
 
 
 class LetorDiscreteChoiceDatasetReader(LetorDatasetReader):
-    def __init__(self, random_state=None, **kwargs):
+    def __init__(self, random_state=None, n_objects=5, **kwargs):
         super(LetorDiscreteChoiceDatasetReader, self).__init__(learning_problem=DISCRETE_CHOICE, **kwargs)
         self.random_state = check_random_state(random_state)
 
