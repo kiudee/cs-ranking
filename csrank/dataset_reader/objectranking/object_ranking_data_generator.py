@@ -36,10 +36,10 @@ class ObjectRankingDatasetGenerator(SyntheticDatasetGenerator):
                                seed=42, **kwd):
         random_state = check_random_state(seed=seed)
         X, y, coeff = make_regression(n_samples=n_instances * n_objects,
-            n_features=n_features,
-            n_informative=n_informative, coef=True,
-            noise=noise,
-            random_state=random_state)
+                                      n_features=n_features,
+                                      n_informative=n_informative, coef=True,
+                                      noise=noise,
+                                      random_state=random_state)
         X = X.reshape(n_instances, n_objects, n_features)
         y = y.reshape(n_instances, n_objects)
         Y = scores_to_rankings(y)
@@ -73,9 +73,9 @@ class ObjectRankingDatasetGenerator(SyntheticDatasetGenerator):
         n_samples = n_instances * n_objects
         random_state = check_random_state(seed=seed)
         x, y = make_blobs(n_samples=n_samples, centers=n_objects,
-            n_features=n_features, cluster_std=cluster_std,
-            center_box=center_box, random_state=random_state,
-            shuffle=True)
+                          n_features=n_features, cluster_std=cluster_std,
+                          center_box=center_box, random_state=random_state,
+                          shuffle=True)
         y = np.array([y])
         samples = np.append(x, y.T, axis=1)
         samples = samples[samples[:, n_features].argsort()]

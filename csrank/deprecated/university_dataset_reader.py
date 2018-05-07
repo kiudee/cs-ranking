@@ -133,7 +133,7 @@ def univerisity_dataset_for_year(year):
     if str(year) not in str(years):
         raise Exception('Data is not present for the year, university dataset is present only for: ' + repr(years))
     path = os.path.join(dir_name, DATASET_FOLDER,
-        UNIVERSITY_ + str(year) + ".csv")
+                        UNIVERSITY_ + str(year) + ".csv")
     dataframe = pd.read_csv(path)
     headers = np.array(dataframe.columns)
     headers[1], headers[2] = headers[2], headers[1]

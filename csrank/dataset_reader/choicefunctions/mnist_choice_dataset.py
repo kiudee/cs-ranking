@@ -13,7 +13,7 @@ class MNISTChoiceDatasetReader(DatasetReader):
 
     def __init__(self, n_train_instances=10000, n_test_instances=10000, n_objects=10, random_state=None, **kwargs):
         super(MNISTChoiceDatasetReader, self).__init__(learning_problem=CHOICE_FUNCTIONS, dataset_folder='mnist',
-            **kwargs)
+                                                       **kwargs)
         self.logger = logging.getLogger(MNISTChoiceDatasetReader.__name__)
         self.n_test_instances = n_test_instances
         self.n_train_instances = n_train_instances
@@ -45,4 +45,4 @@ class MNISTChoiceDatasetReader(DatasetReader):
 
     def get_single_train_test_split(self):
         return train_test_split(self.X, self.Y, random_state=self.random_state,
-            test_size=self.n_test_instances)
+                                test_size=self.n_test_instances)

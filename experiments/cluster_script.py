@@ -27,6 +27,7 @@ from docopt import docopt
 from sklearn.model_selection import ShuffleSplit
 
 from csrank import *
+from csrank.metrics import make_ndcg_at_k_loss
 from csrank.util import configure_logging_numpy_keras, create_dir_recursively, duration_tillnow, seconds_to_time, \
     get_mean_loss_for_dictionary, \
     get_loss_for_array, print_dictionary, get_duration_seconds
@@ -90,7 +91,7 @@ if __name__ == "__main__":
             dataset_params['random_state'] = random_state
             dataset_reader = get_dataset_reader(dataset_name, dataset_params)
             X_train, Y_train, X_test, Y_test = dataset_reader.get_single_train_test_split()
-            log_test_train_data(X_train, X_test, logger)
+            n_objects = log_test_train_data(X_train, X_test, logger)
             inner_cv = ShuffleSplit(n_splits=n_inner_folds, test_size=0.1, random_state=random_state)
 
             hp_params = create_optimizer_parameters(fit_params, hp_ranges, learner_params, learner_name)
@@ -121,17 +122,20 @@ if __name__ == "__main__":
 
             results = {'job_id': str(job_id), 'cluster_id': str(cluster_id)}
             for name, evaluation_metric in lp_metric_dict[learning_problem].items():
-                pred = s_pred
+                predictions = s_pred
                 if evaluation_metric in metrics_on_predictions:
                     logger.info("Metric on predictions")
-                    pred = y_pred
+                    predictions = y_pred
+                if "NDCG" in name:
+                    evaluation_metric = make_ndcg_at_k_loss(k=n_objects)
                 if isinstance(Y_test, dict):
-                    metric_loss = get_mean_loss_for_dictionary(logger, evaluation_metric, Y_test, pred)
+                    metric_loss = get_mean_loss_for_dictionary(logger, evaluation_metric, Y_test, predictions)
                 else:
-                    metric_loss = get_loss_for_array(evaluation_metric, Y_test, pred)
+                    metric_loss = get_loss_for_array(evaluation_metric, Y_test, predictions)
                 logger.info(ERROR_OUTPUT_STRING % (name, metric_loss))
                 results[name] = "{0:.4f}".format(metric_loss)
-            dbConnector.insert_results(experiment_schema=experiment_schema, experiment_table=experiment_table, results=results)
+            dbConnector.insert_results(experiment_schema=experiment_schema, experiment_table=experiment_table,
+                                       results=results)
             dbConnector.mark_running_job_finished(job_id)
         except Exception as e:
             if hasattr(e, 'message'):

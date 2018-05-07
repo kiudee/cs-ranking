@@ -38,8 +38,8 @@ class FATERankingCore(Tunable, metaclass=ABCMeta):
         self._optimizer_config = self.optimizer.get_config()
         self.__kwargs__ = kwargs
         self._construct_layers(activation=self.activation,
-            kernel_initializer=self.kernel_initializer,
-            kernel_regularizer=self.kernel_regularizer)
+                               kernel_initializer=self.kernel_initializer,
+                               kernel_regularizer=self.kernel_regularizer)
 
     def _construct_layers(self, **kwargs):
         """ Construct basic layers shared by all ranking algorithms:
@@ -58,13 +58,13 @@ class FATERankingCore(Tunable, metaclass=ABCMeta):
         for i in range(self.n_hidden_joint_layers):
             self.joint_layers.append(
                 Dense(self.n_hidden_joint_units,
-                    name="joint_layer_{}".format(i),
-                    **kwargs)
+                      name="joint_layer_{}".format(i),
+                      **kwargs)
             )
 
         self.logger.info('Construct output score node')
         self.scorer = Dense(1, name="output_node", activation='linear',
-            kernel_regularizer=self.kernel_regularizer)
+                            kernel_regularizer=self.kernel_regularizer)
 
     def join_input_layers(self, input_layer, *layers, n_layers, n_objects):
         """
@@ -159,8 +159,8 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
         self.model = None
         self.logger_gorc.info("args: {}".format(repr(kwargs)))
         self._create_set_layers(activation=self.activation,
-            kernel_initializer=self.kernel_initializer,
-            kernel_regularizer=self.kernel_regularizer)
+                                kernel_initializer=self.kernel_initializer,
+                                kernel_regularizer=self.kernel_regularizer)
         self.is_variadic = True
 
     def _create_set_layers(self, **kwargs):
@@ -178,8 +178,8 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
 
         if self.n_hidden_set_layers >= 1:
             self.set_layer = DeepSet(units=self.n_hidden_set_units,
-                layers=self.n_hidden_set_layers,
-                **kwargs)
+                                     layers=self.n_hidden_set_layers,
+                                     **kwargs)
         else:
             self.set_layer = None
 
@@ -221,17 +221,17 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
 
         for n_objects in buckets.keys():
             input_layer = Input(shape=(n_objects, n_features),
-                name="input_node")
+                                name="input_node")
 
             set_repr = self.set_layer(input_layer)
 
             scores = self.join_input_layers(input_layer, set_repr,
-                n_objects=n_objects,
-                n_layers=self.n_hidden_set_layers)
+                                            n_objects=n_objects,
+                                            n_layers=self.n_hidden_set_layers)
             model = Model(inputs=input_layer, outputs=scores)
             model.compile(loss=self.loss_function,
-                optimizer=self.optimizer,
-                metrics=self.metrics)
+                          optimizer=self.optimizer,
+                          metrics=self.metrics)
             models[n_objects] = model
         return models
 
@@ -274,7 +274,7 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
             for epoch in range(epochs):
 
                 self.logger.info("Epoch: {}, Learning rate: {}"
-                    .format(epoch, learning_rate))
+                                 .format(epoch, learning_rate))
 
                 # In the spirit of mini-batch SGD we also shuffle the buckets
                 # each epoch:
@@ -320,12 +320,12 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
 
                 input_layer = Input(shape=(n_objects,
                                            n_features),
-                    name="input_node")
+                                    name="input_node")
 
                 set_repr = self.set_layer(input_layer)
                 scores = self.join_input_layers(input_layer, set_repr,
-                    n_objects=n_objects,
-                    n_layers=self.n_hidden_set_layers)
+                                                n_objects=n_objects,
+                                                n_layers=self.n_hidden_set_layers)
                 self.model = Model(inputs=input_layer, outputs=scores)
             self.model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
 
@@ -384,10 +384,10 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
             existing one if one exists.
         """
         self._fit(X=X, Y=Y, epochs=epochs, inner_epochs=inner_epochs,
-            callbacks=callbacks,
-            validation_split=validation_split, verbose=verbose,
-            global_lr=global_lr, global_momentum=global_momentum,
-            min_bucket_size=min_bucket_size, refit=refit, **kwargs)
+                  callbacks=callbacks,
+                  validation_split=validation_split, verbose=verbose,
+                  global_lr=global_lr, global_momentum=global_momentum,
+                  min_bucket_size=min_bucket_size, refit=refit, **kwargs)
 
     def fit_generator(self, generator, epochs=35, steps_per_epoch=10,
                       inner_epochs=1, callbacks=None, verbose=0,
@@ -433,24 +433,24 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
             existing one if one exists.
         """
         self._fit(generator=generator, epochs=epochs,
-            steps_per_epoch=steps_per_epoch, inner_epochs=inner_epochs,
-            callbacks=callbacks, verbose=verbose,
-            global_lr=global_lr, global_momentum=global_momentum,
-            min_bucket_size=min_bucket_size, refit=refit, **kwargs)
+                  steps_per_epoch=steps_per_epoch, inner_epochs=inner_epochs,
+                  callbacks=callbacks, verbose=verbose,
+                  global_lr=global_lr, global_momentum=global_momentum,
+                  min_bucket_size=min_bucket_size, refit=refit, **kwargs)
 
     def get_set_representation(self, X, kwargs):
         n_instances, n_objects, n_features = X.shape
         self.logger.info("Test Set instances {} objects {} features {}".format(n_instances, n_objects, n_features))
         input_layer_scorer = Input(shape=(n_objects,
                                           self.n_object_features),
-            name="input_node")
+                                   name="input_node")
         if self.n_hidden_set_layers >= 1:
             self.set_layer(input_layer_scorer)
             fr = self.set_layer.cached_models[n_objects].predict(X, **kwargs)
             del self.set_layer.cached_models[n_objects]
             X_n = np.empty((fr.shape[0], n_objects,
                             fr.shape[1] + self.n_object_features),
-                dtype="float")
+                           dtype="float")
             for i in range(n_objects):
                 X_n[:, i] = np.concatenate((X[:, i], fr), axis=1)
             X = np.copy(X_n)
@@ -478,7 +478,7 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
             "After applying the set representations instances {} objects {}"
             "features {}".format(n_instances, n_objects, n_features))
         input_layer_joint = Input(shape=(n_objects, n_features),
-            name="input_joint_model")
+                                  name="input_joint_model")
         scores = []
 
         inputs = [create_input_lambda(i)(input_layer_joint) for i in
@@ -535,9 +535,9 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
                                batch_size=128,
                                **point):
         FATERankingCore.set_tunable_parameters(self, n_hidden_joint_units=n_hidden_joint_units,
-            n_hidden_joint_layers=n_hidden_joint_layers, reg_strength=reg_strength,
-            learning_rate=learning_rate,
-            batch_size=batch_size, **point)
+                                               n_hidden_joint_layers=n_hidden_joint_layers, reg_strength=reg_strength,
+                                               learning_rate=learning_rate,
+                                               batch_size=batch_size, **point)
         self.n_hidden_set_units = n_hidden_set_units
         self.n_hidden_set_layers = n_hidden_set_layers
 

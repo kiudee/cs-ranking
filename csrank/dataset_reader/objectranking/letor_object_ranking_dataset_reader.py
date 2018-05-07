@@ -41,7 +41,8 @@ class LetorObjectRankingDatasetReader(LetorDatasetReader):
         Y = []
         for n in self.X_train.keys():
             if n > self.n_objects:
-                x, y = sub_sampling_rankings(LetorObjectRankingDatasetReader.__name__, self.X_train[n], self.Y_train[n], n_objects=self.n_objects)
+                x, y = sub_sampling_rankings(LetorObjectRankingDatasetReader.__name__, self.X_train[n], self.Y_train[n],
+                                             n_objects=self.n_objects)
                 if len(X) == 0:
                     X = np.copy(x)
                     Y = np.copy(y)

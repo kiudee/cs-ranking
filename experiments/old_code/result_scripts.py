@@ -32,7 +32,7 @@ def log_best_params(file):
         best_params = opt.Xi[best_i]
         logger.info(
             "Best parameters so far with a loss for file {} of {:.4f}:\n {}".format(os.path.basename(file), best_loss,
-                best_params))
+                                                                                    best_params))
     return best_loss
 
 
@@ -48,7 +48,7 @@ def remove_redundant_optimizer_models(model_path, files_list):
                     minimum_error = best_loss
                     if (file != model_path):
                         logger.info('Writing from the file {} to {}'.format(os.path.basename(file),
-                            os.path.basename(model_path)))
+                                                                            os.path.basename(model_path)))
                         os.remove(model_path)
                         dump(opt, model_path)
             except KeyError:
@@ -88,7 +88,7 @@ def remove_redundant_log_files(logs_path, logs_files_list, ranker_name, dataset)
                     minimum_error = err
                     if (file != logs_path):
                         logger.info('Renaming from the file {} to {}'.format(os.path.basename(file),
-                            os.path.basename(logs_path)))
+                                                                             os.path.basename(logs_path)))
                         os.remove(logs_path)
                         os.system('mv {} {}'.format(file, logs_path))
             except IndexError:
@@ -148,7 +148,7 @@ def create_concise_results(result_directory='results', directory='logs_single_fo
     datasets.sort()
     for dataset in datasets:
         dataFrame = generate_concise_results_for_dataset(dataset=dataset, directory=directory,
-            result_directory=result_directory)
+                                                         result_directory=result_directory)
         df_list.append(dataFrame)
     full_df = pd.concat(df_list)
     fout = os.path.join(DIR_NAME, result_directory, 'complete_results.csv')
@@ -161,7 +161,7 @@ def configure_logging():
     log_path = rename_file_if_exist(log_path)
     global logger
     logging.basicConfig(filename=log_path, level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S')
+                        datefmt='%Y-%m-%d %H:%M:%S')
     logger = logging.getLogger(name='Compiling Results')
 
 

@@ -22,7 +22,7 @@ def test_synthetic_iterator():
         return (b, a)
 
     it = SyntheticIterator(dataset_function=func,
-        a=41, b=2)
+                           a=41, b=2)
     for i, (x, y) in enumerate(it):
         if i == 1:
             break

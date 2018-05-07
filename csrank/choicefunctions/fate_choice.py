@@ -21,8 +21,10 @@ class FATEChoiceFunction(FATEObjectRankingCore):
                  kernel_regularizer=l2(1e-10),
                  metrics=None,
                  **kwargs):
-        super().__init__(n_object_features=n_object_features, n_hidden_joint_layers=n_hidden_joint_layers, n_hidden_joint_units=n_hidden_joint_units,
-            n_hidden_set_layers=n_hidden_set_layers, n_hidden_set_units=n_hidden_set_units, metrics=metrics, kernel_regularizer=kernel_regularizer, **kwargs)
+        super().__init__(n_object_features=n_object_features, n_hidden_joint_layers=n_hidden_joint_layers,
+                         n_hidden_joint_units=n_hidden_joint_units,
+                         n_hidden_set_layers=n_hidden_set_layers, n_hidden_set_units=n_hidden_set_units,
+                         metrics=metrics, kernel_regularizer=kernel_regularizer, **kwargs)
         self.loss_function = loss_function
         self.metrics = metrics
         self.logger = logging.Logger(FATEChoiceFunction.__name__)
@@ -60,7 +62,8 @@ class FATEChoiceFunction(FATEObjectRankingCore):
             if f1 > best:
                 threshold = p
                 best = f1
-        self.logger.info('Tuned threshold, obtained {:.2f} which achieved a micro F1-measure of {:.2f}'.format(threshold, best))
+        self.logger.info(
+            'Tuned threshold, obtained {:.2f} which achieved a micro F1-measure of {:.2f}'.format(threshold, best))
         return threshold
 
     def fit(self, X, Y, tune_size=0.1, thin_thresholds=1, **kwargs):

@@ -90,17 +90,17 @@ class RankNet(ObjectRanker, Tunable):
         self.x1 = Input(shape=(self.n_features,))
         self.x2 = Input(shape=(self.n_features,))
         self.output_node = Dense(1, activation='sigmoid',
-            kernel_regularizer=self.kernel_regularizer)
+                                 kernel_regularizer=self.kernel_regularizer)
         self.output_layer_score = Dense(1, activation='linear')
         if self.batch_normalization:
             self.hidden_layers = [NormalizedDense(self.n_units, name="hidden_{}".format(x),
-                kernel_regularizer=self.kernel_regularizer,
-                activation=self.non_linearities
-            ) for x in range(self.n_hidden)]
+                                                  kernel_regularizer=self.kernel_regularizer,
+                                                  activation=self.non_linearities
+                                                  ) for x in range(self.n_hidden)]
         else:
             self.hidden_layers = [Dense(self.n_units, name="hidden_{}".format(x),
-                kernel_regularizer=self.kernel_regularizer,
-                activation=self.non_linearities)
+                                        kernel_regularizer=self.kernel_regularizer,
+                                        activation=self.non_linearities)
                                   for x in range(self.n_hidden)]
         assert len(self.hidden_layers) == self.n_hidden
 
@@ -130,8 +130,8 @@ class RankNet(ObjectRanker, Tunable):
         self.logger.debug('Finished Creating the model, now fitting started')
 
         self.model.fit([X1, X2], Y_single, batch_size=self.batch_size, epochs=epochs,
-            callbacks=callbacks, validation_split=validation_split,
-            verbose=verbose, **kwd)
+                       callbacks=callbacks, validation_split=validation_split,
+                       verbose=verbose, **kwd)
         self.scoring_model = self._create_scoring_model()
 
         self.logger.debug('Fitting Complete')

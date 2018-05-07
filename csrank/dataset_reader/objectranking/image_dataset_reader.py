@@ -20,7 +20,7 @@ from ..objectranking.util import initialize_similarity_matrix, get_key_for_indic
 class ImageDatasetReader(DatasetReader):
     def __init__(self, n_train_instances=10000, n_test_instances=10000, n_objects=5, random_state=None, **kwargs):
         super(ImageDatasetReader, self).__init__(learning_problem=OBJECT_RANKING, dataset_folder='image_dataset',
-            **kwargs)
+                                                 **kwargs)
         TRAIN_LABEL = 'gt_label_train'
         VAL_LABEL = 'gt_label_val'
         # TEST_LABEL = 'gt_label_test'

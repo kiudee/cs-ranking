@@ -28,6 +28,7 @@ def log_test_train_data(X_train, X_test, logger):
     if not isinstance(X_train, dict):
         n_instances, n_objects, n_features = X_train.shape
         logger.info("Train Set instances {} objects {} features {}".format(n_instances, n_objects, n_features))
+    return n_objects
 
 
 def get_dataset_reader(dataset_name, dataset_params):
@@ -71,10 +72,11 @@ learners = {FETA_RANKER: FETAObjectRanker, RANKNET: RankNet, CMPNET: CmpNet, ERR
             RANKSVM: RankSVM,
             FATE_RANKER: FATEObjectRanker, FETA_CHOICE: FETAChoiceFunction, FATE_CHOICE: FATEChoiceFunction}
 
-ranking_metrics = {'kendalls_tau': kendalls_mean_np, 'spearman_correlation': spearman_mean_np,
-                   'zero_one_rank_loss': zero_one_rank_loss_for_scores_np,
-                   'zero_one_rank_loss_ties': zero_one_rank_loss_for_scores_ties_np,
-                   "zero_one_accuracy": zero_one_accuracy_np}
+ranking_metrics = {'KendallsTau': kendalls_mean_np, 'SpearmanCorrelation': spearman_mean_np,
+                   'ZeroOneRankLoss': zero_one_rank_loss_for_scores_np,
+                   'ZeroOneRankLossTies': zero_one_rank_loss_for_scores_ties_np,
+                   "ZeroOneAccuracy": zero_one_accuracy_np,
+                   "NDCGTopAll": make_ndcg_at_k_loss}
 discrete_choice_metrics = {'CategoricalAccuracy': categorical_accuracy,
                            'CategoricalCrossEntropy': categorical_crossentropy,
                            'CategoricalHinge': categorical_hinge}
