@@ -20,6 +20,7 @@ class MNISTChoiceDatasetReader(DatasetReader):
         self.n_objects = n_objects
         self.random_state = check_random_state(random_state)
         self.n_features = None
+        self.__load_dataset__()
 
     def __load_dataset__(self):
         x_file = os.path.join(self.dirname, "X_raw_features.npy")
@@ -46,3 +47,12 @@ class MNISTChoiceDatasetReader(DatasetReader):
     def get_single_train_test_split(self):
         return train_test_split(self.X, self.Y, random_state=self.random_state,
                                 test_size=self.n_test_instances)
+
+    def splitter(self, iter):
+        pass
+
+    def get_dataset_dictionaries(self, lengths=[5, 6]):
+        pass
+
+    def get_train_test_datasets(self, n_datasets=5):
+        pass
