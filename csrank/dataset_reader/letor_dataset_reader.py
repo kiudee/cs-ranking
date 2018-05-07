@@ -88,7 +88,7 @@ class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
             x = np.array(v)
             X.append(x[:, 0:-1])
             scores.append(x[:, -1])
-            Y.append(rankdata(x[:, -1], method='max') - 1)
+            Y.append(rankdata(x[:, -1], method='max'))
         X = np.array(X)
         Y = np.array(Y)
         scores = np.array(scores)
@@ -136,15 +136,3 @@ class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
             self.logger.info('File name {}'.format(os.path.basename(file)))
             self.logger.info('Maximum length of ranking: {}'.format(np.max(array)))
         return dataset, test_dataset
-
-    def splitter(self, iter):
-        pass
-
-    def get_single_train_test_split(self):
-        pass
-
-    def get_train_test_datasets(self, n_datasets=5):
-        pass
-
-    def get_dataset_dictionaries(self, lengths=[5, 6]):
-        pass
