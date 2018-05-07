@@ -117,6 +117,7 @@ class DBConnector(metaclass=ABCMeta):
                 print("IntegrityError for the job {}, already assigned to another node error {}".format(job_id, str(e)))
                 self.job_description = None
                 job_ids.remove(job_id)
+                self.connection.rollback()
             except (ValueError, IndexError) as e:
                 print("Error as the all jobs are already assigned to another nodes {}".format(str(e)))
                 break
