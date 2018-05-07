@@ -90,23 +90,14 @@ class DBConnector(metaclass=ABCMeta):
 
                 hash_value = self.create_hash_value()
                 self.job_description["hash_value"] = hash_value
-                self.close_connection()
-            except psycopg2.IntegrityError as e:
-                print("IntegrityError for the job {}, already assigned to another node error {}".format(job_id, str(e)))
-                job_ids.remove(job_id)
-            except (ValueError, IndexError) as e:
-                print("Error as the all jobs are already assigned to another nodes {}".format(str(e)))
-                break
-        if self.job_description is not None:
-            try:
-                self.init_connection(cursor_factory=None)
+
                 start = datetime.now()
                 update_job = """UPDATE {} set hash_value = %s, job_allocated_time = %s WHERE job_id = %s""".format(
                     avail_jobs)
                 self.cursor_db.execute(update_job, (hash_value, start, job_id))
-                select_job = """SELECT count(*) FROM {0} WHERE {0}.job_id = {1}""".format(running_jobs, job_id)
+                select_job = """SELECT * FROM {0} WHERE {0}.job_id = {1} AND {0}.interrupted = {2} FOR UPDATE""".format(running_jobs, job_id, True)
                 self.cursor_db.execute(select_job)
-                count_ = self.cursor_db.fetchone()[0]
+                count_ = len(self.cursor_db.fetchall())
                 if count_ == 0:
                     insert_job = """INSERT INTO {0} (job_id, cluster_id ,finished, interrupted) VALUES ({1}, {2},FALSE, FALSE)""".format(
                         running_jobs, job_id, cluster_id)
@@ -114,6 +105,7 @@ class DBConnector(metaclass=ABCMeta):
                     if self.cursor_db.rowcount == 1:
                         print("The job {} is inserted".format(job_id))
                 else:
+                    print("Job with job_id {} present in the updating and row locked".format(job_id))
                     update_job = """UPDATE {} set cluster_id = %s, interrupted = %s WHERE job_id = %s""".format(
                         running_jobs)
                     self.cursor_db.execute(update_job, (cluster_id, 'FALSE', job_id))
@@ -121,9 +113,13 @@ class DBConnector(metaclass=ABCMeta):
                         print("The job {} is updated".format(job_id))
 
                 self.close_connection()
-            except (psycopg2.IntegrityError, psycopg2.DatabaseError) as e:
-                print("IntegrityError for the job {} error {}".format(job_id, str(e)))
+            except psycopg2.IntegrityError as e:
+                print("IntegrityError for the job {}, already assigned to another node error {}".format(job_id, str(e)))
                 self.job_description = None
+                job_ids.remove(job_id)
+            except (ValueError, IndexError) as e:
+                print("Error as the all jobs are already assigned to another nodes {}".format(str(e)))
+                break
 
     def mark_running_job_finished(self, job_id, **kwargs):
         self.init_connection()
