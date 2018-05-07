@@ -17,10 +17,8 @@ class DepthDatasetReader(DatasetReader):
     def __init__(self, dataset_type='deep', random_state=None, **kwargs):
         super(DepthDatasetReader, self).__init__(learning_problem=OBJECT_RANKING, dataset_folder='depth_data', **kwargs)
         options = {'deep': ['complete_deep_train.dat', 'complete_deep_test.dat'],
-                   'basic': ['basic_deep_train.dat', 'basic_deep_test.dat'],
-                   'semantic': ['complete_deep_sem_train.dat', 'complete_deep_sem_test.dat'],
-                   'basicSaxena': ['saxena_basic61x55.dat', 'saxena_basicTest61x55.dat'],
-                   'semanticSaxena': ['saxena_semantic61x55.dat', 'saxena_semanticTest61x55.dat']
+                   'basic': ['saxena_basic61x55.dat', 'saxena_basicTest61x55.dat'],
+                   'semantic': ['saxena_semantic61x55.dat', 'saxena_semanticTest61x55.dat']
                    }
         if dataset_type not in options:
             dataset_type = 'deep'
