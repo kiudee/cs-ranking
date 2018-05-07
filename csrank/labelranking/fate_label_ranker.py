@@ -44,7 +44,7 @@ class FATELabelRanker(FATERankingCore, LabelRanker):
 
     def _connect_layers(self):
         self.set_input_layers(self.inputs, self.set_repr,
-            self.n_hidden_set_layers)
+                              self.n_hidden_set_layers)
 
     def fit(self, X, Y, callbacks=None, validation_split=0.1, verbose=0,
             **kwargs):
@@ -53,7 +53,7 @@ class FATELabelRanker(FATERankingCore, LabelRanker):
 
         self.model = Model(inputs=self.input_layer, outputs=self.scores)
         self.model.compile(loss=self.loss_function, optimizer=self.optimizer,
-            metrics=self.metrics)
+                           metrics=self.metrics)
         self.model.fit(
             x=X_trans, y=Y, callbacks=callbacks,
             validation_split=validation_split,

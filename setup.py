@@ -16,11 +16,11 @@ with open(REQUIREMENTS_FILE) as f:
 
 if __name__ == "__main__":
     setup(name=DISTNAME,
-        version=VERSION,
-        maintainer=MAINTAINER,
-        maintainer_email=MAINTAINER_EMAIL,
-        description=DESCRIPTION,
-        packages=find_packages(),
-        install_requires=install_reqs,
-        package_data={'notebooks': ['*']},
-        include_package_data=True)
+          version=VERSION,
+          maintainer=MAINTAINER,
+          maintainer_email=MAINTAINER_EMAIL,
+          description=DESCRIPTION,
+          packages=find_packages(),
+          install_requires=install_reqs,
+          package_data={'notebooks': ['*']},
+          include_package_data=True)

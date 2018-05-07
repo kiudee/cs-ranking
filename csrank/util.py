@@ -219,8 +219,8 @@ def setup_logger(log_path=None):
     FORMAT = '%(asctime)s %(name)s %(levelname)-8s %(message)s'
     datefmt = '%Y-%m-%d %H:%M:%S'
     logging.basicConfig(filename=log_path, level=logging.DEBUG,
-        format=FORMAT,
-        datefmt=datefmt)
+                        format=FORMAT,
+                        datefmt=datefmt)
 
 
 def configure_logging_numpy_keras(seed=42, log_path=None):
@@ -233,12 +233,12 @@ def configure_logging_numpy_keras(seed=42, log_path=None):
     n_gpus = len([x.name for x in device_lib.list_local_devices() if x.device_type == 'GPU'])
     if (n_gpus == 0):
         config = tf.ConfigProto(intra_op_parallelism_threads=1, inter_op_parallelism_threads=1,
-            allow_soft_placement=True, log_device_placement=False,
-            device_count={'CPU': multiprocessing.cpu_count() - 2})
+                                allow_soft_placement=True, log_device_placement=False,
+                                device_count={'CPU': multiprocessing.cpu_count() - 2})
     else:
         config = tf.ConfigProto(allow_soft_placement=True,
-            log_device_placement=True, intra_op_parallelism_threads=2,
-            inter_op_parallelism_threads=2)  # , gpu_options = gpu_options)
+                                log_device_placement=True, intra_op_parallelism_threads=2,
+                                inter_op_parallelism_threads=2)  # , gpu_options = gpu_options)
     sess = tf.Session(config=config)
     K.set_session(sess)
     np.random.seed(seed)

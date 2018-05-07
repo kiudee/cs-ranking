@@ -66,12 +66,12 @@ class RankSVM(ObjectRanker, Tunable):
             'Finished the Dataset with instances {}'.format(X_train.shape[0]))
         if (X_train.shape[0] > self.threshold_instances):
             self.model = LogisticRegression(C=self.C, tol=self.tol,
-                fit_intercept=self.fit_intercept,
-                random_state=self.random_state)
+                                            fit_intercept=self.fit_intercept,
+                                            random_state=self.random_state)
         else:
             self.model = LinearSVC(C=self.C, tol=self.tol,
-                fit_intercept=self.fit_intercept,
-                random_state=self.random_state)
+                                   fit_intercept=self.fit_intercept,
+                                   random_state=self.random_state)
 
         if (self.normalize):
             scaler = prep.StandardScaler()
@@ -88,8 +88,8 @@ class RankSVM(ObjectRanker, Tunable):
         n_instances, n_objects, n_features = X.shape
         self.logger.info(
             "For Test instances {} objects {} features {}".format(n_instances,
-                n_objects,
-                n_features))
+                                                                  n_objects,
+                                                                  n_features))
         scores = []
         for data_test in X:
             assert data_test.shape[1] == self.n_features

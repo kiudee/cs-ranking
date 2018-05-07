@@ -129,7 +129,7 @@ class DBConnector(metaclass=ABCMeta):
         self.init_connection()
         running_jobs = "{}.running_jobs".format(self.schema)
         update_job = "UPDATE {0} set finished = TRUE, interrupted = FALSE where job_id = {1}".format(running_jobs,
-            job_id)
+                                                                                                     job_id)
         self.cursor_db.execute(update_job)
         if self.cursor_db.rowcount == 1:
             self.logger.info("The job {} is finished".format(job_id))
@@ -165,7 +165,7 @@ class DBConnector(metaclass=ABCMeta):
         self.init_connection(cursor_factory=None)
         running_jobs = "{}.running_jobs".format(self.schema)
         current_message = "SELECT cluster_id, error_history from {0} WHERE {0}.job_id = {1}".format(running_jobs,
-            job_id)
+                                                                                                    job_id)
         self.cursor_db.execute(current_message)
         cur_message = self.cursor_db.fetchone()
         error_message = "cluster{}".format(cur_message[0]) + error_message

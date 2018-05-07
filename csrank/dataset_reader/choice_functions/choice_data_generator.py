@@ -59,9 +59,9 @@ class ChoiceDatasetGenerator(SyntheticDatasetGenerator):
         Y = np.empty((n_instances, n_objects), dtype=bool)
         for i in range(int(n_instances / cluster_size)):
             center = sample_unit_ball(n_inst=1, n_features=n_features,
-                rng=rand, radius=cluster_spread)
+                                      rng=rand, radius=cluster_spread)
             x, y = make_randn_pareto_choices(n_instances=cluster_size, n_features=n_features, n_objects=n_objects,
-                data_seed=rand, center=center)
+                                             data_seed=rand, center=center)
             X[i * cluster_size:(i + 1) * cluster_size] = x
             Y[i * cluster_size:(i + 1) * cluster_size] = y
         return X, Y

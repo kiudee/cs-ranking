@@ -34,7 +34,9 @@ class FATEObjectRanker(FATEObjectRankingCore, ObjectRanker):
                  loss_function=smooth_rank_loss,
                  metrics=None,
                  **kwargs):
-        FATEObjectRankingCore.__init__(self, n_object_features=n_object_features, n_hidden_set_layers=n_hidden_set_layers, n_hidden_set_units=n_hidden_set_units, **kwargs)
+        FATEObjectRankingCore.__init__(self, n_object_features=n_object_features,
+                                       n_hidden_set_layers=n_hidden_set_layers, n_hidden_set_units=n_hidden_set_units,
+                                       **kwargs)
         self.loss_function = loss_function
         self.logger = logging.getLogger(FATEObjectRanker.__name__)
         if metrics is None:

@@ -134,7 +134,8 @@ if __name__ == "__main__":
                     metric_loss = get_loss_for_array(evaluation_metric, Y_test, predictions)
                 logger.info(ERROR_OUTPUT_STRING % (name, metric_loss))
                 results[name] = "{0:.4f}".format(metric_loss)
-            dbConnector.insert_results(experiment_schema=experiment_schema, experiment_table=experiment_table, results=results)
+            dbConnector.insert_results(experiment_schema=experiment_schema, experiment_table=experiment_table,
+                                       results=results)
             dbConnector.mark_running_job_finished(job_id)
         except Exception as e:
             if hasattr(e, 'message'):

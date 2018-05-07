@@ -162,7 +162,7 @@ class ParameterOptimizer(ObjectRanker):
         ypred = self.learner(xtest)
         if isinstance(xtest, dict):
             loss = get_mean_loss_for_dictionary(logging.getLogger(PARAMETER_OPTIMIZER), self.validation_loss, ytest,
-                ypred)
+                                                ypred)
         else:
             loss = get_loss_for_array(self.validation_loss, ytest, ypred)
         time_taken = duration_tillnow(start)
@@ -194,7 +194,7 @@ class ParameterOptimizer(ObjectRanker):
 
         if cv_iter is None:
             cv_iter = ShuffleSplit(n_splits=3, test_size=0.1,
-                random_state=self.random_state)
+                                   random_state=self.random_state)
         if isinstance(X, dict):
             splits = dict()
             for n_obj, arr in X.items():
@@ -371,11 +371,11 @@ class ParameterOptimizer(ObjectRanker):
 
             # Todo: Make this passable
             base_estimator = cook_estimator("GP", space=space,
-                random_state=gp_seed,
-                noise="gaussian")
+                                            random_state=gp_seed,
+                                            noise="gaussian")
             self.opt = Optimizer(dimensions=self.parameter_ranges, random_state=opt_seed,
-                base_estimator=base_estimator, acq_func=acq_func,
-                **kwargs)
+                                 base_estimator=base_estimator, acq_func=acq_func,
+                                 **kwargs)
         return n_iter
 
     def predict_pair(self, a, b, **kwargs):

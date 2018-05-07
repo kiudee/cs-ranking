@@ -93,9 +93,9 @@ class DeepSet(object):
 
         self.cached_models = dict()
         self._construct_layers(kernel_initializer=kernel_initializer,
-            kernel_regularizer=kernel_regularizer,
-            activation=activation,
-            **kwargs)
+                               kernel_regularizer=kernel_regularizer,
+                               activation=activation,
+                               **kwargs)
 
     def _construct_layers(self, **kwargs):
         # Create set representation layers:
@@ -126,7 +126,7 @@ class DeepSet(object):
         feature_repr = average([x for (j, x) in set_mappings])
 
         self.cached_models[n_objects] = Model(inputs=input_layer,
-            outputs=feature_repr)
+                                              outputs=feature_repr)
 
     def __call__(self, x):
         shape = x.shape

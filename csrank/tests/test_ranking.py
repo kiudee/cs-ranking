@@ -51,13 +51,13 @@ def test_construction_core():
 
     grc = MockClass(n_objects=n_objects, n_features=n_features)
     grc._construct_layers(activation=grc.activation,
-        kernel_initializer=grc.kernel_initializer,
-        kernel_regularizer=grc.kernel_regularizer)
+                          kernel_initializer=grc.kernel_initializer,
+                          kernel_regularizer=grc.kernel_regularizer)
     input_layer = Input(shape=(n_objects, n_features))
     scores = grc.join_input_layers(input_layer,
-        None,
-        n_layers=0,
-        n_objects=n_objects)
+                                   None,
+                                   n_layers=0,
+                                   n_objects=n_objects)
 
     model = Model(inputs=input_layer, outputs=scores)
     model.compile(loss='mse', optimizer=grc.optimizer)
@@ -101,12 +101,12 @@ def test_fate_object_ranker_fixed_generator():
             yield x, y_true
 
     fate = FATEObjectRanker(n_object_features=1,
-        n_hidden_joint_layers=1,
-        n_hidden_set_layers=1,
-        n_hidden_joint_units=5,
-        n_hidden_set_units=5,
-        kernel_regularizer=l2(1e-4),
-        optimizer=optimizer)
+                            n_hidden_joint_layers=1,
+                            n_hidden_set_layers=1,
+                            n_hidden_joint_units=5,
+                            n_hidden_set_units=5,
+                            kernel_regularizer=l2(1e-4),
+                            optimizer=optimizer)
     fate.fit_generator(generator=trivial_ranking_problem_generator(),
-        epochs=1, validation_split=0, verbose=False,
-        steps_per_epoch=10)
+                       epochs=1, validation_split=0, verbose=False,
+                       steps_per_epoch=10)

@@ -71,12 +71,12 @@ class ExpectedRankRegression(ObjectRanker, Tunable):
         else:
             if self.l1_ratio >= 0.01:
                 self.model = ElasticNet(alpha=self.alpha, l1_ratio=self.l1_ratio, normalize=self.normalize,
-                    tol=self.tol, fit_intercept=self.fit_intercept, random_state=self.random_state)
+                                        tol=self.tol, fit_intercept=self.fit_intercept, random_state=self.random_state)
             else:
                 self.model = Ridge(alpha=self.alpha, normalize=self.normalize,
-                    tol=self.tol,
-                    fit_intercept=self.fit_intercept,
-                    random_state=self.random_state)
+                                   tol=self.tol,
+                                   fit_intercept=self.fit_intercept,
+                                   random_state=self.random_state)
         self.logger.debug('Finished Creating the model, now fitting started')
         self.model.fit(X_train, Y_train)
         self.weights = self.model.coef_.flatten()
@@ -88,8 +88,8 @@ class ExpectedRankRegression(ObjectRanker, Tunable):
         n_instances, n_objects, n_features = X.shape
         self.logger.info(
             "For Test instances {} objects {} features {}".format(n_instances,
-                n_objects,
-                n_features))
+                                                                  n_objects,
+                                                                  n_features))
         scores = np.empty([n_instances, n_objects])
         for i, data_test in enumerate(X):
             assert data_test.shape[1] == self.n_features
