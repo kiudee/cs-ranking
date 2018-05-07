@@ -14,18 +14,17 @@ from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.tunable import Tunable
 from csrank.util import tensorify, print_dictionary
 
-__all__ = ['FETANetwork']
+__all__ = ['FETAObjectRanker']
 
 
-class FETANetwork(ObjectRanker, Tunable):
+class FETAObjectRanker(ObjectRanker, Tunable):
 
     def __init__(self, n_objects, n_features, n_hidden=2, n_units=8,
                  add_zeroth_order_model=False, max_number_of_objects=5,
                  num_subsample=5,
                  loss_function=hinged_rank_loss, batch_normalization=False,
                  kernel_regularizer=l2(l=1e-4), non_linearities='selu',
-                 optimizer="adam", metrics=None, use_early_stopping=False,
-                 es_patience=300, batch_size=256, random_state=None, **kwargs):
+                 optimizer="adam", metrics=None, batch_size=256, random_state=None, **kwargs):
         """
         Create a FETA-network architecture for object ranking.
         Training and prediction complexity is quadratic in the number of objects.
@@ -65,7 +64,7 @@ class FETANetwork(ObjectRanker, Tunable):
         **kwargs
             Keyword arguments for the hidden units
         """
-        self.logger = logging.getLogger(FETANetwork.__name__)
+        self.logger = logging.getLogger(FETAObjectRanker.__name__)
 
         self.random_state = check_random_state(random_state)
 
@@ -285,9 +284,7 @@ class FETANetwork(ObjectRanker, Tunable):
     def _predict_scores_fixed(self, X, **kwargs):
         n_instances, n_objects, n_features = tensorify(X).get_shape().as_list()
         self.logger.info(
-            "For Test instances {} objects {} features {}".format(n_instances,
-                                                                  n_objects,
-                                                                  n_features))
+            "For Test instances {} objects {} features {}".format(n_instances, n_objects, n_features))
         if self.max_number_of_objects < self._n_objects or self.n_objects != n_objects:
             scores = self._predict_scores_using_pairs(X, **kwargs)
         else:

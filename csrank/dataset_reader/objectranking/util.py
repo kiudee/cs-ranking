@@ -96,7 +96,7 @@ def initialize_similarity_matrix(mypath):
     return similarity_dictionary
 
 
-def sub_sampling(name, Xt, Yt, n_objects=5):
+def sub_sampling_rankings(name, Xt, Yt, n_objects=5):
     logger = logging.getLogger(name=name)
     bucket_size = int(Xt.shape[1] / n_objects)
     # logger.info("#########################################################################")
@@ -108,7 +108,6 @@ def sub_sampling(name, Xt, Yt, n_objects=5):
         Y = np.copy(Yt)
         rs = np.random.RandomState(42 + i)
         idx = rs.randint(bucket_size, size=(len(X), n_objects))
-        # TODO: subsampling multiple rankings
         idx += np.arange(start=0, stop=X.shape[1], step=bucket_size)[:n_objects]
         X = X[np.arange(X.shape[0])[:, None], idx]
         Y = Y[np.arange(X.shape[0])[:, None], idx]

@@ -6,13 +6,13 @@ from collections import OrderedDict
 from datetime import datetime, timedelta
 
 import numpy as np
-from skopt import Optimizer
-from skopt import load, dump
+from skopt import Optimizer, load, dump
 from skopt.space import check_dimension
 from skopt.utils import cook_estimator, normalize_dimensions
 
+from csrank.constants import CMPNET, RANKNET, FETA_RANKER_ZERO, FETA_RANKER
 from csrank.util import print_dictionary
-from experiments.util import CMPNET, FETA_RANKER_ZERO, FETA_RANKER, RANKNET, object_rankers
+from experiments.util import learners
 
 OPTIMIZER_SINGLE_FOLD = "optimizer_single_fold"
 
@@ -28,7 +28,7 @@ def get_seed(lines):
 
 def create_opt(lines, ranker_name):
     gp_seed, opt_seed = get_seed(lines)
-    _ranker_class = object_rankers[ranker_name]
+    _ranker_class = learners[ranker_name]
     _ranker_class._use_early_stopping = True
     param_ranges = _ranker_class.set_tunable_parameter_ranges({})
     transformed = []

@@ -89,6 +89,8 @@ class CmpNet(ObjectRanker, Tunable):
         self.loss_function = loss_function
 
         self.optimizer = optimizers.get(optimizer)
+        self._optimizer_config = self.optimizer.get_config()
+
         self.n_hidden = n_hidden
         self.n_units = n_units
         self._construct_layers()
@@ -195,6 +197,7 @@ class CmpNet(ObjectRanker, Tunable):
         self.n_units = n_units
         self.kernel_regularizer = l2(reg_strength)
         self.batch_size = batch_size
+        self.optimizer = self.optimizer.from_config(self._optimizer_config)
         K.set_value(self.optimizer.lr, learning_rate)
         self._construct_layers()
         if len(point) > 0:

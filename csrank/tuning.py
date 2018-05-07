@@ -10,15 +10,16 @@ from sklearn.model_selection import ShuffleSplit
 from sklearn.utils import check_random_state
 from skopt import Optimizer
 from skopt.space import check_dimension
-from skopt.utils import cook_estimator, normalize_dimensions, dump
+from skopt.utils import cook_estimator, normalize_dimensions, dump, load
 
 from csrank.constants import OBJECT_RANKING, LABEL_RANKING, DISCRETE_CHOICE, \
-    DYAD_RANKING
+    DYAD_RANKING, CHOICE_FUNCTIONS
 from csrank.metrics import zero_one_rank_loss
+from csrank.metrics_np import f1_measure
 from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.util import duration_tillnow, create_dir_recursively, \
-    microsec_to_time, \
-    get_mean_loss_for_dictionary, get_loss_for_array, check_ranker_class
+    seconds_to_time, \
+    get_mean_loss_for_dictionary, get_loss_for_array, check_learner_class
 
 PARAMETER_OPTIMIZER = "ParameterOptimizer"
 
@@ -44,7 +45,7 @@ class TuningCallback(object):
 
 
 class ParameterOptimizer(ObjectRanker):
-    def __init__(self, ranker, optimizer_path,
+    def __init__(self, learner, optimizer_path,
                  tunable_parameter_ranges, fit_params=None,
                  random_state=None, tuning_callbacks=None, validation_loss=None,
                  learning_problem=OBJECT_RANKING,
@@ -53,7 +54,7 @@ class ParameterOptimizer(ObjectRanker):
 
         Parameters
         ----------
-        ranker : object
+        learner : object
             The ranker object for which the hyper parameters needs to optimized.
         optimizer_path : string
             The path where the complete optimizer pickle object can be stored.
@@ -79,8 +80,8 @@ class ParameterOptimizer(ObjectRanker):
 
         self._tunable_parameter_ranges = tunable_parameter_ranges
 
-        check_ranker_class(ranker)
-        self.ranker = ranker
+        check_learner_class(learner)
+        self.learner = learner
 
         if tuning_callbacks is None:
             self.tuning_callbacks = []
@@ -89,7 +90,8 @@ class ParameterOptimizer(ObjectRanker):
         default_validation_loss = {OBJECT_RANKING: zero_one_rank_loss,
                                    LABEL_RANKING: zero_one_rank_loss,
                                    DISCRETE_CHOICE: categorical_hinge,
-                                   DYAD_RANKING: zero_one_rank_loss}
+                                   DYAD_RANKING: zero_one_rank_loss,
+                                   CHOICE_FUNCTIONS: f1_measure}
         if validation_loss is None:
             self.validation_loss = default_validation_loss[learning_problem]
             self.logger.info(
@@ -156,8 +158,8 @@ class ParameterOptimizer(ObjectRanker):
     def _fit_ranker(self, xtrain, ytrain, xtest, ytest, next_point):
         start = datetime.now()
         self._set_new_parameters(next_point)
-        self.ranker.fit(xtrain, ytrain, **self._fit_params)
-        ypred = self.ranker(xtest)
+        self.learner.fit(xtrain, ytrain, **self._fit_params)
+        ypred = self.learner(xtest)
         if isinstance(xtest, dict):
             loss = get_mean_loss_for_dictionary(logging.getLogger(PARAMETER_OPTIMIZER), self.validation_loss, ytest,
                                                 ypred)
@@ -166,7 +168,7 @@ class ParameterOptimizer(ObjectRanker):
         time_taken = duration_tillnow(start)
         return loss, time_taken
 
-    def fit(self, X, Y, total_duration=6e7, n_iter=100, cv_iter=None, optimizer=None, acq_func='gp_hedge', **kwargs):
+    def fit(self, X, Y, total_duration=600, n_iter=100, cv_iter=None, acq_func='gp_hedge', **kwargs):
         start = datetime.now()
 
         def splitter(itr):
@@ -218,49 +220,23 @@ class ParameterOptimizer(ObjectRanker):
         self.logger.debug('Random seed for the GP surrogate: {}'.format(
             gp_seed
         ))
+        n_iter = self.set_optimizer(n_iter, opt_seed, acq_func, gp_seed, **kwargs)
 
-        if optimizer is not None:
-            opt = optimizer
-            self.logger.debug('Setting the provided optimizer')
-            self.log_best_params(opt)
-        else:
-            transformed = []
-            for param in self.parameter_ranges:
-                transformed.append(check_dimension(param))
-            self.logger.info("Parameter Space: {}".format(transformed))
-            space = normalize_dimensions(transformed)
-            self.logger.info(
-                "Parameter Space after transformation: {}".format(space))
-
-            # Todo: Make this passable
-            base_estimator = cook_estimator("GP", space=space,
-                                            random_state=gp_seed,
-                                            noise="gaussian")
-            opt = Optimizer(dimensions=self.parameter_ranges, random_state=opt_seed,
-                            base_estimator=base_estimator, acq_func=acq_func,
-                            **kwargs)
-        self._callbacks_set_optimizer(opt)
+        self._callbacks_set_optimizer(self.opt)
         self._callbacks_on_optimization_begin()
         time_taken = duration_tillnow(start)
         total_duration -= time_taken
-        max_fit_duration = -10000
-        self.logger.info('Time left for {} iterations is {}'.format(n_iter, microsec_to_time(total_duration)))
+        max_fit_duration = -np.inf
+        self.logger.info('Time left for {} iterations is {}'.format(n_iter, seconds_to_time(total_duration)))
 
         try:
             for t in range(n_iter):
                 start = datetime.now()
                 self._callbacks_on_iteration_begin(t)
-                self.logger.info(
-                    'Starting optimization iteration: {}'.format(t))
+                self.logger.info('Starting optimization iteration: {}'.format(t))
                 if t > 0:
-                    self.log_best_params(opt)
-
-                # Delete Tensorflow graph, to prevent memory leaks:
-                K.clear_session()
-                sess = tf.Session()
-                K.set_session(sess)
-
-                next_point = opt.ask()
+                    self.log_best_params()
+                next_point = self.opt.ask()
                 self.logger.info('Next parameters:\n{}'.format(next_point))
                 results = []
                 running_times = []
@@ -290,76 +266,117 @@ class ParameterOptimizer(ObjectRanker):
                 if max_fit_duration < np.sum(running_times):
                     max_fit_duration = np.sum(running_times)
 
-                self.logger.info(
-                    'Validation error for the parameters is {:.4f}'.format(
-                        mean_result))
-                self.logger.info('Time taken for the parameters is {}'.format(
-                    microsec_to_time(np.sum(running_times))))
-                if "ps" in opt.acq_func:
-                    opt.tell(next_point, [mean_result, mean_fitting_duration])
+                self.logger.info('Validation error for the parameters is {:.4f}'.format(mean_result))
+                self.logger.info('Time taken for the parameters is {}'.format(seconds_to_time(np.sum(running_times))))
+                if "ps" in self.opt.acq_func:
+                    self.opt.tell(next_point, [mean_result, mean_fitting_duration])
                 else:
-                    opt.tell(next_point, mean_result)
+                    self.opt.tell(next_point, mean_result)
                 self._callbacks_on_iteration_end(t)
 
                 self.logger.info(
-                    "Main optimizer iterations done {} and saving the model".format(
-                        np.array(opt.yi).shape[0]))
-                dump(opt, self.optimizer_path)
+                    "Main optimizer iterations done {} and saving the model".format(np.array(self.opt.yi).shape[0]))
+                dump(self.opt, self.optimizer_path)
 
                 time_taken = duration_tillnow(start)
                 total_duration -= time_taken
-                self.logger.info('Time left for simulations is {} '.format(
-                    microsec_to_time(total_duration)))
-
+                self.logger.info('Time left for simulations is {} '.format(seconds_to_time(total_duration)))
+                # Delete Tensorflow graph, to prevent memory leaks:
+                K.clear_session()
+                sess = tf.Session()
+                K.set_session(sess)
                 if (total_duration - max_fit_duration) < 0:
-                    self.logger.info(
-                        'At iteration {} maximum time required by model to validate a parameter values'.format(
-                            microsec_to_time(max_fit_duration)))
-                    self.logger.info(
-                        'At iteration {} simulation stops, due to time deficiency'.format(t))
+                    self.logger.info('Maximum time required by model to validate parameter values {}'.format(
+                        seconds_to_time(max_fit_duration)))
+                    self.logger.info('At iteration {} simulation stops, due to time deficiency'.format(t))
                     break
 
         except KeyboardInterrupt:
-            self.logger.debug(
-                'Optimizer interrupted saving the model at {}'.format(
-                    self.optimizer_path))
-            self.log_best_params(opt)
+            self.logger.debug('Optimizer interrupted saving the model at {}'.format(self.optimizer_path))
+            self.log_best_params()
         else:
-            self.logger.debug(
-                'Finally, fit a model on the complete training set and storing the model at {}'.format(
-                    self.optimizer_path))
-            self._fit_params["epochs"] = self._fit_params.get("epochs", 1000)
-            if "ps" in opt.acq_func:
-                best_point = opt.Xi[np.argmin(np.array(opt.yi)[:, 0])]
-            else:
-                best_point = opt.Xi[np.argmin(opt.yi)]
-            self._set_new_parameters(best_point)
-            self.model = copy.copy(self.ranker)
-            self.model.fit(X, Y, **self._fit_params)
+            self.logger.debug('Finally, fit a model on the complete training set and storing the model at {}'.format(
+                self.optimizer_path))
 
         finally:
             self._callbacks_on_optimization_end()
-            self.optimizer = opt
-            if np.array(opt.yi).shape[0] != 0:
-                dump(opt, self.optimizer_path)
+            self._fit_params["epochs"] = self._fit_params.get("epochs", 1000)
+            if "ps" in self.opt.acq_func:
+                best_point = self.opt.Xi[np.argmin(np.array(self.opt.yi)[:, 0])]
+            else:
+                best_point = self.opt.Xi[np.argmin(self.opt.yi)]
+            self._set_new_parameters(best_point)
+            self.model = copy.copy(self.learner)
+            self.model.fit(X, Y, **self._fit_params)
+            if np.array(self.opt.yi).shape[0] != 0:
+                dump(self.opt, self.optimizer_path)
 
-    def log_best_params(self, opt):
-        if "ps" in opt.acq_func:
-            best_i = np.argmin(np.array(opt.yi)[:, 0])
-            best_loss = opt.yi[best_i]
-            best_params = opt.Xi[best_i]
+    def log_best_params(self):
+        if "ps" in self.opt.acq_func:
+            best_i = np.argmin(np.array(self.opt.yi)[:, 0])
+            best_loss = self.opt.yi[best_i]
+            best_params = self.opt.Xi[best_i]
             self.logger.info(
                 "Best parameters so far with a loss of {:.4f} time of {:.4f}:\n {}".format(
                     best_loss[0],
                     best_loss[1],
                     best_params))
         else:
-            best_i = np.argmin(opt.yi)
-            best_loss = opt.yi[best_i]
-            best_params = opt.Xi[best_i]
+            best_i = np.argmin(self.opt.yi)
+            best_loss = self.opt.yi[best_i]
+            best_params = self.opt.Xi[best_i]
             self.logger.info(
                 "Best parameters so far with a loss of {:.4f}:\n {}".format(
                     best_loss, best_params))
+
+    def set_optimizer(self, n_iter, opt_seed, acq_func, gp_seed, **kwargs):
+        opt_path = self.optimizer_path
+        self.logger.info('Retrieving model stored at: {}'.format(opt_path))
+        try:
+            optimizer = load(self.optimizer_path)
+            self.logger.info('Loading model stored at: {}'.format(opt_path))
+            finished_iterations = np.array(optimizer.yi).shape[0]
+            if finished_iterations == 0:
+                optimizer = None
+                self.logger.info('Optimizer did not finish any iterations so setting optimizer to null')
+        except KeyError:
+            self.logger.error('Cannot open the file {}'.format(opt_path))
+            optimizer = None
+
+        except ValueError:
+            self.logger.error('Cannot open the file {}'.format(opt_path))
+            optimizer = None
+        except FileNotFoundError:
+            self.logger.error('No such file or directory: {}'.format(opt_path))
+
+            optimizer = None
+
+        if optimizer is not None:
+            n_iter = n_iter - finished_iterations
+            if n_iter < 0:
+                n_iter = 0
+                self.logger.info(
+                    'Iterations already done: {} and running iterations {}'.format(finished_iterations, n_iter))
+
+            self.opt = optimizer
+            self.logger.debug('Setting the provided optimizer')
+            self.log_best_params()
+        else:
+            transformed = []
+            for param in self.parameter_ranges:
+                transformed.append(check_dimension(param))
+            self.logger.info("Parameter Space: {}".format(transformed))
+            space = normalize_dimensions(transformed)
+            self.logger.info("Parameter Space after transformation: {}".format(space))
+
+            # Todo: Make this passable
+            base_estimator = cook_estimator("GP", space=space,
+                                            random_state=gp_seed,
+                                            noise="gaussian")
+            self.opt = Optimizer(dimensions=self.parameter_ranges, random_state=opt_seed,
+                                 base_estimator=base_estimator, acq_func=acq_func,
+                                 **kwargs)
+        return n_iter
 
     def predict_pair(self, a, b, **kwargs):
         if self.model is not None:

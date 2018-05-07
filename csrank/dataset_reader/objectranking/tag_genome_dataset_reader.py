@@ -28,8 +28,6 @@ class TagGenomeDatasetReader(DatasetReader):
         tag_rel_df = pd.read_csv(tag_rel_dat, "\t")
         tag_df = pd.read_csv(tag_dat, "\t")
 
-        self.type = OBJECT_RANKING
-        self.Xc = None
         self.movies_file = os.path.join(self.dirname, 'movies_transformed.csv')
         self.similarity_matrix_file = os.path.join(self.dirname, 'similarity_matrix.csv')
         self.tag_file = os.path.join(self.dirname, 'tags_info.csv')
@@ -38,7 +36,7 @@ class TagGenomeDatasetReader(DatasetReader):
         self.n_features = 1128
         self.n_test_instances = n_test_instances
         self.n_train_instances = n_train_instances
-        self.logger = logging.getLogger(name='TagGenomeDataset')
+        self.logger = logging.getLogger(TagGenomeDatasetReader.__name__)
         self.random_state = check_random_state(random_state)
 
         if (not (os.path.isfile(self.movies_file) and os.path.isfile(self.similarity_matrix_file) and os.path.isfile(
@@ -119,7 +117,7 @@ class TagGenomeDatasetReader(DatasetReader):
             X_test, Y_test = self.make_similarity_based_dataset(self.n_test_instances, seed=10 * i + 32)
         yield X_train, Y_train, X_test, Y_test
 
-    def get_complete_dataset(self):
+    def get_dataset_dictionaries(self):
         pass
 
     def get_train_test_datasets(self, n_datasets=5):
@@ -128,10 +126,10 @@ class TagGenomeDatasetReader(DatasetReader):
 
     def get_single_train_test_split(self):
         seed = self.random_state.randint(2 ** 32, dtype='uint32')
-        self.X, self.rankings = X_train, Y_train = self.make_similarity_based_dataset(self.n_train_instances, seed=seed)
+        self.X, self.Y = X_train, Y_train = self.make_similarity_based_dataset(self.n_train_instances, seed=seed)
         self.__check_dataset_validity__()
 
-        self.X, self.rankings = X_test, Y_test = self.make_similarity_based_dataset(self.n_test_instances,
-                                                                                    seed=seed + 1)
+        self.X, self.Y = X_test, Y_test = self.make_similarity_based_dataset(self.n_test_instances,
+                                                                             seed=seed + 1)
         self.__check_dataset_validity__()
         return X_train, Y_train, X_test, Y_test

@@ -56,7 +56,7 @@ class SushiDatasetReader(DatasetReader, metaclass=ABCMeta):
             Xc.append(feature_users[i])
 
         self.X = np.array(X)
-        self.rankings = np.array(rankings)
+        self.Y = np.array(rankings)
         if (self.learning_problem == DYAD_RANKING):
             self.Xc = np.array(Xc)
         else:

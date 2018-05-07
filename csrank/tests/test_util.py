@@ -1,10 +1,10 @@
-import pytest
 import numpy as np
+import pytest
 import tensorflow as tf
 from keras import backend as K
 
 from ..dataset_reader.util import SyntheticIterator
-from ..util import tensorify, check_ranker_class
+from ..util import tensorify, check_learner_class
 
 
 def test_tensorify():
@@ -37,4 +37,4 @@ def test_check_ranker_class():
 
     ranker = MockClass()
     with pytest.raises(AttributeError):
-        check_ranker_class(ranker)
+        check_learner_class(ranker)

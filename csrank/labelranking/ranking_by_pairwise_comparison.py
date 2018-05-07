@@ -1,5 +1,4 @@
 import logging
-from collections import OrderedDict
 from itertools import combinations
 
 import numpy as np
@@ -9,10 +8,10 @@ from sklearn.utils import check_random_state
 
 from csrank.labelranking.label_ranker import LabelRanker
 from csrank.tunable import Tunable
-from csrank.util import tunable_parameters_ranges
+from csrank.util import print_dictionary
 
 
-class RankingbyPairwiseComparison(LabelRanker, Tunable):
+class RankingbyPairwiseComparisonLabelRanker(LabelRanker, Tunable):
     _tunable = None
 
     def __init__(self, n_features, C=1, tol=1e-4, normalize=True, fit_intercept=True, random_state=None, **kwargs):
@@ -70,65 +69,10 @@ class RankingbyPairwiseComparison(LabelRanker, Tunable):
     def predict(self, X, **kwargs):
         return LabelRanker.predict(self, X, **kwargs)
 
-    @classmethod
-    def set_tunable_parameter_ranges(cls, param_ranges_dict):
-        logger = logging.getLogger('RPC')
-        return tunable_parameters_ranges(cls, logger, param_ranges_dict)
-
-    def set_tunable_parameters(self, params):
-        self.logger.debug('Got the following parameter vector: {}'.format(params))
-        named = dict(zip(self._tunable.keys(), params))
-        for name, param in named.items():
-            if name == 'C':
-                self.C = param
-            elif name == 'tolerance':
-                self.tol = param
-            else:
-                self.logger.warning('This ranking algorithm does not support'
-                                    'a tunable parameter called {}'.format(name))
-
-    @classmethod
-    def tunable_parameters(cls):
-        if cls._tunable is None:
-            cls._tunable = OrderedDict([
-                ('C', (1, 12)),
-                ('tolerance', (1e-4, 5e-1, "log-uniform"))
-            ])
-        return list(cls._tunable.values())
-
-# if __name__ == '__main__':
-#     log_path = os.path.join(os.getcwd(), 'logs', "rpc_exp.log")
-#     create_dir_recursively(log_path, True)
-#     log_path = rename_file_if_exist(log_path)
-#     logging.basicConfig(filename=log_path, level=logging.DEBUG,
-#                         format='%(asctime)s %(name)s %(levelname)-8s %(message)s',
-#                         datefmt='%Y-%m-%d %H:%M:%S')
-#     logger = logging.getLogger(name='Experiment')
-#
-#     I = IntelligentSystemGroupDatasetReader()
-#     X, Y = I.get_complete_dataset()
-#     skf = KFold(n_splits=10, shuffle=True, random_state=42)
-#     tau = []
-#     spr = []
-#     for train_indicies, test_indicies in list(skf.split(Y)):
-#         train = X[train_indicies]
-#         train_orderings = Y[train_indicies]
-#         test = X[test_indicies]
-#         test_orderings = Y[test_indicies]
-#         n_features = X.shape[1]
-#         iblr = RankingbyPairwiseComparison(n_features=n_features)
-#         iblr.fit(train, train_orderings)
-#
-#         predicted = iblr(test)
-#         tau.append(kendalls_mean(predicted, test_orderings))
-#         spr.append(spearman_mean(predicted, test_orderings))
-#     tau = np.array(tau)
-#     spr = np.array(spr)
-#     logging.info("****************Kendalls Tau******************")
-#     logging.info("Kendalls: " + repr(tau))
-#     logging.info("Mean: " + repr(np.mean(tau)))
-#     logging.info("Std: " + repr(np.std(tau)))
-#     logging.info("****************Spearman Corr******************")
-#     logging.info("Spearman: " + repr(spr))
-#     logging.info("Mean: " + repr(np.mean(spr)))
-#     logging.info("Std: " + repr(np.std(spr)))
+    def set_tunable_parameters(self, C=1, tol=1e-4, **point):
+        self.tol = tol
+        self.C = C
+        if len(point) > 0:
+            self.logger.warning('This ranking algorithm does not support'
+                                ' tunable parameters'
+                                ' called: {}'.format(print_dictionary(point)))

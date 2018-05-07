@@ -6,11 +6,12 @@ scikit-learn>=0.18.2
 scikit-optimize>=0.4
 pandas>=0.22
 h5py>=2.7
-pygmo
+pygmo>=2.7
+psycopg2>=2.7
 
 joblib>=0.9.4
 tqdm>=4.11.2
-keras>=2.0.3
+keras>=2.1.5
 
 # Pick either CPU or GPU version of tensorflow:
 tensorflow>=1.4

@@ -1,5 +1,4 @@
 import logging
-from collections import OrderedDict
 
 import numpy as np
 from sklearn.neighbors import NearestNeighbors
@@ -9,22 +8,22 @@ from sklearn.utils import check_random_state
 from csrank.labelranking.label_ranker import LabelRanker
 from csrank.labelranking.placketluce_model import get_pl_parameters_for_rankings
 from csrank.tunable import Tunable
-from csrank.util import ranking_ordering_conversion, tunable_parameters_ranges
+from csrank.util import ranking_ordering_conversion, print_dictionary
 
 
-class InstanceBaseLabelRanking(LabelRanker, Tunable):
+class InstanceBasedLabelRanker(LabelRanker, Tunable):
     _tunable = None
 
-    def __init__(self, n_features, k=20, algorithm="ball_tree", normalize=True, random_state=None, **kwargs):
+    def __init__(self, n_features, neighbours=20, algorithm="ball_tree", normalize=True, random_state=None, **kwargs):
         self.normalize = normalize
         self.n_features = n_features
-        self.k = k
+        self.neighbours = neighbours
         self.algorithm = algorithm
         self.logger = logging.getLogger('InstanceBasedLabelRanker')
         self.random_state = check_random_state(random_state)
 
     def fit(self, X, Y, **kwargs):
-        self.model = NearestNeighbors(n_neighbors=self.k, algorithm=self.algorithm)
+        self.model = NearestNeighbors(n_neighbors=self.neighbours, algorithm=self.algorithm)
 
         if (self.normalize):
             scaler = StandardScaler()
@@ -47,28 +46,10 @@ class InstanceBaseLabelRanking(LabelRanker, Tunable):
     def predict(self, X, **kwargs):
         return LabelRanker.predict(self, X, **kwargs)
 
-    @classmethod
-    def set_tunable_parameter_ranges(cls, param_ranges_dict):
-        logger = logging.getLogger('InstanceBasedLabelRanker')
-        return tunable_parameters_ranges(cls, logger, param_ranges_dict)
-
-    def set_tunable_parameters(self, params):
-        self.logger.debug('Got the following parameter vector: {}'.format(params))
-        named = dict(zip(self._tunable.keys(), params))
-        for name, param in named.items():
-            if name == 'k':
-                self.k = param
-            elif name == 'algorithm':
-                self.algorithm = param
-            else:
-                self.logger.warning('This ranking algorithm does not support'
-                                    'a tunable parameter called {}'.format(name))
-
-    @classmethod
-    def tunable_parameters(cls):
-        if cls._tunable is None:
-            cls._tunable = OrderedDict([
-                ('k', (1, 12)),
-                ('algorithm', ("ball_tree", "kd_tree"))
-            ])
-        return list(cls._tunable.values())
+    def set_tunable_parameters(self, neighbours=20, algorithm="ball_tree", **point):
+        self.neighbours = neighbours
+        self.algorithm = algorithm
+        if len(point) > 0:
+            self.logger.warning('This ranking algorithm does not support'
+                                ' tunable parameters'
+                                ' called: {}'.format(print_dictionary(point)))

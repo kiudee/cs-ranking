@@ -1,14 +1,13 @@
-from csrank import FETANetwork
-
 import numpy as np
-
 from keras.losses import binary_crossentropy
 from keras.regularizers import l2
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
+from sklearn.model_selection import train_test_split
+
+from csrank.objectranking import FETAObjectRanker
 
 
-class FETAChoiceFunction(FETANetwork):
+class FETAChoiceFunction(FETAObjectRanker):
     def __init__(self, n_objects, n_features, n_hidden=2, n_units=8,
                  add_zeroth_order_model=False, max_number_of_objects=5,
                  num_subsample=5, loss_function=binary_crossentropy,
@@ -49,8 +48,7 @@ class FETAChoiceFunction(FETANetwork):
                 super().fit(X_train, Y_train, epochs, callbacks,
                             validation_split, verbose, **kwd)
             finally:
-                self.logger.info('Fitting utility function finished.'
-                                 ' Start tuning threshold.')
+                self.logger.info('Fitting utility function finished. Start tuning threshold.')
                 self.threshold = self._tune_threshold(
                     X_val, Y_val,
                     thin_thresholds=thin_thresholds)
@@ -63,8 +61,17 @@ class FETAChoiceFunction(FETANetwork):
         return super().predict_scores(X, **kwargs)
 
     def predict(self, X, **kwargs):
+        self.logger.debug('Predicting started')
+
         scores = self.predict_scores(X, **kwargs)
-        return scores > self.threshold
+        self.logger.debug('Predicting scores complete')
+        if isinstance(X, dict):
+            result = dict()
+            for n, s in self.predict_scores(X, **kwargs).items():
+                result[n] = s > self.threshold
+        else:
+            result = scores > self.threshold
+        return result
 
     def __call__(self, X, **kwargs):
         return self.predict(X, **kwargs)

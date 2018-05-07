@@ -65,18 +65,13 @@ class ExpectedRankRegression(ObjectRanker, Tunable):
         X_train, Y_train = complete_linear_regression_dataset(X, Y)
         assert X_train.shape[1] == self.n_features
         self.logger.debug('Finished the Dataset')
-        if self.alpha == 0:
-            self.model = LinearRegression(normalize=self.normalize,
-                                          fit_intercept=self.fit_intercept)
+        if self.alpha < 1e-3:
+            self.model = LinearRegression(normalize=self.normalize, fit_intercept=self.fit_intercept)
 
         else:
             if self.l1_ratio >= 0.01:
-                self.model = ElasticNet(alpha=self.alpha,
-                                        l1_ratio=self.l1_ratio,
-                                        normalize=self.normalize,
-                                        tol=self.tol,
-                                        fit_intercept=self.fit_intercept,
-                                        random_state=self.random_state)
+                self.model = ElasticNet(alpha=self.alpha, l1_ratio=self.l1_ratio, normalize=self.normalize,
+                                        tol=self.tol, fit_intercept=self.fit_intercept, random_state=self.random_state)
             else:
                 self.model = Ridge(alpha=self.alpha, normalize=self.normalize,
                                    tol=self.tol,
@@ -115,7 +110,7 @@ class ExpectedRankRegression(ObjectRanker, Tunable):
         score_b = self.model.predict(b, **kwargs) * -1
         return [score_a / (score_a + score_b), score_b / (score_a + score_b)]
 
-    def set_tunable_parameters(self, alpha=1.0, l1_ratio=0.5, tol=1e-4, **point):
+    def set_tunable_parameters(self, alpha=0.0, l1_ratio=0.5, tol=1e-4, **point):
         self.tol = tol
         self.alpha = alpha
         self.l1_ratio = l1_ratio

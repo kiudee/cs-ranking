@@ -1,10 +1,8 @@
 import logging
 
-from keras.layers import BatchNormalization, Dense, Activation, Input
+from keras.layers import BatchNormalization, Dense, Activation, Input, Lambda
 from keras.layers.merge import average
 from keras.models import Model
-
-from csrank.util import create_input_lambda
 
 __all__ = ['NormalizedDense', 'DeepSet']
 
@@ -144,3 +142,8 @@ class DeepSet(object):
     def set_weights(self, weights):
         for i, layer in enumerate(self.set_mapping_layers):
             layer.set_weights(weights[i])
+
+
+def create_input_lambda(i):
+    """Extracts off an object tensor from an input tensor"""
+    return Lambda(lambda x: x[:, i])

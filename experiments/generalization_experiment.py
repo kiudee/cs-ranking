@@ -12,6 +12,7 @@ Options:
   --n_objects=<n_objects>         No of Objects of the random generator [default: 5]
 """
 import inspect
+import logging
 import os
 
 import numpy as np
@@ -19,9 +20,9 @@ import pandas as pd
 from docopt import docopt
 
 from csrank.callbacks import DebugOutput
-from csrank.dataset_reader import SyntheticDatasetGenerator
-from csrank.fate_ranking import FATEObjectRanker
+from csrank.dataset_reader import ObjectRankingDatasetGenerator
 from csrank.metrics import zero_one_rank_loss_for_scores
+from csrank.objectranking.fate_object_ranker import FATEObjectRanker
 from csrank.util import rename_file_if_exist, configure_logging_numpy_keras, get_tensor_value
 
 MODEL = "aModel"
@@ -32,7 +33,7 @@ ERROR_OUTPUT_STRING = 'Out of sample error {} : {} for n_objects {}'
 def generate_medoid_dataset(n_objects=5, random_state=42):
     parameters = {"n_features": 2, "n_objects": n_objects, "n_train_instances": 10000, "n_test_instances": 100000,
                   "dataset_type": "medoid", "random_state": random_state}
-    generator = SyntheticDatasetGenerator(**parameters)
+    generator = ObjectRankingDatasetGenerator(**parameters)
     return generator.get_single_train_test_split()
 
 
@@ -61,8 +62,8 @@ if __name__ == '__main__':
 
     rows_list = []
 
-    logger = configure_logging_numpy_keras(seed=seed, log_path=log_path)
-
+    configure_logging_numpy_keras(seed=seed, log_path=log_path)
+    logger = logging.getLogger('Generalization Experiment')
     X_train, Y_train, _, _ = generate_medoid_dataset(n_objects=n_objects, random_state=seed)
     n_instances, n_objects, n_features = X_train.shape
     epochs = 1000

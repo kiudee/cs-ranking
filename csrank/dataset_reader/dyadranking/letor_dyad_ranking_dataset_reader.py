@@ -1,7 +1,7 @@
 from sklearn.utils import check_random_state
 
 from csrank.constants import DYAD_RANKING
-from csrank.dataset_reader.letor_dataset_reader import LetorDatasetReader
+from csrank.dataset_reader import LetorDatasetReader
 
 
 class LetorDyadRankingDatasetReader(LetorDatasetReader):
@@ -15,7 +15,7 @@ class LetorDyadRankingDatasetReader(LetorDatasetReader):
     def get_train_test_datasets(self, n_datasets=5):
         pass
 
-    def get_complete_dataset(self):
+    def get_dataset_dictionaries(self):
         pass
 
     def get_single_train_test_split(self):

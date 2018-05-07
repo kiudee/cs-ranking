@@ -15,7 +15,7 @@ class RCVDatasetReader(DatasetReader):
 
     def __init__(self, n_instances=10000, n_objects=5, query_based=False, random_state=None, **kwargs):
         super(RCVDatasetReader, self).__init__(learning_problem=OBJECT_RANKING, dataset_folder='textual_data', **kwargs)
-        self.logger = logging.getLogger(name='RCVDatasetReader')
+        self.logger = logging.getLogger(name=RCVDatasetReader.__name__)
         if n_instances not in [10000]:
             raise ValueError('The number of instances should be in %s', str([100, 1000, 10000]))
         if n_objects not in [5, 10]:
@@ -42,7 +42,7 @@ class RCVDatasetReader(DatasetReader):
         for indices in object_indices:
             X.append(features[indices])
         self.X = np.array(X)
-        self.rankings = np.array(orderings)
+        self.Y = np.array(orderings)
         for i, x in enumerate(self.X):
             x = StandardScaler().fit_transform(x)
             self.X[i] = x
@@ -53,15 +53,15 @@ class RCVDatasetReader(DatasetReader):
         splits = list(cv_iter.split(self.X))
         return self.splitter(splits)
 
-    def get_complete_dataset(self):
-        return self.X, self.rankings
+    def get_dataset_dictionaries(self):
+        return self.X, self.Y
 
     def splitter(self, iter):
         for train_idx, test_idx in iter:
-            yield self.X[train_idx], self.rankings[train_idx], self.X[test_idx], self.rankings[test_idx]
+            yield self.X[train_idx], self.Y[train_idx], self.X[test_idx], self.Y[test_idx]
 
     def get_train_test_datasets(self, n_datasets):
         pass
 
     def get_single_train_test_split(self):
-        return self.X, self.rankings
+        return self.X, self.Y
