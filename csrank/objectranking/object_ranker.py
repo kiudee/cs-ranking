@@ -119,8 +119,7 @@ class ObjectRanker(metaclass=ABCMeta):
         Returns
         -------
         Y : array-like, shape (n_samples, n_objects)
-            Returns the borda scores of each of the objects for each of the
-            samples.
+            Returns the borda scores of each of the objects for each of the samples.
         """
         raise NotImplementedError
 

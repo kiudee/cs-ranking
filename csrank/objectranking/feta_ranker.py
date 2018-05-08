@@ -21,8 +21,7 @@ class FETAObjectRanker(ObjectRanker, Tunable):
 
     def __init__(self, n_objects, n_features, n_hidden=2, n_units=8,
                  add_zeroth_order_model=False, max_number_of_objects=5,
-                 num_subsample=5,
-                 loss_function=hinged_rank_loss, batch_normalization=False,
+                 num_subsample=5, loss_function=hinged_rank_loss, batch_normalization=False,
                  kernel_regularizer=l2(l=1e-4), non_linearities='selu',
                  optimizer="adam", metrics=None, batch_size=256, random_state=None, **kwargs):
         """

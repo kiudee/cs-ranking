@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 from keras.losses import binary_crossentropy
 from keras.regularizers import l2
@@ -12,16 +14,17 @@ class FETAChoiceFunction(FETAObjectRanker):
                  add_zeroth_order_model=False, max_number_of_objects=5,
                  num_subsample=5, loss_function=binary_crossentropy,
                  batch_normalization=False, kernel_regularizer=l2(l=1e-4),
-                 non_linearities='selu', optimizer="adam", metrics=None,
-                 use_early_stopping=False, es_patience=300, batch_size=256,
+                 non_linearities='selu', optimizer="adam", metrics=None, batch_size=256,
                  random_state=None, **kwargs):
         super().__init__(n_objects, n_features, n_hidden, n_units,
                          add_zeroth_order_model, max_number_of_objects,
                          num_subsample, loss_function, batch_normalization,
                          kernel_regularizer, non_linearities, optimizer,
-                         metrics, use_early_stopping, es_patience, batch_size,
+                         metrics, batch_size,
                          random_state, **kwargs)
         self.threshold = 0.5
+        self.logger = logging.getLogger(FETAChoiceFunction.__name__)
+
 
     def _tune_threshold(self, X_val, Y_val, thin_thresholds=1):
         scores = self.predict_scores(X_val)
