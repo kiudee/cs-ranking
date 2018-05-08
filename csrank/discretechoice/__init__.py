@@ -1,0 +1,2 @@
+from .fate_discrete_choice import FATEDiscreteChoiceFunction
+from .feta_discrete_choice import FETADiscreteChoiceFunction

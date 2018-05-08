@@ -60,7 +60,47 @@ class DiscreteObjectChooser(metaclass=ABCMeta):
 
     @abstractmethod
     def predict_scores(self, X, **kwargs):
-        """ Predict scores for a given collection of sets of objects.
+        """
+        Predict the latent utility scores for each object in X.
+
+        We need to distinguish several cases here:
+         * Predict with the non-variadic model on the same choice set size
+         * Predict with the non-variadic model on a new choice set size
+         * Predict with the variadic model on a known choice set size
+         * Predict with the variadic model on a new choice set size
+         * Predict on a variadic input
+
+        The simplest solution is creating (a) new model(s) in all of the cases,
+        even though it/they might already exist.
+
+         Parameters
+         ----------
+         X : dict or numpy array
+            Dictionary with a mapping from ranking size to numpy arrays
+            or a single numpy array of size:
+            (n_instances, n_objects, n_features)
+
+        Returns
+        -------
+        Y : dict or numpy array
+            Dictionary with a mapping from choice set size to numpy arrays
+            or a single numpy array of size:
+            (n_instances, n_objects)
+            Predicted scores
+        """
+        self.logger.info("Predicting scores")
+
+        if isinstance(X, dict):
+            scores = dict()
+            for ranking_size, x in X.items():
+                scores[ranking_size] = self._predict_scores_fixed(x, **kwargs)
+        else:
+            scores = self._predict_scores_fixed(X, **kwargs)
+        return scores
+
+    @abstractmethod
+    def _predict_scores_fixed(self, X, **kwargs):
+        """ Predict borda scores for a given collection of sets of objects.
 
         Parameters
         ----------
