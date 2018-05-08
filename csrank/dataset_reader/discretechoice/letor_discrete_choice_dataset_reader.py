@@ -7,7 +7,7 @@ from csrank.constants import DISCRETE_CHOICE
 from csrank.dataset_reader import LetorDatasetReader
 import numpy as np
 
-from csrank.dataset_reader.discretechoice.util import sub_sampling_choices
+from csrank.dataset_reader.discretechoice.util import sub_sampling_discerete_choices
 
 
 class LetorDiscreteChoiceDatasetReader(LetorDatasetReader):
@@ -44,8 +44,8 @@ class LetorDiscreteChoiceDatasetReader(LetorDatasetReader):
         Y = []
         for n in self.X_train.keys():
             if n > self.n_objects:
-                x, y = sub_sampling_choices(LetorDiscreteChoiceDatasetReader.__name__, self.X_train[n], self.scores_train[n],
-                                             n_objects=self.n_objects)
+                x, y = sub_sampling_discerete_choices(LetorDiscreteChoiceDatasetReader.__name__, self.X_train[n], self.scores_train[n],
+                                                      n_objects=self.n_objects)
                 if len(X) == 0:
                     X = np.copy(x)
                     Y = np.copy(y)

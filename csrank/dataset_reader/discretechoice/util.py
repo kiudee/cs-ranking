@@ -1,7 +1,7 @@
 import numpy as np
 import logging
 
-def sub_sampling_choices(name, Xt, St, n_objects=5):
+def sub_sampling_discerete_choices(name, Xt, St, n_objects=5):
     logger = logging.getLogger(name=name)
     bucket_size = int(Xt.shape[1] / n_objects)
     logger.info("###### X instances {} objects {} bucket_size {} ######".format(Xt.shape[0], Xt.shape[1], bucket_size))
