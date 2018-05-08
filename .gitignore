@@ -105,4 +105,6 @@ ENV/
 # mkdocs documentation
 /site
 /sim_scripts/
-/copy_to_remote.sh
+copy_to_remote.sh
+copy_from_remote.sh
+
