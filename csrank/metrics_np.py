@@ -15,7 +15,7 @@ def spearman_mean_np(y_true, s_pred):
     rho = []
     for r1, r2 in zip(y_true, y_pred):
         rho.append(spearmanr(r1, r2)[0])
-    return np.mean(np.array(rho))
+    return np.nanmean(np.array(rho))
 
 
 def kendalls_mean_np(y_true, s_pred):
