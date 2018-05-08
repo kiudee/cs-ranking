@@ -280,7 +280,7 @@ def get_mean_loss_for_dictionary(logger, metric, Y_true, Y_pred):
 def get_loss_for_array(metric, y_true, y_pred):
     x = metric(y_true, y_pred)
     x = get_tensor_value(x)
-    return np.nanmean(get_tensor_value)
+    return np.nanmean(x)
 
 
 def heat_map(file_path, X, headers, cmap=sns.color_palette("Blues")):
