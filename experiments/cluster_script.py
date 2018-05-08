@@ -134,7 +134,7 @@ if __name__ == "__main__":
                     metric_loss = get_loss_for_array(evaluation_metric, Y_test, predictions)
                 logger.info(ERROR_OUTPUT_STRING % (name, metric_loss))
                 if np.isnan(metric_loss):
-                    results[name] = "NaN"
+                    results[name] = "Infinity"
                 else:
                     results[name] = "{0:.4f}".format(metric_loss)
             dbConnector.insert_results(experiment_schema=experiment_schema, experiment_table=experiment_table,
