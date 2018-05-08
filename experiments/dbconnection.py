@@ -153,6 +153,7 @@ class DBConnector(metaclass=ABCMeta):
             self.init_connection(cursor_factory=None)
 
         insert_result = "INSERT INTO {0} ({1}) VALUES ({2})".format(results_table, columns, values_str)
+        self.logger.info("Inserting results: {}".format(insert_result))
         self.cursor_db.execute(insert_result)
         if self.cursor_db.rowcount == 1:
             self.logger.info("Results inserted for the job {}".format(results['job_id']))
