@@ -97,9 +97,8 @@ class ListNet(ObjectRanker, Tunable):
     def _construct_layers(self, **kwargs):
         self.input_layer = Input(shape=(self.n_top, self.n_features))
         self.output_node = Dense(
-            1, activation="sigmoid", kernel_regularizer=self.kernel_regularizer
+            1, activation="linear", kernel_regularizer=self.kernel_regularizer
         )
-        self.output_layer_score = Dense(1, activation="linear")
         if self.batch_normalization:
             self.hidden_layers = [
                 NormalizedDense(
@@ -168,7 +167,8 @@ class ListNet(ObjectRanker, Tunable):
         hid = [create_input_lambda(i)(self.input_layer) for i in range(self.n_top)]
         for hidden_layer in self.hidden_layers:
             hid = [hidden_layer(x) for x in hid]
-        merged = concatenate(hid)
+        outputs = [self.output_node(x) for x in hid]
+        merged = concatenate(outputs)
         return merged
 
     @property

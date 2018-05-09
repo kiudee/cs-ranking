@@ -9,7 +9,7 @@ __all__ = ['hinged_rank_loss', 'make_smooth_ndcg_loss', 'smooth_rank_loss',
 
 def identifiable(loss_function):
     def wrap_loss(y_true, y_pred):
-        alpha = 1e-10
+        alpha = 1e-4
         scores_i = tf.reduce_sum(y_pred, axis=1)
         n = tf.shape(y_pred)[1]
         sum_of_scores = tf.cast(n, dtype='float32') / 2.
@@ -49,8 +49,8 @@ def plackett_luce_loss(y_true, s_pred):
     exped = tf.exp(s_pred - max_entry)
     masks = tf.greater_equal(y_true, tf.range(m)[:, None, None])
     tri = exped * tf.cast(masks, tf.float32)
-    lse = tf.reduce_sum(max_entry + tf.log(tf.reduce_sum(tri, axis=2)))
-    return lse - tf.reduce_sum(s_pred)
+    lse = tf.reduce_sum(max_entry + tf.log(tf.reduce_sum(tri, axis=2)), axis=0)
+    return lse - tf.reduce_sum(s_pred, axis=1)
 
 
 def make_smooth_ndcg_loss(y_true, y_pred):
