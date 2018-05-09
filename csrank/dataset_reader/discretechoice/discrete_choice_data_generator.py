@@ -5,14 +5,15 @@ from sklearn.utils import check_random_state
 from csrank.constants import DISCRETE_CHOICE
 from csrank.dataset_reader import SyntheticDatasetGenerator
 import numpy as np
-
+from pygmo import hypervolume
 
 class DiscreteChoiceDatasetGenerator(SyntheticDatasetGenerator):
     def __init__(self, dataset_type='medoid', **kwargs):
         super(DiscreteChoiceDatasetGenerator, self).__init__(
             learning_problem=DISCRETE_CHOICE, **kwargs)
         dataset_function_options = {'linear': self.make_linear_transitive,
-                                    'medoid': self.make_intransitive_medoids}
+                                    'medoid': self.make_intransitive_medoids,
+                                    'hypervolume':self.make_hv_dataset}
         if dataset_type not in dataset_function_options.keys():
             dataset_type = "medoid"
         self.dataset_function = dataset_function_options[dataset_type]
@@ -43,6 +44,20 @@ class DiscreteChoiceDatasetGenerator(SyntheticDatasetGenerator):
             Y[i] = medoid
         X = np.array(X)
         Y = np.array(Y)
+        return X, Y
+
+    def make_hv_dataset(self, n_instances=1000, n_objects=5, n_features=5,
+                        seed=42, **kwd):
+        random_state = check_random_state(seed=seed)
+        X = random_state.randn(n_instances, n_objects, n_features)
+        # Normalize to unit circle and fold to lower quadrant
+        X = -np.abs(X / np.sqrt(np.power(X, 2).sum(axis=2))[..., None])
+        Y = np.empty((n_instances), dtype=int)
+        reference = np.zeros(n_features)
+        for i, x in enumerate(X):
+            hv = hypervolume(x)
+            cont = hv.contributions(reference)
+            Y[i] = np.argmax(cont)
         return X, Y
 
     def get_single_train_test_split(self):

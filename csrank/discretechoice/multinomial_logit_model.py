@@ -8,7 +8,6 @@ import numpy as np
 
 from csrank.util import print_dictionary
 
-
 class MultinomialLogitModel(DiscreteObjectChooser, Tunable):
     def __init__(self, n_features, n_tune=500, n_sample=500):
         self.n_tune = n_tune
