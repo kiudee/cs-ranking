@@ -107,17 +107,7 @@ class RankNet(ObjectRanker, Tunable):
     def fit(self, X, Y, epochs=10, callbacks=None,
             validation_split=0.1, verbose=0, **kwd):
 
-        self.logger.debug('Creating the Dataset')
-
-        garbage, X1, X2, garbage, Y_single = generate_complete_pairwise_dataset(X, Y)
-        del garbage
-        if (X1.shape[0] > self.threshold_instances):
-            indicies = self.random_state.choice(X1.shape[0], self.threshold_instances, replace=False)
-            X1 = X1[indicies, :]
-            X2 = X2[indicies, :]
-            Y_single = Y_single[indicies]
-
-        self.logger.debug('Finished the Dataset')
+        X1, X2, Y_single = self.convert_instances(X, Y)
 
         self.logger.debug('Creating the model')
 
@@ -135,6 +125,18 @@ class RankNet(ObjectRanker, Tunable):
         self.scoring_model = self._create_scoring_model()
 
         self.logger.debug('Fitting Complete')
+
+    def convert_instances(self, X, Y):
+        self.logger.debug('Creating the Dataset')
+        garbage, X1, X2, garbage, Y_single = generate_complete_pairwise_dataset(X, Y)
+        del garbage
+        if X1.shape[0] > self.indices:
+            indices = self.random_state.choice(X1.shape[0], self.threshold_instances, replace=False)
+            X1 = X1[indices, :]
+            X2 = X2[indices, :]
+            Y_single = Y_single[indices]
+        self.logger.debug('Finished the Dataset')
+        return X1, X2, Y_single
 
     def construct_model(self):
         # weight sharing using same hidden layer for two objects
