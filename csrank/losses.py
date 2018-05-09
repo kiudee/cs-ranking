@@ -12,7 +12,7 @@ def identifiable(loss_function):
         alpha = 1e-10
         scores_i = tf.reduce_sum(y_pred, axis=1)
         n = tf.shape(y_pred)[1]
-        sum_of_scores = tf.cast(n / 2., dtype='float32')
+        sum_of_scores = tf.cast(n, dtype='float32') / 2.
         deviation = tf.reduce_sum(tf.square(scores_i - sum_of_scores))
         return alpha * deviation + loss_function(y_true, y_pred)
     return wrap_loss
@@ -41,7 +41,10 @@ def smooth_rank_loss(y_true, y_pred):
 
 @identifiable
 def plackett_luce_loss(y_true, s_pred):
-    n, m = tf.shape(y_true)
+    y_true = tf.cast(y_true, dtype='int32')
+    s_pred = tf.cast(s_pred, dtype='float32')
+    n = tf.shape(y_true)[0]
+    m = tf.shape(y_true)[1]
     max_entry = tf.reduce_max(s_pred)
     exped = tf.exp(s_pred - max_entry)
     masks = tf.greater_equal(y_true, tf.range(m)[:, None, None])
