@@ -355,9 +355,7 @@ class ParameterOptimizer(ObjectRanker):
             n_iter = n_iter - finished_iterations
             if n_iter < 0:
                 n_iter = 0
-                self.logger.info(
-                    'Iterations already done: {} and running iterations {}'.format(finished_iterations, n_iter))
-
+            self.logger.info('Iterations already done: {} and running iterations {}'.format(finished_iterations, n_iter))
             self.opt = optimizer
             self.logger.debug('Setting the provided optimizer')
             self.log_best_params()
