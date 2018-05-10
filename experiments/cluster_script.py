@@ -128,6 +128,7 @@ if __name__ == "__main__":
                     predictions = y_pred
                 if "NDCG" in name:
                     evaluation_metric = make_ndcg_at_k_loss(k=n_objects)
+                    predictions = y_pred
                 if isinstance(Y_test, dict):
                     metric_loss = get_mean_loss_for_dictionary(logger, evaluation_metric, Y_test, predictions)
                 else:
@@ -137,8 +138,7 @@ if __name__ == "__main__":
                     results[name] = "\'Infinity\'"
                 else:
                     results[name] = "{0:.4f}".format(metric_loss)
-            dbConnector.insert_results(experiment_schema=experiment_schema, experiment_table=experiment_table,
-                                       results=results)
+            dbConnector.insert_results(experiment_schema=experiment_schema, experiment_table=experiment_table, results=results)
             dbConnector.mark_running_job_finished(job_id)
         except Exception as e:
             if hasattr(e, 'message'):

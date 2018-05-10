@@ -441,9 +441,7 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
     def get_set_representation(self, X, kwargs):
         n_instances, n_objects, n_features = X.shape
         self.logger.info("Test Set instances {} objects {} features {}".format(n_instances, n_objects, n_features))
-        input_layer_scorer = Input(shape=(n_objects,
-                                          self.n_object_features),
-                                   name="input_node")
+        input_layer_scorer = Input(shape=(n_objects, self.n_object_features), name="input_node")
         if self.n_hidden_set_layers >= 1:
             self.set_layer(input_layer_scorer)
             fr = self.set_layer.cached_models[n_objects].predict(X, **kwargs)

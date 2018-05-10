@@ -6,6 +6,7 @@ import numpy as np
 import tensorflow as tf
 from keras import backend as K
 from keras.losses import categorical_hinge
+from sklearn.metrics import hamming_loss
 from sklearn.model_selection import ShuffleSplit
 from sklearn.utils import check_random_state
 from skopt import Optimizer
@@ -91,7 +92,7 @@ class ParameterOptimizer(ObjectRanker):
                                    LABEL_RANKING: zero_one_rank_loss,
                                    DISCRETE_CHOICE: categorical_hinge,
                                    DYAD_RANKING: zero_one_rank_loss,
-                                   CHOICE_FUNCTIONS: f1_measure}
+                                   CHOICE_FUNCTIONS: hamming_loss}
         if validation_loss is None:
             self.validation_loss = default_validation_loss[learning_problem]
             self.logger.info(
@@ -281,6 +282,7 @@ class ParameterOptimizer(ObjectRanker):
                 time_taken = duration_tillnow(start)
                 total_duration -= time_taken
                 self.logger.info('Time left for simulations is {} '.format(seconds_to_time(total_duration)))
+
                 # Delete Tensorflow graph, to prevent memory leaks:
                 K.clear_session()
                 sess = tf.Session()
@@ -348,7 +350,6 @@ class ParameterOptimizer(ObjectRanker):
             optimizer = None
         except FileNotFoundError:
             self.logger.error('No such file or directory: {}'.format(opt_path))
-
             optimizer = None
 
         if optimizer is not None:
