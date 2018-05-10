@@ -130,7 +130,7 @@ class RankNet(ObjectRanker, Tunable):
         self.logger.debug('Creating the Dataset')
         garbage, X1, X2, garbage, Y_single = generate_complete_pairwise_dataset(X, Y)
         del garbage
-        if X1.shape[0] > self.indices:
+        if X1.shape[0] > self.threshold_instances:
             indices = self.random_state.choice(X1.shape[0], self.threshold_instances, replace=False)
             X1 = X1[indices, :]
             X2 = X2[indices, :]
