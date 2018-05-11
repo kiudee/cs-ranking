@@ -20,7 +20,7 @@ class ListNet(ObjectRanker, Tunable):
 
     def __init__(
         self,
-        n_features,
+        n_object_features,
         n_top,
         n_hidden=2,
         n_units=8,
@@ -45,7 +45,7 @@ class ListNet(ObjectRanker, Tunable):
 
             Parameters
             ----------
-            n_features : int
+            n_object_features : int
                 Number of features of the object space
             n_top : int
                 Size of the top-k-subrankings to consider for training
@@ -78,8 +78,9 @@ class ListNet(ObjectRanker, Tunable):
             ----------
         """
         self.logger = logging.getLogger(ListNet.__name__)
-        self.n_features = n_features
-        self.n_top = self.n_objects = n_top
+        self.n_object_features = n_object_features
+        self.n_objects = n_top
+        self.n_top = n_top
         self.batch_normalization = batch_normalization
         self.non_linearities = non_linearities
         self.metrics = metrics
@@ -89,6 +90,10 @@ class ListNet(ObjectRanker, Tunable):
         self.optimizer = optimizers.get(optimizer)
         self.n_hidden = n_hidden
         self.n_units = n_units
+        if 'n_objects' in kwargs:
+            del kwargs['n_objects']
+        if 'n_features' in kwargs:
+            del kwargs['n_features']
         self._construct_layers(**kwargs)
         self.threshold_instances = THRESHOLD
         self.batch_size = batch_size
@@ -97,7 +102,7 @@ class ListNet(ObjectRanker, Tunable):
         self._scoring_model = None
 
     def _construct_layers(self, **kwargs):
-        self.input_layer = Input(shape=(self.n_top, self.n_features))
+        self.input_layer = Input(shape=(self.n_top, self.n_object_features))
         self.output_node = Dense(
             1, activation="linear", kernel_regularizer=self.kernel_regularizer
         )
@@ -178,7 +183,7 @@ class ListNet(ObjectRanker, Tunable):
     @property
     def scoring_model(self):
         if self._scoring_model is None:
-            inp = Input(shape=(self.n_features,))
+            inp = Input(shape=(self.n_object_features,))
             x = inp
             for hidden_layer in self.hidden_layers:
                 x = hidden_layer(x)
