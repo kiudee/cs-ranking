@@ -18,13 +18,13 @@ __all__ = ['RankSVM']
 class RankSVM(ObjectRanker, Tunable):
     _tunable = None
 
-    def __init__(self, n_features, C=1.0, tol=1e-4, normalize=True,
+    def __init__(self, n_object_features, C=1.0, tol=1e-4, normalize=True,
                  fit_intercept=True, random_state=None, **kwargs):
         """ Create an instance of the RankSVM model.
 
         Parameters
         ----------
-        n_features : int
+        n_object_features : int
             Number of features of the object space
         C : float, optional
             Penalty parameter of the error term
@@ -47,7 +47,7 @@ class RankSVM(ObjectRanker, Tunable):
                Knowledge discovery and data mining (pp. 133-142). ACM.
         """
         self.normalize = normalize
-        self.n_features = n_features
+        self.n_object_features = n_object_features
         self.C = C
         self.tol = tol
         self.logger = logging.getLogger('RankSVM')
@@ -60,7 +60,7 @@ class RankSVM(ObjectRanker, Tunable):
         X_train, garbage, garbage, garbage, Y_single = generate_complete_pairwise_dataset(
             X, Y)
         del garbage
-        assert X_train.shape[1] == self.n_features
+        assert X_train.shape[1] == self.n_object_features
 
         self.logger.debug(
             'Finished the Dataset with instances {}'.format(X_train.shape[0]))
@@ -92,7 +92,7 @@ class RankSVM(ObjectRanker, Tunable):
                                                                   n_features))
         scores = []
         for data_test in X:
-            assert data_test.shape[1] == self.n_features
+            assert data_test.shape[1] == self.n_object_features
             weights = np.array(self.model.coef_)[0]
             try:
                 score = np.sum(weights * data_test, axis=1)

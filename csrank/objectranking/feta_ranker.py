@@ -19,7 +19,7 @@ __all__ = ['FETAObjectRanker']
 
 class FETAObjectRanker(ObjectRanker, Tunable):
 
-    def __init__(self, n_objects, n_features, n_hidden=2, n_units=8,
+    def __init__(self, n_objects, n_object_features, n_hidden=2, n_units=8,
                  add_zeroth_order_model=False, max_number_of_objects=5,
                  num_subsample=5, loss_function=hinged_rank_loss, batch_normalization=False,
                  kernel_regularizer=l2(l=1e-4), non_linearities='selu',
@@ -32,7 +32,7 @@ class FETAObjectRanker(ObjectRanker, Tunable):
         ----------
         n_objects : int
             Number of objects to be ranked
-        n_features : int
+        n_object_features : int
             Dimensionality of the feature space of each object
         n_hidden : int
             Number of hidden layers
@@ -75,7 +75,7 @@ class FETAObjectRanker(ObjectRanker, Tunable):
         self._n_objects = n_objects
         self.max_number_of_objects = max_number_of_objects
         self.num_subsample = num_subsample
-        self.n_features = n_features
+        self.n_object_features = n_object_features
         self.batch_size = batch_size
 
         self.optimizer = optimizers.get(optimizer)
@@ -92,7 +92,7 @@ class FETAObjectRanker(ObjectRanker, Tunable):
         return self._n_objects
 
     def _construct_layers(self, **kwargs):
-        self.input_layer = Input(shape=(self.n_objects, self.n_features))
+        self.input_layer = Input(shape=(self.n_objects, self.n_object_features))
         # Todo: Variable sized input
         # X = Input(shape=(None, n_features))
         if self.batch_normalization:
@@ -136,7 +136,7 @@ class FETAObjectRanker(ObjectRanker, Tunable):
                                             kernel_regularizer=self.kernel_regularizer)
 
     def _create_zeroth_order_model(self):
-        inp = Input(shape=(self.n_features,))
+        inp = Input(shape=(self.n_object_features,))
 
         x = inp
         for hidden in self.hidden_layers_zeroth:
@@ -146,8 +146,8 @@ class FETAObjectRanker(ObjectRanker, Tunable):
         return Model(inputs=[inp], outputs=zeroth_output)
 
     def _create_pairwise_model(self):
-        x1 = Input(shape=(self.n_features,))
-        x2 = Input(shape=(self.n_features,))
+        x1 = Input(shape=(self.n_object_features,))
+        x2 = Input(shape=(self.n_object_features,))
 
         x1x2 = concatenate([x1, x2])
         x2x1 = concatenate([x2, x1])

@@ -23,7 +23,7 @@ __all__ = ['CmpNet']
 
 class CmpNet(ObjectRanker, Tunable):
 
-    def __init__(self, n_features, n_hidden=2, n_units=8,
+    def __init__(self, n_object_features, n_hidden=2, n_units=8,
                  loss_function=binary_crossentropy, batch_normalization=True,
                  kernel_regularizer=l2(l=1e-4), non_linearities='relu',
                  optimizer=Adam(), metrics=[top_k_categorical_accuracy, binary_accuracy],
@@ -44,7 +44,7 @@ class CmpNet(ObjectRanker, Tunable):
 
             Parameters
             ----------
-            n_features : int
+            n_object_features : int
                 Number of features of the object space
             n_hidden : int
                 Number of hidden layers used in the scoring network
@@ -78,7 +78,7 @@ class CmpNet(ObjectRanker, Tunable):
                IEEE Trans. Neural Networks 22, 9 (2011), 1368–1380. https://doi.org/10.1109/TNN.2011.2160875
         """
         self.logger = logging.getLogger("CmpNet")
-        self.n_features = n_features
+        self.n_object_features = n_object_features
         self.batch_normalization = batch_normalization
         self.non_linearities = non_linearities
 
@@ -101,8 +101,8 @@ class CmpNet(ObjectRanker, Tunable):
 
         self.output_node = Dense(1, activation='sigmoid',
                                  kernel_regularizer=self.kernel_regularizer)
-        self.x1 = Input(shape=(self.n_features,))
-        self.x2 = Input(shape=(self.n_features,))
+        self.x1 = Input(shape=(self.n_object_features,))
+        self.x2 = Input(shape=(self.n_object_features,))
         if self.batch_normalization:
             self.hidden_layers = [
                 NormalizedDense(self.n_units, name="hidden_{}".format(x),

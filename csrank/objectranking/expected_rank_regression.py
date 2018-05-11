@@ -16,7 +16,7 @@ __all__ = ['ExpectedRankRegression']
 class ExpectedRankRegression(ObjectRanker, Tunable):
     _tunable = None
 
-    def __init__(self, n_features, alpha=0.0, l1_ratio=0.5, tol=1e-4,
+    def __init__(self, n_object_features, alpha=0.0, l1_ratio=0.5, tol=1e-4,
                  normalize=True, fit_intercept=True, random_state=None,
                  **kwargs):
         """Create an expected rank regression model.
@@ -28,7 +28,7 @@ class ExpectedRankRegression(ObjectRanker, Tunable):
 
         Parameters
         ----------
-        n_features : int
+        n_object_features : int
             Number of features of the object space
         alpha : float, optional
             Regularization strength
@@ -52,7 +52,7 @@ class ExpectedRankRegression(ObjectRanker, Tunable):
                Fifth IEEE International Conference on Data Mining.
         """
         self.normalize = normalize
-        self.n_features = n_features
+        self.n_object_features = n_object_features
         self.alpha = alpha
         self.l1_ratio = l1_ratio
         self.tol = tol
@@ -63,7 +63,7 @@ class ExpectedRankRegression(ObjectRanker, Tunable):
     def fit(self, X, Y, **kwargs):
         self.logger.debug('Creating the Dataset')
         X_train, Y_train = complete_linear_regression_dataset(X, Y)
-        assert X_train.shape[1] == self.n_features
+        assert X_train.shape[1] == self.n_object_features
         self.logger.debug('Finished the Dataset')
         if self.alpha < 1e-3:
             self.model = LinearRegression(normalize=self.normalize, fit_intercept=self.fit_intercept)
@@ -94,7 +94,7 @@ class ExpectedRankRegression(ObjectRanker, Tunable):
                                                                   n_features))
         scores = np.empty([n_instances, n_objects])
         for i, data_test in enumerate(X):
-            assert data_test.shape[1] == self.n_features
+            assert data_test.shape[1] == self.n_object_features
             score = self.model.predict(data_test) * -1
             normalize(np.array(score))
             scores[i] = score

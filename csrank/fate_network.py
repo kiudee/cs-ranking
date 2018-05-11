@@ -147,9 +147,7 @@ class FATERankingCore(Tunable, metaclass=ABCMeta):
 
 
 class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
-    def __init__(self, n_object_features,
-                 n_hidden_set_layers=1, n_hidden_set_units=1,
-                 **kwargs):
+    def __init__(self, n_object_features, n_hidden_set_layers=1, n_hidden_set_units=1, **kwargs):
         FATERankingCore.__init__(self, **kwargs)
         self.logger_gorc = logging.getLogger(FATEObjectRankingCore.__name__)
 
@@ -229,9 +227,7 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
                                             n_objects=n_objects,
                                             n_layers=self.n_hidden_set_layers)
             model = Model(inputs=input_layer, outputs=scores)
-            model.compile(loss=self.loss_function,
-                          optimizer=self.optimizer,
-                          metrics=self.metrics)
+            model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
             models[n_objects] = model
         return models
 
