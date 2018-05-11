@@ -473,7 +473,8 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
         X = self.get_set_representation(X, kwargs)
         n_instances, n_objects, n_features = X.shape
         self.logger.info(
-            "After applying the set representations instances {} objects {} features {}".format(n_instances, n_objects, n_features))
+            "After applying the set representations instances {} objects {} features {}".format(n_instances, n_objects,
+                                                                                                n_features))
         input_layer_joint = Input(shape=(n_objects, n_features),
                                   name="input_joint_model")
         scores = []

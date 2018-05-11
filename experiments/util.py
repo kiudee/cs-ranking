@@ -11,7 +11,7 @@ from csrank.constants import SYNTHETIC_OR, DEPTH, SUSHI, IMAGE_DATASET, TAG_GENO
     FETA_RANKER, RANKNET, CMPNET, \
     ERR, RANKSVM, FATE_RANKER, OBJECT_RANKING, LABEL_RANKING, DYAD_RANKING, DISCRETE_CHOICE, CHOICE_FUNCTIONS, \
     FETA_CHOICE, FATE_CHOICE, SYNTHETIC_CHOICE, MNIST
-from csrank.metrics import zero_one_rank_loss, zero_one_accuracy, make_ndcg_at_k_loss, spearman_correlation_for_scores
+from csrank.metrics import zero_one_rank_loss, zero_one_accuracy, make_ndcg_at_k_loss
 from csrank.metrics_np import *
 from csrank.objectranking.fate_object_ranker import FATEObjectRanker
 

@@ -25,7 +25,6 @@ class FETAChoiceFunction(FETAObjectRanker):
         self.threshold = 0.5
         self.logger = logging.getLogger(FETAChoiceFunction.__name__)
 
-
     def _tune_threshold(self, X_val, Y_val, thin_thresholds=1):
         scores = self.predict_scores(X_val)
         probs = np.unique(scores)[::thin_thresholds]

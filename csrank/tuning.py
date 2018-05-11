@@ -16,7 +16,6 @@ from skopt.utils import cook_estimator, normalize_dimensions, dump, load
 from csrank.constants import OBJECT_RANKING, LABEL_RANKING, DISCRETE_CHOICE, \
     DYAD_RANKING, CHOICE_FUNCTIONS
 from csrank.metrics import zero_one_rank_loss
-from csrank.metrics_np import f1_measure
 from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.util import duration_tillnow, create_dir_recursively, \
     seconds_to_time, \
@@ -356,7 +355,8 @@ class ParameterOptimizer(ObjectRanker):
             n_iter = n_iter - finished_iterations
             if n_iter < 0:
                 n_iter = 0
-            self.logger.info('Iterations already done: {} and running iterations {}'.format(finished_iterations, n_iter))
+            self.logger.info(
+                'Iterations already done: {} and running iterations {}'.format(finished_iterations, n_iter))
             self.opt = optimizer
             self.logger.debug('Setting the provided optimizer')
             self.log_best_params()

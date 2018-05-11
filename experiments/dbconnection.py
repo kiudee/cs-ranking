@@ -95,7 +95,8 @@ class DBConnector(metaclass=ABCMeta):
                 update_job = """UPDATE {} set hash_value = %s, job_allocated_time = %s WHERE job_id = %s""".format(
                     avail_jobs)
                 self.cursor_db.execute(update_job, (hash_value, start, job_id))
-                select_job = """SELECT * FROM {0} WHERE {0}.job_id = {1} AND {0}.interrupted = {2} FOR UPDATE""".format(running_jobs, job_id, True)
+                select_job = """SELECT * FROM {0} WHERE {0}.job_id = {1} AND {0}.interrupted = {2} FOR UPDATE""".format(
+                    running_jobs, job_id, True)
                 self.cursor_db.execute(select_job)
                 count_ = len(self.cursor_db.fetchall())
                 if count_ == 0:
