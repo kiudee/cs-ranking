@@ -1,12 +1,11 @@
-from keras.losses import binary_crossentropy
 import logging
 
+from keras.losses import binary_crossentropy
 from keras.regularizers import l2
 
-from csrank import RankNet
+from csrank.objectranking.rank_net import RankNet
 from csrank.dataset_reader.discretechoice.util import generate_complete_pairwise_dataset
 from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
-import tensorflow as tf
 
 
 class RankNetDiscreteChoiceFunction(RankNet, DiscreteObjectChooser):

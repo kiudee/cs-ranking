@@ -1,11 +1,6 @@
 from abc import ABCMeta, abstractmethod
 
-import pymc3 as pm
-from sklearn.preprocessing import LabelBinarizer
-
 from csrank.constants import DISCRETE_CHOICE
-from csrank.discretechoice.likelihoods import likelihood_dict
-from theano import shared
 
 __all__ = ['DiscreteObjectChooser']
 

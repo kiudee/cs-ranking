@@ -5,7 +5,7 @@ from pymc3.distributions.dist_math import bound
 
 
 def categorical_crossentropy(p, y_true):
-    return -tt.nnet.categorical_crossentropy(p, y_true)
+    return tt.nnet.categorical_crossentropy(p, y_true)
 
 
 def binary_crossentropy(p, y_true):
@@ -19,7 +19,7 @@ def binary_crossentropy(p, y_true):
 def categorical_hinge(p, y_true):
     pos = tt.sum(y_true * p, axis=-1)
     neg = tt.max((1. - y_true) * p, axis=-1)
-    return -1 * tt.maximum(0., neg - pos + 1.)
+    return tt.maximum(0., neg - pos + 1.)
 
 
 likelihood_dict = {'categorical_crossentropy': categorical_crossentropy, 'binary_crossentropy': binary_crossentropy,
@@ -55,9 +55,7 @@ class LogLikelihood(Categorical):
     def logp(self, value):
         p = self.p
         # Clip values before using them for indexing
-        sumto1value = theano.gradient.zero_grad(
-            tt.le(abs(tt.sum(value, axis=-1) - 1), 1e-5))
         sumto1 = theano.gradient.zero_grad(
             tt.le(abs(tt.sum(p, axis=-1) - 1), 1e-5))
-        a = self.loss_func(p, value)
-        return bound(a, sumto1value, sumto1)
+        a = -self.loss_func(p, value)
+        return bound(a, sumto1)

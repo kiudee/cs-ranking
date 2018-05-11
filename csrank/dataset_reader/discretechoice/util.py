@@ -1,6 +1,7 @@
-from itertools import product
-import numpy as np
 import logging
+from itertools import product
+
+import numpy as np
 
 
 def sub_sampling_discerete_choices(name, Xt, St, n_objects=5):

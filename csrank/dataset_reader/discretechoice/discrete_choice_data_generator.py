@@ -1,11 +1,14 @@
+import numpy as np
+from pygmo import hypervolume
 from scipy.spatial.distance import squareform, pdist
-from sklearn.datasets import make_regression
+from sklearn.datasets import make_regression, make_blobs
+from sklearn.gaussian_process.kernels import Matern
 from sklearn.utils import check_random_state
 
 from csrank.constants import DISCRETE_CHOICE
 from csrank.dataset_reader import SyntheticDatasetGenerator
-import numpy as np
-from pygmo import hypervolume
+from csrank.dataset_reader.util import create_pairwise_prob_matrix, quicksort
+
 
 class DiscreteChoiceDatasetGenerator(SyntheticDatasetGenerator):
     def __init__(self, dataset_type='medoid', **kwargs):
@@ -13,7 +16,9 @@ class DiscreteChoiceDatasetGenerator(SyntheticDatasetGenerator):
             learning_problem=DISCRETE_CHOICE, **kwargs)
         dataset_function_options = {'linear': self.make_linear_transitive,
                                     'medoid': self.make_intransitive_medoids,
-                                    'hypervolume':self.make_hv_dataset}
+                                    'hypervolume': self.make_hv_dataset,
+                                    'gp_transitive': self.make_gp_transitive,
+                                    'gp_non_transitive': self.make_gp_non_transitive}
         if dataset_type not in dataset_function_options.keys():
             dataset_type = "medoid"
         self.dataset_function = dataset_function_options[dataset_type]
@@ -58,6 +63,55 @@ class DiscreteChoiceDatasetGenerator(SyntheticDatasetGenerator):
             hv = hypervolume(x)
             cont = hv.contributions(reference)
             Y[i] = np.argmax(cont)
+        return X, Y
+
+    def make_gp_transitive(self, n_instances=1000, n_objects=5, noise=0.0,
+                           n_features=100, kernel_params=None, seed=42, **kwd):
+        """Creates a nonlinear object ranking problem by sampling from a
+        Gaussian process as the latent utility function.
+        Note that this function needs to compute a kernel matrix of size
+        (n_instances * n_objects) ** 2, which could allocate a large chunk of the
+        memory."""
+        random_state = check_random_state(seed=seed)
+
+        if kernel_params is None:
+            kernel_params = dict()
+        n_total = n_instances * n_objects
+        X = random_state.rand(n_total, n_features)
+        L = np.linalg.cholesky(Matern(**kernel_params)(X))
+        f = (L.dot(random_state.randn(n_total)) +
+             random_state.normal(scale=noise, size=n_total))
+        X = X.reshape(n_instances, n_objects, n_features)
+        f = f.reshape(n_instances, n_objects)
+        Y = f.argmax(axis=1)
+        return X, Y
+
+    def make_gp_non_transitive(self, n_instances=1000, n_objects=5,
+                               n_features=100, center_box=(-10.0, 10.0),
+                               cluster_std=2.0, seed=42, **kwd):
+        n_samples = n_instances * n_objects
+        random_state = check_random_state(seed=seed)
+        x, y = make_blobs(n_samples=n_samples, centers=n_objects,
+                          n_features=n_features, cluster_std=cluster_std,
+                          center_box=center_box, random_state=random_state,
+                          shuffle=True)
+        y = np.array([y])
+        samples = np.append(x, y.T, axis=1)
+        samples = samples[samples[:, n_features].argsort()]
+        pairwise_prob = create_pairwise_prob_matrix(n_objects)
+        X = []
+        Y = []
+        for inst in range(n_instances):
+            feature = np.array([samples[inst + i * n_instances, 0:-1] for i in
+                                range(n_objects)])
+            matrix = np.random.binomial(1, pairwise_prob)
+            objects = list(np.arange(n_objects))
+            ordering = np.array(quicksort(objects, matrix))
+            choice = ordering[0]
+            X.append(feature)
+            Y.append(choice)
+        X = np.array(X)
+        Y = np.array(Y)
         return X, Y
 
     def get_single_train_test_split(self):

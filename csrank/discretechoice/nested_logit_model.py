@@ -1,17 +1,16 @@
 import logging
 
+import numpy as np
+import pymc3 as pm
+import theano
+import theano.tensor as tt
+from sklearn.cluster import MiniBatchKMeans as clustering
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_random_state
 
 from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 from csrank.discretechoice.likelihoods import likelihood_dict, LogLikelihood
 from csrank.tunable import Tunable
-import theano.tensor as tt
-import theano
-import pymc3 as pm
-import numpy as np
-from sklearn.cluster import MiniBatchKMeans as clustering
-
 from csrank.util import print_dictionary
 
 

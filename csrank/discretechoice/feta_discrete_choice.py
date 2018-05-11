@@ -1,10 +1,11 @@
-from keras.losses import binary_crossentropy
 import logging
 
+import numpy as np
+from keras.losses import binary_crossentropy
 from keras.regularizers import l2
 from sklearn.preprocessing import LabelBinarizer
-import numpy as np
-from csrank import FETAObjectRanker
+
+from csrank.objectranking.feta_ranker import FETAObjectRanker
 from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 
 

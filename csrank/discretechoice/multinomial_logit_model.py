@@ -1,15 +1,14 @@
 import logging
 
+import numpy as np
+import pymc3 as pm
 import theano
+import theano.tensor as tt
 from sklearn.preprocessing import LabelBinarizer
 
 from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 from csrank.discretechoice.likelihoods import LogLikelihood, likelihood_dict
 from csrank.tunable import Tunable
-import theano.tensor as tt
-import pymc3 as pm
-import numpy as np
-
 from csrank.util import print_dictionary
 
 
