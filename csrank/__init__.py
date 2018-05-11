@@ -6,4 +6,5 @@ from .dataset_reader.objectranking import *
 from .dataset_reader.discretechoice import *
 from .dataset_reader.util import SyntheticIterator
 from .objectranking import *
+from .discretechoice import *
 from .tuning import ParameterOptimizer

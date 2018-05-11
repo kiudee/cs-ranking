@@ -8,6 +8,7 @@ from csrank.dataset_reader.discretechoice.util import generate_complete_pairwise
 from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 import tensorflow as tf
 
+
 class RankNetDiscreteChoiceFunction(RankNet, DiscreteObjectChooser):
     def __init__(self, n_objects, n_features, n_hidden=2, n_units=8, loss_function=binary_crossentropy,
                  batch_normalization=False, kernel_regularizer=l2(l=1e-4),

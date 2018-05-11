@@ -1,8 +1,10 @@
 import logging
 
+from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_random_state
 
 from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
+from csrank.discretechoice.likelihoods import likelihood_dict, LogLikelihood
 from csrank.tunable import Tunable
 import theano.tensor as tt
 import theano
@@ -13,17 +15,20 @@ from sklearn.cluster import MiniBatchKMeans as clustering
 from csrank.util import print_dictionary
 
 
-class MultinomialLogitModel(DiscreteObjectChooser, Tunable):
-    def __init__(self, n_features, n_objects, n_tune=500, n_sample=500, alpha=1e-3, random_state=None, **kwd):
+class NestedLogitModel(DiscreteObjectChooser, Tunable):
+    def __init__(self, n_features, n_objects, loss_function='', n_tune=500, n_sample=500, alpha=1e-3, random_state=None,
+                 **kwd):
         self.n_tune = n_tune
         self.n_sample = n_sample
         self.n_features = n_features
         self.n_objects = n_objects
-        self.n_nests = int(self.n_objects / 2)
+        self.n_nests = int(self.n_objects / 2) + 1
         self.alpha = alpha
         self.random_state = check_random_state(random_state)
-        self.logger = logging.getLogger(MultinomialLogitModel.__name__)
+        self.logger = logging.getLogger(NestedLogitModel.__name__)
         self.cluster_model = None
+        self.features_nests = None
+        self.loss_function = likelihood_dict.get(loss_function, None)
 
     def create_nests(self, X):
         n, n_obj, n_dim = X.shape
@@ -45,13 +50,13 @@ class MultinomialLogitModel(DiscreteObjectChooser, Tunable):
     def fit(self, X, Y, **kwargs):
         y_nests = self.create_nests(X)
 
-        def eval_utility(X_train, y_nests, weigths):
-            weigths_t = theano.shared(np.zeros(tuple(X_train.shape)))
+        def eval_utility(X_train, y_nests, weights):
+            weights_t = theano.shared(np.zeros(tuple(X_train.shape)))
             n_nests = int(np.max(y_nests) + 1)
             for i in range(n_nests):
                 rows, cols = np.where(y_nests == i)
-                weigths_t = tt.set_subtensor(weigths_t[rows, cols], weigths[i])
-            utility = tt.sum(X_train * weigths_t, axis=2)
+                weights_t = tt.set_subtensor(weights_t[rows, cols], weights[i])
+            utility = tt.sum(X_train * weights_t, axis=2)
             return utility
 
         def get_probability(y_nests, utility, lambda_k, utility_k):
@@ -77,10 +82,9 @@ class MultinomialLogitModel(DiscreteObjectChooser, Tunable):
                 trans_IVM = trans_IVM + sub_tensor
             denominator = pm.math.sum(tt.exp((IVM * lambda_k) + utility_k), axis=1)
             pr_j = utility * trans_IVM / denominator[:, None]
-            pr_j = pr_j / pr_j.sum(axis=1).reshape((pr_j.shape[0], 1))
             return pr_j
 
-        with pm.Model() as self.cluster_model:
+        with pm.Model() as self.model:
             mu_weights = pm.Normal('mu_weights', mu=0., sd=10)
             sigma_weights = pm.HalfCauchy('sigma_weights', beta=1)
             weights = pm.Normal('weights', mu=mu_weights, sd=sigma_weights, shape=self.n_features)
@@ -95,18 +99,26 @@ class MultinomialLogitModel(DiscreteObjectChooser, Tunable):
             utility = eval_utility(X, y_nests, weights)
             utility_k = pm.math.dot(self.features_nests, weights_k)
             p = get_probability(y_nests, utility, lambda_k, utility_k)
-            yl = pm.Categorical('yl', p=p, observed=Y)
-            self.trace = pm.sample(self.n_sample, tune=self.n_tune, cores=8)
 
-    def predict_scores_fixed(self, X, **kwargs):
+            if self.loss_function is None:
+                yl = pm.Categorical('yl', p=p, observed=Y)
+                self.trace = pm.sample(self.n_sample, tune=self.n_tune, cores=8)
+            else:
+                Y = LabelBinarizer().fit_transform(Y)
+                Y = theano.shared(Y)
+                yl = LogLikelihood('yl', loss_func=self.loss_function, p=p, observed=Y)
+                self.trace = pm.sample(self.n_sample, tune=self.n_tune, cores=8)
+
+    def _predict_scores_fixed(self, X, **kwargs):
         y_nests = self.create_nests(X)
-        def eval_utility(X, y_nests, weigths):
-            weigths_t = np.zeros(tuple(X.shape))
+
+        def eval_utility(X, y_nests, weights):
+            weights_t = np.zeros(tuple(X.shape))
             n_nests = int(np.max(y_nests) + 1)
             for i in range(n_nests):
                 rows, cols = np.where(y_nests == i)
-                weigths_t[rows, cols] = weigths[i]
-            utility = np.sum(X * weigths_t, axis=2)
+                weights_t[rows, cols] = weights[i]
+            utility = np.sum(X * weights_t, axis=2)
             return utility
 
         def get_probability(y_nests, utility, lambda_k, utility_k):
@@ -130,7 +142,6 @@ class MultinomialLogitModel(DiscreteObjectChooser, Tunable):
                 trans_IVM = trans_IVM + sub_tensor
             denominator = np.sum(np.exp(((IVM * lambda_k) + utility_k)), axis=1)  # Wnl here
             pr_j = utility * trans_IVM / denominator[:, None]
-            pr_j = pr_j / pr_j.sum(axis=1).reshape((pr_j.shape[0], 1))
             return pr_j
 
         d = dict(pm.summary(self.trace)['mean'])
