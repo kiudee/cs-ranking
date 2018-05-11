@@ -18,8 +18,6 @@ __all__ = ["ListNet"]
 
 class ListNet(ObjectRanker, Tunable):
 
-
-
     def __init__(
         self,
         n_features,
@@ -27,11 +25,12 @@ class ListNet(ObjectRanker, Tunable):
         n_hidden=2,
         n_units=8,
         loss_function=plackett_luce_loss,
-        batch_normalization=True,
+        batch_normalization=False,
         kernel_regularizer=l2(l=1e-4),
-        non_linearities="relu",
+        non_linearities="selu",
+        kernel_initializer='lecun_normal',
         optimizer="adam",
-        metrics=None,  # [top_k_categorical_accuracy, binary_accuracy],
+        metrics=None,
         batch_size=256,
         random_state=None,
         **kwargs
@@ -62,6 +61,8 @@ class ListNet(ObjectRanker, Tunable):
                 Regularizer function applied to all the hidden weight matrices.
             non_linearities : function or string
                 Type of activation function to use in each hidden layer
+            kernel_initializer : function or string
+                Initialization function for the weights of each hidden layer
             optimizer : function or string
                 Optimizer to use during stochastic gradient descent
             metrics : list
@@ -83,6 +84,7 @@ class ListNet(ObjectRanker, Tunable):
         self.non_linearities = non_linearities
         self.metrics = metrics
         self.kernel_regularizer = kernel_regularizer
+        self.kernel_initializer = kernel_initializer
         self.loss_function = loss_function
         self.optimizer = optimizers.get(optimizer)
         self.n_hidden = n_hidden
@@ -105,6 +107,7 @@ class ListNet(ObjectRanker, Tunable):
                     self.n_units,
                     name="hidden_{}".format(x),
                     kernel_regularizer=self.kernel_regularizer,
+                    kernel_initializer=self.kernel_initializer,
                     activation=self.non_linearities,
                     **kwargs
                 )
@@ -116,6 +119,7 @@ class ListNet(ObjectRanker, Tunable):
                     self.n_units,
                     name="hidden_{}".format(x),
                     kernel_regularizer=self.kernel_regularizer,
+                    kernel_initializer=self.kernel_initializer,
                     activation=self.non_linearities,
                     **kwargs
                 )
