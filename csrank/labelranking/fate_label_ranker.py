@@ -18,12 +18,10 @@ class FATELabelRanker(FATERankingCore, LabelRanker):
         self.loss_function = loss_function
         self.logger = logging.getLogger(FATELabelRanker.__name__)
         if metrics is None:
-            metrics = [zero_one_rank_loss_for_scores_ties,
-                       zero_one_rank_loss_for_scores]
+            metrics = [zero_one_rank_loss_for_scores_ties, zero_one_rank_loss_for_scores]
         self.metrics = metrics
         self.model = None
-        self.logger.info("Initializing network with object features {}".format(
-            self.n_object_features))
+        self.logger.info("Initializing network with object features {}".format(self.n_object_features))
         self._connect_layers()
 
     def one_hot_encoder_lr_data_conversion(self, X, Y):
@@ -43,8 +41,7 @@ class FATELabelRanker(FATERankingCore, LabelRanker):
         FATEObjectRankingCore._create_set_layers(self, **kwargs)
 
     def _connect_layers(self):
-        self.set_input_layers(self.inputs, self.set_repr,
-                              self.n_hidden_set_layers)
+        self.set_input_layers(self.inputs, self.set_repr, self.n_hidden_set_layers)
 
     def fit(self, X, Y, callbacks=None, validation_split=0.1, verbose=0,
             **kwargs):

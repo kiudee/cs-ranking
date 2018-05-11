@@ -21,7 +21,7 @@ __all__ = ['RankNet']
 
 class RankNet(ObjectRanker, Tunable):
 
-    def __init__(self, n_features, n_hidden=2, n_units=8,
+    def __init__(self, n_object_features, n_hidden=2, n_units=8,
                  loss_function=binary_crossentropy, batch_normalization=True,
                  kernel_regularizer=l2(l=1e-4), non_linearities='relu',
                  optimizer="adam", metrics=[top_k_categorical_accuracy, binary_accuracy],
@@ -33,7 +33,7 @@ class RankNet(ObjectRanker, Tunable):
 
         Parameters
         ----------
-        n_features : int
+        n_object_features : int
             Number of features of the object space
         n_hidden : int
             Number of hidden layers used in the scoring network
@@ -71,7 +71,7 @@ class RankNet(ObjectRanker, Tunable):
                Learning, 11(23-581), 81.
         """
         self.logger = logging.getLogger(RankNet.__name__)
-        self.n_features = n_features
+        self.n_object_features = n_object_features
         self.batch_normalization = batch_normalization
         self.non_linearities = non_linearities
         self.metrics = metrics
@@ -87,8 +87,8 @@ class RankNet(ObjectRanker, Tunable):
         self.random_state = check_random_state(random_state)
 
     def _construct_layers(self, **kwargs):
-        self.x1 = Input(shape=(self.n_features,))
-        self.x2 = Input(shape=(self.n_features,))
+        self.x1 = Input(shape=(self.n_object_features,))
+        self.x2 = Input(shape=(self.n_object_features,))
         self.output_node = Dense(1, activation='sigmoid',
                                  kernel_regularizer=self.kernel_regularizer)
         self.output_layer_score = Dense(1, activation='linear')
@@ -151,7 +151,7 @@ class RankNet(ObjectRanker, Tunable):
         return output
 
     def _create_scoring_model(self):
-        inp = Input(shape=(self.n_features,))
+        inp = Input(shape=(self.n_object_features,))
         x = inp
         for hidden_layer in self.hidden_layers:
             x = hidden_layer(x)
