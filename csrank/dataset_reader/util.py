@@ -2,6 +2,7 @@ import itertools as iter
 
 import numpy as np
 
+
 def strongly_connected_components(graph):
     """ Find the strongly connected components in a graph using
         Tarjan's algorithm.
@@ -76,12 +77,8 @@ def quicksort(arr, matrix):
     if len(arr) < 2:
         return arr
     else:
-        print(arr)
-        pivot = np.argmax(np.sum(matrix, axis=1))
-        print(pivot)
+        pivot = np.random.choice(arr, 1)[0]
         arr.remove(pivot)
-        right = [i for i in arr if matrix[pivot, i] == 0]
-        left = [i for i in arr if matrix[pivot, i] == 1]
-        print("left {}".format(left))
-        print("right {}".format(right))
+        right = [i for i in arr if matrix[pivot, i] == 1]
+        left = [i for i in arr if matrix[pivot, i] == 0]
         return quicksort(left, matrix) + [pivot] + quicksort(right, matrix)

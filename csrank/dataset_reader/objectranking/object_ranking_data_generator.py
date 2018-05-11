@@ -8,8 +8,8 @@ from sklearn.utils import check_random_state
 
 from csrank.constants import OBJECT_RANKING
 from csrank.dataset_reader.synthetic_dataset_generator import SyntheticDatasetGenerator
-from csrank.util import scores_to_rankings
 from csrank.dataset_reader.util import create_pairwise_prob_matrix, quicksort
+from csrank.util import scores_to_rankings
 
 
 class ObjectRankingDatasetGenerator(SyntheticDatasetGenerator):
