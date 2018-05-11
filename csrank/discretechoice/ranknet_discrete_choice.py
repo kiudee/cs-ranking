@@ -9,11 +9,11 @@ from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 
 
 class RankNetDiscreteChoiceFunction(RankNet, DiscreteObjectChooser):
-    def __init__(self, n_objects, n_features, n_hidden=2, n_units=8, loss_function=binary_crossentropy,
+    def __init__(self, n_objects, n_object_features, n_hidden=2, n_units=8, loss_function=binary_crossentropy,
                  batch_normalization=False, kernel_regularizer=l2(l=1e-4),
                  non_linearities='selu', optimizer="adam", metrics=None, batch_size=256,
                  random_state=None, **kwargs):
-        super().__init__(n_objects, n_features, n_hidden, n_units, loss_function, batch_normalization,
+        super().__init__(n_objects, n_object_features, n_hidden, n_units, loss_function, batch_normalization,
                          kernel_regularizer, non_linearities, optimizer, metrics, batch_size, random_state, **kwargs)
         self.logger = logging.getLogger(RankNetDiscreteChoiceFunction.__name__)
 
