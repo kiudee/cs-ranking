@@ -8,8 +8,8 @@ from sklearn.utils import check_random_state
 
 from csrank.constants import OBJECT_RANKING
 from csrank.dataset_reader.synthetic_dataset_generator import SyntheticDatasetGenerator
-from csrank.util import scores_to_rankings, create_pairwise_prob_matrix, \
-    quicksort
+from csrank.util import scores_to_rankings
+from csrank.dataset_reader.util import create_pairwise_prob_matrix, quicksort
 
 
 class ObjectRankingDatasetGenerator(SyntheticDatasetGenerator):
@@ -86,12 +86,11 @@ class ObjectRankingDatasetGenerator(SyntheticDatasetGenerator):
             feature = np.array([samples[inst + i * n_instances, 0:-1] for i in
                                 range(n_objects)])
             matrix = np.random.binomial(1, pairwise_prob)
-            objects = np.arange(n_objects)
-            ranking = np.array(quicksort(objects, matrix))
-            ordering = np.array(
-                [np.where(obj == ranking)[0][0] for obj in objects])
+            objects = list(np.arange(n_objects))
+            ordering = np.array(quicksort(objects, matrix))
+            ranking = np.argsort(ordering)
             X.append(feature)
-            Y.append(ordering)
+            Y.append(ranking)
         X = np.array(X)
         Y = np.array(Y)
         return X, Y

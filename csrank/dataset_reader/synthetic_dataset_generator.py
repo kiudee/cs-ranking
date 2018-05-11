@@ -1,4 +1,3 @@
-import numpy as np
 from sklearn.utils import check_random_state
 
 from csrank.dataset_reader import DatasetReader
@@ -42,3 +41,30 @@ class SyntheticDatasetGenerator(DatasetReader):
                                                                 seed=seed)
         self.__check_dataset_validity__()
         return X_train, Y_train, X_test, Y_test
+
+
+class SyntheticIterator(object):
+
+    def __init__(self, dataset_function, **params):
+        """
+        Infinite iterator over a synthetic dataset generator.
+
+        Parameters
+        ----------
+        dataset_function : callable
+            Returns a tuple (inputs, targets) when called
+        params : dict
+            Parameters to be passed to `dataset_function` when called
+        """
+        self.params = params
+        self.func = dataset_function
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return self.func(**self.params)
+
+    def __len__(self):
+        """Return a constant to allow for steps per epoch."""
+        return 100

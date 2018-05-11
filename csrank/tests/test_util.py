@@ -3,7 +3,7 @@ import pytest
 import tensorflow as tf
 from keras import backend as K
 
-from ..dataset_reader.util import SyntheticIterator
+from csrank import SyntheticIterator
 from ..util import tensorify, check_learner_class
 
 

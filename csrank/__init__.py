@@ -4,7 +4,7 @@ from .dataset_reader.dyadranking import *
 from .dataset_reader.labelranking import *
 from .dataset_reader.objectranking import *
 from .dataset_reader.discretechoice import *
-from .dataset_reader.util import SyntheticIterator
+from csrank.dataset_reader.synthetic_dataset_generator import SyntheticIterator
 from .objectranking import *
 from .discretechoice import *
 from .tuning import ParameterOptimizer
