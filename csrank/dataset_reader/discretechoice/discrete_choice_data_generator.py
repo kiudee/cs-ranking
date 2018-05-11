@@ -105,9 +105,7 @@ class DiscreteChoiceDatasetGenerator(SyntheticDatasetGenerator):
             feature = np.array([samples[inst + i * n_instances, 0:-1] for i in
                                 range(n_objects)])
             matrix = np.random.binomial(1, pairwise_prob)
-            objects = list(np.arange(n_objects))
-            ordering = np.array(quicksort(objects, matrix))
-            choice = ordering[0]
+            choice = np.argmax(np.sum(matrix, axis=1))
             X.append(feature)
             Y.append(choice)
         X = np.array(X)
