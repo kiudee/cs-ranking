@@ -204,9 +204,10 @@ class DBConnector(metaclass=ABCMeta):
     def rename_all_jobs(self, DIR_PATH, LOGS_FOLDER, OPTIMIZER_FOLDER):
         self.init_connection()
         avail_jobs = "{}.avail_jobs".format(self.schema)
-        select_job = "SELECT * FROM {0} where {0}.dataset={1}".format(avail_jobs, 'synthetic_or')
+        select_job = "SELECT * FROM {0} WHERE {0}.dataset=\'synthetic_or\'".format(avail_jobs)
         self.cursor_db.execute(select_job)
-        for job in self.cursor_db.fetchall():
+        jobs_all = self.cursor_db.fetchall()
+        for job in jobs_all:
             job_id = job['job_id']
             self.logger.info(job['hash_value'])
             self.job_description = job
@@ -232,7 +233,8 @@ class DBConnector(metaclass=ABCMeta):
                 os.rename(old_opt_path, new_opt_path)
             self.logger.info("renaming {} to {}".format(old_opt_path, new_opt_path))
             self.logger.info('new file name {}'.format(self.create_hash_value()))
-            update_job = "UPDATE {0} set hash_value = %s, dataset_params = % where job_id =%s".format(avail_jobs)
+            update_job = "UPDATE {0} set hash_value = %s, dataset_params = %s where job_id =%s".format(avail_jobs)
             self.logger.info(update_job)
-            self.cursor_db.execute(update_job, (file_name_new, self.job_description['dataset_params'], job_id))
+            d_param = json.dumps(self.job_description['dataset_params'])
+            self.cursor_db.execute(update_job, (file_name_new, d_param, job_id))
         self.close_connection()
