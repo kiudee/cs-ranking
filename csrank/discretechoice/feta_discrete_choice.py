@@ -5,8 +5,8 @@ from keras.losses import binary_crossentropy
 from keras.regularizers import l2
 from sklearn.preprocessing import LabelBinarizer
 
-from csrank.objectranking.feta_ranker import FETAObjectRanker
 from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
+from csrank.objectranking.feta_ranker import FETAObjectRanker
 
 
 class FETADiscreteChoiceFunction(FETAObjectRanker, DiscreteObjectChooser):

@@ -7,7 +7,7 @@ from sklearn.utils import check_random_state
 
 from csrank.constants import DISCRETE_CHOICE
 from csrank.dataset_reader import SyntheticDatasetGenerator
-from csrank.dataset_reader.util import create_pairwise_prob_matrix, quicksort
+from csrank.dataset_reader.util import create_pairwise_prob_matrix
 
 
 class DiscreteChoiceDatasetGenerator(SyntheticDatasetGenerator):
