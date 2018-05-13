@@ -13,5 +13,5 @@ tqdm>=4.11.2
 keras>=2.0.3
 
 # Pick either CPU or GPU version of tensorflow:
-tensorflow>=1.4
-# tensorflow-gpu>=1.0.1
+tensorflow>=1.7
+# tensorflow-gpu>=1.7
