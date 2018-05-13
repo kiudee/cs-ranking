@@ -1,11 +1,15 @@
 import logging
+from itertools import combinations
 
 import numpy as np
+from keras import Input, backend as K
+from keras.layers import Dense, concatenate, Lambda, add, Activation
 from keras.losses import binary_crossentropy
 from keras.regularizers import l2
 from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
 
+from csrank.layers import NormalizedDense
 from csrank.objectranking import FETAObjectRanker
 
 
@@ -24,6 +28,50 @@ class FETAChoiceFunction(FETAObjectRanker):
                          random_state, **kwargs)
         self.threshold = 0.5
         self.logger = logging.getLogger(FETAChoiceFunction.__name__)
+
+    def _construct_layers(self, **kwargs):
+        self.input_layer = Input(shape=(self.n_objects, self.n_object_features))
+        # Todo: Variable sized input
+        # X = Input(shape=(None, n_features))
+        if self.batch_normalization:
+            if self._use_zeroth_model:
+                self.hidden_layers_zeroth = [
+                    NormalizedDense(self.n_units,
+                                    name="hidden_zeroth_{}".format(x),
+                                    kernel_regularizer=self.kernel_regularizer,
+                                    activation=self.non_linearities,
+                                    **kwargs)
+                    for x in range(self.n_hidden)
+                ]
+            self.hidden_layers = [
+                NormalizedDense(self.n_units, name="hidden_{}".format(x),
+                                kernel_regularizer=self.kernel_regularizer,
+                                activation=self.non_linearities,
+                                **kwargs)
+                for x in range(self.n_hidden)
+            ]
+        else:
+            if self._use_zeroth_model:
+                self.hidden_layers_zeroth = [
+                    Dense(self.n_units, name="hidden_zeroth_{}".format(x),
+                          kernel_regularizer=self.kernel_regularizer,
+                          activation=self.non_linearities,
+                          **kwargs)
+                    for x in range(self.n_hidden)
+                ]
+            self.hidden_layers = [
+                Dense(self.n_units, name="hidden_{}".format(x),
+                      kernel_regularizer=self.kernel_regularizer,
+                      activation=self.non_linearities,
+                      **kwargs)
+                for x in range(self.n_hidden)
+            ]
+        assert len(self.hidden_layers) == self.n_hidden
+        self.output_node = Dense(1, activation="linear",
+                                 kernel_regularizer=self.kernel_regularizer)
+        if self._use_zeroth_model:
+            self.output_node_zeroth = Dense(1, activation="linear",
+                                            kernel_regularizer=self.kernel_regularizer)
 
     def _tune_threshold(self, X_val, Y_val, thin_thresholds=1):
         scores = self.predict_scores(X_val)
@@ -134,3 +182,53 @@ class FETAChoiceFunction(FETAObjectRanker):
         print("Sampled instances {} objects {}".format(X_train.shape[0],
                                                        X_train.shape[1]))
         return X_train, Y_train
+    def construct_model(self):
+        def create_input_lambda(i):
+            return Lambda(lambda x: x[:, i])
+
+        if self._use_zeroth_model:
+            self.logger.debug('Create 0th order model')
+            zeroth_order_outputs = []
+            inputs = []
+            for i in range(self.n_objects):
+                x = create_input_lambda(i)(self.input_layer)
+                inputs.append(x)
+                for hidden in self.hidden_layers_zeroth:
+                    x = hidden(x)
+                zeroth_order_outputs.append(self.output_node_zeroth(x))
+            zeroth_order_scores = concatenate(zeroth_order_outputs)
+            self.logger.debug('0th order model finished')
+        self.logger.debug('Create 1st order model')
+        outputs = [list() for _ in range(self.n_objects)]
+        for i, j in combinations(range(self.n_objects), 2):
+            if self._use_zeroth_model:
+                x1 = inputs[i]
+                x2 = inputs[j]
+            else:
+                x1 = create_input_lambda(i)(self.input_layer)
+                x2 = create_input_lambda(j)(self.input_layer)
+            x1x2 = concatenate([x1, x2])
+            x2x1 = concatenate([x2, x1])
+
+            for hidden in self.hidden_layers:
+                x1x2 = hidden(x1x2)
+                x2x1 = hidden(x2x1)
+
+            merged_left = concatenate([x1x2, x2x1])
+            merged_right = concatenate([x2x1, x1x2])
+
+            N_g = self.output_node(merged_left)
+            N_l = self.output_node(merged_right)
+
+            outputs[i].append(N_g)
+            outputs[j].append(N_l)
+        # convert rows of pairwise matrix to keras layers:
+        outputs = [concatenate(x) for x in outputs]
+        # compute utility scores:
+        sum_fun = lambda s: K.mean(s, axis=1, keepdims=True)
+        scores = [Lambda(sum_fun)(x) for x in outputs]
+        scores = concatenate(scores)
+        self.logger.debug('1st order model finished')
+        if self._use_zeroth_model:
+            scores = add([scores, zeroth_order_scores])
+        return Activation('sigmoid')(scores)
