@@ -153,11 +153,36 @@ class DBConnector(metaclass=ABCMeta):
             self.close_connection()
             self.init_connection(cursor_factory=None)
 
-        insert_result = "INSERT INTO {0} ({1}) VALUES ({2})".format(results_table, columns, values_str)
-        self.logger.info("Inserting results: {}".format(insert_result))
-        self.cursor_db.execute(insert_result)
-        if self.cursor_db.rowcount == 1:
-            self.logger.info("Results inserted for the job {}".format(results['job_id']))
+        try:
+            insert_result = "INSERT INTO {0} ({1}) VALUES ({2})".format(results_table, columns, values_str)
+            self.logger.info("Inserting results: {}".format(insert_result))
+            self.cursor_db.execute(insert_result)
+            if self.cursor_db.rowcount == 1:
+                self.logger.info("Results inserted for the job {}".format(results['job_id']))
+        except psycopg2.IntegrityError as e:
+            self.logger.info(print_dictionary(results))
+            self.logger.info(
+                "IntegrityError for the job {0}, results already inserted to another node error {1}".format(
+                    results["job_id"], str(e)))
+            self.connection.rollback()
+            update_str = ''
+            values_tuples = []
+            for i, col in enumerate(results.keys()):
+                if col != 'job_id':
+                    if (i + 1) == len(results):
+                        update_str = update_str + col + " = %s "
+                    else:
+                        update_str = update_str + col + " = %s, "
+                    if 'Infinity' in results[col]:
+                        results[col] = 'Infinity'
+                    values_tuples.append(results[col])
+            update_result = "UPDATE {0} set {1} where job_id= %s ".format(results_table, update_str)
+            self.logger.info(update_result)
+            values_tuples.append(results['job_id'])
+            self.logger.info('values {}'.format(tuple(values_tuples)))
+            self.cursor_db.execute(update_result, tuple(values_tuples))
+            if self.cursor_db.rowcount == 1:
+                self.logger.info("The job {} is updated".format(results['job_id']))
         self.close_connection()
 
     def append_error_string_in_running_job(self, job_id, error_message, **kwargs):
