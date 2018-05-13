@@ -8,7 +8,7 @@ from datetime import timedelta, datetime
 import psycopg2
 from psycopg2.extras import DictCursor
 
-from csrank.util import get_duration_seconds
+from csrank.util import get_duration_seconds, print_dictionary
 
 
 class DBConnector(metaclass=ABCMeta):
@@ -174,4 +174,40 @@ class DBConnector(metaclass=ABCMeta):
         self.cursor_db.execute(update_job, (error_message, True, job_id))
         if self.cursor_db.rowcount == 1:
             self.logger.info("The job {} is interrupted".format(job_id))
+        self.close_connection()
+
+    def rename_all_jobs(self, DIR_PATH, LOGS_FOLDER, OPTIMIZER_FOLDER):
+        self.init_connection()
+        avail_jobs = "{}.avail_jobs".format(self.schema)
+        select_job = "SELECT * FROM {0} where {0}.dataset={1}".format(avail_jobs, 'synthetic_or')
+        self.cursor_db.execute(select_job)
+        for job in self.cursor_db.fetchall():
+            job_id = job['job_id']
+            self.logger.info(job['hash_value'])
+            self.job_description = job
+            self.logger.info(print_dictionary(job))
+            self.logger.info('old file name {}'.format(self.create_hash_value()))
+            file_name_old = self.create_hash_value()
+            old_log_path = os.path.join(DIR_PATH, LOGS_FOLDER, "{}.log".format(file_name_old))
+            old_opt_path = os.path.join(DIR_PATH, OPTIMIZER_FOLDER, "{}".format(file_name_old))
+
+            # Change the current description
+            self.job_description['dataset_params']['n_test_instances'] = self.job_description['dataset_params'][
+                                                                             'n_train_instances'] * 10
+            file_name_new = self.create_hash_value()
+            new_log_path = os.path.join(DIR_PATH, LOGS_FOLDER, "{}.log".format(file_name_new))
+            new_opt_path = os.path.join(DIR_PATH, OPTIMIZER_FOLDER, "{}".format(file_name_new))
+            self.logger.info("log file exist {}".format(os.path.exists(old_log_path)))
+            self.logger.info("opt file exist {}".format(os.path.exists(old_opt_path)))
+
+            # Rename the old optimizers and log files
+            if os.path.exists(old_log_path):
+                os.rename(old_log_path, new_log_path)
+            if os.path.exists(old_opt_path):
+                os.rename(old_opt_path, new_opt_path)
+            self.logger.info("renaming {} to {}".format(old_opt_path, new_opt_path))
+            self.logger.info('new file name {}'.format(self.create_hash_value()))
+            update_job = "UPDATE {0} set hash_value = %s, dataset_params = % where job_id =%s".format(avail_jobs)
+            self.logger.info(update_job)
+            self.cursor_db.execute(update_job, (file_name_new, self.job_description['dataset_params'], job_id))
         self.close_connection()

@@ -4,7 +4,7 @@ from itertools import combinations, permutations
 import numpy as np
 from keras import Input, backend as K, optimizers
 from keras.engine import Model
-from keras.layers import Dense, concatenate, Lambda, add, Activation
+from keras.layers import Dense, concatenate, Lambda, add
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
 

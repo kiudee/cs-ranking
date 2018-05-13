@@ -14,7 +14,10 @@ def spearman_mean_np(y_true, s_pred):
     y_pred = scores_to_rankings(s_pred)
     rho = []
     for r1, r2 in zip(y_true, y_pred):
-        rho.append(spearmanr(r1, r2)[0])
+        if len(np.unique(r2)) == len(r2):
+            rho.append(spearmanr(r1, r2)[0])
+        else:
+            rho.append(np.nan)
     return np.nanmean(np.array(rho))
 
 
@@ -22,8 +25,8 @@ def kendalls_mean_np(y_true, s_pred):
     return 1. - 2. * zero_one_rank_loss_for_scores_ties_np(y_true, s_pred)
 
 
-def zero_one_accuracy_np(y_true, y_pred):
-    y_pred = scores_to_rankings(y_pred)
+def zero_one_accuracy_np(y_true, s_pred):
+    y_pred = scores_to_rankings(s_pred)
     acc = np.sum(np.all(np.equal(y_true, y_pred), axis=1)) / y_pred.shape[0]
     return acc
 

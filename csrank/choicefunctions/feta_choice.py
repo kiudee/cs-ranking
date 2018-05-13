@@ -182,6 +182,7 @@ class FETAChoiceFunction(FETAObjectRanker):
         print("Sampled instances {} objects {}".format(X_train.shape[0],
                                                        X_train.shape[1]))
         return X_train, Y_train
+
     def construct_model(self):
         def create_input_lambda(i):
             return Lambda(lambda x: x[:, i])
