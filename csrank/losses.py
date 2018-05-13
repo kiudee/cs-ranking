@@ -41,7 +41,7 @@ def plackett_luce_loss(y_true, s_pred):
     y_true = tf.cast(y_true, dtype='int32')
     s_pred = tf.cast(s_pred, dtype='float32')
     m = tf.shape(y_true)[1]
-    raw_max = tf.reduce_max(s_pred, axis=1)
+    raw_max = tf.reduce_max(s_pred, axis=1, keepdims=True)
     max_elem = tf.stop_gradient(tf.where(
         tf.is_finite(raw_max),
         raw_max,
