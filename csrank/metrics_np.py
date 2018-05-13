@@ -1,5 +1,4 @@
 import numpy as np
-from scipy.stats import spearmanr
 from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_score, average_precision_score
 
 from csrank.util import scores_to_rankings
@@ -13,9 +12,13 @@ __all__ = ['spearman_mean_np', 'kendalls_mean_np', 'zero_one_accuracy_np',
 def spearman_mean_np(y_true, s_pred):
     y_pred = scores_to_rankings(s_pred)
     rho = []
+    n_objects = y_true.shape[1]
+    denominator = n_objects * (n_objects ** 2 - 1)
+
     for r1, r2 in zip(y_true, y_pred):
         if len(np.unique(r2)) == len(r2):
-            rho.append(spearmanr(r1, r2)[0])
+            s = 1 - (6 * np.sum((r1 - r2) ** 2) / denominator)
+            rho.append(s)
         else:
             rho.append(np.nan)
     return np.nanmean(np.array(rho))
