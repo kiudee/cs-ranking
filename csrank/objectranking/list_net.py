@@ -6,12 +6,12 @@ from keras.layers import Dense, concatenate
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
 
-from csrank.layers import NormalizedDense
+from csrank.layers import NormalizedDense, create_input_lambda
 from csrank.losses import plackett_luce_loss
 from csrank.objectranking.constants import THRESHOLD
 from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.tunable import Tunable
-from csrank.util import print_dictionary, create_input_lambda
+from csrank.util import print_dictionary
 
 __all__ = ["ListNet"]
 
