@@ -231,8 +231,9 @@ class ParameterOptimizer(ObjectRanker):
 
         try:
             for t in range(n_iter):
-                if total_duration < 0:
+                if total_duration <= 0:
                     break
+
                 start = datetime.now()
                 self._callbacks_on_iteration_begin(t)
                 self.logger.info('Starting optimization iteration: {}'.format(t))
@@ -303,7 +304,7 @@ class ParameterOptimizer(ObjectRanker):
 
         finally:
             self._callbacks_on_optimization_end()
-            self._fit_params["epochs"] = self._fit_params.get("epochs", 1000)
+            self._fit_params["epochs"] = self._fit_params.get("epochs", 500) + 500
             if "ps" in self.opt.acq_func:
                 best_point = self.opt.Xi[np.argmin(np.array(self.opt.yi)[:, 0])]
             else:
