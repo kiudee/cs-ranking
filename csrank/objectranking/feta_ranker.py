@@ -129,10 +129,10 @@ class FETAObjectRanker(ObjectRanker, Tunable):
                 for x in range(self.n_hidden)
             ]
         assert len(self.hidden_layers) == self.n_hidden
-        self.output_node = Dense(1, activation="linear",
+        self.output_node = Dense(1, activation="sigmoid",
                                  kernel_regularizer=self.kernel_regularizer)
         if self._use_zeroth_model:
-            self.output_node_zeroth = Dense(1, activation="linear",
+            self.output_node_zeroth = Dense(1, activation="sigmoid",
                                             kernel_regularizer=self.kernel_regularizer)
 
     def _create_zeroth_order_model(self):
@@ -263,7 +263,7 @@ class FETAObjectRanker(ObjectRanker, Tunable):
         self.logger.debug('1st order model finished')
         if self._use_zeroth_model:
             scores = add([scores, zeroth_order_scores])
-        return Activation('sigmoid')(scores)
+        return scores
 
     def sub_sampling(self, X, Y):
         if self._n_objects > self.max_number_of_objects:
