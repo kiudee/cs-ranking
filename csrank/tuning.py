@@ -233,7 +233,6 @@ class ParameterOptimizer(ObjectRanker):
             for t in range(n_iter):
                 if total_duration <= 0:
                     break
-
                 start = datetime.now()
                 self._callbacks_on_iteration_begin(t)
                 self.logger.info('Starting optimization iteration: {}'.format(t))
