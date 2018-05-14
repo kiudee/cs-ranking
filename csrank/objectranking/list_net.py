@@ -18,23 +18,10 @@ __all__ = ["ListNet"]
 
 class ListNet(ObjectRanker, Tunable):
 
-    def __init__(
-        self,
-        n_object_features,
-        n_top,
-        n_hidden=2,
-        n_units=8,
-        loss_function=plackett_luce_loss,
-        batch_normalization=False,
-        kernel_regularizer=l2(l=1e-4),
-        non_linearities="selu",
-        kernel_initializer='lecun_normal',
-        optimizer="adam",
-        metrics=None,
-        batch_size=256,
-        random_state=None,
-        **kwargs
-    ):
+    def __init__(self, n_object_features, n_top, n_hidden=2, n_units=8, loss_function=plackett_luce_loss,
+                 batch_normalization=False, kernel_regularizer=l2(l=1e-4), non_linearities="selu",
+                 kernel_initializer='lecun_normal', optimizer="adam", metrics=None, batch_size=256, random_state=None,
+                 **kwargs):
         """ Create an instance of the ListNet architecture.
 
             ListNet trains a latent utility model based on top-k-subrankings
@@ -88,6 +75,7 @@ class ListNet(ObjectRanker, Tunable):
         self.kernel_initializer = kernel_initializer
         self.loss_function = loss_function
         self.optimizer = optimizers.get(optimizer)
+        self._optimizer_config = self.optimizer.get_config()
         self.n_hidden = n_hidden
         self.n_units = n_units
         if 'n_objects' in kwargs:
@@ -140,7 +128,7 @@ class ListNet(ObjectRanker, Tunable):
         return X_topk, Y_topk
 
     def fit(
-        self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd
+            self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd
     ):
         self.n_objects = X.shape[1]
         self.logger.debug("Creating top-k dataset")
@@ -205,19 +193,18 @@ class ListNet(ObjectRanker, Tunable):
     def predict_scores(self, X, **kwargs):
         return super().predict_scores(X, **kwargs)
 
-    def set_tunable_parameters(
-        self,
-        n_hidden=32,
-        n_units=2,
-        reg_strength=1e-4,
-        learning_rate=1e-3,
-        batch_size=128,
-        **point
-    ):
+    def set_tunable_parameters(self, n_hidden=32, n_units=2, reg_strength=1e-4, learning_rate=1e-3, batch_size=128,
+                               **point):
+        self.logger.info("learning_rate: {}".format(learning_rate))
+        self.logger.info("reg_strength: {}".format(reg_strength))
+        self.logger.info("n_hidden: {}".format(n_hidden))
+        self.logger.info("n_units: {}".format(n_units))
+        self.logger.info("batch_size: {}".format(batch_size))
         self.n_hidden = n_hidden
         self.n_units = n_units
         self.kernel_regularizer = l2(reg_strength)
         self.batch_size = batch_size
+        self.optimizer = self.optimizer.from_config(self._optimizer_config)
         K.set_value(self.optimizer.lr, learning_rate)
         self._construct_layers()
         if len(point) > 0:
