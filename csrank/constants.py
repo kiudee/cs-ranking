@@ -26,7 +26,7 @@ CMPNET = "cmpnet"
 RANKNET = 'ranknet'
 FETA_RANKER = 'feta_ranker'
 FATE_RANKER = "fate_ranker"
-
+LIST_NET = 'listnet'
 FETA_CHOICE = 'feta_choice'
 FATE_CHOICE = "fate_choice"
 TAG_GENOME = 'tag_genome'
