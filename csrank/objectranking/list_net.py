@@ -207,6 +207,7 @@ class ListNet(ObjectRanker, Tunable):
         self.optimizer = self.optimizer.from_config(self._optimizer_config)
         K.set_value(self.optimizer.lr, learning_rate)
         self._construct_layers()
+        self._scoring_model = None
         if len(point) > 0:
             self.logger.warning(
                 "This ranking algorithm does not support"
