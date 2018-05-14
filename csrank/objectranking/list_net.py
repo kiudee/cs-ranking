@@ -91,33 +91,17 @@ class ListNet(ObjectRanker, Tunable):
 
     def _construct_layers(self, **kwargs):
         self.input_layer = Input(shape=(self.n_top, self.n_object_features))
-        self.output_node = Dense(
-            1, activation="linear", kernel_regularizer=self.kernel_regularizer
-        )
+        self.output_node = Dense(1, activation="linear", kernel_regularizer=self.kernel_regularizer)
         if self.batch_normalization:
             self.hidden_layers = [
-                NormalizedDense(
-                    self.n_units,
-                    name="hidden_{}".format(x),
-                    kernel_regularizer=self.kernel_regularizer,
-                    kernel_initializer=self.kernel_initializer,
-                    activation=self.non_linearities,
-                    **kwargs
-                )
-                for x in range(self.n_hidden)
-            ]
+                NormalizedDense(self.n_units, name="hidden_{}".format(x), kernel_regularizer=self.kernel_regularizer,
+                                kernel_initializer=self.kernel_initializer, activation=self.non_linearities, **kwargs)
+                for x in range(self.n_hidden)]
         else:
             self.hidden_layers = [
-                Dense(
-                    self.n_units,
-                    name="hidden_{}".format(x),
-                    kernel_regularizer=self.kernel_regularizer,
-                    kernel_initializer=self.kernel_initializer,
-                    activation=self.non_linearities,
-                    **kwargs
-                )
-                for x in range(self.n_hidden)
-            ]
+                Dense(self.n_units, name="hidden_{}".format(x), kernel_regularizer=self.kernel_regularizer,
+                      kernel_initializer=self.kernel_initializer, activation=self.non_linearities, **kwargs)
+                for x in range(self.n_hidden)]
         assert len(self.hidden_layers) == self.n_hidden
 
     def _create_topk(self, X, Y):
@@ -127,9 +111,7 @@ class ListNet(ObjectRanker, Tunable):
         Y_topk = Y[mask].reshape(n_inst, self.n_top)
         return X_topk, Y_topk
 
-    def fit(
-            self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd
-    ):
+    def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
         self.n_objects = X.shape[1]
         self.logger.debug("Creating top-k dataset")
         X, Y = self._create_topk(X, Y)
@@ -138,21 +120,11 @@ class ListNet(ObjectRanker, Tunable):
         self.logger.debug("Creating the model")
         output = self.construct_model()
         self.model = Model(inputs=self.input_layer, outputs=output)
-        self.model.compile(
-            loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics
-        )
+        self.model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
         self.logger.debug("Finished creating the model, now fitting...")
 
-        self.model.fit(
-            X,
-            Y,
-            batch_size=self.batch_size,
-            epochs=epochs,
-            callbacks=callbacks,
-            validation_split=validation_split,
-            verbose=verbose,
-            **kwd
-        )
+        self.model.fit(X, Y, batch_size=self.batch_size, epochs=epochs, callbacks=callbacks,
+                       validation_split=validation_split, verbose=verbose, **kwd)
         self.logger.debug("Fitting Complete")
 
     def construct_model(self):
@@ -210,7 +182,4 @@ class ListNet(ObjectRanker, Tunable):
         self._scoring_model = None
         if len(point) > 0:
             self.logger.warning(
-                "This ranking algorithm does not support"
-                " tunable parameters"
-                " called: {}".format(print_dictionary(point))
-            )
+                "This ranking algorithm does not support tunable parameters called: {}".format(print_dictionary(point)))
