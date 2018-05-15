@@ -91,8 +91,7 @@ class NestedLogitModel(DiscreteObjectChooser, Tunable):
             mu_weights_k = pm.Normal('mu_weights_k', mu=0., sd=10)
             sigma_weights_k = pm.HalfCauchy('sigma_weights_k', beta=1)
             weights_k = pm.Normal('weights_k', mu=mu_weights_k, sd=sigma_weights_k, shape=self.n_features)
-            alpha = self.alpha
-            lambda_k = pm.Uniform('lambda_k', alpha, 1.0 + alpha, shape=self.n_nests)
+            lambda_k = pm.Uniform('lambda_k', self.alpha, 1.0 + self.alpha, shape=self.n_nests)
             weights = (weights / lambda_k[:, None])
 
             utility = eval_utility(X, y_nests, weights)
@@ -165,6 +164,5 @@ class NestedLogitModel(DiscreteObjectChooser, Tunable):
         self.n_sample = n_sample
         self.alpha = alpha
         if len(point) > 0:
-            self.logger.warning('This ranking algorithm does not support'
-                                ' tunable parameters'
+            self.logger.warning('This ranking algorithm does not support tunable parameters'
                                 ' called: {}'.format(print_dictionary(point)))

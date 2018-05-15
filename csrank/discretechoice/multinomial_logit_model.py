@@ -27,7 +27,7 @@ class MultinomialLogitModel(DiscreteObjectChooser, Tunable):
             weights = pm.Normal('weights', mu=mu_weights, sd=sigma_weights, shape=self.n_features)
             intercept = pm.Normal('intercept', mu=0, sd=10)
             utility = pm.math.sum(weights * X, axis=2) + intercept
-            p = tt.nnet.sigmoid(utility)
+            p = tt.nnet.softmax(utility)
             if self.loss_function is None:
                 yl = pm.Categorical('yl', p=p, observed=Y)
                 self.trace = pm.sample(self.n_sample, tune=self.n_tune, cores=8)
