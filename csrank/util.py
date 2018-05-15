@@ -74,10 +74,24 @@ def get_tensor_value(x):
     return x
 
 
-def normalize(score):
-    norm = [float(i) / np.sum(score) for i in score]
-    norm = [float(i) / np.max(norm) for i in norm]
-    return norm
+def softmax(x):
+    """
+        Take softmax for the given two dimensional numpy array.
+        :param x: array-like, shape (n_samples, n_objects)
+        :return: softmax taken around the axis=1
+    """
+    e_x = np.exp(x - x.max(axis=1, keepdims=True))
+    return e_x / e_x.sum(axis=1, keepdims=True)
+
+
+def normalize(x):
+    """
+        Normalize the given two dimensional numpy or theano  array around the row.
+
+        :param x: theano or numpy array-like, shape (n_samples, n_objects)
+        :return: normalize the array around the axis=1
+    """
+    return x / x.sum(axis=1, keepdims=True)
 
 
 def print_dictionary(dictionary):

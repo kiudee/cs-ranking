@@ -96,10 +96,10 @@ class ExpectedRankRegression(ObjectRanker, Tunable):
         for i, data_test in enumerate(X):
             assert data_test.shape[1] == self.n_object_features
             score = self.model.predict(data_test) * -1
-            normalize(np.array(score))
             scores[i] = score
+        scores = normalize(score)
         self.logger.info("Done predicting scores")
-        return np.array(scores)
+        return scores
 
     def predict_scores(self, X, **kwargs):
         return super().predict_scores(X, **kwargs)
