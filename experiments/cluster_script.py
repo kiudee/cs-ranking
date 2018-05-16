@@ -130,7 +130,7 @@ if __name__ == "__main__":
             else:
                 pred_file = os.path.join(DIR_PATH, 'predictions', "{}.h5".format(hash_value))
                 create_dir_recursively(pred_file, True)
-                f = h5py.File(s_pred, 'w')
+                f = h5py.File(pred_file, 'w')
                 f.create_dataset('scores', data=s_pred)
                 f.close()
 
