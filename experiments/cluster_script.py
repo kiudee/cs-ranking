@@ -21,7 +21,8 @@ import os
 import sys
 import traceback
 from datetime import datetime
-
+import h5py
+import pickle as pk
 import numpy as np
 from docopt import docopt
 from sklearn.model_selection import ShuffleSplit
@@ -119,6 +120,19 @@ if __name__ == "__main__":
 
             y_pred = optimizer_model.predict(X_test, batch_size=batch_size)
             s_pred = optimizer_model.predict_scores(X_test, batch_size=batch_size)
+
+            if isinstance(s_pred, dict):
+                pred_file = os.path.join(DIR_PATH, 'predictions', "{}.pkl".format(hash_value))
+                create_dir_recursively(pred_file, True)
+                f = open(pred_file, "wb")
+                pk.dump(y_pred, f)
+                f.close()
+            else:
+                pred_file = os.path.join(DIR_PATH, 'predictions', "{}.h5".format(hash_value))
+                create_dir_recursively(pred_file, True)
+                f = h5py.File(s_pred, 'w')
+                f.create_dataset('scores', data=s_pred)
+                f.close()
 
             results = {'job_id': str(job_id), 'cluster_id': str(cluster_id)}
             for name, evaluation_metric in lp_metric_dict[learning_problem].items():

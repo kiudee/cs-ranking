@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.stats import spearmanr
 from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_score, average_precision_score
 
 from csrank.util import scores_to_rankings
@@ -21,6 +22,15 @@ def spearman_mean_np(y_true, s_pred):
             rho.append(s)
         else:
             rho.append(np.nan)
+    return np.nanmean(np.array(rho))
+
+
+def spearman_scipy(y_true, s_pred):
+    y_pred = scores_to_rankings(s_pred)
+    rho = []
+    for r1, r2 in zip(y_true, y_pred):
+        s = spearmanr(r1, r2)[0]
+        rho.append(s)
     return np.nanmean(np.array(rho))
 
 
