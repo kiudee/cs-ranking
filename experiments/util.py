@@ -13,6 +13,7 @@ from csrank.constants import SYNTHETIC_OR, DEPTH, SUSHI, IMAGE_DATASET, TAG_GENO
     FETA_CHOICE, FATE_CHOICE, SYNTHETIC_CHOICE, MNIST
 from csrank.metrics import zero_one_rank_loss, zero_one_accuracy, make_ndcg_at_k_loss
 from csrank.metrics_np import *
+from csrank.metrics_np import spearman_scipy
 from csrank.objectranking.fate_object_ranker import FATEObjectRanker
 
 
@@ -72,7 +73,7 @@ learners = {FETA_RANKER: FETAObjectRanker, RANKNET: RankNet, CMPNET: CmpNet, ERR
             RANKSVM: RankSVM,
             FATE_RANKER: FATEObjectRanker, FETA_CHOICE: FETAChoiceFunction, FATE_CHOICE: FATEChoiceFunction}
 
-ranking_metrics = {'KendallsTau': kendalls_mean_np, 'SpearmanCorrelation': spearman_mean_np,
+ranking_metrics = {'KendallsTau': kendalls_mean_np, 'SpearmanCorrelation': spearman_scipy,
                    'ZeroOneRankLoss': zero_one_rank_loss_for_scores_np,
                    'ZeroOneRankLossTies': zero_one_rank_loss_for_scores_ties_np,
                    "ZeroOneAccuracy": zero_one_accuracy_np,
