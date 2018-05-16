@@ -125,7 +125,7 @@ if __name__ == "__main__":
                 pred_file = os.path.join(DIR_PATH, 'predictions', "{}.pkl".format(hash_value))
                 create_dir_recursively(pred_file, True)
                 f = open(pred_file, "wb")
-                pk.dump(y_pred, f)
+                pk.dump(s_pred, f)
                 f.close()
             else:
                 pred_file = os.path.join(DIR_PATH, 'predictions', "{}.h5".format(hash_value))
@@ -133,7 +133,7 @@ if __name__ == "__main__":
                 f = h5py.File(pred_file, 'w')
                 f.create_dataset('scores', data=s_pred)
                 f.close()
-
+            logger.info("Saved predictions at: {}".format(pred_file))
             results = {'job_id': str(job_id), 'cluster_id': str(cluster_id)}
             for name, evaluation_metric in lp_metric_dict[learning_problem].items():
                 predictions = s_pred
