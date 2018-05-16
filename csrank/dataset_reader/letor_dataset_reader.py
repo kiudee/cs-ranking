@@ -88,7 +88,7 @@ class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
             x = np.array(v)
             X.append(x[:, 0:-1])
             scores.append(x[:, -1])
-            Y.append(rankdata(x[:, -1], method='max'))
+            Y.append(len(x[:, -1]) - rankdata(x[:, -1], method='max'))
         X = np.array(X)
         Y = np.array(Y)
         scores = np.array(scores)

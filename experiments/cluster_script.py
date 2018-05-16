@@ -18,11 +18,12 @@ Options:
 import inspect
 import logging
 import os
+import pickle as pk
 import sys
 import traceback
 from datetime import datetime
+
 import h5py
-import pickle as pk
 import numpy as np
 from docopt import docopt
 from sklearn.model_selection import ShuffleSplit
