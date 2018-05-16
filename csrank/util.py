@@ -31,7 +31,7 @@ def scores_to_rankings(score_matrix):
     rankings = np.empty_like(score_matrix)
     if ties > 0:
         for i, s in enumerate(score_matrix):
-            rankings[i] = rankdata(s) - 1
+            rankings[i] = len(s) - rankdata(s)
     else:
         orderings = np.argsort(score_matrix, axis=1)[:, ::-1]
         rankings = np.argsort(orderings, axis=1)

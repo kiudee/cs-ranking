@@ -333,24 +333,23 @@ class ParameterOptimizer(ObjectRanker):
                     best_loss, best_params))
 
     def set_optimizer(self, n_iter, opt_seed, acq_func, gp_seed, **kwargs):
-        opt_path = self.optimizer_path
-        self.logger.info('Retrieving model stored at: {}'.format(opt_path))
+        self.logger.info('Retrieving model stored at: {}'.format(self.optimizer_path))
         try:
             optimizer = load(self.optimizer_path)
-            self.logger.info('Loading model stored at: {}'.format(opt_path))
+            self.logger.info('Loading model stored at: {}'.format(self.optimizer_path))
             finished_iterations = np.array(optimizer.yi).shape[0]
             if finished_iterations == 0:
                 optimizer = None
                 self.logger.info('Optimizer did not finish any iterations so setting optimizer to null')
         except KeyError:
-            self.logger.error('Cannot open the file {}'.format(opt_path))
+            self.logger.error('Cannot open the file {}'.format(self.optimizer_path))
             optimizer = None
 
         except ValueError:
-            self.logger.error('Cannot open the file {}'.format(opt_path))
+            self.logger.error('Cannot open the file {}'.format(self.optimizer_path))
             optimizer = None
         except FileNotFoundError:
-            self.logger.error('No such file or directory: {}'.format(opt_path))
+            self.logger.error('No such file or directory: {}'.format(self.optimizer_path))
             optimizer = None
 
         if optimizer is not None:
