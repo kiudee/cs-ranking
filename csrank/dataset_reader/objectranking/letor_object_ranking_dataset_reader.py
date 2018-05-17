@@ -19,11 +19,28 @@ class LetorObjectRankingDatasetReader(LetorDatasetReader):
 
     def __load_dataset__(self):
         super().__load_dataset__()
-        file = h5py.File(self.train_file, 'r')
-        self.X_train, self.Y_train = self.get_rankings_dict(file)
-        file = h5py.File(self.test_file, 'r')
-        self.X_test, self.Y_test = self.get_rankings_dict(file)
+        self.X_train = dict()
+        self.Y_train = dict()
+        for i in self.dataset_indices:
+            if i != self.fold:
+                file = h5py.File(self.file_format.format(i), 'r')
+                X, Y = self.get_rankings_dict(file)
+                self.merge_to_train(X, Y)
+            else:
+                file = h5py.File(self.file_format.format(i), 'r')
+                self.X_test, self.Y_test = self.get_rankings_dict(file)
         self.logger.info("Done loading the dataset")
+
+    def merge_to_train(self, X, Y):
+        for key in X.keys():
+            x = X[key]
+            y = Y[key]
+            if key in self.X_train.keys():
+                self.X_train[key] = np.append(self.X_train[key], x, axis=0)
+                self.Y_train[key] = np.append(self.Y_train[key], y, axis=0)
+            else:
+                self.X_train[key] = x
+                self.Y_train[key] = y
 
     def get_rankings_dict(self, file):
         lengths = file["lengths"]
@@ -68,3 +85,16 @@ class LetorObjectRankingDatasetReader(LetorDatasetReader):
         self.X, self.Y = self.sub_sampling_for_dictionary()
         self.__check_dataset_validity__()
         return self.X, self.Y, self.X_test, self.Y_test
+
+
+if __name__ == '__main__':
+    import os
+    import inspect
+
+    dirname = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+    logging.basicConfig(filename=os.path.join(dirname, 'log.log'), level=logging.DEBUG,
+                        format='%(asctime)s %(name)s %(levelname)-8s %(message)s',
+                        datefmt='%Y-%m-%d %H:%M:%S')
+    logger = logging.getLogger(name='letor')
+    year = 2007
+    lr = LetorObjectRankingDatasetReader(year=year)
