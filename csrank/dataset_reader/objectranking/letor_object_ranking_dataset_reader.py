@@ -85,16 +85,3 @@ class LetorObjectRankingDatasetReader(LetorDatasetReader):
         self.X, self.Y = self.sub_sampling_for_dictionary()
         self.__check_dataset_validity__()
         return self.X, self.Y, self.X_test, self.Y_test
-
-
-if __name__ == '__main__':
-    import os
-    import inspect
-
-    dirname = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    logging.basicConfig(filename=os.path.join(dirname, 'log.log'), level=logging.DEBUG,
-                        format='%(asctime)s %(name)s %(levelname)-8s %(message)s',
-                        datefmt='%Y-%m-%d %H:%M:%S')
-    logger = logging.getLogger(name='letor')
-    year = 2007
-    lr = LetorObjectRankingDatasetReader(year=year)

@@ -58,13 +58,12 @@ class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
         X, Y, scores = self.create_instances(dataset)
         result, freq = self._build_training_buckets(X, Y, scores)
         h5f = h5py.File(hdf5file_path, 'w')
-        #self.logger.info("Frequencies of rankings: {}".format(print_dictionary(freq)))
+        self.logger.info("Frequencies of rankings: {}".format(print_dictionary(freq)))
         for key, value in result.items():
             x, y, s = value
             h5f.create_dataset('X_' + str(key), data=x, compression='gzip', compression_opts=9)
             h5f.create_dataset('Y_' + str(key), data=y, compression='gzip', compression_opts=9)
             h5f.create_dataset('score_' + str(key), data=s, compression='gzip', compression_opts=9)
-            self.logger.info("length {}".format(key))
         lengths = np.array(list(result.keys()))
         h5f.create_dataset('lengths', data=lengths, compression='gzip', compression_opts=9)
         h5f.close()
@@ -77,32 +76,6 @@ class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
     #         scores[i] = scores[i][r]
     #     features = np.array([features[i][rankings[i], :] for i in range(rankings.shape[0])])
     #     return features, rankings, scores
-
-    def _build_training_buckets(self, X, Y, scores):
-        """Separates object ranking data into buckets of the same ranking size."""
-        result = dict()
-        frequencies = dict()
-
-        for x, y, s in zip(X, Y, scores):
-            n_objects = len(x)
-            if n_objects not in result:
-                result[n_objects] = ([], [], [])
-            bucket = result[n_objects]
-            bucket[0].append(x)
-            bucket[1].append(y)
-            bucket[2].append(s)
-            if n_objects not in frequencies:
-                frequencies[n_objects] = 1
-            else:
-                frequencies[n_objects] += 1
-
-        # Convert all buckets to numpy arrays:
-        n_instances = sum(frequencies.values())
-        for k, v in result.items():
-            result[k] = np.array(v[0]), np.array(v[1]), np.array(v[2])
-            frequencies[k] /= n_instances
-
-        return result, frequencies
 
     def create_instances(self, dataset):
         X = []
@@ -126,6 +99,30 @@ class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
         scores = np.array(scores)
         return X, Y, scores
 
+    def _build_training_buckets(self, X, Y, scores):
+        """Separates object ranking data into buckets of the same ranking size."""
+        result = dict()
+        frequencies = dict()
+
+        for x, y, s in zip(X, Y, scores):
+            n_objects = len(x)
+            if n_objects not in result:
+                result[n_objects] = ([], [], [])
+            bucket = result[n_objects]
+            bucket[0].append(x)
+            bucket[1].append(y)
+            bucket[2].append(s)
+            if n_objects not in frequencies:
+                frequencies[n_objects] = 1
+            else:
+                frequencies[n_objects] += 1
+
+        # Convert all buckets to numpy arrays:
+        for k, v in result.items():
+            result[k] = np.array(v[0]), np.array(v[1]), np.array(v[2])
+
+        return result, frequencies
+
     def create_dataset_dictionary(self, files):
         self.logger.info("Files {}".format(files))
         dataset_dictionaries = dict()
@@ -143,7 +140,7 @@ class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
                     dataset[qid] = [x]
                 else:
                     dataset[qid].append(x)
-                array = np.array([len(i) for i in dataset.values()])
+            array = np.array([len(i) for i in dataset.values()])
             dataset_dictionaries[key] = dataset
             self.logger.info('Maximum length of ranking: {}'.format(np.max(array)))
         return dataset_dictionaries
