@@ -19,10 +19,17 @@ class LetorDiscreteChoiceDatasetReader(LetorDatasetReader):
 
     def __load_dataset__(self):
         super().__load_dataset__()
-        file = h5py.File(self.train_file, 'r')
-        self.X_train, self.Y_train, self.scores_train = self.get_rankings_dict(file)
-        file = h5py.File(self.test_file, 'r')
-        self.X_test, self.Y_test, self.scores_test = self.get_rankings_dict(file)
+        self.X_train = dict()
+        self.Y_train = dict()
+        self.scores_train = dict()
+        for i in self.dataset_indices:
+            if i != self.fold:
+                file = h5py.File(self.file_format.format(i), 'r')
+                X, Y, S = self.get_rankings_dict(file)
+                self.merge_to_train(X, Y, S)
+            else:
+                file = h5py.File(self.file_format.format(i), 'r')
+                self.X_test, self.Y_test, self.scores_test = self.get_rankings_dict(file)
         self.logger.info("Done loading the dataset")
 
     def get_rankings_dict(self, file):
@@ -37,6 +44,20 @@ class LetorDiscreteChoiceDatasetReader(LetorDatasetReader):
             self.__check_dataset_validity__()
             X[ranking_length], Y[ranking_length], scores[ranking_length] = self.X, self.Y, s
         return X, Y, scores
+
+    def merge_to_train(self, X, Y, scores):
+        for key in X.keys():
+            x = X[key]
+            y = Y[key]
+            s = scores[key]
+            if key in self.X_train.keys():
+                self.X_train[key] = np.append(self.X_train[key], x, axis=0)
+                self.Y_train[key] = np.append(self.Y_train[key], y, axis=0)
+                self.scores_train[key] = np.append(self.scores_train[key], s, axis=0)
+            else:
+                self.X_train[key] = x
+                self.Y_train[key] = y
+                self.scores_train[key] = s
 
     def sub_sampling_for_dictionary(self):
         X = []
