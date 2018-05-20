@@ -91,6 +91,7 @@ if __name__ == "__main__":
             duration = get_duration_seconds(duration)
 
             dataset_params['random_state'] = random_state
+            dataset_params['fold_id'] = fold_id
             dataset_reader = get_dataset_reader(dataset_name, dataset_params)
             X_train, Y_train, X_test, Y_test = dataset_reader.get_single_train_test_split()
             n_objects = log_test_train_data(X_train, X_test, logger)

@@ -5,12 +5,12 @@ from sklearn.metrics import hamming_loss, zero_one_loss
 from csrank import ObjectRankingDatasetGenerator, FETAObjectRanker, RankNet, CmpNet, ExpectedRankRegression, RankSVM, \
     FATEChoiceFunction, FETAChoiceFunction, DepthDatasetReader, SushiObjectRankingDatasetReader, ImageDatasetReader, \
     TagGenomeDatasetReader, SentenceOrderingDatasetReader, LetorObjectRankingDatasetReader, ChoiceDatasetGenerator, \
-    MNISTChoiceDatasetReader
+    MNISTChoiceDatasetReader, LetorDiscreteChoiceDatasetReader, DiscreteChoiceDatasetGenerator, \
+    MNISTDiscreteChoiceDatasetReader
 from csrank.callbacks import EarlyStoppingWithWeights, LRScheduler, DebugOutput
-from csrank.constants import SYNTHETIC_OR, DEPTH, SUSHI, IMAGE_DATASET, TAG_GENOME, SENTENCE_ORDERING, LETOR, \
-    FETA_RANKER, RANKNET, CMPNET, \
-    ERR, RANKSVM, FATE_RANKER, OBJECT_RANKING, LABEL_RANKING, DYAD_RANKING, DISCRETE_CHOICE, CHOICE_FUNCTIONS, \
-    FETA_CHOICE, FATE_CHOICE, SYNTHETIC_CHOICE, MNIST
+from csrank.constants import SYNTHETIC_OR, SYTHETIC_DC, DEPTH, SUSHI, IMAGE_DATASET, TAG_GENOME, SENTENCE_ORDERING, \
+    LETOR_OR, FETA_RANKER, RANKNET, CMPNET, ERR, RANKSVM, FATE_RANKER, OBJECT_RANKING, LABEL_RANKING, DYAD_RANKING, \
+    DISCRETE_CHOICE, CHOICE_FUNCTIONS, FETA_CHOICE, FATE_CHOICE, SYNTHETIC_CHOICE, MNIST_CHOICE, LETOR_DC, MNIST_DC
 from csrank.metrics import zero_one_rank_loss, zero_one_accuracy, make_ndcg_at_k_loss
 from csrank.metrics_np import *
 from csrank.metrics_np import spearman_scipy
@@ -61,17 +61,16 @@ def create_optimizer_parameters(fit_params, hp_ranges, learner_params, learner_n
     return hp_params
 
 
-datasets = {SYNTHETIC_OR: ObjectRankingDatasetGenerator,
-            DEPTH: DepthDatasetReader,
+datasets = {SYNTHETIC_OR: ObjectRankingDatasetGenerator, DEPTH: DepthDatasetReader,
             SUSHI: SushiObjectRankingDatasetReader, IMAGE_DATASET: ImageDatasetReader,
-            TAG_GENOME: TagGenomeDatasetReader,
-            SENTENCE_ORDERING: SentenceOrderingDatasetReader,
-            LETOR: LetorObjectRankingDatasetReader,
-            SYNTHETIC_CHOICE: ChoiceDatasetGenerator,
-            MNIST: MNISTChoiceDatasetReader}
+            TAG_GENOME: TagGenomeDatasetReader, SENTENCE_ORDERING: SentenceOrderingDatasetReader,
+            LETOR_OR: LetorObjectRankingDatasetReader,
+            LETOR_DC: LetorDiscreteChoiceDatasetReader, SYTHETIC_DC: DiscreteChoiceDatasetGenerator,
+            MNIST_DC: MNISTDiscreteChoiceDatasetReader,
+            SYNTHETIC_CHOICE: ChoiceDatasetGenerator, MNIST_CHOICE: MNISTChoiceDatasetReader}
 learners = {FETA_RANKER: FETAObjectRanker, RANKNET: RankNet, CMPNET: CmpNet, ERR: ExpectedRankRegression,
-            RANKSVM: RankSVM,
-            FATE_RANKER: FATEObjectRanker, FETA_CHOICE: FETAChoiceFunction, FATE_CHOICE: FATEChoiceFunction}
+            RANKSVM: RankSVM, FATE_RANKER: FATEObjectRanker, FETA_CHOICE: FETAChoiceFunction,
+            FATE_CHOICE: FATEChoiceFunction}
 
 ranking_metrics = {'KendallsTau': kendalls_mean_np, 'SpearmanCorrelation': spearman_scipy,
                    'ZeroOneRankLoss': zero_one_rank_loss_for_scores_np,
