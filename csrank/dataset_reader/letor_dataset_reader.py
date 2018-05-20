@@ -7,6 +7,7 @@ import h5py
 import numpy as np
 from scipy.stats import rankdata
 
+from csrank.constants import DISCRETE_CHOICE
 from csrank.dataset_reader.dataset_reader import DatasetReader
 from csrank.util import print_dictionary
 
@@ -166,7 +167,9 @@ class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
         scores = dict()
         for ranking_length in np.array(lengths):
             self.X = np.array(file["X_{}".format(ranking_length)])
-            self.Y = np.array(file["Y_{}".format(ranking_length)]).argmin(axis=1)
+            self.Y = np.array(file["Y_{}".format(ranking_length)])
+            if self.learning_problem == DISCRETE_CHOICE:
+                self.Y = self.Y.argmin(axis=1)
             s = np.array(file["score_{}".format(ranking_length)])
             self.__check_dataset_validity__()
             X[ranking_length], Y[ranking_length], scores[ranking_length] = self.X, self.Y, s
