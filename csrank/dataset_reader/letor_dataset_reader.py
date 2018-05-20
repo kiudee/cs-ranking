@@ -12,7 +12,7 @@ from csrank.util import print_dictionary
 
 
 class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
-    def __init__(self, year=2007, fold=1, **kwargs):
+    def __init__(self, year=2007, fold_id=1, **kwargs):
         super(LetorDatasetReader, self).__init__(dataset_folder='letor', **kwargs)
         self.DATASET_FOLDER_2007 = 'MQ{}-list'.format(year)
         self.DATASET_FOLDER_2008 = 'MQ{}-list'.format(year)
@@ -26,17 +26,18 @@ class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
         self.query_document_feature_indices = np.delete(np.arange(0, 46), self.query_feature_indices)
         self.logger.info("For Year {}".format(self.year))
 
-        self.dataset_indices = np.arange(5) + 1
+        self.dataset_indices = np.arange(5)
         self.condition = np.zeros(5, dtype=bool)
         self.file_format = os.path.join(self.dirname, str(self.year), "I{}.h5")
 
         for i in self.dataset_indices:
-            self.condition[i - 1] = os.path.isfile(self.file_format.format(i))
-            if not os.path.isfile(self.file_format.format(i)):
-                self.logger.info("File {} not created".format(self.file_format.format(i)))
-        assert fold in self.dataset_indices, "For fold {} no test dataset present".format(fold)
-        self.logger.info("Test dataset is I{}".format(fold))
-        self.fold = fold
+            h5py_file_pth = self.file_format.format(i + 1)
+            self.condition[i] = os.path.isfile(h5py_file_pth)
+            if not os.path.isfile(h5py_file_pth):
+                self.logger.info("File {} not created".format(h5py_file_pth))
+        assert fold_id in self.dataset_indices, "For fold {} no test dataset present".format(fold_id + 1)
+        self.logger.info("Test dataset is I{}".format(fold_id + 1))
+        self.fold_id = fold_id
 
     def __load_dataset__(self):
         if not (self.condition.all()):
@@ -52,6 +53,19 @@ class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
             for key, dataset in self.dataset_dictionaries.items():
                 hdf5file_path = self.file_format.format(key.split('I')[-1])
                 self.create_rankings_dataset(dataset, hdf5file_path)
+        self.X_train = dict()
+        self.Y_train = dict()
+        self.scores_train = dict()
+        for i in self.dataset_indices:
+            h5py_file_path = self.file_format.format(i + 1)
+            if i != self.fold_id:
+                file = h5py.File(h5py_file_path, 'r')
+                X, Y, S = self.get_rankings_dict(file)
+                self.merge_to_train(X, Y, S)
+            else:
+                file = h5py.File(h5py_file_path, 'r')
+                self.X_test, self.Y_test, self.scores_test = self.get_rankings_dict(file)
+        self.logger.info("Done loading the dataset")
 
     def create_rankings_dataset(self, dataset, hdf5file_path):
         self.logger.info("Writing in hd5 {}".format(hdf5file_path))
@@ -144,3 +158,51 @@ class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
             dataset_dictionaries[key] = dataset
             self.logger.info('Maximum length of ranking: {}'.format(np.max(array)))
         return dataset_dictionaries
+
+    def get_rankings_dict(self, file):
+        lengths = file["lengths"]
+        X = dict()
+        Y = dict()
+        scores = dict()
+        for ranking_length in np.array(lengths):
+            self.X = np.array(file["X_{}".format(ranking_length)])
+            self.Y = np.array(file["Y_{}".format(ranking_length)]).argmin(axis=1)
+            s = np.array(file["score_{}".format(ranking_length)])
+            self.__check_dataset_validity__()
+            X[ranking_length], Y[ranking_length], scores[ranking_length] = self.X, self.Y, s
+        return X, Y, scores
+
+    def merge_to_train(self, X, Y, scores):
+        for key in X.keys():
+            x = X[key]
+            y = Y[key]
+            s = scores[key]
+            if key in self.X_train.keys():
+                self.X_train[key] = np.append(self.X_train[key], x, axis=0)
+                self.Y_train[key] = np.append(self.Y_train[key], y, axis=0)
+                self.scores_train[key] = np.append(self.scores_train[key], s, axis=0)
+            else:
+                self.X_train[key] = x
+                self.Y_train[key] = y
+                self.scores_train[key] = s
+
+    def sub_sampling_from_dictionary(self):
+        X = []
+        Y = []
+        for n in self.X_train.keys():
+            if n > self.n_objects:
+                x, y = self.sub_sampling_function(n)
+                if len(X) == 0:
+                    X = np.copy(x)
+                    Y = np.copy(y)
+                else:
+                    X = np.concatenate([X, x], axis=0)
+                    Y = np.concatenate([Y, y], axis=0)
+        if self.n_objects in self.X_train.keys():
+            X = np.concatenate([X, np.copy(self.X_train[self.n_objects])], axis=0)
+            Y = np.concatenate([Y, np.copy(self.Y_train[self.n_objects])], axis=0)
+        self.logger.info("Sampled instances {} objects {}".format(X.shape[0], X.shape[1]))
+        return X, Y
+
+    def sub_sampling_function(self, n):
+        pass
