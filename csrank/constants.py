@@ -15,11 +15,17 @@ IMAGE_DATASET = 'image_dataset'
 SUSHI = 'sushi'
 SYNTHETIC_OR = 'synthetic_or'
 SYNTHETIC_CHOICE = 'synthetic_choice'
+SYTHETIC_DC = 'synthetic_dc'
 HYPER_VOLUME = "hyper_volume"
-MNIST = "mnist"
+MNIST_CHOICE = "mnist_choice"
+MNIST_DC = "mnist_dc"
+
 DEPTH = 'depth'
 SENTENCE_ORDERING = "sentence_ordering"
-LETOR = "letor"
+LETOR_OR = "letor_or"
+LETOR_DC = "letor_dc"
+
+
 RANKSVM = 'ranksvm'
 ERR = 'err'
 CMPNET = "cmpnet"
