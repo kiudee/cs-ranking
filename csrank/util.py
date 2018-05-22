@@ -182,11 +182,12 @@ def seconds_to_time(target_time_sec):
 def get_mean_loss_for_dictionary(metric, Y_true, Y_pred):
     losses = []
     total_instances = 0
-    for n, y_pred in Y_pred.items():
-        l = get_loss_for_array(metric, Y_true[n], y_pred)
-        l = l * y_pred.shape[0]
-        total_instances += y_pred.shape[0]
-        losses.append(l)
+    for n, ypred in Y_pred.items():
+        l = get_loss_for_array(metric, Y_true[n], ypred)
+        if l is not np.nan:
+            l = l * ypred.shape[0]
+            total_instances += ypred.shape[0]
+            losses.append(l)
     losses = np.array(losses)
     loss = np.sum(losses) / total_instances
     return loss

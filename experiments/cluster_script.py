@@ -129,7 +129,7 @@ if __name__ == "__main__":
                 pred_file = os.path.join(DIR_PATH, PREDICTIONS_FOLDER, "{}.pkl".format(hash_value))
                 create_dir_recursively(pred_file, True)
                 f = open(pred_file, "wb")
-                pk.dump(y_pred, f)
+                pk.dump(s_pred, f)
                 f.close()
             else:
                 pred_file = os.path.join(DIR_PATH, PREDICTIONS_FOLDER, "{}.h5".format(hash_value))
