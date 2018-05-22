@@ -1,5 +1,3 @@
-from keras.losses import categorical_crossentropy, categorical_hinge
-from keras.metrics import categorical_accuracy
 from sklearn.metrics import hamming_loss, zero_one_loss
 
 from csrank import ObjectRankingDatasetGenerator, FETAObjectRanker, RankNet, CmpNet, ExpectedRankRegression, RankSVM, \
@@ -12,7 +10,7 @@ from csrank.constants import SYNTHETIC_OR, SYTHETIC_DC, DEPTH, SUSHI, IMAGE_DATA
     DISCRETE_CHOICE, CHOICE_FUNCTIONS, FETA_CHOICE, FATE_CHOICE, SYNTHETIC_CHOICE, MNIST_CHOICE, LETOR_DC, MNIST_DC
 from csrank.metrics import zero_one_rank_loss, zero_one_accuracy, make_ndcg_at_k_loss
 from csrank.metrics_np import *
-from csrank.metrics_np import spearman_scipy
+from csrank.metrics_np import spearman_scipy, categorical_accuracy, categorical_topk_accuracy
 from csrank.objectranking.fate_object_ranker import FATEObjectRanker
 
 
@@ -76,8 +74,7 @@ ranking_metrics = {'KendallsTau': kendalls_mean_np, 'SpearmanCorrelation': spear
                    "ZeroOneAccuracy": zero_one_accuracy_np,
                    "NDCGTopAll": make_ndcg_at_k_loss}
 discrete_choice_metrics = {'CategoricalAccuracy': categorical_accuracy,
-                           'CategoricalCrossEntropy': categorical_crossentropy,
-                           'CategoricalHinge': categorical_hinge}
+                           'CategoricalTopK': categorical_topk_accuracy}
 choice_metrics = {'F1Score': f1_measure, 'Precision': precision, 'Recall': recall,
                   'Subset01loss': zero_one_loss, 'HammingLoss': hamming_loss, 'Informedness': instance_informedness,
                   "AucScore": auc_score, "AveragePrecisionScore": average_precision}

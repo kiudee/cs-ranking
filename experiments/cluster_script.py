@@ -30,6 +30,7 @@ from sklearn.model_selection import ShuffleSplit
 
 from csrank import *
 from csrank.metrics import make_ndcg_at_k_loss
+from csrank.metrics_np import categorical_topk_accuracy
 from csrank.util import configure_logging_numpy_keras, create_dir_recursively, duration_tillnow, seconds_to_time, \
     get_mean_loss_for_dictionary, \
     get_loss_for_array, print_dictionary, get_duration_seconds
@@ -37,7 +38,6 @@ from experiments.dbconnection import DBConnector
 from experiments.util import get_dataset_reader, log_test_train_data, create_optimizer_parameters, \
     lp_metric_dict, ERROR_OUTPUT_STRING, \
     metrics_on_predictions
-
 
 DIR_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 LOGS_FOLDER = 'logs'
@@ -147,6 +147,9 @@ if __name__ == "__main__":
                 if "NDCG" in name:
                     evaluation_metric = make_ndcg_at_k_loss(k=n_objects)
                     predictions = y_pred
+                if "CategoricalTopK" == name:
+                    evaluation_metric = categorical_topk_accuracy(k=n_objects)
+
                 if isinstance(Y_test, dict):
                     metric_loss = get_mean_loss_for_dictionary(evaluation_metric, Y_test, predictions)
                 else:
