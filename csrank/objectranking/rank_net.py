@@ -89,14 +89,12 @@ class RankNet(ObjectRanker, Tunable):
     def _construct_layers(self, **kwargs):
         self.x1 = Input(shape=(self.n_object_features,))
         self.x2 = Input(shape=(self.n_object_features,))
-        self.output_node = Dense(1, activation='sigmoid',
-                                 kernel_regularizer=self.kernel_regularizer)
+        self.output_node = Dense(1, activation='sigmoid', kernel_regularizer=self.kernel_regularizer)
         self.output_layer_score = Dense(1, activation='linear')
         if self.batch_normalization:
             self.hidden_layers = [NormalizedDense(self.n_units, name="hidden_{}".format(x),
                                                   kernel_regularizer=self.kernel_regularizer,
-                                                  activation=self.non_linearities
-                                                  ) for x in range(self.n_hidden)]
+                                                  activation=self.non_linearities) for x in range(self.n_hidden)]
         else:
             self.hidden_layers = [Dense(self.n_units, name="hidden_{}".format(x),
                                         kernel_regularizer=self.kernel_regularizer,
@@ -104,8 +102,7 @@ class RankNet(ObjectRanker, Tunable):
                                   for x in range(self.n_hidden)]
         assert len(self.hidden_layers) == self.n_hidden
 
-    def fit(self, X, Y, epochs=10, callbacks=None,
-            validation_split=0.1, verbose=0, **kwd):
+    def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
 
         X1, X2, Y_single = self.convert_instances(X, Y)
 

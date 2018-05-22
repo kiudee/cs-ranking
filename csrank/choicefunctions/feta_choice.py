@@ -110,19 +110,39 @@ class FETAChoiceFunction(FETAObjectRanker):
     def predict_scores(self, X, **kwargs):
         return super().predict_scores(X, **kwargs)
 
-    def predict(self, X, **kwargs):
-        self.logger.debug('Predicting started')
+    def predict_for_scores(self, scores, **kwargs):
+        """ Predict rankings for a given collection of sets of objects.
 
-        scores = self.predict_scores(X, **kwargs)
-        self.logger.debug('Predicting scores complete')
-        if isinstance(X, dict):
+        Parameters
+        ----------
+        scores : dict or numpy array
+            Dictionary with a mapping from ranking size to numpy arrays
+            or a single numpy array of size containing scores of each object:
+            (n_instances, n_objects)
+
+
+        Returns
+        -------
+        Y : dict or numpy array
+            Dictionary with a mapping from ranking size to numpy arrays
+            or a single numpy array of size:
+            (n_instances, n_objects)
+            Predicted ranking
+        """
+
+        if isinstance(scores, dict):
             result = dict()
-            for n, s in self.predict_scores(X, **kwargs).items():
+            for n, s in scores.items():
                 result[n] = s > self.threshold
         else:
             result = scores > self.threshold
         return result
 
+    def predict(self, X, **kwargs):
+        self.logger.debug('Predicting started')
+        scores = self.predict_scores(X, **kwargs)
+        self.logger.debug('Predicting scores complete')
+        return self.predict_for_scores(scores)
     def __call__(self, X, **kwargs):
         return self.predict(X, **kwargs)
 
