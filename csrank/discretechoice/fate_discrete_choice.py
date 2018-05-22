@@ -1,10 +1,12 @@
 import logging
 
-from csrank.discretechoice.discrete_choice import ObjectChooser
+from sklearn.preprocessing import LabelBinarizer
+import numpy as np
+from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 from csrank.fate_network import FATEObjectRankingCore
 
 
-class FATEObjectChooser(FATEObjectRankingCore, ObjectChooser):
+class FATEDiscreteChoiceFunction(FATEObjectRankingCore, DiscreteObjectChooser):
     def __init__(self, loss_function='categorical_hinge', metrics=None,
                  **kwargs):
         FATEObjectRankingCore.__init__(self, **kwargs)
@@ -13,15 +15,16 @@ class FATEObjectChooser(FATEObjectRankingCore, ObjectChooser):
             metrics = ['categorical_accuracy']
         self.metrics = metrics
         self.model = None
-        self.logger = logging.getLogger(FATEObjectChooser.__name__)
+        self.logger = logging.getLogger(FATEDiscreteChoiceFunction.__name__)
+
+    def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
+        lb = LabelBinarizer()
+        lb.fit(np.arange(self.n_objects))
+        Y = lb.transform(Y)
+        super().fit(X, Y, epochs, callbacks, validation_split, verbose, **kwd)
 
     def predict(self, X, **kwargs):
-        scores = self.predict_scores(X, **kwargs)
-        if self.is_variadic:
-            result = dict()
-            for n, s in scores.items():
-                result[n] = s.argmax(axis=1)
-        else:
-            self.logger.info("Predicting chosen object")
-            result = scores.argmax(axis=1)
-        return result
+        return DiscreteObjectChooser.predict(X, **kwargs)
+
+    def predict_scores(self, X, **kwargs):
+        return super().predict_scores(X, **kwargs)
