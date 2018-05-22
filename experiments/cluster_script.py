@@ -146,7 +146,7 @@ if __name__ == "__main__":
                     evaluation_metric = make_ndcg_at_k_loss(k=n_objects)
                     predictions = y_pred
                 if isinstance(Y_test, dict):
-                    metric_loss = get_mean_loss_for_dictionary(logger, evaluation_metric, Y_test, predictions)
+                    metric_loss = get_mean_loss_for_dictionary(evaluation_metric, Y_test, predictions)
                 else:
                     metric_loss = get_loss_for_array(evaluation_metric, Y_test, predictions)
                 logger.info(ERROR_OUTPUT_STRING % (name, metric_loss))

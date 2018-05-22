@@ -35,13 +35,18 @@ class DiscreteObjectChooser(metaclass=ABCMeta):
 
         Parameters
         ----------
-        X : array-like, shape (n_samples, n_objects, n_features)
+        X : dict or numpy array
+            Dictionary with a mapping from size of the choice set to numpy arrays
+            or a single numpy array of size:
+            (n_instances, n_objects, n_features)
 
 
         Returns
         -------
-        Y : array-like, shape (n_samples, 1)
-            Predicted discrete choice out of given n_objects
+        Y : dict or numpy array
+            Dictionary with a mapping from choice set  size to numpy arrays
+            or a single numpy array containing discrete choices of size:
+            (n_instances, 1)
         """
 
         self.logger.debug('Predicting started')
@@ -49,11 +54,31 @@ class DiscreteObjectChooser(metaclass=ABCMeta):
         scores = self.predict_scores(X, **kwargs)
         self.logger.debug('Predicting scores complete')
 
-        if isinstance(X, dict):
+        return self.predict_for_scores(scores)
+
+    def predict_for_scores(self, scores):
+        """ Predict choices for a given collection scores for the sets of objects.
+
+        Parameters
+        ----------
+        scores : dict or numpy array
+            Dictionary with a mapping from choice set size to numpy arrays
+            or a single numpy array of size containing scores of each object of size:
+            (n_instances, n_objects)
+
+
+        Returns
+        -------
+        Y : dict or numpy array
+            Dictionary with a mapping from choice set  size to numpy arrays
+            or a single numpy array containing discrete choices of size:
+            (n_instances, 1)
+        """
+        if isinstance(scores, dict):
             result = dict()
             for n, s in scores.items():
                 result[n] = s.argmax(axis=1)
-            self.logger.debug()
+
         else:
             result = scores.argmax(axis=1)
         return result

@@ -193,18 +193,15 @@ def seconds_to_time(target_time_sec):
     return str(timedelta(seconds=target_time_sec))
 
 
-def get_mean_loss_for_dictionary(logger, metric, Y_true, Y_pred):
+def get_mean_loss_for_dictionary(metric, Y_true, Y_pred):
     losses = []
     total_instances = 0
     for n, y_pred in Y_pred.items():
         l = get_loss_for_array(metric, Y_true[n], y_pred)
-        logger.info('nobj=>{} : loss/acc=>{} : ins=>{}'.format(n, l, y_pred.shape[0]))
         l = l * y_pred.shape[0]
         total_instances += y_pred.shape[0]
         losses.append(l)
     losses = np.array(losses)
-    logger.info("total_instances {}".format(total_instances))
-    logger.info(losses)
     loss = np.sum(losses) / total_instances
     return loss
 

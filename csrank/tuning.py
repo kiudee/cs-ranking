@@ -161,8 +161,7 @@ class ParameterOptimizer(ObjectRanker):
         self.learner.fit(xtrain, ytrain, **self._fit_params)
         ypred = self.learner(xtest)
         if isinstance(xtest, dict):
-            loss = get_mean_loss_for_dictionary(logging.getLogger(PARAMETER_OPTIMIZER), self.validation_loss, ytest,
-                                                ypred)
+            loss = get_mean_loss_for_dictionary(self.validation_loss, ytest, ypred)
         else:
             loss = get_loss_for_array(self.validation_loss, ytest, ypred)
         time_taken = duration_tillnow(start)
