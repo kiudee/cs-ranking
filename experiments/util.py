@@ -68,7 +68,7 @@ datasets = {SYNTHETIC_OR: ObjectRankingDatasetGenerator, DEPTH: DepthDatasetRead
             SYNTHETIC_CHOICE: ChoiceDatasetGenerator, MNIST_CHOICE: MNISTChoiceDatasetReader}
 learners = {FETA_RANKER: FETAObjectRanker, RANKNET: RankNet, CMPNET: CmpNet, ERR: ExpectedRankRegression,
             RANKSVM: RankSVM, FATE_RANKER: FATEObjectRanker, FETA_CHOICE: FETAChoiceFunction,
-            FATE_CHOICE: FATEChoiceFunction, LISTNET: ListNet}
+            FATE_CHOICE: FATEChoiceFunction}
 
 ranking_metrics = {'KendallsTau': kendalls_mean_np, 'SpearmanCorrelation': spearman_scipy,
                    'ZeroOneRankLoss': zero_one_rank_loss_for_scores_np,
