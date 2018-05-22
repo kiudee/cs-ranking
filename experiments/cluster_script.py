@@ -38,9 +38,11 @@ from experiments.util import get_dataset_reader, log_test_train_data, create_opt
     lp_metric_dict, ERROR_OUTPUT_STRING, \
     metrics_on_predictions
 
+
 DIR_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 LOGS_FOLDER = 'logs'
 OPTIMIZER_FOLDER = 'optimizers'
+PREDICTIONS_FOLDER = 'predictions'
 
 if __name__ == "__main__":
     start = datetime.now()
@@ -120,17 +122,17 @@ if __name__ == "__main__":
             else:
                 batch_size = X_test.shape[0]
 
-            y_pred = optimizer_model.predict(X_test, batch_size=batch_size)
             s_pred = optimizer_model.predict_scores(X_test, batch_size=batch_size)
+            y_pred = optimizer_model.predict_for_scores(s_pred)
 
             if isinstance(s_pred, dict):
-                pred_file = os.path.join(DIR_PATH, 'predictions', "{}.pkl".format(hash_value))
+                pred_file = os.path.join(DIR_PATH, PREDICTIONS_FOLDER, "{}.pkl".format(hash_value))
                 create_dir_recursively(pred_file, True)
                 f = open(pred_file, "wb")
                 pk.dump(y_pred, f)
                 f.close()
             else:
-                pred_file = os.path.join(DIR_PATH, 'predictions', "{}.h5".format(hash_value))
+                pred_file = os.path.join(DIR_PATH, PREDICTIONS_FOLDER, "{}.h5".format(hash_value))
                 create_dir_recursively(pred_file, True)
                 f = h5py.File(pred_file, 'w')
                 f.create_dataset('scores', data=s_pred)

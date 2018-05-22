@@ -404,3 +404,10 @@ class ParameterOptimizer(ObjectRanker):
         else:
             self.logger.error('The ranking model was not fit yet.')
             raise AttributeError
+
+    def predict_for_scores(self, scores, **kwargs):
+        if self.model is not None:
+            return self.model.predict_for_scores(scores, **kwargs)
+        else:
+            self.logger.error('The ranking model was not fit yet.')
+            raise AttributeError
