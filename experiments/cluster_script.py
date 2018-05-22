@@ -147,8 +147,10 @@ if __name__ == "__main__":
                 if "NDCG" in name:
                     evaluation_metric = make_ndcg_at_k_loss(k=n_objects)
                     predictions = y_pred
-                if "CategoricalTopK" == name:
-                    evaluation_metric = categorical_topk_accuracy(k=n_objects)
+                if "CategoricalTopK{}" == name:
+                    k = int(n_objects / 2)
+                    evaluation_metric = categorical_topk_accuracy(k=k)
+                    name = name.format(k)
 
                 if isinstance(Y_test, dict):
                     metric_loss = get_mean_loss_for_dictionary(evaluation_metric, Y_test, predictions)
