@@ -98,14 +98,18 @@ def recall(y_true, y_pred):
     return recall_score(y_true, y_pred, average='samples')
 
 
-def categorical_topk_accuracy(y_true, y_pred, k=3):
-    topK = y_pred.argsort(axis=1)[:, -k:][:, ::-1]
-    accuracies = np.zeros_like(y_true, dtype=bool)
-    for i, top in enumerate(topK):
-        accuracies[i] = y_true[i] in top
-    return np.mean(accuracies)
+def categorical_topk_accuracy(k=5):
+    def topk_acc(y_true, y_pred):
+        topK = y_pred.argsort(axis=1)[:, -k:][:, ::-1]
+        accuracies = np.zeros_like(y_true, dtype=bool)
+        for i, top in enumerate(topK):
+            accuracies[i] = y_true[i] in top
+        return np.mean(accuracies)
+
+    return topk_acc
+
 
 def categorical_accuracy(y_true, y_pred):
-    pred = np.argmax(y_pred, axis=1)
-    accuracies = np.equal(y_true, pred)
+    choices = np.argmax(y_pred, axis=1)
+    accuracies = np.equal(y_true, choices)
     return np.mean(accuracies)

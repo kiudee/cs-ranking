@@ -44,7 +44,7 @@ class DiscreteObjectChooser(metaclass=ABCMeta):
         Returns
         -------
         Y : dict or numpy array
-            Dictionary with a mapping from choice set  size to numpy arrays
+            Dictionary with a mapping from size of the choice set to numpy arrays
             or a single numpy array containing discrete choices of size:
             (n_instances, 1)
         """
@@ -62,7 +62,7 @@ class DiscreteObjectChooser(metaclass=ABCMeta):
         Parameters
         ----------
         scores : dict or numpy array
-            Dictionary with a mapping from choice set size to numpy arrays
+            Dictionary with a mapping from size of the choice set to numpy arrays
             or a single numpy array of size containing scores of each object of size:
             (n_instances, n_objects)
 
@@ -70,7 +70,7 @@ class DiscreteObjectChooser(metaclass=ABCMeta):
         Returns
         -------
         Y : dict or numpy array
-            Dictionary with a mapping from choice set  size to numpy arrays
+            Dictionary with a mapping from size of the choice set to numpy arrays
             or a single numpy array containing discrete choices of size:
             (n_instances, 1)
         """
