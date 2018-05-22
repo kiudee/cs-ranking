@@ -68,7 +68,7 @@ datasets = {SYNTHETIC_OR: ObjectRankingDatasetGenerator, DEPTH: DepthDatasetRead
             SYNTHETIC_CHOICE: ChoiceDatasetGenerator, MNIST_CHOICE: MNISTChoiceDatasetReader}
 learners = {FETA_RANKER: FETAObjectRanker, RANKNET: RankNet, CMPNET: CmpNet, ERR: ExpectedRankRegression,
             RANKSVM: RankSVM, FATE_RANKER: FATEObjectRanker, FETA_CHOICE: FETAChoiceFunction,
-            FATE_CHOICE: FATEChoiceFunction}
+            FATE_CHOICE: FATEChoiceFunction, LISTNET: ListNet}
 
 ranking_metrics = {'KendallsTau': kendalls_mean_np, 'SpearmanCorrelation': spearman_scipy,
                    'ZeroOneRankLoss': zero_one_rank_loss_for_scores_np,
@@ -76,7 +76,9 @@ ranking_metrics = {'KendallsTau': kendalls_mean_np, 'SpearmanCorrelation': spear
                    "ZeroOneAccuracy": zero_one_accuracy_np,
                    "NDCGTopAll": make_ndcg_at_k_loss}
 discrete_choice_metrics = {'CategoricalAccuracy': categorical_accuracy,
-                           'CategoricalTopK': categorical_topk_accuracy}
+                           'CategoricalTopK3': categorical_topk_accuracy(k=3),
+                           'CategoricalTopK5': categorical_topk_accuracy(k=5),
+                           'CategoricalTopK{}': categorical_topk_accuracy}
 choice_metrics = {'F1Score': f1_measure, 'Precision': precision, 'Recall': recall,
                   'Subset01loss': zero_one_loss, 'HammingLoss': hamming_loss, 'Informedness': instance_informedness,
                   "AucScore": auc_score, "AveragePrecisionScore": average_precision}
