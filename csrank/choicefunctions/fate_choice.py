@@ -87,18 +87,18 @@ class FATEChoiceFunction(FATEObjectRankingCore):
         Parameters
         ----------
         scores : dict or numpy array
-            Dictionary with a mapping from ranking size to numpy arrays
-            or a single numpy array of size containing scores of each object:
+            Dictionary with a mapping from choice set size to numpy arrays
+            or a single numpy array containing scores of each object of size:
             (n_instances, n_objects)
 
 
         Returns
         -------
         Y : dict or numpy array
-            Dictionary with a mapping from ranking size to numpy arrays
-            or a single numpy array of size:
+            Dictionary with a mapping from choice set size to numpy arrays
+            or a single numpy array containing choices of size:
             (n_instances, n_objects)
-            Predicted ranking
+            Predicted choices
         """
 
         if isinstance(scores, dict):

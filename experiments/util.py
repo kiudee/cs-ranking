@@ -5,9 +5,9 @@ from csrank import ObjectRankingDatasetGenerator, FETAObjectRanker, RankNet, Cmp
     TagGenomeDatasetReader, SentenceOrderingDatasetReader, LetorObjectRankingDatasetReader, ChoiceDatasetGenerator, \
     MNISTChoiceDatasetReader, LetorDiscreteChoiceDatasetReader
 from csrank.callbacks import EarlyStoppingWithWeights, LRScheduler, DebugOutput
-from csrank.constants import SYNTHETIC_OR, SYTHETIC_DC, DEPTH, SUSHI, IMAGE_DATASET, TAG_GENOME, SENTENCE_ORDERING, \
+from csrank.constants import SYNTHETIC_OR, DEPTH, SUSHI, IMAGE_DATASET, TAG_GENOME, SENTENCE_ORDERING, \
     LETOR_OR, FETA_RANKER, RANKNET, CMPNET, ERR, RANKSVM, FATE_RANKER, OBJECT_RANKING, LABEL_RANKING, DYAD_RANKING, \
-    DISCRETE_CHOICE, CHOICE_FUNCTIONS, FETA_CHOICE, FATE_CHOICE, SYNTHETIC_CHOICE, MNIST_CHOICE, LETOR_DC, MNIST_DC
+    DISCRETE_CHOICE, CHOICE_FUNCTIONS, FETA_CHOICE, FATE_CHOICE, SYNTHETIC_CHOICE, MNIST_CHOICE, LETOR_DC
 from csrank.metrics import zero_one_rank_loss, zero_one_accuracy, make_ndcg_at_k_loss
 from csrank.metrics_np import *
 from csrank.metrics_np import spearman_scipy, categorical_accuracy, categorical_topk_accuracy
@@ -73,8 +73,7 @@ ranking_metrics = {'KendallsTau': kendalls_mean_np, 'SpearmanCorrelation': spear
                    'ZeroOneRankLossTies': zero_one_rank_loss_for_scores_ties_np,
                    "ZeroOneAccuracy": zero_one_accuracy_np,
                    "NDCGTopAll": make_ndcg_at_k_loss}
-discrete_choice_metrics = {'CategoricalAccuracy': categorical_accuracy,
-                           'CategoricalTopK': categorical_topk_accuracy}
+discrete_choice_metrics = {'CategoricalAccuracy': categorical_accuracy, 'CategoricalTopK': categorical_topk_accuracy}
 choice_metrics = {'F1Score': f1_measure, 'Precision': precision, 'Recall': recall,
                   'Subset01loss': zero_one_loss, 'HammingLoss': hamming_loss, 'Informedness': instance_informedness,
                   "AucScore": auc_score, "AveragePrecisionScore": average_precision}

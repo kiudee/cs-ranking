@@ -1,1 +1,1 @@
-from .fate_discrete_choice import FATEObjectChooser
+from .fate_discrete_choice import FATEDiscreteChoiceFunction
