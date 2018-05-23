@@ -21,7 +21,7 @@ __all__ = ['check_learner_class', 'configure_logging_numpy_keras', 'create_dir_r
            'duration_tillnow', 'files_with_same_name',
            'get_instances_objects', 'get_loss_for_array', 'get_mean_loss_for_dictionary', 'get_rankings_tensor',
            'get_tensor_value', 'heat_map', 'normalize', 'print_dictionary', 'ranking_ordering_conversion',
-           'rename_file_if_exist', 'scores_to_rankings', 'seconds_to_time', 'tensorify', 'time_from_now']
+           'rename_file_if_exist', 'scores_to_rankings', 'seconds_to_time', 'tensorify', 'time_from_now', 'softmax']
 
 
 def scores_to_rankings(score_matrix):

@@ -6,7 +6,7 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 
 from csrank.constants import OBJECT_RANKING, DYAD_RANKING, EXCEPTION_OBJECT_ARRAY_SHAPE, \
-    EXCEPTION_RANKINGS_FEATURES_INSTANCES, EXCEPTION_RANKINGS_FEATURES_NO_OF_OBJECTS, \
+    EXCEPTION_OUTPUT_FEATURES_INSTANCES, EXCEPTION_RANKINGS_FEATURES_NO_OF_OBJECTS, \
     EXCEPTION_UNWANTED_CONTEXT_FEATURES, LABEL_RANKING, DISCRETE_CHOICE, EXCEPTION_CONTEXT_ARRAY_SHAPE, \
     CHOICE_FUNCTIONS, EXCEPTION_SET_INCLUSION
 
@@ -37,7 +37,7 @@ class DatasetReader(metaclass=ABCMeta):
             if self.learning_problem == OBJECT_RANKING or self.learning_problem == DYAD_RANKING:
                 assert len(self.X.shape) == 3, EXCEPTION_OBJECT_ARRAY_SHAPE.format(self.learning_problem, self.X.shape)
                 n_instances, n_objects, n_features = self.X.shape
-                assert (n_instances == self.Y.shape[0]), EXCEPTION_RANKINGS_FEATURES_INSTANCES.format(
+                assert (n_instances == self.Y.shape[0]), EXCEPTION_OUTPUT_FEATURES_INSTANCES.format(
                     self.learning_problem, self.Y.shape[0], n_instances)
                 assert (n_objects == self.Y.shape[1]), EXCEPTION_RANKINGS_FEATURES_NO_OF_OBJECTS.format(
                     self.Y.shape[1], n_objects)
@@ -47,24 +47,23 @@ class DatasetReader(metaclass=ABCMeta):
             if self.learning_problem == LABEL_RANKING:
                 assert len(self.X.shape) == 2, EXCEPTION_CONTEXT_ARRAY_SHAPE.format(self.learning_problem, self.X.shape)
                 n_instances, n_features = self.X.shape
-                assert (n_instances == self.Y.shape[0]), EXCEPTION_RANKINGS_FEATURES_INSTANCES.format(
+                assert (n_instances == self.Y.shape[0]), EXCEPTION_OUTPUT_FEATURES_INSTANCES.format(
                     self.learning_problem, self.Y.shape[0], n_instances)
                 assert self.Xc is None, EXCEPTION_UNWANTED_CONTEXT_FEATURES.format(self.learning_problem)
 
             if self.learning_problem in [DISCRETE_CHOICE, CHOICE_FUNCTIONS]:
                 assert len(self.X.shape) == 3, EXCEPTION_OBJECT_ARRAY_SHAPE.format(self.learning_problem, self.X.shape)
                 n_instances, n_objects, n_features = self.X.shape
-                assert (n_instances == self.Y.shape[0]), EXCEPTION_RANKINGS_FEATURES_INSTANCES.format(
+                assert (n_instances == self.Y.shape[0]), EXCEPTION_OUTPUT_FEATURES_INSTANCES.format(
                     self.learning_problem, self.Y.shape[0], n_instances)
                 assert self.Xc is None, EXCEPTION_UNWANTED_CONTEXT_FEATURES.format(self.learning_problem)
-                if self.learning_problem == CHOICE_FUNCTIONS:
-                    assert (n_objects == self.Y.shape[1]), EXCEPTION_SET_INCLUSION
+                assert (n_objects == self.Y.shape[1]), EXCEPTION_SET_INCLUSION
 
             if self.learning_problem == DYAD_RANKING:
                 assert len(self.Xc.shape) == 2, EXCEPTION_CONTEXT_ARRAY_SHAPE.format(self.learning_problem,
                                                                                      self.Xc.shape)
                 n_instances, n_features = self.Xc.shape
-                assert (n_instances == self.Y.shape[0]), EXCEPTION_RANKINGS_FEATURES_INSTANCES.format(
+                assert (n_instances == self.Y.shape[0]), EXCEPTION_OUTPUT_FEATURES_INSTANCES.format(
                     self.learning_problem, self.Y.shape[0], n_instances)
 
     @abstractmethod

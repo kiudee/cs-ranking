@@ -10,7 +10,6 @@ from csrank.constants import SYNTHETIC_OR, DEPTH, SUSHI, IMAGE_DATASET, TAG_GENO
     DISCRETE_CHOICE, CHOICE_FUNCTIONS, FETA_CHOICE, FATE_CHOICE, SYNTHETIC_CHOICE, MNIST_CHOICE, LETOR_DC, LISTNET
 from csrank.metrics import zero_one_rank_loss, zero_one_accuracy, make_ndcg_at_k_loss
 from csrank.metrics_np import *
-from csrank.metrics_np import spearman_scipy, categorical_accuracy, categorical_topk_accuracy
 from csrank.objectranking.fate_object_ranker import FATEObjectRanker
 
 

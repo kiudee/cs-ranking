@@ -1,18 +1,19 @@
 import numpy as np
+from pygmo import hypervolume
 from scipy.spatial.distance import squareform, pdist
 from sklearn.datasets import make_regression, make_blobs
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.utils import check_random_state
 
 from csrank.constants import DISCRETE_CHOICE
-from csrank.dataset_reader import SyntheticDatasetGenerator
-from csrank.dataset_reader.util import create_pairwise_prob_matrix
+from .util import convert_to_label_encoding
+from ..synthetic_dataset_generator import SyntheticDatasetGenerator
+from ..util import create_pairwise_prob_matrix
 
 
 class DiscreteChoiceDatasetGenerator(SyntheticDatasetGenerator):
     def __init__(self, dataset_type='medoid', **kwargs):
-        super(DiscreteChoiceDatasetGenerator, self).__init__(
-            learning_problem=DISCRETE_CHOICE, **kwargs)
+        super(DiscreteChoiceDatasetGenerator, self).__init__(learning_problem=DISCRETE_CHOICE, **kwargs)
         dataset_function_options = {'linear': self.make_linear_transitive,
                                     'medoid': self.make_intransitive_medoids,
                                     'hypervolume': self.make_hv_dataset,
@@ -34,6 +35,7 @@ class DiscreteChoiceDatasetGenerator(SyntheticDatasetGenerator):
         X = X.reshape(n_instances, n_objects, n_features)
         y = y.reshape(n_instances, n_objects)
         Y = y.argmax(axis=1)
+        Y = convert_to_label_encoding(Y, n_objects)
         return X, Y
 
     def make_intransitive_medoids(self, n_instances=100, n_objects=5,
@@ -48,6 +50,7 @@ class DiscreteChoiceDatasetGenerator(SyntheticDatasetGenerator):
             Y[i] = medoid
         X = np.array(X)
         Y = np.array(Y)
+        Y = convert_to_label_encoding(Y, n_objects)
         return X, Y
 
     def make_hv_dataset(self, n_instances=1000, n_objects=5, n_features=5,
@@ -62,6 +65,7 @@ class DiscreteChoiceDatasetGenerator(SyntheticDatasetGenerator):
             hv = hypervolume(x)
             cont = hv.contributions(reference)
             Y[i] = np.argmax(cont)
+        Y = convert_to_label_encoding(Y, n_objects)
         return X, Y
 
     def make_gp_transitive(self, n_instances=1000, n_objects=5, noise=0.0,
@@ -83,6 +87,7 @@ class DiscreteChoiceDatasetGenerator(SyntheticDatasetGenerator):
         X = X.reshape(n_instances, n_objects, n_features)
         f = f.reshape(n_instances, n_objects)
         Y = f.argmax(axis=1)
+        Y = convert_to_label_encoding(Y, n_objects)
         return X, Y
 
     def make_gp_non_transitive(self, n_instances=1000, n_objects=5,
@@ -109,6 +114,7 @@ class DiscreteChoiceDatasetGenerator(SyntheticDatasetGenerator):
             Y.append(choice)
         X = np.array(X)
         Y = np.array(Y)
+        Y = convert_to_label_encoding(Y, n_objects)
         return X, Y
 
     def get_single_train_test_split(self):

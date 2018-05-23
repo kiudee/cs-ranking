@@ -4,7 +4,7 @@ from keras.layers import BatchNormalization, Dense, Activation, Input, Lambda
 from keras.layers.merge import average
 from keras.models import Model
 
-__all__ = ['NormalizedDense', 'DeepSet']
+__all__ = ['NormalizedDense', 'DeepSet', 'create_input_lambda']
 
 
 class NormalizedDense(object):

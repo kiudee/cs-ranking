@@ -7,7 +7,7 @@ from scipy.stats import rankdata
 from sklearn.utils import check_random_state
 
 from csrank.constants import OBJECT_RANKING
-from csrank.dataset_reader.objectranking.util import sub_sampling_rankings
+from .util import sub_sampling_rankings
 from ..dataset_reader import DatasetReader
 
 __all__ = ['DepthDatasetReader']

@@ -12,9 +12,8 @@ from sklearn.utils import check_random_state
 
 from csrank.constants import OBJECT_RANKING
 from csrank.util import scores_to_rankings
+from .util import initialize_similarity_matrix, get_key_for_indices, similarity_function_for_multilabel_instances
 from ..dataset_reader import DatasetReader
-from ..objectranking.util import initialize_similarity_matrix, get_key_for_indices, \
-    similarity_function_for_multilabel_instances
 
 
 class ImageDatasetReader(DatasetReader):

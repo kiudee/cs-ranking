@@ -18,9 +18,6 @@ class FATEDiscreteChoiceFunction(FATEObjectRankingCore, DiscreteObjectChooser):
         self.logger = logging.getLogger(FATEDiscreteChoiceFunction.__name__)
 
     def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
-        lb = LabelBinarizer()
-        lb.fit(np.arange(self.n_objects))
-        Y = lb.transform(Y)
         super().fit(X, Y, epochs, callbacks, validation_split, verbose, **kwd)
 
     def predict(self, X, **kwargs):

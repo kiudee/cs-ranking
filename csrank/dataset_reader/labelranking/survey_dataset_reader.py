@@ -36,7 +36,7 @@ class SurveyDatasetReader(DatasetReader):
         self.Y = ranking_ordering_conversion(orderings)
         self.__check_dataset_validity__()
 
-    def get_train_test_dataset(self):
+    def get_single_train_test_split(self):
         cv_iter = ShuffleSplit(n_splits=1, test_size=0.3, random_state=self.random_state)
         (train_idx, test_idx) = list(cv_iter.split(self.X))[0]
         return self.X[train_idx], self.Y[train_idx], self.X[test_idx], self.Y[test_idx]

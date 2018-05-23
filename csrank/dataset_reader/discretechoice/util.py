@@ -2,9 +2,10 @@ import logging
 from itertools import product
 
 import numpy as np
+from sklearn.preprocessing import LabelBinarizer
 
 
-def sub_sampling_discerete_choices(name, Xt, St, n_objects=5):
+def sub_sampling_discrete_choices(name, Xt, St, n_objects=5):
     logger = logging.getLogger(name=name)
     bucket_size = int(Xt.shape[1] / n_objects)
     X_train = []
@@ -25,6 +26,7 @@ def sub_sampling_discerete_choices(name, Xt, St, n_objects=5):
             Y_train = np.concatenate([Y_train, Y], axis=0)
             X_train = np.concatenate([X_train, X], axis=0)
     logger.info("Sampled instances {} objects {}".format(X_train.shape[0], X_train.shape[1]))
+    Y_train = convert_to_label_encoding(Y_train, n_objects)
     return X_train, Y_train
 
 
@@ -51,6 +53,7 @@ def generate_complete_pairwise_dataset(X, Y):
     X1 = []
     X2 = []
     Y_single = []
+    Y = np.argmax(Y, axis=1)
     choices = X[np.arange(X.shape[0]), Y]
     for x, choice in zip(X, choices):
         x1, x2, y1, y2 = generate_pairwise_instances(x, choice)
@@ -63,3 +66,8 @@ def generate_complete_pairwise_dataset(X, Y):
     Y_double = np.array(Y_double)
     Y_single = np.array(Y_single)
     return X1, X2, Y_double, Y_single
+
+
+def convert_to_label_encoding(Y, n_objects):
+    lb = LabelBinarizer().fit(np.arange(n_objects))
+    return lb.transform(Y)

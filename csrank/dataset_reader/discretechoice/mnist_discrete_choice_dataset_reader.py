@@ -5,16 +5,17 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.utils import check_random_state
 
-from csrank.constants import CHOICE_FUNCTIONS
+from csrank.constants import DISCRETE_CHOICE
+from .util import convert_to_label_encoding
 from ..dataset_reader import DatasetReader
 
 
-class MNISTChoiceDatasetReader(DatasetReader):
+class MNISTDiscreteChoiceDatasetReader(DatasetReader):
 
     def __init__(self, n_train_instances=10000, n_test_instances=10000, n_objects=10, random_state=None, **kwargs):
-        super(MNISTChoiceDatasetReader, self).__init__(learning_problem=CHOICE_FUNCTIONS, dataset_folder='mnist',
-                                                       **kwargs)
-        self.logger = logging.getLogger(MNISTChoiceDatasetReader.__name__)
+        super(MNISTDiscreteChoiceDatasetReader, self).__init__(learning_problem=DISCRETE_CHOICE, dataset_folder='mnist',
+                                                               **kwargs)
+        self.logger = logging.getLogger(MNISTDiscreteChoiceDatasetReader.__name__)
         self.n_test_instances = n_test_instances
         self.n_train_instances = n_train_instances
         self.n_objects = n_objects
@@ -32,16 +33,19 @@ class MNISTChoiceDatasetReader(DatasetReader):
         n_total = self.n_test_instances + self.n_train_instances
         largest_numbers = self.random_state.randint(1, num_classes, size=n_total)
         self.X = np.empty((n_total, self.n_objects, self.n_features))
-        y_number = np.empty((n_total, self.n_objects), dtype=int)
+        self.Y = np.empty(n_total, dtype=int)
         for i in range(n_total):
-            remaining = X_raw[y_labels <= largest_numbers[i]]
+            remaining = X_raw[y_labels < largest_numbers[i]]
+            largest = X_raw[y_labels == largest_numbers[i]]
             while True:
                 indices = self.random_state.choice(len(remaining), size=self.n_objects, replace=False)
+                ind = self.random_state.choice(len(largest), size=1)
+                choice = largest[ind]
                 self.X[i] = remaining[indices]
-                y_number[i] = y_labels[y_labels <= largest_numbers[i]][indices]
-                if largest_numbers[i] in y_number[i]:
-                    break
-        self.Y = (y_number == largest_numbers[:, None]).astype(int)
+                position = self.random_state.choice(self.n_objects, size=1)[0]
+                self.X[i][position] = choice[0]
+                self.Y[i] = position
+        self.Y = convert_to_label_encoding(self.Y,  self.n_objects)
         self.__check_dataset_validity__()
 
     def get_single_train_test_split(self):

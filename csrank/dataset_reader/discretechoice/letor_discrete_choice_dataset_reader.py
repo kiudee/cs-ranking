@@ -3,8 +3,8 @@ import logging
 from sklearn.utils import check_random_state
 
 from csrank.constants import DISCRETE_CHOICE
-from csrank.dataset_reader import LetorDatasetReader
-from csrank.dataset_reader.discretechoice.util import sub_sampling_discerete_choices
+from .util import sub_sampling_discrete_choices, convert_to_label_encoding
+from ..letor_dataset_reader import LetorDatasetReader
 
 
 class LetorDiscreteChoiceDatasetReader(LetorDatasetReader):
@@ -16,8 +16,12 @@ class LetorDiscreteChoiceDatasetReader(LetorDatasetReader):
         self.__load_dataset__()
 
     def sub_sampling_function(self, n):
-        return sub_sampling_discerete_choices(LetorDiscreteChoiceDatasetReader.__name__, self.X_train[n],
-                                              self.scores_train[n], n_objects=self.n_objects)
+        return sub_sampling_discrete_choices(LetorDiscreteChoiceDatasetReader.__name__, self.X_train[n],
+                                             self.scores_train[n], n_objects=self.n_objects)
+
+    def convert_output(self, ranking_length):
+        self.Y = self.Y.argmin(axis=1)
+        self.Y = convert_to_label_encoding(self.Y, ranking_length)
 
     def splitter(self, iter):
         pass
