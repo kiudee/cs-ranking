@@ -14,7 +14,7 @@ from csrank.layers import DeepSet, create_input_lambda
 from csrank.tunable import Tunable
 from csrank.util import print_dictionary
 
-__all__ = []
+__all__ = ['FATEObjectRankingCore']
 
 
 class FATERankingCore(Tunable, metaclass=ABCMeta):

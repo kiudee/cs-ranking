@@ -42,7 +42,7 @@ class IntelligentSystemGroupDatasetReader(DatasetReader):
             self.Y[name] = labels.as_matrix()
         self.logger.info("Dataset files: " + repr(self.train_files_names))
 
-    def get_train_test_dataset(self, name="cold"):
+    def get_single_train_test_split(self, name="cold"):
         cv_iter = ShuffleSplit(n_splits=1, test_size=0.3, random_state=self.random_state)
         (train_idx, test_idx) = list(cv_iter.split(self.X[name]))[0]
         return self.X[name][train_idx], self.Y[name][train_idx], self.X[name][test_idx], self.Y[name][

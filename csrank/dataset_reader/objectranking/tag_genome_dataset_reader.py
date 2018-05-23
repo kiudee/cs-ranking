@@ -10,7 +10,7 @@ from sklearn.utils import check_random_state
 from csrank.constants import OBJECT_RANKING
 from csrank.util import scores_to_rankings
 from ..dataset_reader import DatasetReader
-from ..objectranking.util import initialize_similarity_matrix, get_key_for_indices, weighted_cosine_similarity
+from .util import initialize_similarity_matrix, get_key_for_indices, weighted_cosine_similarity
 
 TAG_POPULARITY = "TagPopularity"
 DOC_FREQUENCY = "DocFrequency"

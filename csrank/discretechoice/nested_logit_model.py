@@ -5,13 +5,12 @@ import pymc3 as pm
 import theano
 import theano.tensor as tt
 from sklearn.cluster import MiniBatchKMeans as clustering
-from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_random_state
 
-from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
-from csrank.discretechoice.likelihoods import likelihood_dict, LogLikelihood
 from csrank.tunable import Tunable
 from csrank.util import print_dictionary
+from .discrete_choice import DiscreteObjectChooser
+from .likelihoods import likelihood_dict, LogLikelihood
 
 
 class NestedLogitModel(DiscreteObjectChooser, Tunable):
@@ -99,11 +98,10 @@ class NestedLogitModel(DiscreteObjectChooser, Tunable):
             p = get_probability(y_nests, utility, lambda_k, utility_k)
 
             if self.loss_function is None:
+                Y = np.argmax(Y, axis=1)
                 yl = pm.Categorical('yl', p=p, observed=Y)
                 self.trace = pm.sample(self.n_sample, tune=self.n_tune, cores=8)
             else:
-                Y = LabelBinarizer().fit_transform(Y)
-                Y = theano.shared(Y)
                 yl = LogLikelihood('yl', loss_func=self.loss_function, p=p, observed=Y)
                 self.trace = pm.sample(self.n_sample, tune=self.n_tune, cores=8)
 

@@ -5,7 +5,7 @@ import h5py
 import numpy as np
 
 from csrank.constants import OBJECT_RANKING
-from csrank.dataset_reader.objectranking.util import sub_sampling_rankings
+from .util import sub_sampling_rankings
 from ..dataset_reader import DatasetReader
 
 

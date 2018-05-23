@@ -2,7 +2,7 @@ import numpy as np
 from sklearn.utils import check_random_state
 
 from csrank.constants import CHOICE_FUNCTIONS
-from csrank.dataset_reader import SyntheticDatasetGenerator
+from ..synthetic_dataset_generator import SyntheticDatasetGenerator
 
 
 class ChoiceDatasetGenerator(SyntheticDatasetGenerator):

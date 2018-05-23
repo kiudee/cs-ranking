@@ -1,12 +1,10 @@
 import logging
 
-import numpy as np
 from keras.losses import binary_crossentropy
 from keras.regularizers import l2
-from sklearn.preprocessing import LabelBinarizer
 
-from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 from csrank.objectranking.feta_ranker import FETAObjectRanker
+from .discrete_choice import DiscreteObjectChooser
 
 
 class FETADiscreteChoiceFunction(FETAObjectRanker, DiscreteObjectChooser):
@@ -22,9 +20,6 @@ class FETADiscreteChoiceFunction(FETAObjectRanker, DiscreteObjectChooser):
         self.logger = logging.getLogger(FETADiscreteChoiceFunction.__name__)
 
     def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
-        lb = LabelBinarizer()
-        lb.fit(np.arange(self.n_objects))
-        Y = lb.transform(Y)
         super().fit(X, Y, epochs, callbacks, validation_split, verbose, **kwd)
 
     def predict_scores(self, X, **kwargs):

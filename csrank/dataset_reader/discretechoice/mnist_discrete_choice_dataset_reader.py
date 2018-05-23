@@ -5,15 +5,15 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.utils import check_random_state
 
-from csrank.constants import CHOICE_FUNCTIONS
-from csrank.dataset_reader import DatasetReader
+from csrank.constants import DISCRETE_CHOICE
+from .util import convert_to_label_encoding
+from ..dataset_reader import DatasetReader
 
 
 class MNISTDiscreteChoiceDatasetReader(DatasetReader):
 
     def __init__(self, n_train_instances=10000, n_test_instances=10000, n_objects=10, random_state=None, **kwargs):
-        super(MNISTDiscreteChoiceDatasetReader, self).__init__(learning_problem=CHOICE_FUNCTIONS,
-                                                               dataset_folder='mnist',
+        super(MNISTDiscreteChoiceDatasetReader, self).__init__(learning_problem=DISCRETE_CHOICE, dataset_folder='mnist',
                                                                **kwargs)
         self.logger = logging.getLogger(MNISTDiscreteChoiceDatasetReader.__name__)
         self.n_test_instances = n_test_instances
@@ -45,6 +45,7 @@ class MNISTDiscreteChoiceDatasetReader(DatasetReader):
                 position = self.random_state.choice(self.n_objects, size=1)[0]
                 self.X[i][position] = choice[0]
                 self.Y[i] = position
+        self.Y = convert_to_label_encoding(self.Y, self.n_objects)
         self.__check_dataset_validity__()
 
     def get_single_train_test_split(self):

@@ -7,7 +7,7 @@ from csrank.util import scores_to_rankings
 __all__ = ['spearman_mean_np', 'kendalls_mean_np', 'zero_one_accuracy_np',
            'zero_one_rank_loss_for_scores_ties_np', 'zero_one_rank_loss_for_scores_np',
            'auc_score', "instance_informedness", 'f1_measure', 'recall',
-           'average_precision', "precision"]
+           'average_precision', "precision", "spearman_scipy", "categorical_topk_accuracy", "categorical_accuracy"]
 
 
 def spearman_mean_np(y_true, s_pred):
@@ -102,6 +102,7 @@ def categorical_topk_accuracy(k=5):
     def topk_acc(y_true, y_pred):
         topK = y_pred.argsort(axis=1)[:, -k:][:, ::-1]
         accuracies = np.zeros_like(y_true, dtype=bool)
+        y_true = np.argmax(y_true, axis=1)
         for i, top in enumerate(topK):
             accuracies[i] = y_true[i] in top
         return np.mean(accuracies)
@@ -110,6 +111,7 @@ def categorical_topk_accuracy(k=5):
 
 
 def categorical_accuracy(y_true, y_pred):
+    y_true = np.argmax(y_true, axis=1)
     choices = np.argmax(y_pred, axis=1)
     accuracies = np.equal(y_true, choices)
     return np.mean(accuracies)

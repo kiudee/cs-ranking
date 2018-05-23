@@ -9,7 +9,7 @@ from csrank.util import ranking_ordering_conversion
 
 __all__ = ['generate_complete_pairwise_dataset', 'complete_linear_regression_dataset',
            'complete_linear_regression_dataset', "weighted_cosine_similarity", "get_key_for_indices",
-           "sub_sampling_rankings"]
+           "sub_sampling_rankings", "initialize_similarity_matrix", "similarity_function_for_multilabel_instances"]
 
 
 def generate_pairwise_instances(features):

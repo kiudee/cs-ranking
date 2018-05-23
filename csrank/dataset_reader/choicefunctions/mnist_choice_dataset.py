@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import check_random_state
 
 from csrank.constants import CHOICE_FUNCTIONS
-from csrank.dataset_reader import DatasetReader
+from ..dataset_reader import DatasetReader
 
 
 class MNISTChoiceDatasetReader(DatasetReader):
