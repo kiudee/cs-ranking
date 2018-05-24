@@ -12,7 +12,7 @@ from .dataset_reader import DatasetReader
 
 
 class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
-    def __init__(self, year=2007, fold_id=1, **kwargs):
+    def __init__(self, year=2007, fold_id=0, **kwargs):
         super(LetorDatasetReader, self).__init__(dataset_folder='letor', **kwargs)
         self.DATASET_FOLDER_2007 = 'MQ{}-list'.format(year)
         self.DATASET_FOLDER_2008 = 'MQ{}-list'.format(year)

@@ -37,14 +37,13 @@ class MNISTDiscreteChoiceDatasetReader(DatasetReader):
         for i in range(n_total):
             remaining = X_raw[y_labels < largest_numbers[i]]
             largest = X_raw[y_labels == largest_numbers[i]]
-            while True:
-                indices = self.random_state.choice(len(remaining), size=self.n_objects, replace=False)
-                ind = self.random_state.choice(len(largest), size=1)
-                choice = largest[ind]
-                self.X[i] = remaining[indices]
-                position = self.random_state.choice(self.n_objects, size=1)[0]
-                self.X[i][position] = choice[0]
-                self.Y[i] = position
+            indices = self.random_state.choice(len(remaining), size=self.n_objects, replace=False)
+            ind = self.random_state.choice(len(largest), size=1)[0]
+            choice = largest[ind]
+            self.X[i] = remaining[indices]
+            position = self.random_state.choice(self.n_objects, size=1)[0]
+            self.X[i][position] = choice
+            self.Y[i] = position
         self.Y = convert_to_label_encoding(self.Y, self.n_objects)
         self.__check_dataset_validity__()
 
