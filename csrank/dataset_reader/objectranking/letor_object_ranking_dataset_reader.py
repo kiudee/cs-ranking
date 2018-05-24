@@ -16,8 +16,7 @@ class LetorObjectRankingDatasetReader(LetorDatasetReader):
         self.__load_dataset__()
 
     def sub_sampling_function(self, n):
-        return sub_sampling_rankings(LetorDatasetReader.__name__, self.X_train[n], self.Y_train[n],
-                                     n_objects=self.n_objects)
+        return sub_sampling_rankings(self.X_train[n], self.Y_train[n], n_objects=self.n_objects)
 
     def splitter(self, iter):
         pass

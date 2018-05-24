@@ -5,8 +5,7 @@ import numpy as np
 from sklearn.preprocessing import LabelBinarizer
 
 
-def sub_sampling_discrete_choices(name, Xt, St, n_objects=5):
-    logger = logging.getLogger(name=name)
+def sub_sampling_discrete_choices(Xt, St, n_objects=5):
     bucket_size = int(Xt.shape[1] / n_objects)
     X_train = []
     Y_train = []
@@ -25,7 +24,6 @@ def sub_sampling_discrete_choices(name, Xt, St, n_objects=5):
         else:
             Y_train = np.concatenate([Y_train, Y], axis=0)
             X_train = np.concatenate([X_train, X], axis=0)
-    logger.info("Sampled instances {} objects {}".format(X_train.shape[0], X_train.shape[1]))
     Y_train = convert_to_label_encoding(Y_train, n_objects)
     return X_train, Y_train
 
