@@ -42,7 +42,7 @@ class DiscreteChoiceDatasetGenerator(SyntheticDatasetGenerator):
                                   n_features=100, seed=42, **kwd):
         random_state = check_random_state(seed=seed)
         X = random_state.uniform(size=(n_instances, n_objects, n_features))
-        Y = np.empty((n_instances))
+        Y = np.empty(n_instances)
         for i in range(n_instances):
             D = squareform(pdist(X[i], metric='euclidean'))
             sum_dist = D.mean(axis=0)
@@ -59,7 +59,7 @@ class DiscreteChoiceDatasetGenerator(SyntheticDatasetGenerator):
         X = random_state.randn(n_instances, n_objects, n_features)
         # Normalize to unit circle and fold to lower quadrant
         X = -np.abs(X / np.sqrt(np.power(X, 2).sum(axis=2))[..., None])
-        Y = np.empty((n_instances), dtype=int)
+        Y = np.empty(n_instances, dtype=int)
         reference = np.zeros(n_features)
         for i, x in enumerate(X):
             hv = hypervolume(x)

@@ -156,6 +156,7 @@ class ListNet(ObjectRanker, Tunable):
 
     def _predict_scores_fixed(self, X, **kwargs):
         n_inst, n_obj, n_feat = X.shape
+        self.logger.info("For Test instances {} objects {} features {}".format(n_inst, n_obj, n_feat))
         inp = Input(shape=(n_obj, n_feat))
         lambdas = [create_input_lambda(i)(inp) for i in range(n_obj)]
         scores = concatenate([self.scoring_model(lam) for lam in lambdas])
