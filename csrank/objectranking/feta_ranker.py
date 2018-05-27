@@ -2,12 +2,14 @@ import logging
 from itertools import combinations, permutations
 
 import numpy as np
+import tensorflow as tf
 from keras import Input, backend as K, optimizers
 from keras.engine import Model
 from keras.layers import Dense, concatenate, Lambda, add
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
 
+from csrank.constants import allowed_dense_kwargs
 from csrank.layers import NormalizedDense
 from csrank.losses import hinged_rank_loss
 from csrank.objectranking.object_ranker import ObjectRanker
@@ -19,10 +21,10 @@ __all__ = ['FETAObjectRanker']
 
 class FETAObjectRanker(ObjectRanker, Tunable):
 
-    def __init__(self, n_objects, n_object_features, n_hidden=2, n_units=8,
+    def __init__(self, n_objects, n_object_features, hash_file, n_hidden=2, n_units=8,
                  add_zeroth_order_model=False, max_number_of_objects=5,
                  num_subsample=5, loss_function=hinged_rank_loss, batch_normalization=False,
-                 kernel_regularizer=l2(l=1e-4), non_linearities='selu',
+                 kernel_regularizer=l2(l=1e-4), kernel_initializer='lecun_normal', activation='selu',
                  optimizer="adam", metrics=None, batch_size=256, random_state=None, **kwargs):
         """
         Create a FETA-network architecture for object ranking.
@@ -34,6 +36,8 @@ class FETAObjectRanker(ObjectRanker, Tunable):
             Number of objects to be ranked
         n_object_features : int
             Dimensionality of the feature space of each object
+        hash_file: str
+            File path of the model where the weights are stored to get the predictions after clearing the memory
         n_hidden : int
             Number of hidden layers
         n_units : int
@@ -50,7 +54,9 @@ class FETAObjectRanker(ObjectRanker, Tunable):
             Whether to use batch normalization in the hidden layers
         kernel_regularizer : function
             Regularizer to use in the hidden units
-        non_linearities : string or function
+        kernel_initializer : function or string
+            Initialization function for the weights of each hidden layer
+        activation : string or function
             Activation function to use in the hidden units
         optimizer : string or function
             Stochastic gradient optimizer
@@ -68,8 +74,9 @@ class FETAObjectRanker(ObjectRanker, Tunable):
         self.random_state = check_random_state(random_state)
 
         self.kernel_regularizer = kernel_regularizer
+        self.kernel_initializer = kernel_initializer
         self.batch_normalization = batch_normalization
-        self.non_linearities = non_linearities
+        self.activation = activation
         self.loss_function = loss_function
         self.metrics = metrics
         self._n_objects = n_objects
@@ -77,13 +84,23 @@ class FETAObjectRanker(ObjectRanker, Tunable):
         self.num_subsample = num_subsample
         self.n_object_features = n_object_features
         self.batch_size = batch_size
-
+        self.hash_file = hash_file
         self.optimizer = optimizers.get(optimizer)
         self._optimizer_config = self.optimizer.get_config()
         self._use_zeroth_model = add_zeroth_order_model
         self.n_hidden = n_hidden
         self.n_units = n_units
-        self._construct_layers()
+        keys = list(kwargs.keys())
+        for key in keys:
+            if key not in allowed_dense_kwargs:
+                del kwargs[key]
+        self.kwargs = kwargs
+
+        self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
+                               activation=self.activation, **self.kwargs)
+        self._pairwise_model = None
+        self.model = None
+        self.zero_order_model = None
 
     @property
     def n_objects(self):
@@ -97,43 +114,20 @@ class FETAObjectRanker(ObjectRanker, Tunable):
         # X = Input(shape=(None, n_features))
         if self.batch_normalization:
             if self._use_zeroth_model:
-                self.hidden_layers_zeroth = [
-                    NormalizedDense(self.n_units,
-                                    name="hidden_zeroth_{}".format(x),
-                                    kernel_regularizer=self.kernel_regularizer,
-                                    activation=self.non_linearities,
-                                    **kwargs)
-                    for x in range(self.n_hidden)
-                ]
-            self.hidden_layers = [
-                NormalizedDense(self.n_units, name="hidden_{}".format(x),
-                                kernel_regularizer=self.kernel_regularizer,
-                                activation=self.non_linearities,
-                                **kwargs)
-                for x in range(self.n_hidden)
-            ]
+                self.hidden_layers_zeroth = [NormalizedDense(self.n_units, name="hidden_zeroth_{}".format(x), **kwargs)
+                                             for x in range(self.n_hidden)]
+            self.hidden_layers = [NormalizedDense(self.n_units, name="hidden_{}".format(x), **kwargs) for x in
+                                  range(self.n_hidden)]
         else:
             if self._use_zeroth_model:
-                self.hidden_layers_zeroth = [
-                    Dense(self.n_units, name="hidden_zeroth_{}".format(x),
-                          kernel_regularizer=self.kernel_regularizer,
-                          activation=self.non_linearities,
-                          **kwargs)
-                    for x in range(self.n_hidden)
-                ]
-            self.hidden_layers = [
-                Dense(self.n_units, name="hidden_{}".format(x),
-                      kernel_regularizer=self.kernel_regularizer,
-                      activation=self.non_linearities,
-                      **kwargs)
-                for x in range(self.n_hidden)
-            ]
+                self.hidden_layers_zeroth = [Dense(self.n_units, name="hidden_zeroth_{}".format(x), **kwargs) for x in
+                                             range(self.n_hidden)]
+            self.hidden_layers = [Dense(self.n_units, name="hidden_{}".format(x), **kwargs) for x in
+                                  range(self.n_hidden)]
         assert len(self.hidden_layers) == self.n_hidden
-        self.output_node = Dense(1, activation="sigmoid",
-                                 kernel_regularizer=self.kernel_regularizer)
+        self.output_node = Dense(1, activation="sigmoid", kernel_regularizer=self.kernel_regularizer)
         if self._use_zeroth_model:
-            self.output_node_zeroth = Dense(1, activation="sigmoid",
-                                            kernel_regularizer=self.kernel_regularizer)
+            self.output_node_zeroth = Dense(1, activation="sigmoid", kernel_regularizer=self.kernel_regularizer)
 
     def _create_zeroth_order_model(self):
         inp = Input(shape=(self.n_object_features,))
@@ -145,26 +139,28 @@ class FETAObjectRanker(ObjectRanker, Tunable):
 
         return Model(inputs=[inp], outputs=zeroth_output)
 
-    def _create_pairwise_model(self):
-        x1 = Input(shape=(self.n_object_features,))
-        x2 = Input(shape=(self.n_object_features,))
+    @property
+    def pairwise_model(self):
+        if self._pairwise_model is None:
+            x1 = Input(shape=(self.n_object_features,))
+            x2 = Input(shape=(self.n_object_features,))
 
-        x1x2 = concatenate([x1, x2])
-        x2x1 = concatenate([x2, x1])
+            x1x2 = concatenate([x1, x2])
+            x2x1 = concatenate([x2, x1])
 
-        for hidden in self.hidden_layers:
-            x1x2 = hidden(x1x2)
-            x2x1 = hidden(x2x1)
+            for hidden in self.hidden_layers:
+                x1x2 = hidden(x1x2)
+                x2x1 = hidden(x2x1)
 
-        merged_left = concatenate([x1x2, x2x1])
-        merged_right = concatenate([x2x1, x1x2])
+            merged_left = concatenate([x1x2, x2x1])
+            merged_right = concatenate([x2x1, x1x2])
 
-        N_g = self.output_node(merged_left)
-        N_l = self.output_node(merged_right)
+            n_g = self.output_node(merged_left)
+            n_l = self.output_node(merged_right)
 
-        merged_output = concatenate([N_g, N_l])
-
-        return Model(inputs=[x1, x2], outputs=merged_output)
+            merged_output = concatenate([n_g, n_l])
+            self._pairwise_model = Model(inputs=[x1, x2], outputs=merged_output)
+        return self._pairwise_model
 
     def _predict_pair(self, a, b, only_pairwise=False, **kwargs):
         # TODO: Is this working correctly?
@@ -201,13 +197,11 @@ class FETAObjectRanker(ObjectRanker, Tunable):
         scores = self.construct_model()
         self.model = Model(inputs=self.input_layer, outputs=scores)
 
-        self.pairwise_model = self._create_pairwise_model()
         if self._use_zeroth_model:
             self.zero_order_model = self._create_zeroth_order_model()
 
         self.logger.debug('Compiling complete model...')
-        self.model.compile(loss=self.loss_function, optimizer=self.optimizer,
-                           metrics=self.metrics)
+        self.model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
         self.logger.debug('Starting gradient descent...')
 
         self.model.fit(x=X, y=Y, batch_size=self.batch_size, epochs=epochs,
@@ -249,16 +243,16 @@ class FETAObjectRanker(ObjectRanker, Tunable):
             merged_left = concatenate([x1x2, x2x1])
             merged_right = concatenate([x2x1, x1x2])
 
-            N_g = self.output_node(merged_left)
-            N_l = self.output_node(merged_right)
+            n_g = self.output_node(merged_left)
+            n_l = self.output_node(merged_right)
 
-            outputs[i].append(N_g)
-            outputs[j].append(N_l)
+            outputs[i].append(n_g)
+            outputs[j].append(n_l)
         # convert rows of pairwise matrix to keras layers:
         outputs = [concatenate(x) for x in outputs]
         # compute utility scores:
-        sum_fun = lambda s: K.mean(s, axis=1, keepdims=True)
-        scores = [Lambda(sum_fun)(x) for x in outputs]
+        sum_func = lambda s: K.mean(s, axis=1, keepdims=True)
+        scores = [Lambda(sum_func)(x) for x in outputs]
         scores = concatenate(scores)
         self.logger.debug('1st order model finished')
         if self._use_zeroth_model:
@@ -282,8 +276,7 @@ class FETAObjectRanker(ObjectRanker, Tunable):
 
     def _predict_scores_fixed(self, X, **kwargs):
         n_instances, n_objects, n_features = tensorify(X).get_shape().as_list()
-        self.logger.info(
-            "For Test instances {} objects {} features {}".format(n_instances, n_objects, n_features))
+        self.logger.info("For Test instances {} objects {} features {}".format(n_instances, n_objects, n_features))
         if self.max_number_of_objects < self._n_objects or self.n_objects != n_objects:
             scores = self._predict_scores_using_pairs(X, **kwargs)
         else:
@@ -312,8 +305,23 @@ class FETAObjectRanker(ObjectRanker, Tunable):
         self.batch_size = batch_size
         self.optimizer = self.optimizer.from_config(self._optimizer_config)
         K.set_value(self.optimizer.lr, learning_rate)
-        self._construct_layers()
+        self._pairwise_model = None
+        self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
+                               activation=self.activation, **self.kwargs)
         if len(point) > 0:
-            self.logger.warning('This ranking algorithm does not support'
-                                ' tunable parameters'
+            self.logger.warning('This ranking algorithm does not support tunable parameters'
                                 ' called: {}'.format(print_dictionary(point)))
+
+    def clear_memory(self, n_objects):
+        self.model.save_weights(self.hash_file)
+        K.clear_session()
+        sess = tf.Session()
+        K.set_session(sess)
+
+        self._pairwise_model = None
+        self.optimizer = self.optimizer.from_config(self._optimizer_config)
+        self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
+                               activation=self.activation, **self.kwargs)
+        scores = self.construct_model()
+        self.model = Model(inputs=self.input_layer, outputs=scores)
+        self.model.load_weights(self.hash_file)

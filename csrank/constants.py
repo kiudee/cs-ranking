@@ -25,7 +25,6 @@ SENTENCE_ORDERING = "sentence_ordering"
 LETOR_OR = "letor_or"
 LETOR_DC = "letor_dc"
 
-
 RANKSVM = 'ranksvm'
 ERR = 'err'
 CMPNET = "cmpnet"
@@ -36,3 +35,7 @@ LISTNET = 'listnet'
 FETA_CHOICE = 'feta_choice'
 FATE_CHOICE = "fate_choice"
 TAG_GENOME = 'tag_genome'
+allowed_dense_kwargs = ['input_shape', 'batch_input_shape', 'batch_size', 'dtype', 'name', 'trainable', 'weights',
+                        'input_dtype', 'activation', 'use_bias', 'kernel_initializer', 'bias_initializer',
+                        'kernel_regularizer', 'bias_regularizer', 'activity_regularizer', 'kernel_constraint',
+                        'bias_constraint']

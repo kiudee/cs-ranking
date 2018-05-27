@@ -11,6 +11,7 @@ from keras.optimizers import Adam
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
 
+from csrank.constants import allowed_dense_kwargs
 from csrank.layers import NormalizedDense
 from csrank.objectranking.constants import THRESHOLD
 from csrank.objectranking.object_ranker import ObjectRanker
@@ -23,9 +24,9 @@ __all__ = ['CmpNet']
 
 class CmpNet(ObjectRanker, Tunable):
 
-    def __init__(self, n_object_features, n_hidden=2, n_units=8,
+    def __init__(self, n_object_features, hash_file, n_hidden=2, n_units=8,
                  loss_function=binary_crossentropy, batch_normalization=True,
-                 kernel_regularizer=l2(l=1e-4), non_linearities='relu',
+                 kernel_regularizer=l2(l=1e-4), kernel_initializer='lecun_normal', activation='relu',
                  optimizer=Adam(), metrics=[top_k_categorical_accuracy, binary_accuracy],
                  batch_size=256, random_state=None, **kwargs):
         """
@@ -46,6 +47,8 @@ class CmpNet(ObjectRanker, Tunable):
             ----------
             n_object_features : int
                 Number of features of the object space
+            hash_file: str
+                File path of the model where the weights are stored to get the predictions after clearing the memory
             n_hidden : int
                 Number of hidden layers used in the scoring network
             n_units : int
@@ -57,7 +60,7 @@ class CmpNet(ObjectRanker, Tunable):
                 Whether to use batch normalization in each hidden layer
             kernel_regularizer : function
                 Regularizer function applied to all the hidden weight matrices.
-            non_linearities : function or string
+            activation : function or string
                 Type of activation function to use in each hidden layer
             optimizer : function or string
                 Optimizer to use during stochastic gradient descent
@@ -80,12 +83,14 @@ class CmpNet(ObjectRanker, Tunable):
         self.logger = logging.getLogger("CmpNet")
         self.n_object_features = n_object_features
         self.batch_normalization = batch_normalization
-        self.non_linearities = non_linearities
+        self.activation = activation
+        self.hash_file = hash_file
 
         self.batch_size = batch_size
 
         self.metrics = metrics
         self.kernel_regularizer = kernel_regularizer
+        self.kernel_initializer = kernel_initializer
         self.loss_function = loss_function
 
         self.optimizer = optimizers.get(optimizer)
@@ -93,9 +98,16 @@ class CmpNet(ObjectRanker, Tunable):
 
         self.n_hidden = n_hidden
         self.n_units = n_units
-        self._construct_layers()
+        keys = list(kwargs.keys())
+        for key in keys:
+            if key not in allowed_dense_kwargs:
+                del kwargs[key]
+        self.kwargs = kwargs
+        self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
+                               activation=self.activation, **self.kwargs)
         self.threshold_instances = THRESHOLD
         self.random_state = check_random_state(random_state)
+        self.model = None
 
     def _construct_layers(self, **kwargs):
 
@@ -104,20 +116,11 @@ class CmpNet(ObjectRanker, Tunable):
         self.x1 = Input(shape=(self.n_object_features,))
         self.x2 = Input(shape=(self.n_object_features,))
         if self.batch_normalization:
-            self.hidden_layers = [
-                NormalizedDense(self.n_units, name="hidden_{}".format(x),
-                                kernel_regularizer=self.kernel_regularizer,
-                                activation=self.non_linearities
-                                )
-                for x in range(self.n_hidden)
-            ]
+            self.hidden_layers = [NormalizedDense(self.n_units, name="hidden_{}".format(x), **kwargs) for x in
+                                  range(self.n_hidden)]
         else:
-            self.hidden_layers = [
-                Dense(self.n_units, name="hidden_{}".format(x),
-                      kernel_regularizer=self.kernel_regularizer,
-                      activation=self.non_linearities)
-                for x in range(self.n_hidden)
-            ]
+            self.hidden_layers = [Dense(self.n_units, name="hidden_{}".format(x), **kwargs) for x in
+                                  range(self.n_hidden)]
         assert len(self.hidden_layers) == self.n_hidden
 
     def fit(self, X, Y, epochs=10, callbacks=None,
@@ -199,8 +202,21 @@ class CmpNet(ObjectRanker, Tunable):
         self.batch_size = batch_size
         self.optimizer = self.optimizer.from_config(self._optimizer_config)
         K.set_value(self.optimizer.lr, learning_rate)
-        self._construct_layers()
+        self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
+                               activation=self.activation, **self.kwargs)
         if len(point) > 0:
             self.logger.warning('This ranking algorithm does not support'
                                 ' tunable parameters'
                                 ' called: {}'.format(print_dictionary(point)))
+    def clear_memory(self, n_objects):
+        self.model.save_weights(self.hash_file)
+        K.clear_session()
+        sess = tf.Session()
+        K.set_session(sess)
+
+        self.optimizer = self.optimizer.from_config(self._optimizer_config)
+        self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
+                               activation=self.activation, **self.kwargs)
+        output = self.construct_model()
+        self.model = Model(inputs=[self.x1, self.x2], outputs=output)
+        self.model.load_weights(self.hash_file)

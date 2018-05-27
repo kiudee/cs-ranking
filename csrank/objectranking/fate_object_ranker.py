@@ -16,6 +16,8 @@ class FATEObjectRanker(FATEObjectRankingCore, ObjectRanker):
         ----------
         n_object_features : int
             Dimensionality of the feature space of each object
+        hash_file: str
+            File path of the model where the weights are stored to get the predictions after clearing the memory
         n_hidden_set_layers : int
             Number of hidden layers for the context representation
         n_hidden_set_units : int
@@ -28,13 +30,9 @@ class FATEObjectRanker(FATEObjectRankingCore, ObjectRanker):
             Keyword arguments for the hidden units
         """
 
-    def __init__(self, n_object_features,
-                 n_hidden_set_layers=2,
-                 n_hidden_set_units=32,
-                 loss_function=smooth_rank_loss,
-                 metrics=None,
-                 **kwargs):
-        FATEObjectRankingCore.__init__(self, n_object_features=n_object_features,
+    def __init__(self, n_object_features, hash_file, n_hidden_set_layers=2, n_hidden_set_units=32,
+                 loss_function=smooth_rank_loss, metrics=None, **kwargs):
+        FATEObjectRankingCore.__init__(self, hash_file=hash_file, n_object_features=n_object_features,
                                        n_hidden_set_layers=n_hidden_set_layers, n_hidden_set_units=n_hidden_set_units,
                                        **kwargs)
         self.loss_function = loss_function
@@ -52,3 +50,6 @@ class FATEObjectRanker(FATEObjectRankingCore, ObjectRanker):
 
     def _predict_scores_fixed(self, X, **kwargs):
         return FATEObjectRankingCore._predict_scores_fixed(self, X, **kwargs)
+
+    def clear_memory(self, n_objects):
+        FATEObjectRankingCore.clear_memory(self, n_objects)

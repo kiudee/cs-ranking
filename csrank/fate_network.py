@@ -3,6 +3,7 @@ from abc import ABCMeta, abstractmethod
 
 import keras.backend as K
 import numpy as np
+import tensorflow as tf
 from keras import optimizers
 from keras.layers import Input, Dense
 from keras.layers.merge import concatenate
@@ -10,6 +11,7 @@ from keras.models import Model
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
 
+from csrank.constants import allowed_dense_kwargs
 from csrank.layers import DeepSet, create_input_lambda
 from csrank.tunable import Tunable
 from csrank.util import print_dictionary
@@ -36,10 +38,15 @@ class FATERankingCore(Tunable, metaclass=ABCMeta):
         self.batch_size = batch_size
         self.optimizer = optimizers.get(optimizer)
         self._optimizer_config = self.optimizer.get_config()
-        self.__kwargs__ = kwargs
-        self._construct_layers(activation=self.activation,
-                               kernel_initializer=self.kernel_initializer,
-                               kernel_regularizer=self.kernel_regularizer)
+        self.joint_layers = None
+        self.scorer = None
+        keys = list(kwargs.keys())
+        for key in keys:
+            if key not in allowed_dense_kwargs:
+                del kwargs[key]
+        self.kwargs = kwargs
+        self._construct_layers(activation=self.activation, kernel_initializer=self.kernel_initializer,
+                               kernel_regularizer=self.kernel_regularizer, **self.kwargs)
 
     def _construct_layers(self, **kwargs):
         """ Construct basic layers shared by all ranking algorithms:
@@ -49,22 +56,15 @@ class FATERankingCore(Tunable, metaclass=ABCMeta):
         Connecting the layers is done in join_input_layers and will be done in
         implementing classes.
         """
-        self.logger.info(
-            "Construct joint layers hidden units {} and layers {} ".format(
-                self.n_hidden_joint_units,
-                self.n_hidden_joint_layers))
+        self.logger.info("Construct joint layers hidden units {} and layers {} ".format(self.n_hidden_joint_units,
+                                                                                        self.n_hidden_joint_layers))
         # Create joint hidden layers:
         self.joint_layers = []
         for i in range(self.n_hidden_joint_layers):
-            self.joint_layers.append(
-                Dense(self.n_hidden_joint_units,
-                      name="joint_layer_{}".format(i),
-                      **kwargs)
-            )
+            self.joint_layers.append(Dense(self.n_hidden_joint_units, name="joint_layer_{}".format(i), **kwargs))
 
         self.logger.info('Construct output score node')
-        self.scorer = Dense(1, name="output_node", activation='linear',
-                            kernel_regularizer=self.kernel_regularizer)
+        self.scorer = Dense(1, name="output_node", activation='linear', kernel_regularizer=self.kernel_regularizer)
 
     def join_input_layers(self, input_layer, *layers, n_layers, n_objects):
         """
@@ -94,7 +94,7 @@ class FATERankingCore(Tunable, metaclass=ABCMeta):
                 joint = concatenate([inputs[i], *layers])
             else:
                 joint = inputs[i]
-            for j in range(len(self.joint_layers)):
+            for j in range(self.n_hidden_joint_layers):
                 joint = self.joint_layers[j](joint)
             scores.append(self.scorer(joint))
         scores = concatenate(scores, name="final_scores")
@@ -117,11 +117,8 @@ class FATERankingCore(Tunable, metaclass=ABCMeta):
         self.optimizer = self.optimizer.from_config(self._optimizer_config)
         K.set_value(self.optimizer.lr, learning_rate)
 
-        self._construct_layers(
-            activation=self.activation,
-            kernel_initializer=self.kernel_initializer,
-            kernel_regularizer=self.kernel_regularizer
-        )
+        self._construct_layers(activation=self.activation, kernel_initializer=self.kernel_initializer,
+                               kernel_regularizer=self.kernel_regularizer, **self.kwargs)
 
         if len(point) > 0:
             self.logger.warning('This ranking algorithm does not support'
@@ -147,7 +144,7 @@ class FATERankingCore(Tunable, metaclass=ABCMeta):
 
 
 class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
-    def __init__(self, n_object_features, n_hidden_set_layers=1, n_hidden_set_units=1, **kwargs):
+    def __init__(self, hash_file, n_object_features, n_hidden_set_layers=1, n_hidden_set_units=1, **kwargs):
         FATERankingCore.__init__(self, **kwargs)
         self.logger_gorc = logging.getLogger(FATEObjectRankingCore.__name__)
 
@@ -155,11 +152,13 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
         self.n_hidden_set_units = n_hidden_set_units
         self.n_object_features = n_object_features
         self.model = None
+        self.set_layer = None
         self.logger_gorc.info("args: {}".format(repr(kwargs)))
         self._create_set_layers(activation=self.activation,
                                 kernel_initializer=self.kernel_initializer,
                                 kernel_regularizer=self.kernel_regularizer)
         self.is_variadic = True
+        self.hash_file = hash_file
 
     def _create_set_layers(self, **kwargs):
         """Create layers for learning the representation of the query set.
@@ -167,17 +166,11 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
         The actual connection of the layers is done during fitting, since we
         do not know the size(s) of the set(s) in advance."""
         self.logger_gorc = logging.getLogger(self.__class__.__name__)
-        self.logger_gorc.info(
-            "Creating set layers with set units {} set layer {} ".format(
-                self.n_hidden_set_units,
-                self.n_hidden_set_layers
-            )
-        )
+        self.logger_gorc.info("Creating set layers with set units {} set layer {} ".format(self.n_hidden_set_units,
+                                                                                           self.n_hidden_set_layers))
 
         if self.n_hidden_set_layers >= 1:
-            self.set_layer = DeepSet(units=self.n_hidden_set_units,
-                                     layers=self.n_hidden_set_layers,
-                                     **kwargs)
+            self.set_layer = DeepSet(units=self.n_hidden_set_units, layers=self.n_hidden_set_layers, **kwargs)
         else:
             self.set_layer = None
 
@@ -314,13 +307,10 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
 
                 n_inst, n_objects, n_features = X.shape
 
-                input_layer = Input(shape=(n_objects,
-                                           n_features),
-                                    name="input_node")
+                input_layer = Input(shape=(n_objects, n_features), name="input_node")
 
                 set_repr = self.set_layer(input_layer)
-                scores = self.join_input_layers(input_layer, set_repr,
-                                                n_objects=n_objects,
+                scores = self.join_input_layers(input_layer, set_repr, n_objects=n_objects,
                                                 n_layers=self.n_hidden_set_layers)
                 self.model = Model(inputs=input_layer, outputs=scores)
             self.model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
@@ -477,7 +467,7 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
 
         for i in range(n_objects):
             joint = inputs[i]
-            for j in range(len(self.joint_layers)):
+            for j in range(self.n_hidden_joint_layers):
                 joint = self.joint_layers[j](joint)
             scores.append(self.scorer(joint))
         scores = concatenate(scores, name="final_scores")
@@ -532,11 +522,26 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
         self.n_hidden_set_units = n_hidden_set_units
         self.n_hidden_set_layers = n_hidden_set_layers
 
-        self._create_set_layers(
-            activation=self.activation,
-            kernel_initializer=self.kernel_initializer,
-            kernel_regularizer=self.kernel_regularizer)
+        self._create_set_layers(activation=self.activation, kernel_initializer=self.kernel_initializer,
+                                kernel_regularizer=self.kernel_regularizer, **self.kwargs)
         if hasattr(self, 'model'):
             self.model = None
         if hasattr(self, 'models'):
             self.models = None
+
+    def clear_memory(self, n_objects):
+        self.model.save_weights(self.hash_file)
+        K.clear_session()
+        sess = tf.Session()
+        K.set_session(sess)
+        self.optimizer = self.optimizer.from_config(self._optimizer_config)
+        self._construct_layers(activation=self.activation, kernel_initializer=self.kernel_initializer,
+                               kernel_regularizer=self.kernel_regularizer, **self.kwargs)
+        self._create_set_layers(activation=self.activation, kernel_initializer=self.kernel_initializer,
+                                kernel_regularizer=self.kernel_regularizer, **self.kwargs)
+        input_layer = Input(shape=(n_objects, self.n_object_features), name="input_node")
+        set_repr = self.set_layer(input_layer)
+        scores = self.join_input_layers(input_layer, set_repr, n_objects=n_objects, n_layers=self.n_hidden_set_layers)
+        self.model = Model(inputs=input_layer, outputs=scores)
+        self.model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
+        self.model.load_weights(self.hash_file)
