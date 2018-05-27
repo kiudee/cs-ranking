@@ -4,3 +4,4 @@ from .fate_object_ranker import FATEObjectRanker
 from .feta_ranker import FETAObjectRanker
 from .rank_net import RankNet
 from .rank_svm import RankSVM
+from .list_net import ListNet

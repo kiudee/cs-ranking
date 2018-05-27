@@ -43,7 +43,7 @@ DIR_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe(
 LOGS_FOLDER = 'logs'
 OPTIMIZER_FOLDER = 'optimizers'
 PREDICTIONS_FOLDER = 'predictions'
-
+MODEL_FOLDER = 'models'
 if __name__ == "__main__":
     start = datetime.now()
 
@@ -84,7 +84,6 @@ if __name__ == "__main__":
 
             log_path = os.path.join(DIR_PATH, LOGS_FOLDER, "{}.log".format(hash_value))
             optimizer_path = os.path.join(DIR_PATH, OPTIMIZER_FOLDER, "{}".format(hash_value))
-            create_dir_recursively(log_path, True)
             configure_logging_numpy_keras(seed=seed, log_path=log_path)
             logger = logging.getLogger('Experiment')
             logger.info("DB config filePath {}".format(config_file_path))
@@ -99,6 +98,7 @@ if __name__ == "__main__":
             n_objects = log_test_train_data(X_train, X_test, logger)
             inner_cv = ShuffleSplit(n_splits=n_inner_folds, test_size=0.1, random_state=random_state)
 
+            learner_params['hash_file'] = os.path.join(DIR_PATH, MODEL_FOLDER, "{}.h5".format(hash_value))
             hp_params = create_optimizer_parameters(fit_params, hp_ranges, learner_params, learner_name)
             hp_params['optimizer_path'] = optimizer_path
             hp_params['random_state'] = random_state
