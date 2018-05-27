@@ -31,9 +31,9 @@ def get_dataset_reader(dataset_name, dataset_params):
 
 def create_optimizer_parameters(fit_params, hp_ranges, learner_params, learner_name):
     hp_params = {}
+    learner = learners[learner_name]
+    learner = learner(**learner_params)
     if learner_name in hp_ranges.keys():
-        learner = learners[learner_name]
-        learner = learner(**learner_params)
         hp_ranges[learner] = hp_ranges[learner_name]
         del hp_ranges[learner_name]
     if "callbacks" in fit_params.keys():

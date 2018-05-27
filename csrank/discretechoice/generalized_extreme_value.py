@@ -13,9 +13,8 @@ from .likelihoods import likelihood_dict, LogLikelihood
 
 class GeneralizedExtremeValueModel(DiscreteObjectChooser, Tunable):
 
-    def __init__(self, n_features, n_objects, n_nests=None, loss_function='None', n_tune=500, n_sample=500, alpha=1e-3,
-                 random_state=None,
-                 **kwd):
+    def __init__(self, n_features, n_objects, n_nests=None, loss_function='None', n_tune=500, n_sample=1000, alpha=1e-3,
+                 random_state=None, **kwd):
         self.n_tune = n_tune
         self.n_sample = n_sample
         self.n_features = n_features
@@ -98,7 +97,7 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Tunable):
     def predict_scores(self, X, **kwargs):
         return super().predict_scores(X, **kwargs)
 
-    def set_tunable_parameters(self, n_tune=500, n_sample=500, alpha=1e-3, n_nests=None, **point):
+    def set_tunable_parameters(self, n_tune=500, n_sample=1000, alpha=1e-3, n_nests=None, **point):
         self.n_tune = n_tune
         self.n_sample = n_sample
         self.alpha = alpha

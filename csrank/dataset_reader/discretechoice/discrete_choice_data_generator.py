@@ -6,7 +6,7 @@ from sklearn.gaussian_process.kernels import Matern
 from sklearn.utils import check_random_state
 
 from csrank.constants import DISCRETE_CHOICE
-from csrank.dataset_reader.discretechoice.util import convert_to_label_encoding
+from csrank.util import convert_to_label_encoding
 from ..synthetic_dataset_generator import SyntheticDatasetGenerator
 from ..util import create_pairwise_prob_matrix
 

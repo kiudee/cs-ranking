@@ -143,6 +143,7 @@ class FETAChoiceFunction(FETAObjectRanker):
         scores = self.predict_scores(X, **kwargs)
         self.logger.debug('Predicting scores complete')
         return self.predict_for_scores(scores)
+
     def __call__(self, X, **kwargs):
         return self.predict(X, **kwargs)
 

@@ -9,7 +9,7 @@ from sklearn.utils import check_random_state
 
 from csrank.constants import allowed_dense_kwargs
 from csrank.layers import NormalizedDense, create_input_lambda
-from csrank.losses import plackett_luce_loss
+from csrank.losses import smooth_rank_loss
 from csrank.objectranking.constants import THRESHOLD
 from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.tunable import Tunable
@@ -20,7 +20,7 @@ __all__ = ["ListNet"]
 
 class ListNet(ObjectRanker, Tunable):
 
-    def __init__(self, n_object_features, n_top, hash_file, n_hidden=2, n_units=8, loss_function=plackett_luce_loss,
+    def __init__(self, n_object_features, n_top, hash_file, n_hidden=2, n_units=8, loss_function=smooth_rank_loss,
                  batch_normalization=False, kernel_regularizer=l2(l=1e-4), activation="selu",
                  kernel_initializer='lecun_normal', optimizer="adam", metrics=None, batch_size=256, random_state=None,
                  **kwargs):
@@ -148,7 +148,7 @@ class ListNet(ObjectRanker, Tunable):
     @property
     def scoring_model(self):
         if self._scoring_model is None:
-            self.logger.info('creating scoring model')
+            self.logger.info('Creating scoring model')
             inp = Input(shape=(self.n_object_features,))
             x = inp
             for hidden_layer in self.hidden_layers:

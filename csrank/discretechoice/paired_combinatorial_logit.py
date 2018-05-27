@@ -15,7 +15,8 @@ from .likelihoods import likelihood_dict, LogLikelihood
 
 class PairedCombinatorialLogit(DiscreteObjectChooser, Tunable):
 
-    def __init__(self, n_features, n_objects, loss_function='', n_tune=500, n_sample=500, alpha=1e-3, random_state=None,
+    def __init__(self, n_features, n_objects, loss_function='', n_tune=500, n_sample=1000, alpha=1e-3,
+                 random_state=None,
                  **kwd):
         self.n_tune = n_tune
         self.n_sample = n_sample
@@ -104,7 +105,7 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Tunable):
     def predict_scores(self, X, **kwargs):
         return super().predict_scores(X, **kwargs)
 
-    def set_tunable_parameters(self, n_tune=500, n_sample=500, alpha=1e-3, **point):
+    def set_tunable_parameters(self, n_tune=500, n_sample=1000, alpha=1e-3, **point):
         self.n_tune = n_tune
         self.n_sample = n_sample
         self.alpha = alpha

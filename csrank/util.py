@@ -13,15 +13,16 @@ from keras import backend as K
 from matplotlib import pyplot as plt
 from scipy.stats import rankdata
 from sklearn.covariance import GraphLasso
+from sklearn.preprocessing import LabelBinarizer
 from tensorflow.python.client import device_lib
 
 from csrank.tunable import Tunable
 
 __all__ = ['check_learner_class', 'configure_logging_numpy_keras', 'create_dir_recursively',
-           'duration_tillnow', 'files_with_same_name',
-           'get_instances_objects', 'get_loss_for_array', 'get_mean_loss_for_dictionary', 'get_rankings_tensor',
-           'get_tensor_value', 'heat_map', 'normalize', 'print_dictionary', 'ranking_ordering_conversion',
-           'rename_file_if_exist', 'scores_to_rankings', 'seconds_to_time', 'tensorify', 'time_from_now', 'softmax']
+           'duration_tillnow', 'files_with_same_name', 'get_instances_objects', 'get_loss_for_array',
+           'get_mean_loss_for_dictionary', 'get_rankings_tensor', 'get_tensor_value', 'heat_map', 'normalize',
+           'print_dictionary', 'ranking_ordering_conversion', 'rename_file_if_exist', 'scores_to_rankings',
+           'seconds_to_time', 'tensorify', 'time_from_now', 'softmax', 'convert_to_label_encoding']
 
 
 def scores_to_rankings(score_matrix):
@@ -254,3 +255,8 @@ def get_duration_seconds(duration):
     d = duration.split(str(time))[1].upper()
     options = {"D": 24 * 60 * 60, "H": 60 * 60, "M": 60}
     return options[d] * time
+
+
+def convert_to_label_encoding(Y, n_objects):
+    lb = LabelBinarizer().fit(np.arange(n_objects))
+    return lb.transform(Y)

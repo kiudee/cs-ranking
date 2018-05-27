@@ -11,7 +11,7 @@ from .likelihoods import likelihood_dict, LogLikelihood
 
 
 class MultinomialLogitModel(DiscreteObjectChooser, Tunable):
-    def __init__(self, n_features, n_tune=500, n_sample=500, loss_function='', **kwargs):
+    def __init__(self, n_features, n_tune=500, n_sample=1000, loss_function='', **kwargs):
         self.n_tune = n_tune
         self.n_sample = n_sample
         self.n_features = n_features
@@ -48,7 +48,7 @@ class MultinomialLogitModel(DiscreteObjectChooser, Tunable):
     def predict_scores(self, X, **kwargs):
         return super().predict_scores(X, **kwargs)
 
-    def set_tunable_parameters(self, n_tune=500, n_sample=500, **point):
+    def set_tunable_parameters(self, n_tune=500, n_sample=1000, **point):
         self.n_tune = n_tune
         self.n_sample = n_sample
         if len(point) > 0:

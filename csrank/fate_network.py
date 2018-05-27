@@ -317,14 +317,11 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
 
             self.logger.info("Fitting started")
             if generator is None:
-                self.model.fit(
-                    x=X, y=Y, callbacks=callbacks, epochs=epochs,
-                    validation_split=validation_split, batch_size=self.batch_size,
-                    verbose=verbose, **kwargs)
+                self.model.fit(x=X, y=Y, callbacks=callbacks, epochs=epochs, validation_split=validation_split,
+                               batch_size=self.batch_size, verbose=verbose, **kwargs)
             else:
-                self.model.fit_generator(
-                    generator=generator, callbacks=callbacks, epochs=epochs,
-                    verbose=verbose, **kwargs)
+                self.model.fit_generator(generator=generator, callbacks=callbacks, epochs=epochs, verbose=verbose,
+                                         **kwargs)
             self.logger.info("Fitting complete")
 
     def fit(self, X, Y, epochs=35, inner_epochs=1, callbacks=None,

@@ -87,8 +87,7 @@ class RankNet(ObjectRanker, Tunable):
         self._optimizer_config = self.optimizer.get_config()
         self.n_hidden = n_hidden
         self.n_units = n_units
-        self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
-                               activation=self.activation, **kwargs)
+
         self.threshold_instances = THRESHOLD
         self.batch_size = batch_size
         self.hash_file = hash_file
@@ -100,6 +99,8 @@ class RankNet(ObjectRanker, Tunable):
         self._scoring_model = None
         self.model = None
         self.random_state = check_random_state(random_state)
+        self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
+                               activation=self.activation, **self.kwargs)
 
     def _construct_layers(self, **kwargs):
         self.x1 = Input(shape=(self.n_object_features,))
@@ -137,7 +138,7 @@ class RankNet(ObjectRanker, Tunable):
     @property
     def scoring_model(self):
         if self._scoring_model is None:
-            self.logger.info('creating scoring model')
+            self.logger.info('Creating scoring model')
             inp = Input(shape=(self.n_object_features,))
             x = inp
             for hidden_layer in self.hidden_layers:

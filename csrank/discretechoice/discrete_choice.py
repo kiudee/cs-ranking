@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractmethod
 
 from csrank.constants import DISCRETE_CHOICE
+from csrank.util import convert_to_label_encoding
 
 __all__ = ['DiscreteObjectChooser']
 
@@ -78,9 +79,12 @@ class DiscreteObjectChooser(metaclass=ABCMeta):
             result = dict()
             for n, s in scores.items():
                 result[n] = s.argmax(axis=1)
+                result[n] = convert_to_label_encoding(result[n], n)
 
         else:
+            n = scores.shape[-1]
             result = scores.argmax(axis=1)
+            result = convert_to_label_encoding(result, n)
         return result
 
     @abstractmethod
@@ -118,10 +122,14 @@ class DiscreteObjectChooser(metaclass=ABCMeta):
         if isinstance(X, dict):
             scores = dict()
             for ranking_size, x in X.items():
+                self.clear_memory(ranking_size)
                 scores[ranking_size] = self._predict_scores_fixed(x, **kwargs)
         else:
             scores = self._predict_scores_fixed(X, **kwargs)
         return scores
+
+    def clear_memory(self, n_objects):
+        pass
 
     @abstractmethod
     def _predict_scores_fixed(self, X, **kwargs):

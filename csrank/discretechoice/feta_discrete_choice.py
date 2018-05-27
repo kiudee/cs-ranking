@@ -1,29 +1,32 @@
 import logging
 
-from keras.losses import binary_crossentropy
-from keras.regularizers import l2
-
 from csrank.objectranking.feta_ranker import FETAObjectRanker
 from .discrete_choice import DiscreteObjectChooser
 
 
 class FETADiscreteChoiceFunction(FETAObjectRanker, DiscreteObjectChooser):
-    def __init__(self, n_objects, n_object_features, n_hidden=2, n_units=8,
-                 add_zeroth_order_model=False, max_number_of_objects=5,
-                 num_subsample=5, loss_function=binary_crossentropy,
-                 batch_normalization=False, kernel_regularizer=l2(l=1e-4),
-                 non_linearities='selu', optimizer="adam", metrics=None, batch_size=256,
-                 random_state=None, **kwargs):
-        super().__init__(n_objects, n_object_features, n_hidden, n_units, add_zeroth_order_model, max_number_of_objects,
-                         num_subsample, loss_function, batch_normalization, kernel_regularizer, non_linearities,
-                         optimizer, metrics, batch_size, random_state, **kwargs)
+    def __init__(self, loss_function='categorical_hinge', metrics=None, **kwargs):
+        FETAObjectRanker.__init__(self, **kwargs)
+        self.loss_function = loss_function
+        if metrics is None:
+            metrics = ['categorical_accuracy']
+        self.metrics = metrics
         self.logger = logging.getLogger(FETADiscreteChoiceFunction.__name__)
 
-    def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
-        super().fit(X, Y, epochs, callbacks, validation_split, verbose, **kwd)
+    def fit(self, X, Y, **kwd):
+        FETAObjectRanker.fit(self, X, Y, **kwd)
 
     def predict_scores(self, X, **kwargs):
-        return super().predict_scores(X, **kwargs)
+        return DiscreteObjectChooser.predict_scores(self, X, **kwargs)
 
     def predict(self, X, **kwargs):
-        DiscreteObjectChooser.predict(X, **kwargs)
+        return DiscreteObjectChooser.predict(self, X, **kwargs)
+
+    def _predict_scores_fixed(self, X, **kwargs):
+        return FETAObjectRanker._predict_scores_fixed(self, X, **kwargs)
+
+    def predict_for_scores(self, scores, **kwargs):
+        return DiscreteObjectChooser.predict_for_scores(self, scores, **kwargs)
+
+    def clear_memory(self, n_objects):
+        FETAObjectRanker.clear_memory(self, n_objects)

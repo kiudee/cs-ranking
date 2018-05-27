@@ -142,6 +142,7 @@ class FETAObjectRanker(ObjectRanker, Tunable):
     @property
     def pairwise_model(self):
         if self._pairwise_model is None:
+            self.logger.info('Creating pairwise model')
             x1 = Input(shape=(self.n_object_features,))
             x2 = Input(shape=(self.n_object_features,))
 

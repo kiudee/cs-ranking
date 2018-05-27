@@ -107,11 +107,10 @@ if __name__ == "__main__":
 
             time_taken = duration_tillnow(start)
             logger.info("Time Taken till now: {}  milliseconds".format(seconds_to_time(time_taken)))
-            time_spare_eout_eval = get_duration_seconds('10H')
-            logger.info(
-                "Time spared for the out of sample evaluation : {} ".format(seconds_to_time(time_spare_eout_eval)))
+            time_eout_eval = get_duration_seconds('10H')
+            logger.info("Time spared for the out of sample evaluation : {} ".format(seconds_to_time(time_eout_eval)))
 
-            total_duration = duration - time_taken - time_spare_eout_eval
+            total_duration = duration - time_taken - time_eout_eval
             hp_fit_params['n_iter'] = hp_iters
             hp_fit_params['total_duration'] = total_duration
             hp_fit_params['cv_iter'] = inner_cv

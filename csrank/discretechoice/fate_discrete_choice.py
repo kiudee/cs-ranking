@@ -5,6 +5,7 @@ from csrank.fate_network import FATEObjectRankingCore
 
 
 class FATEDiscreteChoiceFunction(FATEObjectRankingCore, DiscreteObjectChooser):
+
     def __init__(self, loss_function='categorical_hinge', metrics=None,
                  **kwargs):
         FATEObjectRankingCore.__init__(self, **kwargs)
@@ -12,14 +13,22 @@ class FATEDiscreteChoiceFunction(FATEObjectRankingCore, DiscreteObjectChooser):
         if metrics is None:
             metrics = ['categorical_accuracy']
         self.metrics = metrics
-        self.model = None
         self.logger = logging.getLogger(FATEDiscreteChoiceFunction.__name__)
 
-    def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
-        super().fit(X, Y, epochs, callbacks, validation_split, verbose, **kwd)
+    def fit(self, X, Y, **kwd):
+        FATEObjectRankingCore.fit(self, X, Y, **kwd)
 
     def predict(self, X, **kwargs):
-        return DiscreteObjectChooser.predict(X, **kwargs)
+        return DiscreteObjectChooser.predict(self, X, **kwargs)
 
     def predict_scores(self, X, **kwargs):
-        return FATEObjectRankingCore.predict_scores(X, **kwargs)
+        return DiscreteObjectChooser.predict_scores(self, X, **kwargs)
+
+    def _predict_scores_fixed(self, X, **kwargs):
+        return FATEObjectRankingCore._predict_scores_fixed(self, X, **kwargs)
+
+    def predict_for_scores(self, scores, **kwargs):
+        return DiscreteObjectChooser.predict_for_scores(self, scores, **kwargs)
+
+    def clear_memory(self, n_objects):
+        FATEObjectRankingCore.clear_memory(self, n_objects)

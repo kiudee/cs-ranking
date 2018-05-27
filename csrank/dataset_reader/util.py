@@ -116,4 +116,5 @@ def distance_metric_multilabel(X_labels, Y_labels, X, Y):
 def print_no_newline(i, total):
     sys.stdout.write("Iterations: {}  out of {} \r".format(i, total))
     sys.stdout.flush()
-from sklearn.neighbors import NearestNeighbors
+
+
