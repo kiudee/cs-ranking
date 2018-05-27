@@ -18,12 +18,12 @@ class FETAChoiceFunction(FETAObjectRanker):
                  add_zeroth_order_model=False, max_number_of_objects=5,
                  num_subsample=5, loss_function=binary_crossentropy,
                  batch_normalization=False, kernel_regularizer=l2(l=1e-4),
-                 non_linearities='selu', optimizer="adam", metrics=None, batch_size=256,
+                 activation='selu', optimizer="adam", metrics=None, batch_size=256,
                  random_state=None, **kwargs):
         super().__init__(n_objects, n_object_features, n_hidden, n_units,
                          add_zeroth_order_model, max_number_of_objects,
                          num_subsample, loss_function, batch_normalization,
-                         kernel_regularizer, non_linearities, optimizer,
+                         kernel_regularizer, activation, optimizer,
                          metrics, batch_size,
                          random_state, **kwargs)
         self.threshold = 0.5
@@ -39,14 +39,14 @@ class FETAChoiceFunction(FETAObjectRanker):
                     NormalizedDense(self.n_units,
                                     name="hidden_zeroth_{}".format(x),
                                     kernel_regularizer=self.kernel_regularizer,
-                                    activation=self.non_linearities,
+                                    activation=self.activation,
                                     **kwargs)
                     for x in range(self.n_hidden)
                 ]
             self.hidden_layers = [
                 NormalizedDense(self.n_units, name="hidden_{}".format(x),
                                 kernel_regularizer=self.kernel_regularizer,
-                                activation=self.non_linearities,
+                                activation=self.activation,
                                 **kwargs)
                 for x in range(self.n_hidden)
             ]
@@ -55,14 +55,14 @@ class FETAChoiceFunction(FETAObjectRanker):
                 self.hidden_layers_zeroth = [
                     Dense(self.n_units, name="hidden_zeroth_{}".format(x),
                           kernel_regularizer=self.kernel_regularizer,
-                          activation=self.non_linearities,
+                          activation=self.activation,
                           **kwargs)
                     for x in range(self.n_hidden)
                 ]
             self.hidden_layers = [
                 Dense(self.n_units, name="hidden_{}".format(x),
                       kernel_regularizer=self.kernel_regularizer,
-                      activation=self.non_linearities,
+                      activation=self.activation,
                       **kwargs)
                 for x in range(self.n_hidden)
             ]
