@@ -2,7 +2,7 @@ from sklearn.metrics import hamming_loss, zero_one_loss
 
 from csrank import ObjectRankingDatasetGenerator, FETAObjectRanker, RankNet, CmpNet, ExpectedRankRegression, RankSVM, \
     FATEChoiceFunction, FETAChoiceFunction, DepthDatasetReader, SushiObjectRankingDatasetReader, ImageDatasetReader, \
-    TagGenomeDatasetReader, SentenceOrderingDatasetReader, LetorObjectRankingDatasetReader, ChoiceDatasetGenerator, \
+    TagGenomeObjectRankingDatasetReader, SentenceOrderingDatasetReader, LetorObjectRankingDatasetReader, ChoiceDatasetGenerator, \
     MNISTChoiceDatasetReader, LetorDiscreteChoiceDatasetReader, ListNet
 from csrank.callbacks import EarlyStoppingWithWeights, LRScheduler, DebugOutput
 from csrank.constants import SYNTHETIC_OR, DEPTH, SUSHI, IMAGE_DATASET, TAG_GENOME, SENTENCE_ORDERING, \
@@ -59,7 +59,7 @@ def create_optimizer_parameters(fit_params, hp_ranges, learner_params, learner_n
 
 datasets = {SYNTHETIC_OR: ObjectRankingDatasetGenerator, DEPTH: DepthDatasetReader,
             SUSHI: SushiObjectRankingDatasetReader, IMAGE_DATASET: ImageDatasetReader,
-            TAG_GENOME: TagGenomeDatasetReader, SENTENCE_ORDERING: SentenceOrderingDatasetReader,
+            TAG_GENOME: TagGenomeObjectRankingDatasetReader, SENTENCE_ORDERING: SentenceOrderingDatasetReader,
             LETOR_OR: LetorObjectRankingDatasetReader,
             LETOR_DC: LetorDiscreteChoiceDatasetReader,
             SYNTHETIC_CHOICE: ChoiceDatasetGenerator, MNIST_CHOICE: MNISTChoiceDatasetReader}

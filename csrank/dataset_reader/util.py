@@ -1,6 +1,9 @@
 import itertools as iter
+import sys
 
 import numpy as np
+import pandas as pd
+from sklearn.metrics import f1_score
 
 
 def strongly_connected_components(graph):
@@ -82,3 +85,35 @@ def quicksort(arr, matrix):
         right = [i for i in arr if matrix[pivot, i] == 1]
         left = [i for i in arr if matrix[pivot, i] == 0]
         return quicksort(left, matrix) + [pivot] + quicksort(right, matrix)
+
+
+def get_similarity_matrix(mypath):
+    dataFrame = pd.read_csv(mypath)
+    similarity_dictionary = dataFrame.set_index('col_major_index')['similarity'].to_dict()
+    return similarity_dictionary
+
+
+def get_key_for_indices(idx1, idx2):
+    return str(tuple(sorted([idx1, idx2])))
+
+
+def weighted_cosine_similarity(weights):
+    def distance_function(x, y):
+        denominator = np.sqrt(np.sum(weights * x * x)) * np.sqrt(
+            np.sum(weights * y * y))
+        sim = np.sum(weights * x * y) / denominator
+        return 1 - sim
+
+    return distance_function
+
+
+def distance_metric_multilabel(X_labels, Y_labels, X, Y):
+    similarity = f1_score(X_labels, Y_labels, average='macro')
+    similarity = np.dot(X, Y) / (np.linalg.norm(X) * np.linalg.norm(Y)) + similarity
+    return similarity
+
+
+def print_no_newline(i, total):
+    sys.stdout.write("Iterations: {}  out of {} \r".format(i, total))
+    sys.stdout.flush()
+from sklearn.neighbors import NearestNeighbors

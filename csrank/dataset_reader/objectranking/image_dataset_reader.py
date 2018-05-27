@@ -12,7 +12,7 @@ from sklearn.utils import check_random_state
 
 from csrank.constants import OBJECT_RANKING
 from csrank.util import scores_to_rankings
-from .util import initialize_similarity_matrix, get_key_for_indices, similarity_function_for_multilabel_instances
+from ..util import get_similarity_matrix, get_key_for_indices, distance_metric_multilabel
 from ..dataset_reader import DatasetReader
 
 
@@ -104,7 +104,7 @@ class ImageDatasetReader(DatasetReader):
 
         X = np.empty((n_instances, self.n_objects, self.n_features), dtype=float)
         similarity_scores = np.empty((n_instances, self.n_objects), dtype=float)
-        similarity_matrix_lin_list = initialize_similarity_matrix(similarity_matrix_file)
+        similarity_matrix_lin_list = get_similarity_matrix(similarity_matrix_file)
 
         for i in range(n_instances):
             subset = random_state.choice(image_features.shape[0], size=self.n_objects, replace=False)
@@ -158,7 +158,7 @@ class ImageDatasetReader(DatasetReader):
         similarity_matrix_lin_list = dict()
 
         for i, j in combinations_list:
-            similarity_matrix_lin_list[get_key_for_indices(i, j)] = similarity_function_for_multilabel_instances(
+            similarity_matrix_lin_list[get_key_for_indices(i, j)] = distance_metric_multilabel(
                 label_vectors[i], label_vectors[j], image_features[i], image_features[j])
         # self.logger.info("calculating similarity {},{},{}".format(i, j, sim))
 

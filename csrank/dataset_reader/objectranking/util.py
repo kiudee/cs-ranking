@@ -2,14 +2,11 @@ import logging
 from itertools import combinations
 
 import numpy as np
-import pandas as pd
-from sklearn.metrics import f1_score
 
 from csrank.util import ranking_ordering_conversion
 
 __all__ = ['generate_complete_pairwise_dataset', 'complete_linear_regression_dataset',
-           'complete_linear_regression_dataset', "weighted_cosine_similarity", "get_key_for_indices",
-           "sub_sampling_rankings", "initialize_similarity_matrix", "similarity_function_for_multilabel_instances"]
+           'complete_linear_regression_dataset', "sub_sampling_rankings"]
 
 
 def generate_pairwise_instances(features):
@@ -72,29 +69,6 @@ def complete_linear_regression_dataset(X, rankings):
     X1 = np.array(X1)
     Y_single = np.array(Y_single)
     return X1, Y_single
-
-
-def get_key_for_indices(idx1, idx2):
-    return str(tuple(sorted([idx1, idx2])))
-
-
-def weighted_cosine_similarity(weights, x, y):
-    denominator = np.sqrt(np.sum(weights * x * x)) * np.sqrt(
-        np.sum(weights * y * y))
-    sim = np.sum(weights * x * y) / denominator
-    return sim
-
-
-def similarity_function_for_multilabel_instances(X_labels, Y_labels, X, Y):
-    similarity = f1_score(X_labels, Y_labels, average='macro')
-    similarity = np.dot(X, Y) / (np.linalg.norm(X) * np.linalg.norm(Y)) + similarity
-    return similarity
-
-
-def initialize_similarity_matrix(mypath):
-    dataFrame = pd.read_csv(mypath)
-    similarity_dictionary = dataFrame.set_index('col_major_index')['similarity'].to_dict()
-    return similarity_dictionary
 
 
 def sub_sampling_rankings(Xt, Yt, n_objects=5):
