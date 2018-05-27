@@ -1,13 +1,8 @@
 from sklearn.metrics import hamming_loss, zero_one_loss
 
-from csrank import ObjectRankingDatasetGenerator, FETAObjectRanker, RankNet, CmpNet, ExpectedRankRegression, RankSVM, \
-    FATEChoiceFunction, FETAChoiceFunction, DepthDatasetReader, SushiObjectRankingDatasetReader, ImageDatasetReader, \
-    TagGenomeObjectRankingDatasetReader, SentenceOrderingDatasetReader, LetorObjectRankingDatasetReader, ChoiceDatasetGenerator, \
-    MNISTChoiceDatasetReader, LetorDiscreteChoiceDatasetReader, ListNet
+from csrank import *
 from csrank.callbacks import EarlyStoppingWithWeights, LRScheduler, DebugOutput
-from csrank.constants import SYNTHETIC_OR, DEPTH, SUSHI, IMAGE_DATASET, TAG_GENOME, SENTENCE_ORDERING, \
-    LETOR_OR, FETA_RANKER, RANKNET, CMPNET, ERR, RANKSVM, FATE_RANKER, OBJECT_RANKING, LABEL_RANKING, DYAD_RANKING, \
-    DISCRETE_CHOICE, CHOICE_FUNCTIONS, FETA_CHOICE, FATE_CHOICE, SYNTHETIC_CHOICE, MNIST_CHOICE, LETOR_DC, LISTNET
+from csrank.constants import *
 from csrank.metrics import zero_one_rank_loss, zero_one_accuracy, make_ndcg_at_k_loss
 from csrank.metrics_np import *
 from csrank.objectranking.fate_object_ranker import FATEObjectRanker
