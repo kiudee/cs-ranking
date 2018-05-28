@@ -456,7 +456,6 @@ class FATENetwork(FATENetworkCore):
         return predicted_scores
 
     def clear_memory(self, n_objects=5, **kwargs):
-        self.logger.info("Cleared the memory weights saved at {}".format(self.hash_file))
         self.model.save_weights(self.hash_file)
         K.clear_session()
         sess = tf.Session()
@@ -472,7 +471,6 @@ class FATENetwork(FATENetworkCore):
         self.model = Model(inputs=input_layer, outputs=scores)
         self.model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
         self.model.load_weights(self.hash_file)
-        self.logger.info("Loaded the model from weights {}".format(self.hash_file))
 
     def set_tunable_parameters(self, n_hidden_set_units=32,
                                n_hidden_set_layers=2,
