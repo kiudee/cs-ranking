@@ -92,7 +92,7 @@ class Learner(Tunable, metaclass=ABCMeta):
         if isinstance(X, dict):
             scores = dict()
             for ranking_size, x in X.items():
-                n_instances, n_objects, n_features = X.shape
+                n_instances, n_objects, n_features = x.shape
                 self.clear_memory(n_instances=n_instances, n_objects=n_objects, n_features=n_features)
                 scores[ranking_size] = self._predict_scores_fixed(x, **kwargs)
 
