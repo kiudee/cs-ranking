@@ -17,14 +17,13 @@ from csrank.layers import NormalizedDense
 from csrank.learner import Learner
 from csrank.objectranking.constants import THRESHOLD
 from csrank.objectranking.object_ranker import ObjectRanker
-from csrank.tunable import Tunable
 from csrank.util import print_dictionary
 from ..dataset_reader.objectranking.util import generate_complete_pairwise_dataset
 
 __all__ = ['CmpNet']
 
 
-class CmpNet(ObjectRanker, Learner, Tunable):
+class CmpNet(ObjectRanker, Learner):
     def __init__(self, n_object_features, hash_file, n_hidden=2, n_units=8,
                  loss_function=binary_crossentropy, batch_normalization=True,
                  kernel_regularizer=l2(l=1e-4), kernel_initializer='lecun_normal', activation='relu',
@@ -185,12 +184,6 @@ class CmpNet(ObjectRanker, Learner, Tunable):
 
     def predict(self, X, **kwargs):
         return super().predict(self, X, **kwargs)
-
-    def predict_pair(self, a, b, **kwargs):
-        return self.model.predict([a, b], **kwargs)
-
-    def evaluate(self, X1_test, X2_test, Y_test, **kwd):
-        return self.model.evaluate([X1_test, X2_test], Y_test, **kwd)
 
     def predict_for_scores(self, scores, **kwargs):
         return ObjectRanker.predict_for_scores(self, scores, **kwargs)

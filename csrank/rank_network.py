@@ -144,16 +144,7 @@ class RankNetwork(Learner, Tunable):
         return self._scoring_model
 
     def convert_instances(self, X, Y):
-        self.logger.debug('Creating the Dataset')
-        garbage, X1, X2, garbage, Y_single = generate_complete_pairwise_dataset(X, Y)
-        del garbage
-        if X1.shape[0] > self.threshold_instances:
-            indices = self.random_state.choice(X1.shape[0], self.threshold_instances, replace=False)
-            X1 = X1[indices, :]
-            X2 = X2[indices, :]
-            Y_single = Y_single[indices]
-        self.logger.debug('Finished the Dataset')
-        return X1, X2, Y_single
+        raise NotImplemented
 
     def construct_model(self):
         # weight sharing using same hidden layer for two objects
@@ -212,9 +203,3 @@ class RankNetwork(Learner, Tunable):
         scores = np.array(scores)
         self.logger.info("Done predicting scores")
         return scores
-
-    def predict_scores(self, X, **kwargs):
-        return super().predict_scores(X, **kwargs)
-
-    def predict(self, X, **kwargs):
-        return super().predict(self, X, **kwargs)

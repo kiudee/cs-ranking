@@ -1,7 +1,5 @@
 import logging
 
-from sklearn.preprocessing import LabelBinarizer
-import numpy as np
 from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 from csrank.fate_network import FATENetwork
 
@@ -12,8 +10,8 @@ class FATEDiscreteChoiceFunction(FATENetwork, DiscreteObjectChooser):
         FATENetwork.__init__(self, loss_function=loss_function, metrics=metrics ** kwargs)
         self.logger = logging.getLogger(FATEDiscreteChoiceFunction.__name__)
 
-    def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
-        super().fit(X, Y, epochs, callbacks, validation_split, verbose, **kwd)
+    def fit(self, X, Y, **kwd):
+        super().fit(self, X, Y, **kwd)
 
     def predict_scores(self, X, **kwargs):
         return super().predict_scores(X, **kwargs)
@@ -27,5 +25,4 @@ class FATEDiscreteChoiceFunction(FATENetwork, DiscreteObjectChooser):
     def _predict_scores_fixed(self, X, **kwargs):
         return super()._predict_scores_fixed(self, X, **kwargs)
 
-    def clear_memory(self, n_objects, **kwargs):
-        super().clear_memory(self, n_objects, **kwargs)
+    def clear_memory(self, **kwargs):

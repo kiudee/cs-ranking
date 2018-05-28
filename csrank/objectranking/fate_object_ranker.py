@@ -2,7 +2,7 @@ import logging
 
 from csrank.fate_network import FATENetwork
 from csrank.losses import smooth_rank_loss
-from csrank.metrics import zero_one_rank_loss_for_scores_ties, zero_one_rank_loss_for_scores
+from csrank.metrics import zero_one_rank_loss_for_scores_ties
 from csrank.objectranking.object_ranker import ObjectRanker
 
 
@@ -27,16 +27,19 @@ class FATEObjectRanker(FATENetwork, ObjectRanker):
             metrics = [zero_one_rank_loss_for_scores_ties]
         FATENetwork.__init__(self, loss_function=loss_function, metrics=metrics, **kwargs)
         self.logger = logging.getLogger(FATEObjectRanker.__name__)
-        self.logger.info("Initializing network with object features {}".format(
-            self.n_object_features))
+
+    def fit(self, X, Y, **kwd):
+        super().fit(self, X, Y, **kwd)
 
     def predict(self, X, **kwargs):
-        self.logger.info("Predicting ranks")
-        return ObjectRanker.predict(self, X, **kwargs)
+        return super().predict(self, X, **kwargs)
+
+    def predict_for_scores(self, scores, **kwargs):
+        ObjectRanker.predict_for_scores(self, scores, **kwargs)
 
     def _predict_scores_fixed(self, X, **kwargs):
-        return FATENetwork._predict_scores_fixed(self, X, **kwargs)
-    
+        return super()._predict_scores_fixed(self, X, **kwargs)
+
     def predict_scores(self, X, **kwargs):
         return super().predict_scores(self, X, **kwargs)
 

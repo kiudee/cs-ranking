@@ -13,13 +13,12 @@ from csrank.learner import Learner
 from csrank.losses import plackett_luce_loss
 from csrank.objectranking.constants import THRESHOLD
 from csrank.objectranking.object_ranker import ObjectRanker
-from csrank.tunable import Tunable
 from csrank.util import print_dictionary
 
 __all__ = ["ListNet"]
 
 
-class ListNet(Learner, ObjectRanker, Tunable):
+class ListNet(Learner, ObjectRanker):
 
     def __init__(self, n_object_features, n_top, hash_file, n_hidden=2, n_units=8, loss_function=plackett_luce_loss,
                  batch_normalization=False, kernel_regularizer=l2(l=1e-4), activation="selu",
@@ -210,5 +209,3 @@ class ListNet(Learner, ObjectRanker, Tunable):
 
     def predict(self, X, **kwargs):
         return super().predict(self, X, **kwargs)
-
-
