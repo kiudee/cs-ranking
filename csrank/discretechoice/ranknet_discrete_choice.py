@@ -1,22 +1,14 @@
 import logging
 
 from csrank.dataset_reader.discretechoice.util import generate_complete_pairwise_dataset
-from csrank.objectranking.rank_net import RankNet
-from csrank.rank_network import RankNetwork
+from csrank.ranknet_core import RankNetCore
 from .discrete_choice import DiscreteObjectChooser
 
 
-class RankNetDiscreteChoiceFunction(RankNetwork, DiscreteObjectChooser):
-    def __init__(self, loss_function='categorical_hinge', metrics=None, **kwargs):
-        RankNet.__init__(self, **kwargs)
+class RankNetDiscreteChoiceFunction(RankNetCore, DiscreteObjectChooser):
+    def __init__(self, loss_function='categorical_hinge', metrics=['categorical_accuracy'], **kwargs):
+        super().__init__(loss_function=loss_function, metrics=metrics, **kwargs)
         self.logger = logging.getLogger(RankNetDiscreteChoiceFunction.__name__)
-        self.loss_function = loss_function
-        if metrics is None:
-            metrics = ['categorical_accuracy']
-        self.metrics = metrics
-
-    def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
-        super().fit(X, Y, epochs=epochs, callbacks=callbacks, validation_split=validation_split, verbose=verbose)
 
     def convert_instances(self, X, Y):
         self.logger.debug('Creating the Dataset')
@@ -30,17 +22,21 @@ class RankNetDiscreteChoiceFunction(RankNetwork, DiscreteObjectChooser):
         self.logger.debug('Finished the Dataset')
         return X1, X2, Y_single
 
-    def predict_scores(self, X, **kwargs):
-        return super().predict_scores(self, X, **kwargs)
+    def fit(self, X, Y, **kwd):
+        super().fit(X, Y, **kwd)
 
-    def predict(self, X, **kwargs):
-        return super().predict(self, X, **kwargs)
+    def _predict_scores_fixed(self, X, **kwargs):
+        return super()._predict_scores_fixed(X, **kwargs)
+
+    def predict_scores(self, X, **kwargs):
+        return super().predict_scores(X, **kwargs)
 
     def predict_for_scores(self, scores, **kwargs):
         return DiscreteObjectChooser.predict_for_scores(self, scores, **kwargs)
 
-    def _predict_scores_fixed(self, X, **kwargs):
-        return super()._predict_scores_fixed(self, X, **kwargs)
+    def predict(self, X, **kwargs):
+        return super().predict(X, **kwargs)
 
     def clear_memory(self, **kwargs):
-        super().clear_memory(self, **kwargs)
+        self.logger.info("Clearing memory")
+        super().clear_memory(**kwargs)

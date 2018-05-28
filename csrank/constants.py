@@ -35,6 +35,8 @@ LISTNET = 'listnet'
 FETA_CHOICE = 'feta_choice'
 FATE_CHOICE = "fate_choice"
 TAG_GENOME = 'tag_genome'
+THRESHOLD = int(5e7)
+
 allowed_dense_kwargs = ['input_shape', 'batch_input_shape', 'batch_size', 'dtype', 'name', 'trainable', 'weights',
                         'input_dtype', 'activation', 'use_bias', 'kernel_initializer', 'bias_initializer',
                         'kernel_regularizer', 'bias_regularizer', 'activity_regularizer', 'kernel_constraint',

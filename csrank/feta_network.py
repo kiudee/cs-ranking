@@ -298,7 +298,7 @@ class FETANetwork(Learner):
             self.logger.warning('This ranking algorithm does not support tunable parameters'
                                 ' called: {}'.format(print_dictionary(point)))
 
-    def clear_memory(self, n_objects, **kwargs):
+    def clear_memory(self, **kwargs):
         self.model.save_weights(self.hash_file)
         K.clear_session()
         sess = tf.Session()

@@ -9,17 +9,12 @@ from keras.metrics import top_k_categorical_accuracy, binary_accuracy
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
 
-from csrank import RankNet
-from csrank.constants import allowed_dense_kwargs
-from csrank.dataset_reader.objectranking.util import generate_complete_pairwise_dataset
+from csrank.constants import allowed_dense_kwargs, THRESHOLD
 from csrank.layers import NormalizedDense
 from csrank.learner import Learner
-from csrank.objectranking.constants import THRESHOLD
-from csrank.tunable import Tunable
 from csrank.util import print_dictionary
 
-
-class RankNetwork(Learner, Tunable):
+class RankNetCore(Learner):
     def __init__(self, n_object_features, hash_file, n_hidden=2, n_units=8, loss_function=binary_crossentropy,
                  batch_normalization=True, kernel_regularizer=l2(l=1e-4), kernel_initializer='lecun_normal',
                  activation='relu', optimizer="adam", metrics=[top_k_categorical_accuracy, binary_accuracy],
@@ -72,7 +67,7 @@ class RankNetwork(Learner, Tunable):
                "From ranknet to lambdarank to lambdamart: An overview.",
                Learning, 11(23-581), 81.
         """
-        self.logger = logging.getLogger(RankNet.__name__)
+        self.logger = logging.getLogger(RankNetCore.__name__)
         self.n_object_features = n_object_features
         self.batch_normalization = batch_normalization
         self.activation = activation
@@ -84,19 +79,19 @@ class RankNetwork(Learner, Tunable):
         self._optimizer_config = self.optimizer.get_config()
         self.n_hidden = n_hidden
         self.n_units = n_units
-        self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
-                               activation=self.activation, **kwargs)
-        self.threshold_instances = THRESHOLD
-        self.batch_size = batch_size
-        self.hash_file = hash_file
         keys = list(kwargs.keys())
         for key in keys:
             if key not in allowed_dense_kwargs:
                 del kwargs[key]
         self.kwargs = kwargs
+        self.threshold_instances = THRESHOLD
+        self.batch_size = batch_size
+        self.hash_file = hash_file
         self._scoring_model = None
         self.model = None
         self.random_state = check_random_state(random_state)
+        self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
+                               activation=self.activation, **self.kwargs)
 
     def _construct_layers(self, **kwargs):
         self.x1 = Input(shape=(self.n_object_features,))
@@ -158,6 +153,33 @@ class RankNetwork(Learner, Tunable):
         output = self.output_node(merged_inputs)
         return output
 
+    def _predict_scores_fixed(self, X, **kwargs):
+        # assert X1.shape[1] == self.n_features
+        n_instances, n_objects, n_features = X.shape
+        self.logger.info("For Test instances {} objects {} features {}".format(n_instances, n_objects, n_features))
+        scores = []
+        for X1 in X:
+            score = self.scoring_model.predict(X1, **kwargs)
+            score = score.flatten()
+            scores.append(score)
+        scores = np.array(scores)
+        self.logger.info("Done predicting scores")
+        return scores
+
+    def clear_memory(self, **kwargs):
+        self.model.save_weights(self.hash_file)
+        K.clear_session()
+        sess = tf.Session()
+        K.set_session(sess)
+
+        self._scoring_model = None
+        self.optimizer = self.optimizer.from_config(self._optimizer_config)
+        self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
+                               activation=self.activation, **self.kwargs)
+        output = self.construct_model()
+        self.model = Model(inputs=[self.x1, self.x2], outputs=output)
+        self.model.load_weights(self.hash_file)
+
     def set_tunable_parameters(self, n_hidden=32,
                                n_units=2,
                                reg_strength=1e-4,
@@ -176,30 +198,3 @@ class RankNetwork(Learner, Tunable):
             self.logger.warning('This ranking algorithm does not support'
                                 ' tunable parameters'
                                 ' called: {}'.format(print_dictionary(point)))
-
-    def clear_memory(self, n_objects, **kwargs):
-        self.model.save_weights(self.hash_file)
-        K.clear_session()
-        sess = tf.Session()
-        K.set_session(sess)
-
-        self._scoring_model = None
-        self.optimizer = self.optimizer.from_config(self._optimizer_config)
-        self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
-                               activation=self.activation, **self.kwargs)
-        output = self.construct_model()
-        self.model = Model(inputs=[self.x1, self.x2], outputs=output)
-        self.model.load_weights(self.hash_file)
-
-    def _predict_scores_fixed(self, X, **kwargs):
-        # assert X1.shape[1] == self.n_features
-        n_instances, n_objects, n_features = X.shape
-        self.logger.info("For Test instances {} objects {} features {}".format(n_instances, n_objects, n_features))
-        scores = []
-        for X1 in X:
-            score = self.scoring_model.predict(X1, **kwargs)
-            score = score.flatten()
-            scores.append(score)
-        scores = np.array(scores)
-        self.logger.info("Done predicting scores")
-        return scores

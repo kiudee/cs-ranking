@@ -4,8 +4,8 @@ import numpy as np
 from sklearn.linear_model import LinearRegression, ElasticNet, Ridge
 from sklearn.utils import check_random_state
 
+from csrank.learner import Learner
 from csrank.objectranking.object_ranker import ObjectRanker
-from csrank.tunable import Tunable
 from csrank.util import normalize, print_dictionary
 from ..dataset_reader.objectranking.util import \
     complete_linear_regression_dataset
@@ -13,7 +13,7 @@ from ..dataset_reader.objectranking.util import \
 __all__ = ['ExpectedRankRegression']
 
 
-class ExpectedRankRegression(ObjectRanker, Tunable):
+class ExpectedRankRegression(ObjectRanker, Learner):
     _tunable = None
 
     def __init__(self, n_object_features, alpha=0.0, l1_ratio=0.5, tol=1e-4,
@@ -59,6 +59,7 @@ class ExpectedRankRegression(ObjectRanker, Tunable):
         self.logger = logging.getLogger('ERR')
         self.fit_intercept = fit_intercept
         self.random_state = check_random_state(random_state)
+        self.weights = None
 
     def fit(self, X, Y, **kwargs):
         self.logger.debug('Creating the Dataset')
@@ -82,7 +83,7 @@ class ExpectedRankRegression(ObjectRanker, Tunable):
         self.logger.debug('Finished Creating the model, now fitting started')
         self.model.fit(X_train, Y_train)
         self.weights = self.model.coef_.flatten()
-        if (self.fit_intercept):
+        if self.fit_intercept:
             self.weights = np.append(self.weights, self.model.intercept_)
         self.logger.debug('Fitting Complete')
 
@@ -97,20 +98,21 @@ class ExpectedRankRegression(ObjectRanker, Tunable):
             assert data_test.shape[1] == self.n_object_features
             score = self.model.predict(data_test) * -1
             scores[i] = score
-        scores = normalize(score)
+        scores = normalize(scores)
         self.logger.info("Done predicting scores")
         return scores
 
     def predict_scores(self, X, **kwargs):
         return super().predict_scores(X, **kwargs)
 
+    def predict_for_scores(self, scores, **kwargs):
+        return ObjectRanker.predict_for_scores(self, scores, **kwargs)
+
     def predict(self, X, **kwargs):
         return super().predict(X, **kwargs)
 
-    def predict_pair(self, a, b, **kwargs):
-        score_a = self.model.predict(a, **kwargs) * -1
-        score_b = self.model.predict(b, **kwargs) * -1
-        return [score_a / (score_a + score_b), score_b / (score_a + score_b)]
+    def clear_memory(self, **kwargs):
+        pass
 
     def set_tunable_parameters(self, alpha=0.0, l1_ratio=0.5, tol=1e-4, **point):
         self.tol = tol

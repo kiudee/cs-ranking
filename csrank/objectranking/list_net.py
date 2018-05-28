@@ -7,13 +7,14 @@ from keras.layers import Dense, concatenate
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
 
-from csrank.constants import allowed_dense_kwargs
+from csrank.constants import allowed_dense_kwargs, THRESHOLD
 from csrank.layers import NormalizedDense, create_input_lambda
 from csrank.learner import Learner
 from csrank.losses import plackett_luce_loss
-from csrank.objectranking.constants import THRESHOLD
 from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.util import print_dictionary
+
+THRESHOLD = int(5e6)
 
 __all__ = ["ListNet"]
 
@@ -157,41 +158,6 @@ class ListNet(Learner, ObjectRanker):
             self._scoring_model = Model(inputs=inp, outputs=output_score)
         return self._scoring_model
 
-    def set_tunable_parameters(self, n_hidden=32, n_units=2, reg_strength=1e-4, learning_rate=1e-3, batch_size=128,
-                               **point):
-        self.logger.info("learning_rate: {}".format(learning_rate))
-        self.logger.info("reg_strength: {}".format(reg_strength))
-        self.logger.info("n_hidden: {}".format(n_hidden))
-        self.logger.info("n_units: {}".format(n_units))
-        self.logger.info("batch_size: {}".format(batch_size))
-        self.n_hidden = n_hidden
-        self.n_units = n_units
-        self.kernel_regularizer = l2(reg_strength)
-        self.batch_size = batch_size
-        self.optimizer = self.optimizer.from_config(self._optimizer_config)
-        K.set_value(self.optimizer.lr, learning_rate)
-        self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
-                               activation=self.activation, **self.kwargs)
-
-        self._scoring_model = None
-        if len(point) > 0:
-            self.logger.warning(
-                "This ranking algorithm does not support tunable parameters called: {}".format(print_dictionary(point)))
-
-    def clear_memory(self, n_objects, **kwargs):
-        self.model.save_weights(self.hash_file)
-        K.clear_session()
-        sess = tf.Session()
-        K.set_session(sess)
-        self._scoring_model = None
-        self.optimizer = self.optimizer.from_config(self._optimizer_config)
-        self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
-                               activation=self.activation, **self.kwargs)
-
-        output = self.construct_model()
-        self.model = Model(inputs=self.input_layer, outputs=output)
-        self.model.load_weights(self.hash_file)
-
     def _predict_scores_fixed(self, X, **kwargs):
         n_inst, n_obj, n_feat = X.shape
         self.logger.info("For Test instances {} objects {} features {}".format(n_inst, n_obj, n_feat))
@@ -208,4 +174,34 @@ class ListNet(Learner, ObjectRanker):
         return ObjectRanker.predict_for_scores(self, scores, **kwargs)
 
     def predict(self, X, **kwargs):
-        return super().predict(self, X, **kwargs)
+        return super().predict(X, **kwargs)
+
+    def clear_memory(self, **kwargs):
+        self.model.save_weights(self.hash_file)
+        K.clear_session()
+        sess = tf.Session()
+        K.set_session(sess)
+        self._scoring_model = None
+        self.optimizer = self.optimizer.from_config(self._optimizer_config)
+        self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
+                               activation=self.activation, **self.kwargs)
+        output = self.construct_model()
+        self.model = Model(inputs=self.input_layer, outputs=output)
+        self.model.load_weights(self.hash_file)
+
+    def set_tunable_parameters(self, n_hidden=32, n_units=2, reg_strength=1e-4, learning_rate=1e-3, batch_size=128,
+                               **point):
+        self.n_hidden = n_hidden
+        self.n_units = n_units
+        self.kernel_regularizer = l2(reg_strength)
+        self.batch_size = batch_size
+        self.optimizer = self.optimizer.from_config(self._optimizer_config)
+        K.set_value(self.optimizer.lr, learning_rate)
+        self._construct_layers(kernel_regularizer=self.kernel_regularizer,
+                               kernel_initializer=self.kernel_initializer,
+                               activation=self.activation, **self.kwargs)
+
+        self._scoring_model = None
+        if len(point) > 0:
+            self.logger.warning("This ranking algorithm does not support "
+                                "tunable parameters called: {}".format(print_dictionary(point)))

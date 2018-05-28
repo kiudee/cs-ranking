@@ -22,27 +22,27 @@ class FATEObjectRanker(FATENetwork, ObjectRanker):
             Keyword arguments for the @FATENetwork
         """
 
-    def __init__(self, loss_function=smooth_rank_loss, metrics=None, **kwargs):
-        if metrics is None:
-            metrics = [zero_one_rank_loss_for_scores_ties]
-        FATENetwork.__init__(self, loss_function=loss_function, metrics=metrics, **kwargs)
+    def __init__(self, loss_function=smooth_rank_loss, metrics=[zero_one_rank_loss_for_scores_ties], **kwargs):
+        self.loss_function = loss_function
+        self.metrics = metrics
+        super().__init__(**kwargs)
         self.logger = logging.getLogger(FATEObjectRanker.__name__)
 
     def fit(self, X, Y, **kwd):
-        super().fit(self, X, Y, **kwd)
-
-    def predict(self, X, **kwargs):
-        return super().predict(self, X, **kwargs)
-
-    def predict_for_scores(self, scores, **kwargs):
-        ObjectRanker.predict_for_scores(self, scores, **kwargs)
+        super().fit(X, Y, **kwd)
 
     def _predict_scores_fixed(self, X, **kwargs):
-        return super()._predict_scores_fixed(self, X, **kwargs)
+        return super()._predict_scores_fixed(X, **kwargs)
 
     def predict_scores(self, X, **kwargs):
-        return super().predict_scores(self, X, **kwargs)
+        return super().predict_scores(X, **kwargs)
 
-    def clear_memory(self, n_objects):
+    def predict_for_scores(self, scores, **kwargs):
+        return ObjectRanker.predict_for_scores(self, scores, **kwargs)
+
+    def predict(self, X, **kwargs):
+        return super().predict(X, **kwargs)
+
+    def clear_memory(self, **kwargs):
         self.logger.info("Clearing memory")
-        FATENetwork.clear_memory(self, n_objects)
+        super().clear_memory(**kwargs)

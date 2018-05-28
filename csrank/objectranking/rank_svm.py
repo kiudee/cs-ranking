@@ -6,8 +6,9 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.svm import LinearSVC
 from sklearn.utils import check_random_state
 
+from csrank.constants import THRESHOLD
+from csrank.learner import Learner
 from csrank.objectranking.object_ranker import ObjectRanker
-from csrank.tunable import Tunable
 from csrank.util import print_dictionary
 from ..dataset_reader.objectranking.util import \
     generate_complete_pairwise_dataset
@@ -15,7 +16,7 @@ from ..dataset_reader.objectranking.util import \
 __all__ = ['RankSVM']
 
 
-class RankSVM(ObjectRanker, Tunable):
+class RankSVM(ObjectRanker, Learner):
     _tunable = None
 
     def __init__(self, n_object_features, C=1.0, tol=1e-4, normalize=True,
@@ -52,35 +53,35 @@ class RankSVM(ObjectRanker, Tunable):
         self.tol = tol
         self.logger = logging.getLogger('RankSVM')
         self.random_state = check_random_state(random_state)
-        self.threshold_instances = 1000000
+        self.threshold_instances = THRESHOLD
         self.fit_intercept = fit_intercept
+        self.weights = None
+        self.model = None
 
     def fit(self, X, Y, **kwargs):
         self.logger.debug('Creating the Dataset')
-        X_train, garbage, garbage, garbage, Y_single = generate_complete_pairwise_dataset(
+        x_train, garbage, garbage, garbage, Y_single = generate_complete_pairwise_dataset(
             X, Y)
         del garbage
-        assert X_train.shape[1] == self.n_object_features
+        assert x_train.shape[1] == self.n_object_features
 
         self.logger.debug(
-            'Finished the Dataset with instances {}'.format(X_train.shape[0]))
-        if (X_train.shape[0] > self.threshold_instances):
-            self.model = LogisticRegression(C=self.C, tol=self.tol,
-                                            fit_intercept=self.fit_intercept,
+            'Finished the Dataset with instances {}'.format(x_train.shape[0]))
+        if x_train.shape[0] > self.threshold_instances:
+            self.model = LogisticRegression(C=self.C, tol=self.tol, fit_intercept=self.fit_intercept,
                                             random_state=self.random_state)
         else:
-            self.model = LinearSVC(C=self.C, tol=self.tol,
-                                   fit_intercept=self.fit_intercept,
+            self.model = LinearSVC(C=self.C, tol=self.tol, fit_intercept=self.fit_intercept,
                                    random_state=self.random_state)
 
-        if (self.normalize):
-            scaler = prep.StandardScaler()
-            X_train = scaler.fit_transform(X_train)
+        if self.normalize:
+            std_scalar = prep.StandardScaler()
+            x_train = std_scalar.fit_transform(x_train)
         self.logger.debug('Finished Creating the model, now fitting started')
 
-        self.model.fit(X_train, Y_single)
+        self.model.fit(x_train, Y_single)
         self.weights = self.model.coef_.flatten()
-        if (self.fit_intercept):
+        if self.fit_intercept:
             self.weights = np.append(self.weights, self.model.intercept_)
         self.logger.debug('Fitting Complete')
 
@@ -105,14 +106,14 @@ class RankSVM(ObjectRanker, Tunable):
     def predict_scores(self, X, **kwargs):
         return super().predict_scores(X, **kwargs)
 
+    def predict_for_scores(self, scores, **kwargs):
+        return ObjectRanker.predict_for_scores(self, scores, **kwargs)
+
     def predict(self, X, **kwargs):
         return super().predict(X, **kwargs)
 
-    def predict_pair(self, a, b, **kwargs):
-        weights = np.array(self.model.coef_)[0]
-        score_a = np.sum(weights * a, axis=1)
-        score_b = np.sum(weights * b, axis=1)
-        return [score_a / (score_a + score_b), score_b / (score_a + score_b)]
+    def clear_memory(self, **kwargs):
+        pass
 
     def set_tunable_parameters(self, C=1.0, tol=1e-4, **point):
         self.tol = tol
