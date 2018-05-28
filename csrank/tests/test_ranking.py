@@ -70,7 +70,7 @@ def test_construction_core():
     grc = MockClass(n_objects=n_objects, n_features=n_features)
     grc._construct_layers(
         activation=grc.activation,
-                          kernel_initializer=grc.kernel_initializer,
+        kernel_initializer=grc.kernel_initializer,
         kernel_regularizer=grc.kernel_regularizer,
     )
     input_layer = Input(shape=(n_objects, n_features))
@@ -110,7 +110,6 @@ def test_object_ranker_fixed(trivial_ranking_problem, ranker_name, loss):
 
 
 def test_fate_object_ranker_fixed_generator():
-
     def trivial_ranking_problem_generator():
         while True:
             rand = np.random.RandomState(123)
@@ -120,11 +119,11 @@ def test_fate_object_ranker_fixed_generator():
 
     fate = FATEObjectRanker(
         n_object_features=1,
-                            n_hidden_joint_layers=1,
-                            n_hidden_set_layers=1,
-                            n_hidden_joint_units=5,
-                            n_hidden_set_units=5,
-                            kernel_regularizer=l2(1e-4),
+        n_hidden_joint_layers=1,
+        n_hidden_set_layers=1,
+        n_hidden_joint_units=5,
+        n_hidden_set_units=5,
+        kernel_regularizer=l2(1e-4),
         optimizer=optimizer,
     )
     fate.fit_generator(

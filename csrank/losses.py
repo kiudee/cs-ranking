@@ -1,5 +1,5 @@
-from keras import backend as K
 import tensorflow as tf
+from keras import backend as K
 
 from .util import tensorify
 
@@ -12,6 +12,7 @@ def identifiable(loss_function):
         alpha = 1e-4
         ss = tf.reduce_sum(tf.square(y_pred), axis=1)
         return alpha * ss + loss_function(y_true, y_pred)
+
     return wrap_loss
 
 

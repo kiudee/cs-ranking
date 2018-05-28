@@ -45,11 +45,8 @@ class TuningCallback(object):
 
 
 class ParameterOptimizer(Learner):
-    def __init__(self, learner, optimizer_path,
-                 tunable_parameter_ranges, fit_params=None,
-                 random_state=None, tuning_callbacks=None, validation_loss=None,
-                 learning_problem=OBJECT_RANKING,
-                 **kwd):
+    def __init__(self, learner, optimizer_path, tunable_parameter_ranges, fit_params=None, random_state=None,
+                 tuning_callbacks=None, validation_loss=None, learning_problem=OBJECT_RANKING, **kwd):
         """
 
         Parameters
@@ -411,3 +408,6 @@ class ParameterOptimizer(Learner):
         else:
             self.logger.error('The ranking model was not fit yet.')
             raise AttributeError
+
+    def set_tunable_parameters(self, **point):
+        self.model.set_tunable_parameters(**point)

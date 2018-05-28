@@ -495,4 +495,3 @@ class FATENetwork(FATENetworkCore):
             self.model = None
         if hasattr(self, 'models'):
             self.models = None
-

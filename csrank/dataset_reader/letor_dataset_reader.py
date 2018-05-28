@@ -1,3 +1,4 @@
+import collections
 import glob
 import logging
 import os
@@ -45,10 +46,10 @@ class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
             self.logger.info("Query features {}".format(self.query_feature_indices))
             self.logger.info("Query Document features {}".format(self.query_document_feature_indices))
             if self.year == "2007":
-                mq_2007_files = glob.glob(os.path.join(self.dirname, self.DATASET_FOLDER_2007, '*.txt'))
+                mq_2007_files = glob.glob(os.path.join(self.dirname, self.DATASET_FOLDER_2007, 'I*.txt'))
                 self.dataset_dictionaries = self.create_dataset_dictionary(mq_2007_files)
             else:
-                mq_2008_files = glob.glob(os.path.join(self.dirname, self.DATASET_FOLDER_2008, '*.txt'))
+                mq_2008_files = glob.glob(os.path.join(self.dirname, self.DATASET_FOLDER_2008, 'I*.txt'))
                 self.dataset_dictionaries = self.create_dataset_dictionary(mq_2008_files)
             for key, dataset in self.dataset_dictionaries.items():
                 hdf5file_path = self.file_format.format(key.split('I')[-1])
@@ -59,12 +60,10 @@ class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
         for i in self.dataset_indices:
             h5py_file_path = self.file_format.format(i + 1)
             if i != self.fold_id:
-                file = h5py.File(h5py_file_path, 'r')
-                X, Y, S = self.get_rankings_dict(file)
+                X, Y, S = self.get_rankings_dict(h5py_file_path)
                 self.merge_to_train(X, Y, S)
             else:
-                file = h5py.File(h5py_file_path, 'r')
-                self.X_test, self.Y_test, self.scores_test = self.get_rankings_dict(file)
+                self.X_test, self.Y_test, self.scores_test = self.get_rankings_dict(h5py_file_path)
         self.logger.info("Done loading the dataset")
 
     def create_rankings_dataset(self, dataset, hdf5file_path):
@@ -73,6 +72,7 @@ class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
         result, freq = self._build_training_buckets(X, Y, scores)
         h5f = h5py.File(hdf5file_path, 'w')
         self.logger.info("Frequencies of rankings: {}".format(print_dictionary(freq)))
+
         for key, value in result.items():
             x, y, s = value
             h5f.create_dataset('X_' + str(key), data=x, compression='gzip', compression_opts=9)
@@ -134,7 +134,7 @@ class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
         # Convert all buckets to numpy arrays:
         for k, v in result.items():
             result[k] = np.array(v[0]), np.array(v[1]), np.array(v[2])
-
+        result = collections.OrderedDict(sorted(result.items()))
         return result, frequencies
 
     def create_dataset_dictionary(self, files):
@@ -159,7 +159,8 @@ class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
             self.logger.info('Maximum length of ranking: {}'.format(np.max(array)))
         return dataset_dictionaries
 
-    def get_rankings_dict(self, file):
+    def get_rankings_dict(self, h5py_file_path):
+        file = h5py.File(h5py_file_path, 'r')
         lengths = file["lengths"]
         X = dict()
         Y = dict()
@@ -167,10 +168,11 @@ class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
         for ranking_length in np.array(lengths):
             self.X = np.array(file["X_{}".format(ranking_length)])
             self.Y = np.array(file["Y_{}".format(ranking_length)])
-            self.Y = self.convert_output(ranking_length)
+            self.convert_output(ranking_length)
             s = np.array(file["score_{}".format(ranking_length)])
             self.__check_dataset_validity__()
             X[ranking_length], Y[ranking_length], scores[ranking_length] = self.X, self.Y, s
+        file.close()
         return X, Y, scores
 
     def merge_to_train(self, X, Y, scores):
@@ -209,4 +211,4 @@ class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
         pass
 
     def convert_output(self, ranking_length):
-        return self.Y
+        pass

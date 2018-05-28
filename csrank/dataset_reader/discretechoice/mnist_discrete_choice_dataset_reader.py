@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import check_random_state
 
 from csrank.constants import DISCRETE_CHOICE
-from csrank.util import convert_to_label_encoding
+from .util import convert_to_label_encoding
 from ..dataset_reader import DatasetReader
 
 

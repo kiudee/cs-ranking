@@ -1,8 +1,7 @@
 from itertools import product
 
 import numpy as np
-
-from csrank.util import convert_to_label_encoding
+from sklearn.preprocessing import LabelBinarizer
 
 
 def sub_sampling_discrete_choices(Xt, St, n_objects=5):
@@ -64,3 +63,8 @@ def generate_complete_pairwise_dataset(X, Y):
     Y_double = np.array(Y_double)
     Y_single = np.array(Y_single)
     return X1, X2, Y_double, Y_single
+
+
+def convert_to_label_encoding(Y, n_objects):
+    lb = LabelBinarizer().fit(np.arange(n_objects))
+    return lb.transform(Y)
