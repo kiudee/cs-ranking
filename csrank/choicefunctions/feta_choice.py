@@ -15,9 +15,7 @@ from .choice_functions import ChoiceFunctions
 
 class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
     def __init__(self, loss_function=binary_crossentropy, metrics=None, **kwargs):
-        super().__init__(self, **kwargs)
-        self.loss_function = loss_function
-        self.metrics = metrics
+        super().__init__(loss_function=loss_function, metrics=metrics, **kwargs)
         self.threshold = 0.5
         self.logger = logging.getLogger(FETAChoiceFunction.__name__)
 

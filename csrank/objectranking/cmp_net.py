@@ -12,10 +12,9 @@ from keras.optimizers import Adam
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
 
-from csrank.constants import allowed_dense_kwargs
+from csrank.constants import allowed_dense_kwargs, THRESHOLD
 from csrank.layers import NormalizedDense
 from csrank.learner import Learner
-from csrank.objectranking.constants import THRESHOLD
 from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.util import print_dictionary
 from ..dataset_reader.objectranking.util import generate_complete_pairwise_dataset
@@ -103,11 +102,11 @@ class CmpNet(ObjectRanker, Learner):
             if key not in allowed_dense_kwargs:
                 del kwargs[key]
         self.kwargs = kwargs
-        self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
-                               activation=self.activation, **self.kwargs)
         self.threshold_instances = THRESHOLD
         self.random_state = check_random_state(random_state)
         self.model = None
+        self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
+                               activation=self.activation, **self.kwargs)
 
     def _construct_layers(self, **kwargs):
 
@@ -162,6 +161,9 @@ class CmpNet(ObjectRanker, Learner):
         merged_output = concatenate([N_g, N_l])
         return merged_output
 
+    def predict_pair(self, a, b, **kwargs):
+        return self.model.predict([a, b], **kwargs)
+
     def _predict_scores_fixed(self, X, **kwargs):
         n_instances, n_objects, n_features = X.shape
         self.logger.info("For Test instances {} objects {} features {}".format(n_instances, n_objects, n_features))
@@ -188,6 +190,19 @@ class CmpNet(ObjectRanker, Learner):
     def predict_for_scores(self, scores, **kwargs):
         return ObjectRanker.predict_for_scores(self, scores, **kwargs)
 
+    def clear_memory(self, **kwargs):
+        self.model.save_weights(self.hash_file)
+        K.clear_session()
+        sess = tf.Session()
+        K.set_session(sess)
+
+        self.optimizer = self.optimizer.from_config(self._optimizer_config)
+        self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
+                               activation=self.activation, **self.kwargs)
+        output = self.construct_model()
+        self.model = Model(inputs=[self.x1, self.x2], outputs=output)
+        self.model.load_weights(self.hash_file)
+
     def set_tunable_parameters(self, n_hidden=32,
                                n_units=2,
                                reg_strength=1e-4,
@@ -205,16 +220,3 @@ class CmpNet(ObjectRanker, Learner):
             self.logger.warning('This ranking algorithm does not support'
                                 ' tunable parameters'
                                 ' called: {}'.format(print_dictionary(point)))
-
-    def clear_memory(self, **kwargs):
-        self.model.save_weights(self.hash_file)
-        K.clear_session()
-        sess = tf.Session()
-        K.set_session(sess)
-
-        self.optimizer = self.optimizer.from_config(self._optimizer_config)
-        self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
-                               activation=self.activation, **self.kwargs)
-        output = self.construct_model()
-        self.model = Model(inputs=[self.x1, self.x2], outputs=output)
-        self.model.load_weights(self.hash_file)

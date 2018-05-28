@@ -5,15 +5,15 @@ from keras.metrics import top_k_categorical_accuracy, binary_accuracy
 
 from csrank.dataset_reader.objectranking.util import generate_complete_pairwise_dataset
 from csrank.objectranking.object_ranker import ObjectRanker
-from csrank.rank_network import RankNetwork
+from csrank.ranknet_core import RankNetCore
 
 __all__ = ['RankNet']
 
 
-class RankNet(RankNetwork, ObjectRanker):
+class RankNet(RankNetCore, ObjectRanker):
     def __init__(self, loss_function=binary_crossentropy, metrics=[top_k_categorical_accuracy, binary_accuracy],
                  **kwargs):
-        RankNetwork.__init__(self, loss_function=loss_function, metrics=metrics, **kwargs)
+        super().__init__(loss_function=loss_function, metrics=metrics, **kwargs)
         self.logger = logging.getLogger(RankNet.__name__)
         self.logger.info("Initializing network with object features {}".format(
             self.n_object_features))
@@ -31,7 +31,10 @@ class RankNet(RankNetwork, ObjectRanker):
         return X1, X2, Y_single
 
     def fit(self, X, Y, **kwd):
-        super().fit(self, X, Y, **kwd)
+        super().fit(X, Y, **kwd)
+
+    def _predict_scores_fixed(self, X, **kwargs):
+        return super()._predict_scores_fixed(X, **kwargs)
 
     def predict_scores(self, X, **kwargs):
         return super().predict_scores(X, **kwargs)
@@ -40,10 +43,7 @@ class RankNet(RankNetwork, ObjectRanker):
         return ObjectRanker.predict_for_scores(self, scores, **kwargs)
 
     def predict(self, X, **kwargs):
-        return super().predict(self, X, **kwargs)
-
-    def _predict_scores_fixed(self, X, **kwargs):
-        return super()._predict_scores_fixed(self, X, **kwargs)
+        return super().predict(X, **kwargs)
 
     def clear_memory(self, **kwargs):
-        super().clear_memory(self, **kwargs)
+        super().clear_memory(**kwargs)

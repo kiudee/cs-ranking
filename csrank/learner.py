@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 from csrank.tunable import Tunable
 
 
-class Learner(metaclass=ABCMeta, Tunable):
+class Learner(Tunable, metaclass=ABCMeta):
 
     @abstractmethod
     def fit(self, X, Y, **kwargs):

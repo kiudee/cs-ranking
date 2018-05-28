@@ -7,15 +7,14 @@ from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
 
 from csrank.fate_network import FATENetwork
-from csrank.metrics import zero_one_accuracy
 from .choice_functions import ChoiceFunctions
 
 
 class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
     def __init__(self, loss_function=binary_crossentropy, metrics=None, **kwargs):
-        if metrics is None:
-            metrics = [zero_one_accuracy]
-        super().__init__(self, loss_function=loss_function, metrics=metrics, **kwargs)
+        self.loss_function = loss_function
+        self.metrics = metrics
+        super().__init__(**kwargs)
         self.logger = logging.Logger(FATEChoiceFunction.__name__)
         self.threshold = 0.5
 
@@ -67,6 +66,9 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
             super().fit(X, Y, **kwargs)
             self.threshold = 0.5
 
+    def _predict_scores_fixed(self, X, **kwargs):
+        return super()._predict_scores_fixed(X, **kwargs)
+
     def predict_scores(self, X, **kwargs):
         return super().predict_scores(X, **kwargs)
 
@@ -74,10 +76,8 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
         return ChoiceFunctions.predict_for_scores(self, scores, **kwargs)
 
     def predict(self, X, **kwargs):
-        return super().predict(self, X, **kwargs)
-
-    def _predict_scores_fixed(self, X, **kwargs):
-        return super()._predict_scores_fixed(self, X, **kwargs)
+        return super().predict(X, **kwargs)
 
     def clear_memory(self, **kwargs):
-        super().clear_memory(self, **kwargs)
+        self.logger.info("Clearing memory")
+        super().clear_memory(**kwargs)

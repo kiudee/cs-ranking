@@ -458,6 +458,25 @@ class FATENetwork(FATENetworkCore):
         self.logger.info("Done predicting scores")
         return predicted_scores
 
+    def clear_memory(self, n_objects=5, **kwargs):
+        self.logger.info("Cleared the memory weights saved at {}".format(self.hash_file))
+        self.model.save_weights(self.hash_file)
+        K.clear_session()
+        sess = tf.Session()
+        K.set_session(sess)
+        self.optimizer = self.optimizer.from_config(self._optimizer_config)
+        self._construct_layers(activation=self.activation, kernel_initializer=self.kernel_initializer,
+                               kernel_regularizer=self.kernel_regularizer, **self.kwargs)
+        self._create_set_layers(activation=self.activation, kernel_initializer=self.kernel_initializer,
+                                kernel_regularizer=self.kernel_regularizer, **self.kwargs)
+        input_layer = Input(shape=(n_objects, self.n_object_features), name="input_node")
+        set_repr = self.set_layer(input_layer)
+        scores = self.join_input_layers(input_layer, set_repr, n_objects=n_objects, n_layers=self.n_hidden_set_layers)
+        self.model = Model(inputs=input_layer, outputs=scores)
+        self.model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
+        self.model.load_weights(self.hash_file)
+        self.logger.info("Loaded the model from weights {}".format(self.hash_file))
+
     def set_tunable_parameters(self, n_hidden_set_units=32,
                                n_hidden_set_layers=2,
                                n_hidden_joint_units=32,
@@ -480,21 +499,3 @@ class FATENetwork(FATENetworkCore):
         if hasattr(self, 'models'):
             self.models = None
 
-    def clear_memory(self, n_objects, **kwargs):
-        self.logger.info("Cleared the memory weights saved at {}".format(self.hash_file))
-        self.model.save_weights(self.hash_file)
-        K.clear_session()
-        sess = tf.Session()
-        K.set_session(sess)
-        self.optimizer = self.optimizer.from_config(self._optimizer_config)
-        self._construct_layers(activation=self.activation, kernel_initializer=self.kernel_initializer,
-                               kernel_regularizer=self.kernel_regularizer, **self.kwargs)
-        self._create_set_layers(activation=self.activation, kernel_initializer=self.kernel_initializer,
-                                kernel_regularizer=self.kernel_regularizer, **self.kwargs)
-        input_layer = Input(shape=(n_objects, self.n_object_features), name="input_node")
-        set_repr = self.set_layer(input_layer)
-        scores = self.join_input_layers(input_layer, set_repr, n_objects=n_objects, n_layers=self.n_hidden_set_layers)
-        self.model = Model(inputs=input_layer, outputs=scores)
-        self.model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
-        self.model.load_weights(self.hash_file)
-        self.logger.info("Loaded the model from weights {}".format(self.hash_file))
