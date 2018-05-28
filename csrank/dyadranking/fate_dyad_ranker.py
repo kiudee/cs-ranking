@@ -1,9 +1,9 @@
 from csrank.dyadranking.contextual_ranking import ContextualRanker
-from csrank.fate_network import FATEObjectRankingCore
+from csrank.fate_network import FATENetwork
 from csrank.util import scores_to_rankings
 
 
-class FATEContextualRanker(FATEObjectRankingCore, ContextualRanker):
+class FATEContextualRanker(FATENetwork, ContextualRanker):
     def fit(self, Xo, Xc, Y, **kwargs):
         pass
 

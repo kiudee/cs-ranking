@@ -13,6 +13,7 @@ from sklearn.utils import check_random_state
 
 from csrank.constants import allowed_dense_kwargs
 from csrank.layers import NormalizedDense
+from csrank.learner import Learner
 from csrank.objectranking.constants import THRESHOLD
 from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.tunable import Tunable
@@ -22,8 +23,7 @@ from ..dataset_reader.objectranking.util import generate_complete_pairwise_datas
 __all__ = ['CmpNet']
 
 
-class CmpNet(ObjectRanker, Tunable):
-
+class CmpNet(ObjectRanker, Learner, Tunable):
     def __init__(self, n_object_features, hash_file, n_hidden=2, n_units=8,
                  loss_function=binary_crossentropy, batch_normalization=True,
                  kernel_regularizer=l2(l=1e-4), kernel_initializer='lecun_normal', activation='relu',
@@ -183,13 +183,16 @@ class CmpNet(ObjectRanker, Tunable):
         return super().predict_scores(X, **kwargs)
 
     def predict(self, X, **kwargs):
-        return ObjectRanker.predict(self, X, **kwargs)
+        return super().predict(self, X, **kwargs)
 
     def predict_pair(self, a, b, **kwargs):
         return self.model.predict([a, b], **kwargs)
 
     def evaluate(self, X1_test, X2_test, Y_test, **kwd):
         return self.model.evaluate([X1_test, X2_test], Y_test, **kwd)
+
+    def predict_for_scores(self, scores, **kwargs):
+        return ObjectRanker.predict_for_scores(self, scores, **kwargs)
 
     def set_tunable_parameters(self, n_hidden=32,
                                n_units=2,
@@ -209,7 +212,7 @@ class CmpNet(ObjectRanker, Tunable):
                                 ' tunable parameters'
                                 ' called: {}'.format(print_dictionary(point)))
 
-    def clear_memory(self, n_objects):
+    def clear_memory(self, **kwargs):
         self.model.save_weights(self.hash_file)
         K.clear_session()
         sess = tf.Session()

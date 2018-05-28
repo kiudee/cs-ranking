@@ -1,26 +1,21 @@
 import logging
-from itertools import combinations, permutations
+from itertools import permutations, combinations
 
 import numpy as np
 import tensorflow as tf
-from keras import Input, backend as K, optimizers
-from keras.engine import Model
+from keras import optimizers, Input, Model, backend as K
 from keras.layers import Dense, concatenate, Lambda, add
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
 
 from csrank.constants import allowed_dense_kwargs
 from csrank.layers import NormalizedDense
+from csrank.learner import Learner
 from csrank.losses import hinged_rank_loss
-from csrank.objectranking.object_ranker import ObjectRanker
-from csrank.tunable import Tunable
 from csrank.util import tensorify, print_dictionary
 
-__all__ = ['FETAObjectRanker']
 
-
-class FETAObjectRanker(ObjectRanker, Tunable):
-
+class FETANetwork(Learner):
     def __init__(self, n_objects, n_object_features, hash_file, n_hidden=2, n_units=8,
                  add_zeroth_order_model=False, max_number_of_objects=5,
                  num_subsample=5, loss_function=hinged_rank_loss, batch_normalization=False,
@@ -69,7 +64,7 @@ class FETAObjectRanker(ObjectRanker, Tunable):
         **kwargs
             Keyword arguments for the hidden units
         """
-        self.logger = logging.getLogger(FETAObjectRanker.__name__)
+        self.logger = logging.getLogger(FETANetwork.__name__)
 
         self.random_state = check_random_state(random_state)
 
@@ -285,16 +280,6 @@ class FETAObjectRanker(ObjectRanker, Tunable):
         self.logger.info("Done predicting scores")
         return scores
 
-    def evaluate(self, X, Y, **kwargs):
-        scores = self.model.evaluate(X, Y, **kwargs)
-        return scores
-
-    def predict_scores(self, X, **kwargs):
-        return super().predict_scores(X, **kwargs)
-
-    def predict(self, X, **kwargs):
-        return ObjectRanker.predict(self, X, **kwargs)
-
     def set_tunable_parameters(self, n_hidden=32,
                                n_units=2,
                                reg_strength=1e-4,
@@ -313,7 +298,7 @@ class FETAObjectRanker(ObjectRanker, Tunable):
             self.logger.warning('This ranking algorithm does not support tunable parameters'
                                 ' called: {}'.format(print_dictionary(point)))
 
-    def clear_memory(self, n_objects):
+    def clear_memory(self, n_objects, **kwargs):
         self.model.save_weights(self.hash_file)
         K.clear_session()
         sess = tf.Session()

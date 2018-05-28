@@ -117,4 +117,3 @@ def print_no_newline(i, total):
     sys.stdout.write("Iterations: {}  out of {} \r".format(i, total))
     sys.stdout.flush()
 
-

@@ -3,30 +3,19 @@ import logging
 import numpy as np
 from keras.layers import Dense
 from keras.losses import binary_crossentropy
-from keras.regularizers import l2
 from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
 
-from csrank.fate_network import FATEObjectRankingCore
+from csrank.fate_network import FATENetwork
+from csrank.metrics import zero_one_accuracy
+from .choice_functions import ChoiceFunctions
 
 
-class FATEChoiceFunction(FATEObjectRankingCore):
-    def __init__(self,
-                 n_object_features,
-                 n_hidden_joint_layers=2,
-                 n_hidden_joint_units=32,
-                 n_hidden_set_layers=2,
-                 n_hidden_set_units=32,
-                 loss_function=binary_crossentropy,
-                 kernel_regularizer=l2(1e-10),
-                 metrics=None,
-                 **kwargs):
-        super().__init__(n_object_features=n_object_features, n_hidden_joint_layers=n_hidden_joint_layers,
-                         n_hidden_joint_units=n_hidden_joint_units,
-                         n_hidden_set_layers=n_hidden_set_layers, n_hidden_set_units=n_hidden_set_units,
-                         metrics=metrics, kernel_regularizer=kernel_regularizer, **kwargs)
-        self.loss_function = loss_function
-        self.metrics = metrics
+class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
+    def __init__(self, loss_function=binary_crossentropy, metrics=None, **kwargs):
+        if metrics is None:
+            metrics = [zero_one_accuracy]
+        super().__init__(self, loss_function=loss_function, metrics=metrics, **kwargs)
         self.logger = logging.Logger(FATEChoiceFunction.__name__)
         self.threshold = 0.5
 
@@ -82,38 +71,13 @@ class FATEChoiceFunction(FATEObjectRankingCore):
         return super().predict_scores(X, **kwargs)
 
     def predict_for_scores(self, scores, **kwargs):
-        """ Predict rankings for a given collection of sets of objects.
-
-        Parameters
-        ----------
-        scores : dict or numpy array
-            Dictionary with a mapping from choice set size to numpy arrays
-            or a single numpy array containing scores of each object of size:
-            (n_instances, n_objects)
-
-
-        Returns
-        -------
-        Y : dict or numpy array
-            Dictionary with a mapping from choice set size to numpy arrays
-            or a single numpy array containing choices of size:
-            (n_instances, n_objects)
-            Predicted choices
-        """
-
-        if isinstance(scores, dict):
-            result = dict()
-            for n, s in scores.items():
-                result[n] = s > self.threshold
-        else:
-            result = scores > self.threshold
-        return result
+        return ChoiceFunctions.predict_for_scores(self, scores, **kwargs)
 
     def predict(self, X, **kwargs):
-        self.logger.debug('Predicting started')
-        scores = self.predict_scores(X, **kwargs)
-        self.logger.debug('Predicting scores complete')
-        return self.predict_for_scores(scores)
+        return super().predict(self, X, **kwargs)
 
-    def __call__(self, X, **kwargs):
-        return self.predict(X, **kwargs)
+    def _predict_scores_fixed(self, X, **kwargs):
+        return super()._predict_scores_fixed(self, X, **kwargs)
+
+    def clear_memory(self, n_objects, **kwargs):
+        super().clear_memory(self, n_objects, **kwargs)

@@ -1,5 +1,4 @@
 import logging
-from abc import ABCMeta, abstractmethod
 
 import keras.backend as K
 import numpy as np
@@ -13,20 +12,20 @@ from sklearn.utils import check_random_state
 
 from csrank.constants import allowed_dense_kwargs
 from csrank.layers import DeepSet, create_input_lambda
+from csrank.learner import Learner
 from csrank.tunable import Tunable
 from csrank.util import print_dictionary
 
-__all__ = ['FATEObjectRankingCore']
+__all__ = ['FATENetwork']
 
 
-class FATERankingCore(Tunable, metaclass=ABCMeta):
-
+class FATENetworkCore(Learner, Tunable):
     def __init__(self, n_hidden_joint_layers=32, n_hidden_joint_units=32,
                  activation='selu', kernel_initializer='lecun_normal',
                  kernel_regularizer=l2(l=0.01),
                  optimizer="adam", batch_size=256,
                  random_state=None, **kwargs):
-        self.logger = logging.getLogger(FATERankingCore.__name__)
+        self.logger = logging.getLogger(FATENetworkCore.__name__)
         self.random_state = check_random_state(random_state)
 
         self.n_hidden_joint_layers = n_hidden_joint_layers
@@ -125,28 +124,11 @@ class FATERankingCore(Tunable, metaclass=ABCMeta):
                                 ' tunable parameters'
                                 ' called: {}'.format(print_dictionary(point)))
 
-    @abstractmethod
-    def fit(self, *args, **kwargs):
-        """Fit the general ranking algorithm. The implementing classes need to
-        handle the feature information and output representation.
 
-        Returns
-        -------
-        self : object
-            Returns self.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def predict(self, *args, **kwargs):
-        """Predict a suitable ranking output for the given ranking problem."""
-        raise NotImplementedError
-
-
-class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
+class FATENetwork(FATENetworkCore):
     def __init__(self, hash_file, n_object_features, n_hidden_set_layers=1, n_hidden_set_units=1, **kwargs):
-        FATERankingCore.__init__(self, **kwargs)
-        self.logger_gorc = logging.getLogger(FATEObjectRankingCore.__name__)
+        FATENetworkCore.__init__(self, **kwargs)
+        self.logger_gorc = logging.getLogger(FATENetwork.__name__)
 
         self.n_hidden_set_layers = n_hidden_set_layers
         self.n_hidden_set_units = n_hidden_set_units
@@ -473,37 +455,6 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
         self.logger.info("Done predicting scores")
         return predicted_scores
 
-    def predict_scores(self, X, **kwargs):
-        """
-        Predict the latent utility scores for each object in X.
-
-        We need to distinguish several cases here:
-         * Predict with the non-variadic model on the same ranking size
-         * Predict with the non-variadic model on a new ranking size
-         * Predict with the variadic model on a known ranking size
-         * Predict with the variadic model on a new ranking size
-         * Predict on a variadic input
-
-        The simplest solution is creating (a) new model(s) in all of the cases,
-        even though it/they might already exist.
-
-         Parameters
-         ----------
-         X : dict or numpy array
-            Dictionary with a mapping from ranking size to numpy arrays
-            or a single numpy array of size:
-            (n_instances, n_objects, n_features)
-         """
-        self.logger.info("Predicting scores")
-
-        if isinstance(X, dict):
-            scores = dict()
-            for ranking_size, x in X.items():
-                scores[ranking_size] = self._predict_scores_fixed(x, **kwargs)
-        else:
-            scores = self._predict_scores_fixed(X, **kwargs)
-        return scores
-
     def set_tunable_parameters(self, n_hidden_set_units=32,
                                n_hidden_set_layers=2,
                                n_hidden_joint_units=32,
@@ -512,7 +463,7 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
                                learning_rate=1e-3,
                                batch_size=128,
                                **point):
-        FATERankingCore.set_tunable_parameters(self, n_hidden_joint_units=n_hidden_joint_units,
+        FATENetworkCore.set_tunable_parameters(self, n_hidden_joint_units=n_hidden_joint_units,
                                                n_hidden_joint_layers=n_hidden_joint_layers, reg_strength=reg_strength,
                                                learning_rate=learning_rate,
                                                batch_size=batch_size, **point)
@@ -526,7 +477,8 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
         if hasattr(self, 'models'):
             self.models = None
 
-    def clear_memory(self, n_objects):
+    def clear_memory(self, n_objects, **kwargs):
+        self.logger.info("Cleared the memory weights saved at {}".format(self.hash_file))
         self.model.save_weights(self.hash_file)
         K.clear_session()
         sess = tf.Session()
@@ -542,3 +494,4 @@ class FATEObjectRankingCore(FATERankingCore, metaclass=ABCMeta):
         self.model = Model(inputs=input_layer, outputs=scores)
         self.model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
         self.model.load_weights(self.hash_file)
+        self.logger.info("Loaded the model from weights {}".format(self.hash_file))

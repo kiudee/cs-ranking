@@ -7,13 +7,12 @@ from sklearn.utils import check_random_state
 
 from csrank.labelranking.label_ranker import LabelRanker
 from csrank.labelranking.placketluce_model import get_pl_parameters_for_rankings
+from csrank.learner import Learner
 from csrank.tunable import Tunable
-from csrank.util import ranking_ordering_conversion, print_dictionary
+from csrank.util import ranking_ordering_conversion, print_dictionary, scores_to_rankings
 
 
-class InstanceBasedLabelRanker(LabelRanker, Tunable):
-    _tunable = None
-
+class InstanceBasedLabelRanker(LabelRanker, Learner, Tunable):
     def __init__(self, n_features, neighbours=20, algorithm="ball_tree", normalize=True, random_state=None, **kwargs):
         self.normalize = normalize
         self.n_features = n_features
@@ -21,18 +20,20 @@ class InstanceBasedLabelRanker(LabelRanker, Tunable):
         self.algorithm = algorithm
         self.logger = logging.getLogger('InstanceBasedLabelRanker')
         self.random_state = check_random_state(random_state)
+        self.model = None
+        self.train_orderings = None
 
     def fit(self, X, Y, **kwargs):
         self.model = NearestNeighbors(n_neighbors=self.neighbours, algorithm=self.algorithm)
 
-        if (self.normalize):
+        if self.normalize:
             scaler = StandardScaler()
             X = scaler.fit_transform(X)
         self.logger.debug('Finished Creating the model, now fitting started')
         self.model.fit(X)
-        self.train_orderings = Y
+        self.train_orderings = np.copy(Y)
 
-    def predict_scores(self, X, **kwargs):
+    def _predict_scores_fixed(self, X, **kwargs):
         # nearest neighbour model get the neighbouring rankings
         distances, indices = self.model.kneighbors(X)
         scores = []
@@ -43,8 +44,18 @@ class InstanceBasedLabelRanker(LabelRanker, Tunable):
             scores.append(parameters)
         return np.array(scores)
 
+    def predict_scores(self, X, **kwargs):
+        return self._predict_scores_fixed(X, **kwargs)
+
+    def predict_for_scores(self, scores, **kwargs):
+        return scores_to_rankings(scores)
+
     def predict(self, X, **kwargs):
-        return LabelRanker.predict(self, X, **kwargs)
+        return super().predict(self, X, **kwargs)
+
+    def clear_memory(self, **kwargs):
+        self.logger.info("Clearing memory")
+        pass
 
     def set_tunable_parameters(self, neighbours=20, algorithm="ball_tree", **point):
         self.neighbours = neighbours
