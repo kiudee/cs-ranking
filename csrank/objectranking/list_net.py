@@ -9,6 +9,7 @@ from sklearn.utils import check_random_state
 
 from csrank.constants import allowed_dense_kwargs
 from csrank.layers import NormalizedDense, create_input_lambda
+from csrank.learner import Learner
 from csrank.losses import plackett_luce_loss
 from csrank.objectranking.constants import THRESHOLD
 from csrank.objectranking.object_ranker import ObjectRanker
@@ -18,7 +19,7 @@ from csrank.util import print_dictionary
 __all__ = ["ListNet"]
 
 
-class ListNet(ObjectRanker, Tunable):
+class ListNet(Learner, ObjectRanker, Tunable):
 
     def __init__(self, n_object_features, n_top, hash_file, n_hidden=2, n_units=8, loss_function=plackett_luce_loss,
                  batch_normalization=False, kernel_regularizer=l2(l=1e-4), activation="selu",
@@ -157,21 +158,6 @@ class ListNet(ObjectRanker, Tunable):
             self._scoring_model = Model(inputs=inp, outputs=output_score)
         return self._scoring_model
 
-    def predict(self, X, **kwargs):
-        return super().predict(X, **kwargs)
-
-    def _predict_scores_fixed(self, X, **kwargs):
-        n_inst, n_obj, n_feat = X.shape
-        self.logger.info("For Test instances {} objects {} features {}".format(n_inst, n_obj, n_feat))
-        inp = Input(shape=(n_obj, n_feat))
-        lambdas = [create_input_lambda(i)(inp) for i in range(n_obj)]
-        scores = concatenate([self.scoring_model(lam) for lam in lambdas])
-        model = Model(inputs=inp, outputs=scores)
-        return model.predict(X)
-
-    def predict_scores(self, X, **kwargs):
-        return super().predict_scores(X, **kwargs)
-
     def set_tunable_parameters(self, n_hidden=32, n_units=2, reg_strength=1e-4, learning_rate=1e-3, batch_size=128,
                                **point):
         self.logger.info("learning_rate: {}".format(learning_rate))
@@ -193,7 +179,7 @@ class ListNet(ObjectRanker, Tunable):
             self.logger.warning(
                 "This ranking algorithm does not support tunable parameters called: {}".format(print_dictionary(point)))
 
-    def clear_memory(self, n_objects):
+    def clear_memory(self, n_objects, **kwargs):
         self.model.save_weights(self.hash_file)
         K.clear_session()
         sess = tf.Session()
@@ -206,3 +192,23 @@ class ListNet(ObjectRanker, Tunable):
         output = self.construct_model()
         self.model = Model(inputs=self.input_layer, outputs=output)
         self.model.load_weights(self.hash_file)
+
+    def _predict_scores_fixed(self, X, **kwargs):
+        n_inst, n_obj, n_feat = X.shape
+        self.logger.info("For Test instances {} objects {} features {}".format(n_inst, n_obj, n_feat))
+        inp = Input(shape=(n_obj, n_feat))
+        lambdas = [create_input_lambda(i)(inp) for i in range(n_obj)]
+        scores = concatenate([self.scoring_model(lam) for lam in lambdas])
+        model = Model(inputs=inp, outputs=scores)
+        return model.predict(X)
+
+    def predict_scores(self, X, **kwargs):
+        return super().predict_scores(X, **kwargs)
+
+    def predict_for_scores(self, scores, **kwargs):
+        return ObjectRanker.predict_for_scores(self, scores, **kwargs)
+
+    def predict(self, X, **kwargs):
+        return super().predict(self, X, **kwargs)
+
+

@@ -5,27 +5,19 @@ import numpy as np
 from keras import Input, backend as K
 from keras.layers import Dense, concatenate, Lambda, add, Activation
 from keras.losses import binary_crossentropy
-from keras.regularizers import l2
 from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
 
+from csrank.feta_network import FETANetwork
 from csrank.layers import NormalizedDense
-from csrank.objectranking import FETAObjectRanker
+from .choice_functions import ChoiceFunctions
 
 
-class FETAChoiceFunction(FETAObjectRanker):
-    def __init__(self, n_objects, n_object_features, n_hidden=2, n_units=8,
-                 add_zeroth_order_model=False, max_number_of_objects=5,
-                 num_subsample=5, loss_function=binary_crossentropy,
-                 batch_normalization=False, kernel_regularizer=l2(l=1e-4),
-                 activation='selu', optimizer="adam", metrics=None, batch_size=256,
-                 random_state=None, **kwargs):
-        super().__init__(n_objects, n_object_features, n_hidden, n_units,
-                         add_zeroth_order_model, max_number_of_objects,
-                         num_subsample, loss_function, batch_normalization,
-                         kernel_regularizer, activation, optimizer,
-                         metrics, batch_size,
-                         random_state, **kwargs)
+class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
+    def __init__(self, loss_function=binary_crossentropy, metrics=None, **kwargs):
+        super().__init__(self, **kwargs)
+        self.loss_function = loss_function
+        self.metrics = metrics
         self.threshold = 0.5
         self.logger = logging.getLogger(FETAChoiceFunction.__name__)
 
@@ -106,45 +98,6 @@ class FETAChoiceFunction(FETAObjectRanker):
             super().fit(X, Y, epochs, callbacks, validation_split, verbose,
                         **kwd)
             self.threshold = 0.5
-
-    def predict_scores(self, X, **kwargs):
-        return super().predict_scores(X, **kwargs)
-
-    def predict_for_scores(self, scores, **kwargs):
-        """ Predict rankings for a given collection of sets of objects.
-
-        Parameters
-        ----------
-        scores : dict or numpy array
-            Dictionary with a mapping from choice set size to numpy arrays
-            or a single numpy array containing scores of each object of size:
-            (n_instances, n_objects)
-
-
-        Returns
-        -------
-        Y : dict or numpy array
-            Dictionary with a mapping from choice set size to numpy arrays
-            or a single numpy array containing choices of size:
-            (n_instances, n_objects)
-            Predicted choices
-        """
-
-        if isinstance(scores, dict):
-            result = dict()
-            for n, s in scores.items():
-                result[n] = s > self.threshold
-        else:
-            result = scores > self.threshold
-        return result
-
-    def predict(self, X, **kwargs):
-        self.logger.debug('Predicting started')
-        scores = self.predict_scores(X, **kwargs)
-        self.logger.debug('Predicting scores complete')
-        return self.predict_for_scores(scores)
-    def __call__(self, X, **kwargs):
-        return self.predict(X, **kwargs)
 
     def sub_sampling(self, X, Y):
         if self._n_objects <= self.max_number_of_objects:
@@ -253,3 +206,18 @@ class FETAChoiceFunction(FETAObjectRanker):
         if self._use_zeroth_model:
             scores = add([scores, zeroth_order_scores])
         return Activation('sigmoid')(scores)
+
+    def predict_scores(self, X, **kwargs):
+        return super().predict_scores(X, **kwargs)
+
+    def predict_for_scores(self, scores, **kwargs):
+        return ChoiceFunctions.predict_for_scores(self, scores, **kwargs)
+
+    def predict(self, X, **kwargs):
+        return super().predict(self, X, **kwargs)
+
+    def _predict_scores_fixed(self, X, **kwargs):
+        return super()._predict_scores_fixed(self, X, **kwargs)
+
+    def clear_memory(self, n_objects, **kwargs):
+        super().clear_memory(self, n_objects, **kwargs)

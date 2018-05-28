@@ -15,8 +15,8 @@ from skopt.utils import cook_estimator, normalize_dimensions, dump, load
 
 from csrank.constants import OBJECT_RANKING, LABEL_RANKING, DISCRETE_CHOICE, \
     DYAD_RANKING, CHOICE_FUNCTIONS
+from csrank.learner import Learner
 from csrank.metrics import zero_one_rank_loss
-from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.util import duration_tillnow, create_dir_recursively, \
     seconds_to_time, \
     get_mean_loss_for_dictionary, get_loss_for_array, check_learner_class
@@ -44,7 +44,7 @@ class TuningCallback(object):
         pass
 
 
-class ParameterOptimizer(ObjectRanker):
+class ParameterOptimizer(Learner):
     def __init__(self, learner, optimizer_path,
                  tunable_parameter_ranges, fit_params=None,
                  random_state=None, tuning_callbacks=None, validation_loss=None,

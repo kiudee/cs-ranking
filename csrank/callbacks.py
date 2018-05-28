@@ -89,7 +89,7 @@ class weightHistory(Callback):
         self.zero_weights.append(close.sum())
 
 
-class LRScheduler(LearningRateScheduler):
+class LRScheduler(LearningRateScheduler, Tunable):
     """Learning rate scheduler.
 
         # Arguments

@@ -4,6 +4,7 @@ import sys
 import numpy as np
 import pandas as pd
 from sklearn.metrics import f1_score
+from sklearn.preprocessing import LabelBinarizer
 
 
 def strongly_connected_components(graph):
@@ -116,4 +117,7 @@ def distance_metric_multilabel(X_labels, Y_labels, X, Y):
 def print_no_newline(i, total):
     sys.stdout.write("Iterations: {}  out of {} \r".format(i, total))
     sys.stdout.flush()
-from sklearn.neighbors import NearestNeighbors
+
+def convert_to_label_encoding(Y, n_objects):
+    lb = LabelBinarizer().fit(np.arange(n_objects))
+    return lb.transform(Y)

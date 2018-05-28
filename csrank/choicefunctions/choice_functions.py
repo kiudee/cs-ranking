@@ -1,16 +1,15 @@
 from abc import ABCMeta
 
-from csrank.constants import OBJECT_RANKING
-from csrank.util import scores_to_rankings
+from csrank.constants import CHOICE_FUNCTIONS
 
-__all__ = ['ObjectRanker']
+__all__ = ['ChoiceFunctions']
 
 
-class ObjectRanker(metaclass=ABCMeta):
+class ChoiceFunctions(metaclass=ABCMeta):
 
     @property
     def learning_problem(self):
-        return OBJECT_RANKING
+        return CHOICE_FUNCTIONS
 
     def predict_for_scores(self, scores, **kwargs):
         """ Predict rankings for scores for a given collection of sets of objects.
@@ -34,8 +33,7 @@ class ObjectRanker(metaclass=ABCMeta):
         if isinstance(scores, dict):
             result = dict()
             for n, score in scores.items():
-                rankings = scores_to_rankings(score)
-                result[n] = rankings
+                result[n] = score > self.threshold
         else:
-            result = scores_to_rankings(scores)
+            result = scores > self.threshold
         return result
