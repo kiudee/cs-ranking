@@ -5,13 +5,14 @@ import pymc3 as pm
 import theano.tensor as tt
 from sklearn.utils import check_random_state
 
+from csrank.learner import Learner
 from csrank.tunable import Tunable
 from csrank.util import print_dictionary, softmax
 from .discrete_choice import DiscreteObjectChooser
 from .likelihoods import likelihood_dict, LogLikelihood
 
 
-class GeneralizedExtremeValueModel(DiscreteObjectChooser, Tunable):
+class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
 
     def __init__(self, n_features, n_objects, n_nests=None, loss_function='None', n_tune=500, n_sample=1000, alpha=1e-3,
                  random_state=None, **kwd):
@@ -96,6 +97,13 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Tunable):
 
     def predict_scores(self, X, **kwargs):
         return super().predict_scores(X, **kwargs)
+
+    def predict_for_scores(self, scores, **kwargs):
+        DiscreteObjectChooser.predict_for_scores(self, scores, **kwargs)
+
+    def clear_memory(self, **kwargs):
+        self.logger.info("Clearing memory")
+        pass
 
     def set_tunable_parameters(self, n_tune=500, n_sample=1000, alpha=1e-3, n_nests=None, **point):
         self.n_tune = n_tune

@@ -219,5 +219,5 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
     def _predict_scores_fixed(self, X, **kwargs):
         return super()._predict_scores_fixed(self, X, **kwargs)
 
-    def clear_memory(self, n_objects, **kwargs):
-        super().clear_memory(self, n_objects, **kwargs)
+    def clear_memory(self, **kwargs):
+        super().clear_memory(self, **kwargs)

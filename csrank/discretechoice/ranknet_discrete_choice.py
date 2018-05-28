@@ -2,10 +2,11 @@ import logging
 
 from csrank.dataset_reader.discretechoice.util import generate_complete_pairwise_dataset
 from csrank.objectranking.rank_net import RankNet
+from csrank.rank_network import RankNetwork
 from .discrete_choice import DiscreteObjectChooser
 
 
-class RankNetDiscreteChoiceFunction(RankNet, DiscreteObjectChooser):
+class RankNetDiscreteChoiceFunction(RankNetwork, DiscreteObjectChooser):
     def __init__(self, loss_function='categorical_hinge', metrics=None, **kwargs):
         RankNet.__init__(self, **kwargs)
         self.logger = logging.getLogger(RankNetDiscreteChoiceFunction.__name__)
@@ -30,16 +31,16 @@ class RankNetDiscreteChoiceFunction(RankNet, DiscreteObjectChooser):
         return X1, X2, Y_single
 
     def predict_scores(self, X, **kwargs):
-        return DiscreteObjectChooser.predict_scores(self, X, **kwargs)
+        return super().predict_scores(self, X, **kwargs)
 
     def predict(self, X, **kwargs):
-        return DiscreteObjectChooser.predict(self, X, **kwargs)
+        return super().predict(self, X, **kwargs)
 
     def predict_for_scores(self, scores, **kwargs):
         return DiscreteObjectChooser.predict_for_scores(self, scores, **kwargs)
 
     def _predict_scores_fixed(self, X, **kwargs):
-        return RankNet._predict_scores_fixed(self, X, **kwargs)
+        return super()._predict_scores_fixed(self, X, **kwargs)
 
-    def clear_memory(self, n_objects):
-        RankNet.clear_memory(self, n_objects)
+    def clear_memory(self, **kwargs):
+        super().clear_memory(self, **kwargs)

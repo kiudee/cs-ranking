@@ -1,7 +1,7 @@
 from abc import ABCMeta
 
 from csrank.constants import DISCRETE_CHOICE
-from csrank.dataset_reader.util import convert_to_label_encoding
+from csrank.util import convert_to_label_encoding
 
 __all__ = ['DiscreteObjectChooser']
 

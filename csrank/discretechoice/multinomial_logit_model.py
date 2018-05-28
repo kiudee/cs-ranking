@@ -4,13 +4,14 @@ import numpy as np
 import pymc3 as pm
 import theano.tensor as tt
 
+from csrank.learner import Learner
 from csrank.tunable import Tunable
 from csrank.util import print_dictionary
 from .discrete_choice import DiscreteObjectChooser
 from .likelihoods import likelihood_dict, LogLikelihood
 
 
-class MultinomialLogitModel(DiscreteObjectChooser, Tunable):
+class MultinomialLogitModel(DiscreteObjectChooser, Learner):
     def __init__(self, n_features, n_tune=500, n_sample=1000, loss_function='', **kwargs):
         self.n_tune = n_tune
         self.n_sample = n_sample
@@ -47,6 +48,13 @@ class MultinomialLogitModel(DiscreteObjectChooser, Tunable):
 
     def predict_scores(self, X, **kwargs):
         return super().predict_scores(X, **kwargs)
+
+    def predict_for_scores(self, scores, **kwargs):
+        DiscreteObjectChooser.predict_for_scores(self, scores, **kwargs)
+
+    def clear_memory(self, **kwargs):
+        self.logger.info("Clearing memory")
+        pass
 
     def set_tunable_parameters(self, n_tune=500, n_sample=1000, **point):
         self.n_tune = n_tune

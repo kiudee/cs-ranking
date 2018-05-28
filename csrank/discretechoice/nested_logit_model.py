@@ -7,13 +7,14 @@ import theano.tensor as tt
 from sklearn.cluster import MiniBatchKMeans as clustering
 from sklearn.utils import check_random_state
 
+from csrank.learner import Learner
 from csrank.tunable import Tunable
 from csrank.util import print_dictionary
 from .discrete_choice import DiscreteObjectChooser
 from .likelihoods import likelihood_dict, LogLikelihood
 
 
-class NestedLogitModel(DiscreteObjectChooser, Tunable):
+class NestedLogitModel(DiscreteObjectChooser,  Learner):
     def __init__(self, n_features, n_objects, loss_function='', n_tune=500, n_sample=1000, alpha=1e-3,
                  random_state=None,
                  **kwd):
