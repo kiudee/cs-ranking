@@ -185,7 +185,7 @@ class CmpNet(ObjectRanker, Learner):
         return super().predict_scores(X, **kwargs)
 
     def predict(self, X, **kwargs):
-        return super().predict(self, X, **kwargs)
+        return super().predict(X, **kwargs)
 
     def predict_for_scores(self, scores, **kwargs):
         return ObjectRanker.predict_for_scores(self, scores, **kwargs)

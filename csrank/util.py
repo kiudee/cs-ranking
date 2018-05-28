@@ -18,10 +18,10 @@ from tensorflow.python.client import device_lib
 from csrank.tunable import Tunable
 
 __all__ = ['check_learner_class', 'configure_logging_numpy_keras', 'create_dir_recursively',
-           'duration_tillnow', 'files_with_same_name',
-           'get_instances_objects', 'get_loss_for_array', 'get_mean_loss_for_dictionary', 'get_rankings_tensor',
-           'get_tensor_value', 'heat_map', 'normalize', 'print_dictionary', 'ranking_ordering_conversion',
-           'rename_file_if_exist', 'scores_to_rankings', 'seconds_to_time', 'tensorify', 'time_from_now', 'softmax']
+           'duration_tillnow', 'files_with_same_name', 'get_instances_objects', 'get_loss_for_array',
+           'get_mean_loss_for_dictionary', 'get_rankings_tensor', 'get_tensor_value', 'heat_map', 'normalize',
+           'print_dictionary', 'ranking_ordering_conversion', 'rename_file_if_exist', 'scores_to_rankings',
+           'seconds_to_time', 'tensorify', 'time_from_now', 'softmax']
 
 
 def scores_to_rankings(score_matrix):
@@ -74,10 +74,24 @@ def get_tensor_value(x):
     return x
 
 
-def normalize(score):
-    norm = [float(i) / np.sum(score) for i in score]
-    norm = [float(i) / np.max(norm) for i in norm]
-    return norm
+def softmax(x):
+    """
+        Take softmax for the given two dimensional numpy array.
+        :param x: array-like, shape (n_samples, n_objects)
+        :return: softmax taken around the axis=1
+    """
+    e_x = np.exp(x - x.max(axis=1, keepdims=True))
+    return e_x / e_x.sum(axis=1, keepdims=True)
+
+
+def normalize(x):
+    """
+        Normalize the given two dimensional numpy or theano  array around the row.
+
+        :param x: theano or numpy array-like, shape (n_samples, n_objects)
+        :return: normalize the array around the axis=1
+    """
+    return x / x.sum(axis=1, keepdims=True)
 
 
 def print_dictionary(dictionary):
@@ -224,7 +238,7 @@ def heat_map(file_path, X, headers, cmap=sns.color_palette("Blues")):
 
 def check_learner_class(ranker):
     """ Function which checks if the ranker is an instance of the :class:`csrank.tunning.Tunable` class
- 
+
     Parameters
     ----------
     ranker: object

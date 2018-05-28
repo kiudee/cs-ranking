@@ -3,8 +3,8 @@ import logging
 from sklearn.utils import check_random_state
 
 from csrank.constants import OBJECT_RANKING
-from ..letor_dataset_reader import LetorDatasetReader
 from .util import sub_sampling_rankings
+from ..letor_dataset_reader import LetorDatasetReader
 
 
 class LetorObjectRankingDatasetReader(LetorDatasetReader):

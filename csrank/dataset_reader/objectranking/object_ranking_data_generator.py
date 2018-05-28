@@ -7,8 +7,8 @@ from sklearn.gaussian_process.kernels import Matern
 from sklearn.utils import check_random_state
 
 from csrank.constants import OBJECT_RANKING
-from ..util import create_pairwise_prob_matrix, quicksort
 from ..synthetic_dataset_generator import SyntheticDatasetGenerator
+from ..util import create_pairwise_prob_matrix, quicksort
 from ...util import scores_to_rankings
 
 
