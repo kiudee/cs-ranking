@@ -8,7 +8,6 @@ import theano.tensor as tt
 from sklearn.utils import check_random_state
 
 from csrank.learner import Learner
-from csrank.tunable import Tunable
 from csrank.util import print_dictionary
 from .discrete_choice import DiscreteObjectChooser
 from .likelihoods import likelihood_dict, LogLikelihood
@@ -16,12 +15,11 @@ from .likelihoods import likelihood_dict, LogLikelihood
 
 class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
 
-    def __init__(self, n_features, n_objects, loss_function='', n_tune=500, n_sample=1000, alpha=1e-3,
-                 random_state=None,
-                 **kwd):
+    def __init__(self, n_object_features, n_objects, loss_function='', n_tune=500, n_sample=1000, alpha=1e-3,
+                 random_state=None, **kwd):
         self.n_tune = n_tune
         self.n_sample = n_sample
-        self.n_features = n_features
+        self.n_object_features = n_object_features
         self.n_objects = n_objects
         self.nests_indices = np.array(list(combinations(np.arange(n_objects), 2)))
         self.n_nests = len(self.nests_indices)
@@ -78,7 +76,7 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         with pm.Model() as self.model:
             mu_weights = pm.Normal('mu_weights', mu=0., sd=10)
             sigma_weights = pm.HalfCauchy('sigma_weights', beta=1)
-            weights = pm.Normal('weights', mu=mu_weights, sd=sigma_weights, shape=self.n_features)
+            weights = pm.Normal('weights', mu=mu_weights, sd=sigma_weights, shape=self.n_object_features)
 
             utility = pm.math.sum(weights * X, axis=2)
             lambda_k = pm.Uniform('lambda_k', self.alpha, 5.0 + self.alpha, shape=self.n_nests)
@@ -94,7 +92,7 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
 
     def _predict_scores_fixed(self, X, **kwargs):
         d = dict(pm.summary(self.trace)['mean'])
-        weights = np.array([d['weights__{}'.format(i)] for i in range(self.n_features)])
+        weights = np.array([d['weights__{}'.format(i)] for i in range(self.n_object_features)])
         lambda_k = np.array([d['lambda_k__{}'.format(i)] for i in range(self.n_nests)])
         utility = np.sum(X * weights, axis=2)
         p = self.get_probabilities_np(utility, lambda_k)
@@ -105,6 +103,13 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
 
     def predict_scores(self, X, **kwargs):
         return super().predict_scores(X, **kwargs)
+
+    def predict_for_scores(self, scores, **kwargs):
+        return DiscreteObjectChooser.predict_for_scores(self, scores, **kwargs)
+
+    def clear_memory(self, **kwargs):
+        self.logger.info("Clearing memory")
+        pass
 
     def set_tunable_parameters(self, n_tune=500, n_sample=1000, alpha=1e-3, **point):
         self.n_tune = n_tune

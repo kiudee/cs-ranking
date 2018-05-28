@@ -6,7 +6,6 @@ import theano.tensor as tt
 from sklearn.utils import check_random_state
 
 from csrank.learner import Learner
-from csrank.tunable import Tunable
 from csrank.util import print_dictionary, softmax
 from .discrete_choice import DiscreteObjectChooser
 from .likelihoods import likelihood_dict, LogLikelihood
@@ -14,11 +13,11 @@ from .likelihoods import likelihood_dict, LogLikelihood
 
 class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
 
-    def __init__(self, n_features, n_objects, n_nests=None, loss_function='None', n_tune=500, n_sample=1000, alpha=1e-3,
-                 random_state=None, **kwd):
+    def __init__(self, n_object_features, n_objects, n_nests=None, loss_function='None', n_tune=500, n_sample=1000,
+                 alpha=1e-3, random_state=None, **kwd):
         self.n_tune = n_tune
         self.n_sample = n_sample
-        self.n_features = n_features
+        self.n_object_features = n_object_features
         self.n_objects = n_objects
         if n_nests is None:
             self.n_nests = n_objects + int(n_objects / 2)
@@ -65,7 +64,7 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
         with pm.Model() as self.model:
             mu_weights = pm.Normal('mu_weights', mu=0., sd=10)
             sigma_weights = pm.HalfCauchy('sigma_weights', beta=1)
-            weights = pm.Normal('weights', mu=mu_weights, sd=sigma_weights, shape=self.n_features)
+            weights = pm.Normal('weights', mu=mu_weights, sd=sigma_weights, shape=self.n_object_features)
             alpha_ik = pm.HalfNormal('alpha_ik', sd=1.0, shape=(self.n_objects, self.n_nests))
             alpha_ik = tt.nnet.softmax(alpha_ik)
             utility = pm.math.sum(weights * X, axis=2)
@@ -83,7 +82,7 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
 
     def _predict_scores_fixed(self, X, **kwargs):
         d = dict(pm.summary(self.trace)['mean'])
-        weights = np.array([d['weights__{}'.format(i)] for i in range(self.n_features)])
+        weights = np.array([d['weights__{}'.format(i)] for i in range(self.n_object_features)])
         lambda_k = np.array([d['lambda_k__{}'.format(i)] for i in range(self.n_nests)])
         alpha_ik = np.array(
             [[d['alpha_ik__{}_{}'.format(i, k)] for k in range(self.n_nests)] for i in range(self.n_objects)])
@@ -99,7 +98,7 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
         return super().predict_scores(X, **kwargs)
 
     def predict_for_scores(self, scores, **kwargs):
-        DiscreteObjectChooser.predict_for_scores(self, scores, **kwargs)
+        return DiscreteObjectChooser.predict_for_scores(self, scores, **kwargs)
 
     def clear_memory(self, **kwargs):
         self.logger.info("Clearing memory")
