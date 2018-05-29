@@ -64,11 +64,13 @@ learners = {FETA_RANKER: FETAObjectRanker, RANKNET: RankNet, CMPNET: CmpNet, ERR
             FETA_CHOICE: FETAChoiceFunction, FATE_CHOICE: FATEChoiceFunction}
 try:
     from csrank import GeneralizedExtremeValueModel, FETADiscreteChoiceFunction, FETADiscreteChoiceFunction, \
-        RankNetDiscreteChoiceFunction, MultinomialLogitModel, NestedLogitModel, PairedCombinatorialLogit
+        RankNetDiscreteChoiceFunction, MultinomialLogitModel, NestedLogitModel, PairedCombinatorialLogit, CmpNetDiscreteChoiceFunction
 
     dcm_learners = {FETA_DC: FETADiscreteChoiceFunction, FATE_DC: FETADiscreteChoiceFunction,
-                    RANKNET_DC: RankNetDiscreteChoiceFunction, MNL: MultinomialLogitModel, NLM: NestedLogitModel,
-                    GEV: GeneralizedExtremeValueModel, PCL: PairedCombinatorialLogit}
+                    RANKNET_DC: RankNetDiscreteChoiceFunction, CMPNET_DC: CmpNetDiscreteChoiceFunction,
+                    MNL: MultinomialLogitModel, NLM: NestedLogitModel, GEV: GeneralizedExtremeValueModel,
+                    PCL: PairedCombinatorialLogit}
+
 except ImportError:
     dcm_learners = {}
     print('DCM models not implemented yet')
