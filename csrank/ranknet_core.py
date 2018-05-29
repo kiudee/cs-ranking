@@ -4,8 +4,6 @@ import numpy as np
 import tensorflow as tf
 from keras import optimizers, Input, Model, backend as K
 from keras.layers import Dense, Lambda, add
-from keras.losses import binary_crossentropy
-from keras.metrics import top_k_categorical_accuracy, binary_accuracy
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
 
@@ -16,9 +14,9 @@ from csrank.util import print_dictionary
 
 
 class RankNetCore(Learner):
-    def __init__(self, n_object_features, hash_file, n_hidden=2, n_units=8, loss_function=binary_crossentropy,
+    def __init__(self, n_object_features, hash_file, n_hidden=2, n_units=8, loss_function='binary_crossentropy',
                  batch_normalization=True, kernel_regularizer=l2(l=1e-4), kernel_initializer='lecun_normal',
-                 activation='relu', optimizer="adam", metrics=[top_k_categorical_accuracy, binary_accuracy],
+                 activation='relu', optimizer="adam", metrics=['binary_accuracy'],
                  batch_size=256, random_state=None, **kwargs):
         """Create an instance of the RankNet architecture.
 
