@@ -6,7 +6,7 @@ from .discrete_choice import DiscreteObjectChooser
 
 
 class RankNetDiscreteChoiceFunction(RankNetCore, DiscreteObjectChooser):
-    def __init__(self, loss_function='categorical_hinge', metrics=['categorical_accuracy'], **kwargs):
+    def __init__(self, loss_function='binary_crossentropy', metrics=['accuracy'], **kwargs):
         super().__init__(loss_function=loss_function, metrics=metrics, **kwargs)
         self.logger = logging.getLogger(RankNetDiscreteChoiceFunction.__name__)
 

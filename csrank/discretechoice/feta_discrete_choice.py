@@ -5,7 +5,8 @@ from .discrete_choice import DiscreteObjectChooser
 
 
 class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
-    def __init__(self, loss_function='categorical_hinge', metrics=['categorical_accuracy'], **kwargs):
+    def __init__(self, loss_function='categorical_hinge',
+                 metrics=['categorical_accuracy', 'top_k_categorical_accuracy'], **kwargs):
         super().__init__(metrics=metrics, loss_function=loss_function, **kwargs)
         self.logger = logging.getLogger(FETADiscreteChoiceFunction.__name__)
 
