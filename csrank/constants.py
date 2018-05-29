@@ -42,6 +42,7 @@ THRESHOLD = int(5e7)
 FETA_DC = 'feta_discrete_choice'
 FATE_DC = "fate_discrete_choice"
 RANKNET_DC = "ranknet_discrete_choice"
+CMPNET_DC = "cmpnet_discrete_choice"
 MNL = "multinomial_logit_model"
 NLM = 'nested_logit_model'
 GEV = 'generalized_extreme_value'

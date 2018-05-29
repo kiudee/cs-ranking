@@ -1,8 +1,4 @@
 import logging
-
-from keras.losses import binary_crossentropy
-from keras.metrics import top_k_categorical_accuracy, binary_accuracy
-
 from csrank.dataset_reader.objectranking.util import generate_complete_pairwise_dataset
 from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.ranknet_core import RankNetCore
@@ -11,12 +7,11 @@ __all__ = ['RankNet']
 
 
 class RankNet(RankNetCore, ObjectRanker):
-    def __init__(self, loss_function=binary_crossentropy, metrics=[top_k_categorical_accuracy, binary_accuracy],
+    def __init__(self, loss_function='binary_crossentropy', metrics=['binary_accuracy'],
                  **kwargs):
         super().__init__(loss_function=loss_function, metrics=metrics, **kwargs)
         self.logger = logging.getLogger(RankNet.__name__)
-        self.logger.info("Initializing network with object features {}".format(
-            self.n_object_features))
+        self.logger.info("Initializing network with object features {}".format(self.n_object_features))
 
     def convert_instances(self, X, Y):
         self.logger.debug('Creating the Dataset')
