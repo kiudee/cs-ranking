@@ -19,8 +19,9 @@ from ..fate_network import FATENetworkCore
 RANKSVM = "ranksvm"
 ERR = "err"
 CMPNET = "cmpnet"
-RANKNET = 'ranknet'
-FETA_RANKER = 'feta_ranker'
+RANKNET = "ranknet"
+LISTNET = "listnet"
+FETA_RANKER = "feta_ranker"
 FATE_RANKER = "fate_ranker"
 
 object_rankers = {
@@ -91,15 +92,17 @@ def trivial_ranking_problem():
     return x, y_true
 
 
-@pytest.mark.parametrize("ranker_name, loss", zip(list(object_rankers.keys()), [0.0] * len(object_rankers)))
+@pytest.mark.parametrize(
+    "ranker_name, loss", zip(list(object_rankers.keys()), [0.0] * len(object_rankers))
+)
 def test_object_ranker_fixed(trivial_ranking_problem, ranker_name, loss):
     tf.set_random_seed(0)
     os.environ["KERAS_BACKEND"] = "tensorflow"
     np.random.seed(123)
     x, y = trivial_ranking_problem
     ranker_params = object_rankers_params[ranker_name]
-    ranker_params['n_object_features'] = ranker_params['n_features'] = 1
-    ranker_params['n_objects'] = 5
+    ranker_params["n_object_features"] = ranker_params["n_features"] = 1
+    ranker_params["n_objects"] = 5
     ranker = object_rankers[ranker_name](**ranker_params)
     ranker.fit(x, y, epochs=100, validation_split=0, verbose=False)
     pred_scores = ranker.predict_scores(x)

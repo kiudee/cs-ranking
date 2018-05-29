@@ -6,6 +6,7 @@ from csrank.constants import *
 from csrank.metrics import zero_one_rank_loss, zero_one_accuracy, make_ndcg_at_k_loss
 from csrank.metrics_np import *
 from csrank.objectranking.fate_object_ranker import FATEObjectRanker
+from csrank.util import print_dictionary
 
 
 def log_test_train_data(X_train, X_test, logger):
@@ -24,9 +25,9 @@ def log_test_train_data(X_train, X_test, logger):
 
 
 def get_dataset_reader(dataset_name, dataset_params):
-    dataset_reader = datasets[dataset_name]
-    dataset_reader = dataset_reader(**dataset_params)
-    return dataset_reader
+    dataset_func = datasets[dataset_name]
+    dataset_func = dataset_func(**dataset_params)
+    return dataset_func
 
 
 def create_optimizer_parameters(fit_params, hp_ranges, learner_params, learner_name):
@@ -62,14 +63,21 @@ datasets = {SYNTHETIC_OR: ObjectRankingDatasetGenerator, DEPTH: DepthDatasetRead
 learners = {FETA_RANKER: FETAObjectRanker, RANKNET: RankNet, CMPNET: CmpNet, ERR: ExpectedRankRegression,
             RANKSVM: RankSVM, FATE_RANKER: FATEObjectRanker, LISTNET: ListNet,
             FETA_CHOICE: FETAChoiceFunction, FATE_CHOICE: FATEChoiceFunction}
+try:
+    from csrank import GeneralizedExtremeValueModel, FETADiscreteChoiceFunction, FETADiscreteChoiceFunction, \
+        RankNetDiscreteChoiceFunction, MultinomialLogitModel, NestedLogitModel, PairedCombinatorialLogit, CmpNetDiscreteChoiceFunction
 
-# dcm_learners = {}
-dcm_learners = {FETA_DC: FETADiscreteChoiceFunction, FATE_DC: FETADiscreteChoiceFunction,
-                RANKNET_DC: RankNetDiscreteChoiceFunction, CMPNET_DC: CmpNetDiscreteChoiceFunction,
-                MNL: MultinomialLogitModel, NLM: NestedLogitModel, GEV: GeneralizedExtremeValueModel,
-                PCL: PairedCombinatorialLogit}
+    dcm_learners = {FETA_DC: FETADiscreteChoiceFunction, FATE_DC: FETADiscreteChoiceFunction,
+                    RANKNET_DC: RankNetDiscreteChoiceFunction, CMPNET_DC: CmpNetDiscreteChoiceFunction,
+                    MNL: MultinomialLogitModel, NLM: NestedLogitModel, GEV: GeneralizedExtremeValueModel,
+                    PCL: PairedCombinatorialLogit}
+
+except ImportError:
+    dcm_learners = {}
+    print('DCM models not implemented yet')
 
 learners = {**learners, **dcm_learners}
+print('Current learners \n', print_dictionary(learners))
 ranking_metrics = {'KendallsTau': kendalls_mean_np, 'SpearmanCorrelation': spearman_scipy,
                    'ZeroOneRankLoss': zero_one_rank_loss_for_scores_np,
                    'ZeroOneRankLossTies': zero_one_rank_loss_for_scores_ties_np,
