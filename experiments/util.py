@@ -6,6 +6,7 @@ from csrank.constants import *
 from csrank.metrics import zero_one_rank_loss, zero_one_accuracy, make_ndcg_at_k_loss
 from csrank.metrics_np import *
 from csrank.objectranking.fate_object_ranker import FATEObjectRanker
+from csrank.util import print_dictionary
 
 
 def log_test_train_data(X_train, X_test, logger):
@@ -24,16 +25,16 @@ def log_test_train_data(X_train, X_test, logger):
 
 
 def get_dataset_reader(dataset_name, dataset_params):
-    dataset_reader = datasets[dataset_name]
-    dataset_reader = dataset_reader(**dataset_params)
-    return dataset_reader
+    dataset_func = datasets[dataset_name]
+    dataset_func = dataset_func(**dataset_params)
+    return dataset_func
 
 
 def create_optimizer_parameters(fit_params, hp_ranges, learner_params, learner_name):
     hp_params = {}
+    learner = learners[learner_name]
+    learner = learner(**learner_params)
     if learner_name in hp_ranges.keys():
-        learner = learners[learner_name]
-        learner = learner(**learner_params)
         hp_ranges[learner] = hp_ranges[learner_name]
         del hp_ranges[learner_name]
     if "callbacks" in fit_params.keys():
@@ -59,18 +60,31 @@ datasets = {SYNTHETIC_OR: ObjectRankingDatasetGenerator, DEPTH: DepthDatasetRead
             LETOR_DC: LetorDiscreteChoiceDatasetReader,
             SYNTHETIC_CHOICE: ChoiceDatasetGenerator, MNIST_CHOICE: MNISTChoiceDatasetReader}
 learners = {FETA_RANKER: FETAObjectRanker, RANKNET: RankNet, CMPNET: CmpNet, ERR: ExpectedRankRegression,
-            RANKSVM: RankSVM, FATE_RANKER: FATEObjectRanker, FETA_CHOICE: FETAChoiceFunction,
-            FATE_CHOICE: FATEChoiceFunction, LISTNET: ListNet}
+            RANKSVM: RankSVM, FATE_RANKER: FATEObjectRanker, LISTNET: ListNet,
+            FETA_CHOICE: FETAChoiceFunction, FATE_CHOICE: FATEChoiceFunction}
+try:
+    from csrank import GeneralizedExtremeValueModel, FETADiscreteChoiceFunction, FETADiscreteChoiceFunction, \
+        RankNetDiscreteChoiceFunction, MultinomialLogitModel, NestedLogitModel, PairedCombinatorialLogit
 
+    dcm_learners = {FETA_DC: FETADiscreteChoiceFunction, FATE_DC: FETADiscreteChoiceFunction,
+                    RANKNET_DC: RankNetDiscreteChoiceFunction, MNL: MultinomialLogitModel, NLM: NestedLogitModel,
+                    GEV: GeneralizedExtremeValueModel, PCL: PairedCombinatorialLogit}
+except ImportError:
+    dcm_learners = {}
+    print('DCM models not implemented yet')
+
+learners = {**learners, **dcm_learners}
+print('Current learners \n', print_dictionary(learners))
 ranking_metrics = {'KendallsTau': kendalls_mean_np, 'SpearmanCorrelation': spearman_scipy,
                    'ZeroOneRankLoss': zero_one_rank_loss_for_scores_np,
                    'ZeroOneRankLossTies': zero_one_rank_loss_for_scores_ties_np,
                    "ZeroOneAccuracy": zero_one_accuracy_np,
                    "NDCGTopAll": make_ndcg_at_k_loss}
 discrete_choice_metrics = {'CategoricalAccuracy': categorical_accuracy,
-                           'CategoricalTopK3': categorical_topk_accuracy(k=3),
-                           'CategoricalTopK5': categorical_topk_accuracy(k=5),
-                           'CategoricalTopK{}': categorical_topk_accuracy}
+                           'CategoricalTopK2': topk_categorical_accuracy(k=2),
+                           'CategoricalTopK3': topk_categorical_accuracy(k=3),
+                           'CategoricalTopK5': topk_categorical_accuracy(k=5),
+                           'CategoricalTopK{}': topk_categorical_accuracy}
 choice_metrics = {'F1Score': f1_measure, 'Precision': precision, 'Recall': recall,
                   'Subset01loss': zero_one_loss, 'HammingLoss': hamming_loss, 'Informedness': instance_informedness,
                   "AucScore": auc_score, "AveragePrecisionScore": average_precision}
