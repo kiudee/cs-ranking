@@ -65,8 +65,9 @@ learners = {FETA_RANKER: FETAObjectRanker, RANKNET: RankNet, CMPNET: CmpNet, ERR
 
 # dcm_learners = {}
 dcm_learners = {FETA_DC: FETADiscreteChoiceFunction, FATE_DC: FETADiscreteChoiceFunction,
-                RANKNET_DC: RankNetDiscreteChoiceFunction, MNL: MultinomialLogitModel, NLM: NestedLogitModel,
-                GEV: GeneralizedExtremeValueModel, PCL: PairedCombinatorialLogit}
+                RANKNET_DC: RankNetDiscreteChoiceFunction, CMPNET_DC: CmpNetDiscreteChoiceFunction,
+                MNL: MultinomialLogitModel, NLM: NestedLogitModel, GEV: GeneralizedExtremeValueModel,
+                PCL: PairedCombinatorialLogit}
 
 learners = {**learners, **dcm_learners}
 ranking_metrics = {'KendallsTau': kendalls_mean_np, 'SpearmanCorrelation': spearman_scipy,

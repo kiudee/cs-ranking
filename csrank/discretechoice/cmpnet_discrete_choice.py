@@ -1,26 +1,28 @@
 import logging
 
+from csrank.cmpnet_core import CmpNetCore
 from csrank.dataset_reader.discretechoice.util import generate_complete_pairwise_dataset
-from csrank.ranknet_core import RankNetCore
-from .discrete_choice import DiscreteObjectChooser
+from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 
 
-class RankNetDiscreteChoiceFunction(RankNetCore, DiscreteObjectChooser):
-    def __init__(self, loss_function='binary_crossentropy', metrics=['binary_accuracy'], **kwargs):
+class CmpNetDiscreteChoiceFunction(CmpNetCore, DiscreteObjectChooser):
+    def __init__(self, loss_function='binary_crossentropy', metrics=['binary_accuracy'],
+                 **kwargs):
         super().__init__(loss_function=loss_function, metrics=metrics, **kwargs)
-        self.logger = logging.getLogger(RankNetDiscreteChoiceFunction.__name__)
+        self.logger = logging.getLogger(CmpNetDiscreteChoiceFunction.__name__)
+        self.logger.info("Initializing network with object features {}".format(self.n_object_features))
 
     def convert_instances(self, X, Y):
         self.logger.debug('Creating the Dataset')
-        X1, X2, garbage, Y_single = generate_complete_pairwise_dataset(X, Y)
+        x1, x2, y_double, garbage = generate_complete_pairwise_dataset(X, Y)
         del garbage
-        if X1.shape[0] > self.threshold_instances:
-            indices = self.random_state.choice(X1.shape[0], self.threshold_instances, replace=False)
-            X1 = X1[indices, :]
-            X2 = X2[indices, :]
-            Y_single = Y_single[indices]
         self.logger.debug('Finished the Dataset')
-        return X1, X2, Y_single
+        if x1.shape[0] > self.threshold_instances:
+            indices = self.random_state.choice(x1.shape[0], self.threshold_instances, replace=False)
+            x1 = x1[indices, :]
+            x2 = x2[indices, :]
+            y_double = y_double[indices, :]
+        return x1, x2, y_double
 
     def fit(self, X, Y, **kwd):
         super().fit(X, Y, **kwd)
@@ -38,5 +40,4 @@ class RankNetDiscreteChoiceFunction(RankNetCore, DiscreteObjectChooser):
         return super().predict(X, **kwargs)
 
     def clear_memory(self, **kwargs):
-        self.logger.info("Clearing memory")
         super().clear_memory(**kwargs)
