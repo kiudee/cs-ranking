@@ -115,3 +115,12 @@ def zero_one_accuracy_for_scores(y_true, y_pred):
     denominator = K.cast(n_instances, dtype='float32')
     zero_one_loss = K.sum(equal_ranks) / denominator
     return zero_one_loss
+
+
+def topk_categorical_accuracy(k=5):
+    def topk_acc(y_true, y_pred):
+        acc = tf.nn.in_top_k(y_pred, tf.argmax(y_true, axis=-1), k=k)
+        acc = K.cast(acc, dtype='float32')
+        return acc
+
+    return topk_acc

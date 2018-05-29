@@ -30,7 +30,7 @@ from sklearn.model_selection import ShuffleSplit
 
 from csrank import *
 from csrank.metrics import make_ndcg_at_k_loss
-from csrank.metrics_np import categorical_topk_accuracy
+from csrank.metrics_np import topk_categorical_accuracy
 from csrank.util import configure_logging_numpy_keras, create_dir_recursively, duration_tillnow, seconds_to_time, \
     get_mean_loss_for_dictionary, \
     get_loss_for_array, print_dictionary, get_duration_seconds
@@ -148,7 +148,7 @@ if __name__ == "__main__":
                     predictions = y_pred
                 if "CategoricalTopK{}" == name:
                     k = int(n_objects / 2)
-                    evaluation_metric = categorical_topk_accuracy(k=k)
+                    evaluation_metric = topk_categorical_accuracy(k=k)
                     name = name.format(k)
 
                 if isinstance(Y_test, dict):

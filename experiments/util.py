@@ -60,18 +60,25 @@ datasets = {SYNTHETIC_OR: ObjectRankingDatasetGenerator, DEPTH: DepthDatasetRead
             MNIST_DC: MNISTDiscreteChoiceDatasetReader,
             SYNTHETIC_CHOICE: ChoiceDatasetGenerator, MNIST_CHOICE: MNISTChoiceDatasetReader}
 learners = {FETA_RANKER: FETAObjectRanker, RANKNET: RankNet, CMPNET: CmpNet, ERR: ExpectedRankRegression,
-            RANKSVM: RankSVM, FATE_RANKER: FATEObjectRanker, FETA_CHOICE: FETAChoiceFunction,
-            FATE_CHOICE: FATEChoiceFunction, LISTNET: ListNet}
+            RANKSVM: RankSVM, FATE_RANKER: FATEObjectRanker, LISTNET: ListNet,
+            FETA_CHOICE: FETAChoiceFunction, FATE_CHOICE: FATEChoiceFunction}
 
+# dcm_learners = {}
+dcm_learners = {FETA_DC: FETADiscreteChoiceFunction, FATE_DC: FETADiscreteChoiceFunction,
+                RANKNET_DC: RankNetDiscreteChoiceFunction, MNL: MultinomialLogitModel, NLM: NestedLogitModel,
+                GEV: GeneralizedExtremeValueModel, PCL: PairedCombinatorialLogit}
+
+learners = {**learners, **dcm_learners}
 ranking_metrics = {'KendallsTau': kendalls_mean_np, 'SpearmanCorrelation': spearman_scipy,
                    'ZeroOneRankLoss': zero_one_rank_loss_for_scores_np,
                    'ZeroOneRankLossTies': zero_one_rank_loss_for_scores_ties_np,
                    "ZeroOneAccuracy": zero_one_accuracy_np,
                    "NDCGTopAll": make_ndcg_at_k_loss}
 discrete_choice_metrics = {'CategoricalAccuracy': categorical_accuracy,
-                           'CategoricalTopK3': categorical_topk_accuracy(k=3),
-                           'CategoricalTopK5': categorical_topk_accuracy(k=5),
-                           'CategoricalTopK{}': categorical_topk_accuracy}
+                           'CategoricalTopK2': topk_categorical_accuracy(k=2),
+                           'CategoricalTopK3': topk_categorical_accuracy(k=3),
+                           'CategoricalTopK5': topk_categorical_accuracy(k=5),
+                           'CategoricalTopK{}': topk_categorical_accuracy}
 choice_metrics = {'F1Score': f1_measure, 'Precision': precision, 'Recall': recall,
                   'Subset01loss': zero_one_loss, 'HammingLoss': hamming_loss, 'Informedness': instance_informedness,
                   "AucScore": auc_score, "AveragePrecisionScore": average_precision}
