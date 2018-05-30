@@ -11,6 +11,14 @@ from psycopg2.extras import DictCursor
 from csrank.util import get_duration_seconds, print_dictionary
 
 
+def is_json(myjson):
+    try:
+        json_object = json.loads(myjson)
+    except ValueError:
+        return False
+    return True
+
+
 class DBConnector(metaclass=ABCMeta):
 
     def __init__(self, config_file_path, is_gpu=False, schema='master', **kwargs):
@@ -239,4 +247,42 @@ class DBConnector(metaclass=ABCMeta):
             self.logger.info(update_job)
             d_param = json.dumps(self.job_description['dataset_params'])
             self.cursor_db.execute(update_job, (file_name_new, d_param, job_id))
+        self.close_connection()
+
+    def insert_new_jobs_with_different_fold(self, folds=4):
+        self.init_connection()
+        avail_jobs = "{}.avail_jobs".format(self.schema)
+        select_job = "SELECT * FROM {0} WHERE {0}.dataset=\'letor_or\'".format(avail_jobs)
+        self.cursor_db.execute(select_job)
+        jobs_all = self.cursor_db.fetchall()
+
+        for job in jobs_all:
+            job = dict(job)
+            fold_id = job['fold_id']
+            del job['job_id']
+            del job['hash_value']
+            del job['job_allocated_time']
+            self.logger.info('###########################################################')
+            self.logger.info(print_dictionary(job))
+            for f_id in range(folds):
+                job['fold_id'] = fold_id + f_id + 1
+                columns = ', '.join(list(job.keys()))
+                values_str = []
+                for i, val in enumerate(job.values()):
+                    if isinstance(val, dict):
+                        val = json.dumps(val)
+                    #elif isinstance(val, str):
+                    #   val = "\'{}\'".format(str(val))
+                    else:
+                        val = str(val)
+                    values_str.append(val)
+                    if i == 0:
+                        values = '%s'
+                    else:
+                        values = values + ', %s'
+                insert_result = "INSERT INTO {0} ({1}) VALUES ({2})".format(avail_jobs, columns, values)
+                self.logger.info("Inserting results: {} {}".format(insert_result, values_str))
+                self.cursor_db.execute(insert_result, tuple(values_str))
+                if self.cursor_db.rowcount == 1:
+                    self.logger.info("Results inserted for the job {}".format(job['fold_id']))
         self.close_connection()

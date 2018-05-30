@@ -6,7 +6,7 @@ from sklearn.utils import check_random_state
 
 from csrank.learner import Learner
 from csrank.objectranking.object_ranker import ObjectRanker
-from csrank.util import normalize, print_dictionary
+from csrank.util import normalize, print_dictionary, softmax
 from ..dataset_reader.objectranking.util import \
     complete_linear_regression_dataset
 
@@ -93,12 +93,12 @@ class ExpectedRankRegression(ObjectRanker, Learner):
             "For Test instances {} objects {} features {}".format(n_instances,
                                                                   n_objects,
                                                                   n_features))
-        scores = np.empty([n_instances, n_objects])
+        scores = np.empty((n_instances, n_objects))
         for i, data_test in enumerate(X):
             assert data_test.shape[1] == self.n_object_features
-            score = self.model.predict(data_test) * -1
+            score = n_objects - self.model.predict(data_test)
             scores[i] = score
-        scores = normalize(scores)
+        scores = softmax(scores)
         self.logger.info("Done predicting scores")
         return scores
 

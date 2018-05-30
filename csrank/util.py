@@ -84,6 +84,11 @@ def softmax(x):
     return e_x / e_x.sum(axis=1, keepdims=True)
 
 
+def sigmoid(x):
+    x = 1 / (1 + np.exp(-1 * x))
+    return x
+
+
 def normalize(x):
     """
         Normalize the given two dimensional numpy or theano  array around the row.

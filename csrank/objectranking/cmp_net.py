@@ -1,8 +1,8 @@
 import logging
 
 from csrank.cmpnet_core import CmpNetCore
+from csrank.dataset_reader.objectranking.util import generate_complete_pairwise_dataset
 from csrank.objectranking.object_ranker import ObjectRanker
-from ..dataset_reader.objectranking.util import generate_complete_pairwise_dataset
 
 __all__ = ['CmpNet']
 
