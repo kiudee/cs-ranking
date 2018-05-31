@@ -18,7 +18,7 @@ if __name__ == '__main__':
     self.init_connection()
     results_table = "results.object_ranking"
     avail_jobs = "{}.avail_jobs".format(self.schema)
-    select_st = "SELECT dataset_params, dataset, kendallstau, spearmancorrelation, zerooneranklossties, zerooneaccuracy, ndcgtopall  from {0} INNER JOIN {1} ON {0}.job_id = {1}.job_id where {1}.learner='listnet'".format(
+    select_st = "SELECT dataset_params, dataset, kendallstau, spearmancorrelation, zerooneranklossties, zerooneaccuracy, ndcgtopall  from {0} INNER JOIN {1} ON {0}.job_id = {1}.job_id where {1}.dataset='letor_or'".format(
         results_table, avail_jobs)
     self.cursor_db.execute(select_st)
     data_m = []

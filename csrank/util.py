@@ -169,7 +169,7 @@ def configure_logging_numpy_keras(seed=42, log_path=None):
     logger = logging.getLogger("Configure Keras")
     logger.info("Devices {}".format(devices))
     n_gpus = len([x.name for x in device_lib.list_local_devices() if x.device_type == 'GPU'])
-    if (n_gpus == 0):
+    if n_gpus == 0:
         config = tf.ConfigProto(intra_op_parallelism_threads=1, inter_op_parallelism_threads=1,
                                 allow_soft_placement=True, log_device_placement=False,
                                 device_count={'CPU': multiprocessing.cpu_count() - 2})
