@@ -14,7 +14,7 @@ from .likelihoods import likelihood_dict, LogLikelihood
 
 
 class NestedLogitModel(DiscreteObjectChooser, Learner):
-    def __init__(self, n_object_features, n_objects, loss_function='', n_tune=500, n_sample=1000, alpha=1e-3,
+    def __init__(self, n_object_features, n_objects, loss_function='', n_tune=500, n_sample=1000, alpha=1e-3, beta=2.0,
                  random_state=None, **kwd):
         self.n_tune = n_tune
         self.n_sample = n_sample
@@ -22,6 +22,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         self.n_objects = n_objects
         self.n_nests = int(self.n_objects / 2) + 1
         self.alpha = alpha
+        self.beta = beta
         self.random_state = check_random_state(random_state)
         self.logger = logging.getLogger(NestedLogitModel.__name__)
         self.cluster_model = None
@@ -56,11 +57,12 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
             mu_weights_k = pm.Normal('mu_weights_k', mu=0., sd=10)
             sigma_weights_k = pm.HalfCauchy('sigma_weights_k', beta=1)
             weights_k = pm.Normal('weights_k', mu=mu_weights_k, sd=sigma_weights_k, shape=self.n_object_features)
-            lambda_k = pm.Uniform('lambda_k', self.alpha, 1.0 + self.alpha, shape=self.n_nests)
+            # lambda_k = pm.Uniform('lambda_k', self.alpha, 1.0 + self.alpha, shape=self.n_nests)
+            lambda_k = pm.HalfCauchy('lambda_k', beta=self.beta, shape=self.n_nests) + self.alpha
             weights = (weights / lambda_k[:, None])
 
             utility = eval_utility(X, y_nests, weights)
-            utility_k = pm.math.dot(self.features_nests, weights_k)
+            utility_k = tt.dot(self.features_nests, weights_k)
             p = get_probability(y_nests, utility, lambda_k, utility_k)
 
             if self.loss_function is None:
@@ -73,10 +75,10 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
 
     def _predict_scores_fixed(self, X, **kwargs):
         y_nests = self.create_nests(X)
-        d = dict(pm.summary(self.trace)['mean'])
-        weights = np.array([d['weights__{}'.format(i)] for i in range(self.n_object_features)])
-        weights_k = np.array([d['weights_k__{}'.format(i)] for i in range(self.n_object_features)])
-        lambda_k = np.array([d['lambda_k__{}'.format(i)] for i in range(self.n_nests)])
+        mean_trace = dict(pm.summary(self.trace)['mean'])
+        weights = np.array([mean_trace['weights__{}'.format(i)] for i in range(self.n_object_features)])
+        weights_k = np.array([mean_trace['weights_k__{}'.format(i)] for i in range(self.n_object_features)])
+        lambda_k = np.array([mean_trace['lambda_k__{}'.format(i)] for i in range(self.n_nests)])
         weights = (weights / lambda_k[:, None])
         utility_k = np.dot(self.features_nests, weights_k)
         utility = eval_utility_np(X, y_nests, weights)
@@ -96,10 +98,11 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         self.logger.info("Clearing memory")
         pass
 
-    def set_tunable_parameters(self, n_tune=500, n_sample=500, alpha=1e-3, loss_function='', **point):
+    def set_tunable_parameters(self, n_tune=500, n_sample=500, alpha=1e-3, beta=2.0, loss_function='', **point):
         self.n_tune = n_tune
         self.n_sample = n_sample
         self.alpha = alpha
+        self.beta = beta
         self.loss_function = likelihood_dict.get(loss_function, None)
         if len(point) > 0:
             self.logger.warning('This ranking algorithm does not support tunable parameters'

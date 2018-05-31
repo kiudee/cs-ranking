@@ -15,7 +15,7 @@ from .likelihoods import likelihood_dict, LogLikelihood
 
 class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
 
-    def __init__(self, n_object_features, n_objects, loss_function='', n_tune=500, n_sample=1000, alpha=1e-3,
+    def __init__(self, n_object_features, n_objects, loss_function='', n_tune=500, n_sample=1000, alpha=1e-3, beta=2.0,
                  random_state=None, **kwd):
         self.n_tune = n_tune
         self.n_sample = n_sample
@@ -24,6 +24,7 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         self.nests_indices = np.array(list(combinations(np.arange(n_objects), 2)))
         self.n_nests = len(self.nests_indices)
         self.alpha = alpha
+        self.beta = beta
         self.random_state = check_random_state(random_state)
         self.logger = logging.getLogger(PairedCombinatorialLogit.__name__)
         self.loss_function = likelihood_dict.get(loss_function, None)
@@ -78,8 +79,9 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
             sigma_weights = pm.HalfCauchy('sigma_weights', beta=1)
             weights = pm.Normal('weights', mu=mu_weights, sd=sigma_weights, shape=self.n_object_features)
 
-            utility = pm.math.sum(weights * X, axis=2)
-            lambda_k = pm.Uniform('lambda_k', self.alpha, 5.0 + self.alpha, shape=self.n_nests)
+            utility = tt.dot(X, weights)
+            lambda_k = pm.HalfCauchy('lambda_k', beta=self.beta, shape=self.n_nests) + self.alpha
+            # lambda_k = pm.Uniform('lambda_k', self.alpha, 5.0 + self.alpha, shape=self.n_nests)
             p = self.get_probabilities(utility, lambda_k, X.shape[0])
 
             if self.loss_function is None:
@@ -91,10 +93,10 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
                 self.trace = pm.sample(self.n_sample, tune=self.n_tune, cores=8)
 
     def _predict_scores_fixed(self, X, **kwargs):
-        d = dict(pm.summary(self.trace)['mean'])
-        weights = np.array([d['weights__{}'.format(i)] for i in range(self.n_object_features)])
-        lambda_k = np.array([d['lambda_k__{}'.format(i)] for i in range(self.n_nests)])
-        utility = np.sum(X * weights, axis=2)
+        mean_trace = dict(pm.summary(self.trace)['mean'])
+        weights = np.array([mean_trace['weights__{}'.format(i)] for i in range(self.n_object_features)])
+        lambda_k = np.array([mean_trace['lambda_k__{}'.format(i)] for i in range(self.n_nests)])
+        utility = np.dot(X, weights)
         p = self.get_probabilities_np(utility, lambda_k)
         return p
 
@@ -111,10 +113,11 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         self.logger.info("Clearing memory")
         pass
 
-    def set_tunable_parameters(self, n_tune=500, n_sample=500, alpha=1e-3, loss_function='', **point):
+    def set_tunable_parameters(self, n_tune=500, n_sample=500, alpha=1e-3, loss_function='', beta=2.0, **point):
         self.n_tune = n_tune
         self.n_sample = n_sample
         self.alpha = alpha
+        self.beta = beta
         self.loss_function = likelihood_dict.get(loss_function, None)
         if len(point) > 0:
             self.logger.warning('This ranking algorithm does not support tunable parameters'

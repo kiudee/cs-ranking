@@ -74,14 +74,15 @@ def get_tensor_value(x):
     return x
 
 
-def softmax(x):
+def softmax(x, axis=1):
     """
         Take softmax for the given two dimensional numpy array.
+        :param axis: The axis around which the softmax is applied
         :param x: array-like, shape (n_samples, n_objects)
         :return: softmax taken around the axis=1
     """
-    e_x = np.exp(x - x.max(axis=1, keepdims=True))
-    return e_x / e_x.sum(axis=1, keepdims=True)
+    e_x = np.exp(x - x.max(axis=axis, keepdims=True))
+    return e_x / e_x.sum(axis=axis, keepdims=True)
 
 
 def sigmoid(x):
@@ -89,14 +90,14 @@ def sigmoid(x):
     return x
 
 
-def normalize(x):
+def normalize(x, axis=1):
     """
         Normalize the given two dimensional numpy or theano  array around the row.
-
+        :param axis: The axis around which the norm is applied
         :param x: theano or numpy array-like, shape (n_samples, n_objects)
         :return: normalize the array around the axis=1
     """
-    return x / x.sum(axis=1, keepdims=True)
+    return x / x.sum(axis=axis, keepdims=True)
 
 
 def print_dictionary(dictionary):
