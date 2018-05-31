@@ -50,11 +50,11 @@ def create_graph_pairwise_matrix(matrix):
     for i, j in iter.combinations(np.arange(n_objects), 2):
         p_ij = matrix[i, j]
         p_ji = matrix[j, i]
-        if (p_ij > p_ji):
+        if p_ij > p_ji:
             graph[j].append(i)
-        if (p_ij < p_ji):
+        if p_ij < p_ji:
             graph[i].append(j)
-        if (p_ij == p_ji):
+        if p_ij == p_ji:
             graph[j].append(i)
             graph[i].append(j)
     return graph
@@ -63,13 +63,13 @@ def create_graph_pairwise_matrix(matrix):
 def create_pairwise_prob_matrix(n_objects):
     # Create a non-transitive pairwise probability matrix for n_objects*n_objects
     non_transitive = False
-    while (not non_transitive):
+    while not non_transitive:
         pairwise_prob = np.zeros([n_objects, n_objects])
         for i, j in iter.combinations(np.arange(n_objects), 2):
             pairwise_prob[i, j] = np.random.rand(1)[0]
             pairwise_prob[j, i] = 1.0 - pairwise_prob[i, j]
         for comp in strongly_connected_components(create_graph_pairwise_matrix(pairwise_prob)):
-            if (len(comp) >= 3):
+            if len(comp) >= 3:
                 non_transitive = True
                 break
     return pairwise_prob
@@ -102,9 +102,21 @@ def weighted_cosine_similarity(weights):
         denominator = np.sqrt(np.sum(weights * x * x)) * np.sqrt(
             np.sum(weights * y * y))
         sim = np.sum(weights * x * y) / denominator
-        return 1 - sim
+        return sim
 
     return distance_function
+
+
+def weighted_cosine_distance(weights):
+    def distance_function(x, y):
+        return 1.0 - weighted_cosine_similarity(weights)(x, y)
+
+    return distance_function
+
+
+def critique_dist(ic, ir, tid, d=-1):
+    distance = np.max(0, (ir[tid] - ic[tid]) * d)
+    return distance
 
 
 def distance_metric_multilabel(X_labels, Y_labels, X, Y):
@@ -116,4 +128,3 @@ def distance_metric_multilabel(X_labels, Y_labels, X, Y):
 def print_no_newline(i, total):
     sys.stdout.write("Iterations: {}  out of {} \r".format(i, total))
     sys.stdout.flush()
-

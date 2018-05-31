@@ -5,10 +5,11 @@ from itertools import combinations
 
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import train_test_split
 from sklearn.utils import check_random_state
 
 from csrank.dataset_reader.dataset_reader import DatasetReader
-from .util import get_similarity_matrix, get_key_for_indices, weighted_cosine_similarity
+from .util import get_key_for_indices, weighted_cosine_similarity
 
 MOVIE_ID = 'movieId'
 
@@ -35,7 +36,7 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
         self.n_train_instances = n_train_instances
         self.logger = logging.getLogger(TagGenomeDatasetReader.__name__)
         self.random_state = check_random_state(random_state)
-
+        self.model = None
         dataset_func_dict = {"similarity": self.make_similarity_based_dataset,
                              "nearest_neighbour": self.make_nearest_neighbour_dataset}
         if dataset_type not in dataset_func_dict.keys():
@@ -46,8 +47,9 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
         if not os.path.isfile(self.similarity_matrix_file):
             self.__load_dataset__(tag_rel_df, tag_info_df, movies_df)
 
-        self.similarity_matrix_lin_list = get_similarity_matrix(self.similarity_matrix_file)
+        # self.similarity_matrix_lin_list = get_similarity_matrix(self.similarity_matrix_file)
         self.movies_df = pd.read_csv(self.movies_file)
+        self.n_movies = len(self.movies_df)
         self.logger.debug("Done creating the complete dataset")
 
     def __load_dataset__(self, tag_rel_df, tag_info_df, movies_df):
@@ -81,13 +83,39 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
 
         series = pd.Series(similarity_matrix)
         matrix_df = pd.DataFrame({'col_major_index': series.index, 'similarity': series.values})
-        matrix_df.to_csv(self.similarity_matrix_file)
+        matrix_df.to_csv(self.similarity_matrix_file, index=False)
         self.logger.debug("Done calculating the similarity matrix stored at: {}".format(self.similarity_matrix_file))
 
     @abstractmethod
-    def make_similarity_based_dataset(self, n_instances, seed):
+    def make_similarity_based_dataset(self, n_instances, n_objects, seed):
         pass
 
     @abstractmethod
-    def make_nearest_neighbour_dataset(self, n_instances, seed):
+    def make_nearest_neighbour_dataset(self, n_instances, n_objects, seed):
         pass
+
+    @abstractmethod
+    def make_critique_fit_dataset(self, n_instances, n_objects, seed):
+        pass
+
+    def get_dataset_dictionaries(self, lengths=[5, 6]):
+        pass
+
+    def get_train_test_datasets(self, n_datasets=5):
+        splits = np.array(n_datasets)
+        return self.splitter(splits)
+
+    def get_single_train_test_split(self):
+        seed = self.random_state.randint(2 ** 32, dtype='uint32')
+        total_instances = self.n_test_instances + self.n_train_instances
+        self.X, self.Y = self.dataset_function(total_instances, self.n_objects, seed=seed)
+        self.__check_dataset_validity__()
+        return train_test_split(self.X, self.Y, random_state=self.random_state, test_size=self.n_test_instances)
+
+    def splitter(self, iter):
+        for i in iter:
+            seed = self.random_state.randint(2 ** 32, dtype='uint32') + i
+            total_instances = self.n_test_instances + self.n_train_instances
+            self.X, self.Y = self.dataset_function(total_instances, self.n_objects, seed=seed)
+            self.__check_dataset_validity__()
+        yield train_test_split(self.X, self.Y, random_state=self.random_state, test_size=self.n_test_instances)
