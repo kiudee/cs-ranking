@@ -98,5 +98,5 @@ License
 .. |Coverage| image:: https://coveralls.io/repos/github/kiudee/cs-ranking/badge.svg
    :target: https://coveralls.io/github/kiudee/cs-ranking
 
-.. _interactive notebooks: https://mybinder.org/v2/gh/kiudee/cs-ranking/master?filepath=notebooks
+.. _interactive notebooks: https://mybinder.org/v2/gh/kiudee/cs-ranking/master?filepath=docs%2Fnotebooks
 .. _arXiv paper: https://arxiv.org/abs/1803.05796
