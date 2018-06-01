@@ -114,9 +114,10 @@ def weighted_cosine_distance(weights):
     return distance_function
 
 
-def critique_dist(ic, ir, tid, d=-1):
-    distance = np.max(0, (ir[tid] - ic[tid]) * d)
-    return distance
+def critique_dist(ic, irs, tag_ids, direction=-1):
+    distances = ((irs[:, tag_ids] - ic[tag_ids]) * direction).T
+    distances = np.maximum(np.zeros_like(distances), distances)
+    return distances
 
 
 def distance_metric_multilabel(X_labels, Y_labels, X, Y):
