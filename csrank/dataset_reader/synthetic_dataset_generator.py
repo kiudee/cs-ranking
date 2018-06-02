@@ -1,3 +1,4 @@
+from sklearn.model_selection import train_test_split
 from sklearn.utils import check_random_state
 
 from .dataset_reader import DatasetReader
@@ -20,42 +21,38 @@ class SyntheticDatasetGenerator(DatasetReader):
     def splitter(self, iter):
         for i in iter:
             seed = self.random_state.randint(2 ** 32, dtype='uint32')
-            self.kwargs['n_instances'] = self.n_train_instances
-            X_train, Y_train = self.dataset_function(**self.kwargs, seed=seed)
-
-            self.kwargs['n_instances'] = self.n_test_instances
-            seed = self.random_state.randint(2 ** 32, dtype='uint32')
-            X_test, Y_test = self.dataset_function(**self.kwargs, seed=seed)
-        yield X_train, Y_train, X_test, Y_test
+            total_instances = self.n_test_instances + self.n_train_instances
+            self.kwargs['n_instances'] = total_instances
+            X, Y = self.dataset_function(**self.kwargs, seed=seed)
+            x_train, x_test, y_train, y_test = train_test_split(X, Y, random_state=self.random_state,
+                                                                test_size=self.n_test_instances)
+            yield x_train, y_train, x_test, y_test
 
     def get_dataset_dictionaries(self, lengths=[5, 6]):
-        X_train = dict()
-        Y_train = dict()
-        X_test = dict()
-        Y_test = dict()
+        x_train = dict()
+        y_train = dict()
+        x_test = dict()
+        y_test = dict()
         for n_obj in lengths:
             self.kwargs['n_objects'] = n_obj
 
             seed = self.random_state.randint(2 ** 32, dtype='uint32')
-            self.kwargs['n_instances'] = self.n_train_instances
-            X_train[n_obj], Y_train[n_obj] = self.dataset_function(**self.kwargs, seed=seed)
-
-            seed = self.random_state.randint(2 ** 32, dtype='uint32')
-            self.kwargs['n_instances'] = self.n_test_instances
-            X_test[n_obj], Y_test[n_obj] = self.dataset_function(**self.kwargs, seed=seed)
-        return X_train, Y_train, X_test, Y_test
+            total_instances = self.n_test_instances + self.n_train_instances
+            self.kwargs['n_instances'] = total_instances
+            X, Y = self.dataset_function(**self.kwargs, seed=seed)
+            x_1, x_2, y_1, y_2 = train_test_split(X, Y, random_state=self.random_state, test_size=self.n_test_instances)
+            x_train[n_obj], x_test[n_obj], y_train[n_obj], y_test[n_obj] = x_1, x_2, y_1, y_2
+        return x_train, y_train, x_test, y_test
 
     def get_single_train_test_split(self):
         seed = self.random_state.randint(2 ** 32, dtype='uint32')
-        self.kwargs['n_instances'] = self.n_train_instances
-        self.X, self.Y = X_train, Y_train = self.dataset_function(**self.kwargs, seed=seed)
+        total_instances = self.n_test_instances + self.n_train_instances
+        self.kwargs['n_instances'] = total_instances
+        self.X, self.Y = self.dataset_function(**self.kwargs, seed=seed)
         self.__check_dataset_validity__()
-
-        self.kwargs['n_instances'] = self.n_test_instances
-        seed = self.random_state.randint(2 ** 32, dtype='uint32')
-        self.X, self.Y = X_test, Y_test = self.dataset_function(**self.kwargs, seed=seed)
-        self.__check_dataset_validity__()
-        return X_train, Y_train, X_test, Y_test
+        x_train, x_test, y_train, y_test = train_test_split(self.X, self.Y, random_state=self.random_state,
+                                                            test_size=self.n_test_instances)
+        return x_train, y_train, x_test, y_test
 
 
 class SyntheticIterator(object):

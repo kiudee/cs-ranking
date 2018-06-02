@@ -14,13 +14,16 @@ from .likelihoods import likelihood_dict, LogLikelihood
 
 
 class NestedLogitModel(DiscreteObjectChooser, Learner):
-    def __init__(self, n_object_features, n_objects, loss_function='', n_tune=500, n_sample=1000, alpha=1e-3, beta=2.0,
-                 random_state=None, **kwd):
+    def __init__(self, n_object_features, n_objects, n_nests=None, loss_function='', n_tune=500, n_sample=1000,
+                 alpha=1e-3, beta=2.0, random_state=None, **kwd):
         self.n_tune = n_tune
         self.n_sample = n_sample
         self.n_object_features = n_object_features
         self.n_objects = n_objects
-        self.n_nests = int(self.n_objects / 2) + 1
+        if n_nests is None:
+            self.n_nests = n_objects + int(n_objects / 2)
+        else:
+            self.n_nests = n_nests
         self.alpha = alpha
         self.beta = beta
         self.random_state = check_random_state(random_state)
@@ -28,6 +31,8 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         self.cluster_model = None
         self.features_nests = None
         self.loss_function = likelihood_dict.get(loss_function, None)
+        self.model = None
+        self.trace = None
 
     def create_nests(self, X):
         n, n_obj, n_dim = X.shape

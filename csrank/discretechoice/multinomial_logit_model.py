@@ -17,6 +17,8 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
         self.n_object_features = n_object_features
         self.logger = logging.getLogger(MultinomialLogitModel.__name__)
         self.loss_function = likelihood_dict.get(loss_function, None)
+        self.model = None
+        self.trace = None
 
     def fit(self, X, Y, loss_func=None, **kwargs):
         with pm.Model() as self.model:

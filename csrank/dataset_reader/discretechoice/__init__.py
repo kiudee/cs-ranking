@@ -1,3 +1,4 @@
 from .discrete_choice_data_generator import DiscreteChoiceDatasetGenerator
 from .letor_discrete_choice_dataset_reader import LetorDiscreteChoiceDatasetReader
 from .mnist_discrete_choice_dataset_reader import MNISTDiscreteChoiceDatasetReader
+from .tag_genome_discrete_choice_dataset_reader import TagGenomeDiscreteChoiceDatasetReader
