@@ -4,6 +4,7 @@ import numpy as np
 import tensorflow as tf
 from keras import optimizers, Input, Model, backend as K
 from keras.layers import Dense, Lambda, add
+from keras.optimizers import SGD
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
 
@@ -16,7 +17,7 @@ from csrank.util import print_dictionary
 class RankNetCore(Learner):
     def __init__(self, n_object_features, hash_file, n_hidden=2, n_units=8, loss_function='binary_crossentropy',
                  batch_normalization=True, kernel_regularizer=l2(l=1e-4), kernel_initializer='lecun_normal',
-                 activation='relu', optimizer="adam", metrics=['binary_accuracy'],
+                 activation='relu', optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9), metrics=['binary_accuracy'],
                  batch_size=256, random_state=None, **kwargs):
         """Create an instance of the RankNet architecture.
 
@@ -109,6 +110,7 @@ class RankNetCore(Learner):
 
         X1, X2, Y_single = self.convert_instances(X, Y)
 
+        self.logger.debug("Instances created {}".format(X1.shape[0]))
         self.logger.debug('Creating the model')
 
         output = self.construct_model()
@@ -156,12 +158,9 @@ class RankNetCore(Learner):
         # assert X1.shape[1] == self.n_features
         n_instances, n_objects, n_features = X.shape
         self.logger.info("For Test instances {} objects {} features {}".format(n_instances, n_objects, n_features))
-        scores = []
-        for X1 in X:
-            score = self.scoring_model.predict(X1, **kwargs)
-            score = score.flatten()
-            scores.append(score)
-        scores = np.array(scores)
+        X1 = X.reshape(n_instances * n_objects, n_features)
+        scores = self.scoring_model.predict(X1, **kwargs)
+        scores = scores.reshape(n_instances, n_objects)
         self.logger.info("Done predicting scores")
         return scores
 

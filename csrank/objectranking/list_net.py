@@ -4,6 +4,7 @@ import tensorflow as tf
 from keras import Input, backend as K, optimizers
 from keras.engine import Model
 from keras.layers import Dense, concatenate
+from keras.optimizers import SGD
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
 
@@ -11,10 +12,9 @@ from csrank.constants import allowed_dense_kwargs, THRESHOLD
 from csrank.layers import NormalizedDense, create_input_lambda
 from csrank.learner import Learner
 from csrank.losses import plackett_luce_loss
+from csrank.metrics import zero_one_rank_loss_for_scores_ties
 from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.util import print_dictionary
-
-THRESHOLD = int(5e6)
 
 __all__ = ["ListNet"]
 
@@ -23,8 +23,8 @@ class ListNet(Learner, ObjectRanker):
 
     def __init__(self, n_object_features, n_top, hash_file, n_hidden=2, n_units=8, loss_function=plackett_luce_loss,
                  batch_normalization=False, kernel_regularizer=l2(l=1e-4), activation="selu",
-                 kernel_initializer='lecun_normal', optimizer="adam", metrics=None, batch_size=256, random_state=None,
-                 **kwargs):
+                 kernel_initializer='lecun_normal', optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
+                 metrics=[zero_one_rank_loss_for_scores_ties], batch_size=256, random_state=None, **kwargs):
         """ Create an instance of the ListNet architecture.
 
             ListNet trains a latent utility model based on top-k-subrankings

@@ -7,6 +7,7 @@ from keras import optimizers
 from keras.layers import Input, Dense
 from keras.layers.merge import concatenate
 from keras.models import Model
+from keras.optimizers import SGD
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
 
@@ -20,11 +21,10 @@ __all__ = ['FATENetwork']
 
 
 class FATENetworkCore(Learner, Tunable):
-    def __init__(self, n_hidden_joint_layers=32, n_hidden_joint_units=32,
-                 activation='selu', kernel_initializer='lecun_normal',
-                 kernel_regularizer=l2(l=0.01),
-                 optimizer="adam", batch_size=256,
-                 random_state=None, **kwargs):
+    def __init__(self, n_hidden_joint_layers=32, n_hidden_joint_units=32, activation='selu',
+                 kernel_initializer='lecun_normal', kernel_regularizer=l2(l=0.01),
+                 optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
+                 batch_size=256, random_state=None, **kwargs):
         self.logger = logging.getLogger(FATENetworkCore.__name__)
         self.random_state = check_random_state(random_state)
 

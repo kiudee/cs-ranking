@@ -38,7 +38,6 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
         self.n_train_instances = n_train_instances
         self.random_state = check_random_state(random_state)
         self.weights = np.log(np.array(tag_info_df[TAG_POPULARITY])) / np.log(np.array(tag_info_df[DOC_FREQUENCY]))
-        self.knn_data_file = os.path.join(self.dirname, 'nearest_neighbors_data.npy')
         if not os.path.isfile(self.similarity_matrix_file):
             self.__load_dataset__(tag_rel_df, tag_info_df, movies_df)
 

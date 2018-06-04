@@ -15,7 +15,7 @@ if __name__ == '__main__':
     config_file_path = os.path.join(DIR_PATH, 'config', 'clusterdb.json')
     self = DBConnector(config_file_path=config_file_path, is_gpu=True, schema='master')
     self.init_connection()
-    results_table = "results.object_ranking"
+    results_table = "results.object_ranking2"
     avail_jobs = "{}.avail_jobs".format(self.schema)
     select_st = "SELECT dataset_params, dataset, learner, kendallstau, spearmancorrelation, zerooneaccuracy, ndcgtopall, zerooneranklossties  from {0} INNER JOIN {1} ON {0}.job_id = {1}.job_id where {1}.dataset='letor_or'".format(
         results_table, avail_jobs)

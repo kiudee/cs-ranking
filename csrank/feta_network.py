@@ -5,6 +5,7 @@ import numpy as np
 import tensorflow as tf
 from keras import optimizers, Input, Model, backend as K
 from keras.layers import Dense, concatenate, Lambda, add
+from keras.optimizers import SGD
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
 
@@ -16,11 +17,11 @@ from csrank.util import tensorify, print_dictionary
 
 
 class FETANetwork(Learner):
-    def __init__(self, n_objects, n_object_features, hash_file, n_hidden=2, n_units=8,
-                 add_zeroth_order_model=False, max_number_of_objects=5,
-                 num_subsample=5, loss_function=hinged_rank_loss, batch_normalization=False,
+    def __init__(self, n_objects, n_object_features, hash_file, n_hidden=2, n_units=8, add_zeroth_order_model=False,
+                 max_number_of_objects=5, num_subsample=5, loss_function=hinged_rank_loss, batch_normalization=False,
                  kernel_regularizer=l2(l=1e-4), kernel_initializer='lecun_normal', activation='selu',
-                 optimizer="adam", metrics=None, batch_size=256, random_state=None, **kwargs):
+                 optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9), metrics=None, batch_size=256, random_state=None,
+                 **kwargs):
         """
         Create a FETA-network architecture for object ranking.
         Training and prediction complexity is quadratic in the number of objects.

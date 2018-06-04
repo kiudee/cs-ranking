@@ -5,8 +5,8 @@ from csrank.fate_network import FATENetwork
 
 
 class FATEDiscreteChoiceFunction(FATENetwork, DiscreteObjectChooser):
-    def __init__(self, loss_function='categorical_hinge',
-                 metrics=['categorical_accuracy', 'top_k_categorical_accuracy'], **kwargs):
+    def __init__(self, loss_function='categorical_hinge', metrics=['categorical_accuracy', 'top_k_categorical_accuracy']
+                 , **kwargs):
         self.loss_function = loss_function
         self.metrics = metrics
         super().__init__(**kwargs)

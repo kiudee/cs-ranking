@@ -92,26 +92,23 @@ class ParameterOptimizer(Learner):
             self.tuning_callbacks = []
         else:
             self.tuning_callbacks = tuning_callbacks
-        default_validation_loss = {OBJECT_RANKING: zero_one_rank_loss,
-                                   LABEL_RANKING: zero_one_rank_loss,
-                                   DISCRETE_CHOICE: categorical_accuracy_np,
-                                   DYAD_RANKING: zero_one_rank_loss,
-                                   CHOICE_FUNCTIONS: hamming_loss}
+        loss_funcs = {OBJECT_RANKING: zero_one_rank_loss, LABEL_RANKING: zero_one_rank_loss,
+                      DISCRETE_CHOICE: categorical_accuracy, DYAD_RANKING: zero_one_rank_loss,
+                      CHOICE_FUNCTIONS: hamming_loss}
         if validation_loss is None:
-            self.validation_loss = default_validation_loss[learning_problem]
-            self.logger.info(
-                'Loss function is not specified, using {}'.format(
-                    default_validation_loss[learning_problem].__name__))
+            self.validation_loss = loss_funcs[learning_problem]
+            self.logger.info('Loss function is not specified, using {}'.format(loss_funcs[learning_problem].__name__))
         else:
             self.validation_loss = validation_loss
 
         if self.validation_loss in accuracy_scores:
             self.validation_loss = convert_to_loss(self.validation_loss)
+            self.logger.info('Loss function specified is an accuracy converting '
+                             '{}'.format(self.validation_loss.__name__))
 
         if fit_params is None:
             self._fit_params = {}
-            self.logger.warning(
-                "Fit params are empty, the default parameters will be applied")
+            self.logger.warning("Fit params are empty, the default parameters will be applied")
         else:
             self._fit_params = fit_params
 

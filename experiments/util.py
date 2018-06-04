@@ -5,6 +5,7 @@ from csrank.callbacks import EarlyStoppingWithWeights, LRScheduler, DebugOutput
 from csrank.constants import *
 from csrank.metrics import zero_one_rank_loss, zero_one_accuracy, make_ndcg_at_k_loss
 from csrank.metrics_np import *
+from csrank.metrics_np import make_ndcg_at_k_loss_np
 from csrank.objectranking.fate_object_ranker import FATEObjectRanker
 from csrank.util import print_dictionary
 
@@ -64,11 +65,11 @@ learners = {FETA_RANKER: FETAObjectRanker, RANKNET: RankNet, CMPNET: CmpNet, ERR
             RANKSVM: RankSVM, FATE_RANKER: FATEObjectRanker, LISTNET: ListNet,
             FETA_CHOICE: FETAChoiceFunction, FATE_CHOICE: FATEChoiceFunction}
 try:
-    from csrank import GeneralizedExtremeValueModel, FETADiscreteChoiceFunction, FETADiscreteChoiceFunction, \
+    from csrank import GeneralizedExtremeValueModel, FETADiscreteChoiceFunction, FATEDiscreteChoiceFunction, \
         RankNetDiscreteChoiceFunction, MultinomialLogitModel, NestedLogitModel, PairedCombinatorialLogit, \
         CmpNetDiscreteChoiceFunction
 
-    dcm_learners = {FETA_DC: FETADiscreteChoiceFunction, FATE_DC: FETADiscreteChoiceFunction,
+    dcm_learners = {FETA_DC: FETADiscreteChoiceFunction, FATE_DC: FATEDiscreteChoiceFunction,
                     RANKNET_DC: RankNetDiscreteChoiceFunction, CMPNET_DC: CmpNetDiscreteChoiceFunction,
                     MNL: MultinomialLogitModel, NLM: NestedLogitModel, GEV: GeneralizedExtremeValueModel,
                     PCL: PairedCombinatorialLogit}
@@ -83,7 +84,7 @@ ranking_metrics = {'KendallsTau': kendalls_mean_np, 'SpearmanCorrelation': spear
                    'ZeroOneRankLoss': zero_one_rank_loss_for_scores_np,
                    'ZeroOneRankLossTies': zero_one_rank_loss_for_scores_ties_np,
                    "ZeroOneAccuracy": zero_one_accuracy_np,
-                   "NDCGTopAll": make_ndcg_at_k_loss}
+                   "NDCGTopAll": make_ndcg_at_k_loss_np}
 discrete_choice_metrics = {'CategoricalAccuracy': categorical_accuracy_np,
                            'CategoricalTopK2': topk_categorical_accuracy_np(k=2),
                            'CategoricalTopK3': topk_categorical_accuracy_np(k=3),

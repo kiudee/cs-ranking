@@ -45,6 +45,29 @@ def zero_one_accuracy_np(y_true, s_pred):
     return acc
 
 
+def make_ndcg_at_k_loss_np(k=5):
+    def ndcg(y_true, y_pred):
+        n_instances, n_objects = y_true.shape
+        relevance = np.power(2., ((n_objects - y_true) * 60) / n_objects) - 1.
+        relevance_pred = np.power(2., ((n_objects - y_pred) * 60) / n_objects) - 1.
+
+        log_term = np.log(np.arange(k, dtype='float32') + 2.) / np.log(2.)
+
+        # Calculate ideal dcg:
+        top_t = np.argsort(relevance, axis=1)[:, ::-1][:, :k]
+        toprel = relevance[np.arange(n_instances)[:, None], top_t]
+        idcg = np.sum(toprel / log_term, axis=-1, keepdims=True)
+
+        # Calculate actual dcg:
+        top_p = np.argsort(relevance_pred, axis=1)[:, ::-1][:, :k]
+        pred_rel = relevance[np.arange(n_instances)[:, None], top_p]
+        pred_rel = np.sum(pred_rel / log_term, axis=-1, keepdims=True)
+        gain = pred_rel / idcg
+        return gain
+
+    return ndcg
+
+
 def zero_one_rank_loss_for_scores_ties_np(y_true, s_pred):
     n_objects = y_true.shape[1]
     mask = np.greater(y_true[:, None] - y_true[:, :, None], 0).astype(float)

@@ -66,14 +66,13 @@ def make_ndcg_at_k_loss(k=5):
     def ndcg(y_true, y_pred):
         y_true, y_pred = tensorify(y_true), tensorify(y_pred)
         n_objects = K.cast(K.int_shape(y_pred)[1], 'float32')
-        relevance = K.pow(2., (n_objects - y_true - 1.) / n_objects) - 1.
-        relevance_pred = K.pow(2., (n_objects - y_pred - 1.) / n_objects) - 1.
+        relevance = K.pow(2., ((n_objects - y_true) * 60) / n_objects) - 1.
+        relevance_pred = K.pow(2., ((n_objects - y_pred) * 60) / n_objects) - 1.
 
         # Calculate ideal dcg:
         toprel, toprel_ind = tf.nn.top_k(relevance, k)
         log_term = K.log(K.arange(k, dtype='float32') + 2.) / K.log(2.)
         idcg = K.sum(toprel / log_term, axis=-1, keepdims=True)
-
         # Calculate actual dcg:
         toppred, toppred_ind = tf.nn.top_k(relevance_pred, k)
         row_ind = K.cumsum(K.ones_like(toppred_ind), axis=0) - 1

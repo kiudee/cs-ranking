@@ -1,7 +1,7 @@
 import logging
 
 from csrank.fate_network import FATENetwork
-from csrank.losses import smooth_rank_loss
+from csrank.losses import hinged_rank_loss
 from csrank.metrics import zero_one_rank_loss_for_scores_ties
 from csrank.objectranking.object_ranker import ObjectRanker
 
@@ -22,7 +22,7 @@ class FATEObjectRanker(FATENetwork, ObjectRanker):
             Keyword arguments for the @FATENetwork
         """
 
-    def __init__(self, loss_function=smooth_rank_loss, metrics=[zero_one_rank_loss_for_scores_ties], **kwargs):
+    def __init__(self, loss_function=hinged_rank_loss, metrics=[zero_one_rank_loss_for_scores_ties], **kwargs):
         self.loss_function = loss_function
         self.metrics = metrics
         super().__init__(**kwargs)

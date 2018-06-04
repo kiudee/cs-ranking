@@ -6,8 +6,7 @@ from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 
 
 class CmpNetDiscreteChoiceFunction(CmpNetCore, DiscreteObjectChooser):
-    def __init__(self, loss_function='binary_crossentropy', metrics=['binary_accuracy'],
-                 **kwargs):
+    def __init__(self, loss_function='binary_crossentropy', metrics=['binary_accuracy'], **kwargs):
         super().__init__(loss_function=loss_function, metrics=metrics, **kwargs)
         self.logger = logging.getLogger(CmpNetDiscreteChoiceFunction.__name__)
         self.logger.info("Initializing network with object features {}".format(self.n_object_features))
