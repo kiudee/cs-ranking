@@ -2,14 +2,14 @@ import logging
 
 from csrank.feta_network import FETANetwork
 from csrank.losses import hinged_rank_loss
-from csrank.metrics import zero_one_rank_loss_for_scores
+from csrank.metrics import zero_one_rank_loss_for_scores, zero_one_rank_loss_for_scores_ties
 from .object_ranker import ObjectRanker
 
 __all__ = ['FETAObjectRanker']
 
 
 class FETAObjectRanker(FETANetwork, ObjectRanker):
-    def __init__(self, loss_function=hinged_rank_loss, metrics=None, **kwargs):
+    def __init__(self, loss_function=hinged_rank_loss, metrics=[zero_one_rank_loss_for_scores_ties], **kwargs):
         if metrics is None:
             metrics = [zero_one_rank_loss_for_scores]
         super().__init__(metrics=metrics, loss_function=loss_function, **kwargs)

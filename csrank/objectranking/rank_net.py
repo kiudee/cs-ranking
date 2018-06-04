@@ -1,4 +1,5 @@
 import logging
+
 from csrank.dataset_reader.objectranking.util import generate_complete_pairwise_dataset
 from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.ranknet_core import RankNetCore

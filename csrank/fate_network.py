@@ -128,7 +128,7 @@ class FATENetworkCore(Learner, Tunable):
 class FATENetwork(FATENetworkCore):
     def __init__(self, hash_file, n_object_features, n_hidden_set_layers=1, n_hidden_set_units=1, **kwargs):
         FATENetworkCore.__init__(self, **kwargs)
-        self.logger_gorc = logging.getLogger(FATENetwork.__name__)
+        self.logger_gorc = logging.getLogger(self.__class__.__name__)
 
         self.n_hidden_set_layers = n_hidden_set_layers
         self.n_hidden_set_units = n_hidden_set_units
@@ -147,7 +147,6 @@ class FATENetwork(FATENetworkCore):
 
         The actual connection of the layers is done during fitting, since we
         do not know the size(s) of the set(s) in advance."""
-        self.logger_gorc = logging.getLogger(self.__class__.__name__)
         self.logger_gorc.info("Creating set layers with set units {} set layer {} ".format(self.n_hidden_set_units,
                                                                                            self.n_hidden_set_layers))
 
@@ -484,6 +483,7 @@ class FATENetwork(FATENetworkCore):
                                                n_hidden_joint_layers=n_hidden_joint_layers, reg_strength=reg_strength,
                                                learning_rate=learning_rate,
                                                batch_size=batch_size, **point)
+
         self.n_hidden_set_units = n_hidden_set_units
         self.n_hidden_set_layers = n_hidden_set_layers
 

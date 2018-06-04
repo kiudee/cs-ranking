@@ -249,10 +249,10 @@ class DBConnector(metaclass=ABCMeta):
             self.cursor_db.execute(update_job, (file_name_new, d_param, job_id))
         self.close_connection()
 
-    def insert_new_jobs_with_different_fold(self, folds=4):
+    def insert_new_jobs_with_different_fold(self, dataset='synthetic_dc', folds=4):
         self.init_connection()
         avail_jobs = "{}.avail_jobs".format(self.schema)
-        select_job = "SELECT * FROM {0} WHERE {0}.dataset=\'letor_or\'".format(avail_jobs)
+        select_job = "SELECT * FROM {0} WHERE {0}.dataset=\'{1}\' ORDER  BY {0}.job_id".format(avail_jobs, dataset)
         self.cursor_db.execute(select_job)
         jobs_all = self.cursor_db.fetchall()
 
@@ -271,7 +271,7 @@ class DBConnector(metaclass=ABCMeta):
                 for i, val in enumerate(job.values()):
                     if isinstance(val, dict):
                         val = json.dumps(val)
-                    #elif isinstance(val, str):
+                    # elif isinstance(val, str):
                     #   val = "\'{}\'".format(str(val))
                     else:
                         val = str(val)

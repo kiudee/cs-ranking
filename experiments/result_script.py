@@ -3,9 +3,8 @@ import logging
 import os
 
 import pandas as pd
-from tabulate import tabulate
 
-from csrank.util import configure_logging_numpy_keras, print_dictionary
+from csrank.util import configure_logging_numpy_keras
 from experiments.dbconnection import DBConnector
 
 if __name__ == '__main__':
@@ -21,7 +20,7 @@ if __name__ == '__main__':
     select_st = "SELECT dataset_params, dataset, learner, kendallstau, spearmancorrelation, zerooneaccuracy, ndcgtopall, zerooneranklossties  from {0} INNER JOIN {1} ON {0}.job_id = {1}.job_id where {1}.dataset='letor_or'".format(
         results_table, avail_jobs)
     self.cursor_db.execute(select_st)
-    data_2007 = []
+    data_letor = []
     data_2008 = []
     for job in self.cursor_db.fetchall():
         values = list(job.values())
@@ -30,13 +29,22 @@ if __name__ == '__main__':
         vals = values[2:] + [1.0 - values[-1]]
         if job['dataset_params']['year'] == 2007:
             values_ = ['Letor2007'] + vals
-            data_2007.append(values_)
+            data_letor.append(values_)
         if job['dataset_params']['year'] == 2008:
             values_ = ['Letor2008'] + vals
-            data_2008.append(values_)
+            data_letor.append(values_)
     cols = ['Dataset'] + columns + ['zeroonerankaccuracy']
-    df = pd.DataFrame(data_2008, columns=cols)
-    df.to_csv('2008.csv')
-    df = pd.DataFrame(data_2007, columns=cols)
-    df.to_csv('2007.csv')
-    print(tabulate(df))
+    df = pd.DataFrame(data_letor, columns=cols)
+    df_path = os.path.join(DIR_PATH, 'results', 'letor.csv')
+    df.to_csv(df_path)
+    grouped = df.groupby(['Dataset', 'learner'])
+    data = []
+    for name, group in grouped:
+        one_row = [name[0], str(name[1]).upper()]
+        std = group.std(axis=0).values
+        mean = group.mean(axis=0).values
+        one_row.extend(["{:.3f}+-{:.3f}".format(m, s) for m, s in zip(mean, std)])
+        data.append(one_row)
+    df = pd.DataFrame(data, columns=cols)
+    df_path = os.path.join(DIR_PATH, 'results', 'letor_aggregated.csv')
+    df.to_csv(df_path)

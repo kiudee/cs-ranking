@@ -9,7 +9,7 @@ __all__ = ['zero_one_rank_loss', 'zero_one_rank_loss_for_scores',
            'zero_one_rank_loss_for_scores_ties',
            'make_ndcg_at_k_loss', 'kendalls_tau_for_scores',
            'spearman_correlation_for_scores', "zero_one_accuracy",
-           "zero_one_accuracy_for_scores"]
+           "zero_one_accuracy_for_scores", "topk_categorical_accuracy"]
 
 
 def zero_one_rank_loss(y_true, y_pred):

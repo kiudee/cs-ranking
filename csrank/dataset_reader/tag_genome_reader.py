@@ -74,8 +74,8 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
         for i, j in combinations_list:
             similarity_matrix[get_key_for_indices(i, j)] = weighted_cosine_similarity(self.weights)(features[i],
                                                                                                     features[j])
-            self.logger.info(
-                "Calculating similarity {},{}, {}".format(i, j, similarity_matrix[get_key_for_indices(i, j)]))
+            self.logger.info("Calculating similarity {},{}, {}".format(i, j,
+                                                                       similarity_matrix[get_key_for_indices(i, j)]))
 
         for i in range(num_of_movies):
             similarity_matrix[get_key_for_indices(i, i)] = 1.0

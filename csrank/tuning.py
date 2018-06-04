@@ -5,7 +5,7 @@ from datetime import datetime
 import numpy as np
 import tensorflow as tf
 from keras import backend as K
-from keras.losses import categorical_hinge
+from keras.metrics import categorical_accuracy
 from sklearn.metrics import hamming_loss
 from sklearn.model_selection import ShuffleSplit
 from sklearn.utils import check_random_state
@@ -16,12 +16,20 @@ from skopt.utils import cook_estimator, normalize_dimensions, dump, load
 from csrank.constants import OBJECT_RANKING, LABEL_RANKING, DISCRETE_CHOICE, \
     DYAD_RANKING, CHOICE_FUNCTIONS
 from csrank.learner import Learner
+from csrank.metrics import *
 from csrank.metrics import zero_one_rank_loss
+from csrank.metrics_np import *
+from csrank.metrics_np import categorical_accuracy_np, convert_to_loss
 from csrank.util import duration_tillnow, create_dir_recursively, \
     seconds_to_time, \
     get_mean_loss_for_dictionary, get_loss_for_array, check_learner_class
 
 PARAMETER_OPTIMIZER = "ParameterOptimizer"
+
+accuracy_scores = [f1_measure, precision, recall, instance_informedness, zero_one_accuracy, zero_one_accuracy_np,
+                   zero_one_accuracy_for_scores, kendalls_mean_np, spearman_scipy, kendalls_tau_for_scores,
+                   spearman_correlation_for_scores, make_ndcg_at_k_loss, categorical_accuracy_np,
+                   topk_categorical_accuracy_np, topk_categorical_accuracy, categorical_accuracy]
 
 
 class TuningCallback(object):
@@ -86,7 +94,7 @@ class ParameterOptimizer(Learner):
             self.tuning_callbacks = tuning_callbacks
         default_validation_loss = {OBJECT_RANKING: zero_one_rank_loss,
                                    LABEL_RANKING: zero_one_rank_loss,
-                                   DISCRETE_CHOICE: categorical_hinge,
+                                   DISCRETE_CHOICE: categorical_accuracy_np,
                                    DYAD_RANKING: zero_one_rank_loss,
                                    CHOICE_FUNCTIONS: hamming_loss}
         if validation_loss is None:
@@ -97,6 +105,9 @@ class ParameterOptimizer(Learner):
         else:
             self.validation_loss = validation_loss
 
+        if self.validation_loss in accuracy_scores:
+            self.validation_loss = convert_to_loss(self.validation_loss)
+
         if fit_params is None:
             self._fit_params = {}
             self.logger.warning(
@@ -106,6 +117,7 @@ class ParameterOptimizer(Learner):
 
         self.random_state = check_random_state(random_state)
         self.model = None
+        self.opt = None
 
     def _callbacks_set_optimizer(self, opt):
         for cb in self.tuning_callbacks:
@@ -315,26 +327,20 @@ class ParameterOptimizer(Learner):
             best_i = np.argmin(np.array(self.opt.yi)[:, 0])
             best_loss = self.opt.yi[best_i]
             best_params = self.opt.Xi[best_i]
-            self.logger.info(
-                "Best parameters so far with a loss of {:.4f} time of {:.4f}:\n {}".format(
-                    best_loss[0],
-                    best_loss[1],
-                    best_params))
+            self.logger.info("Best parameters so far with a loss of {:.4f}:\n {}".format(best_loss[0], best_params))
         else:
             best_i = np.argmin(self.opt.yi)
             best_loss = self.opt.yi[best_i]
             best_params = self.opt.Xi[best_i]
-            self.logger.info(
-                "Best parameters so far with a loss of {:.4f}:\n {}".format(
-                    best_loss, best_params))
+            self.logger.info("Best parameters so far with a loss of {:.4f}:\n {}".format(best_loss, best_params))
 
     def set_optimizer(self, n_iter, opt_seed, acq_func, gp_seed, **kwargs):
         self.logger.info('Retrieving model stored at: {}'.format(self.optimizer_path))
         try:
             optimizer = load(self.optimizer_path)
             self.logger.info('Loading model stored at: {}'.format(self.optimizer_path))
-            finished_iterations = np.array(optimizer.yi).shape[0]
-            if finished_iterations == 0:
+            finished_iter = np.array(optimizer.yi).shape[0]
+            if finished_iter == 0:
                 optimizer = None
                 self.logger.info('Optimizer did not finish any iterations so setting optimizer to null')
         except KeyError:
@@ -349,11 +355,10 @@ class ParameterOptimizer(Learner):
             optimizer = None
 
         if optimizer is not None:
-            n_iter = n_iter - finished_iterations
+            n_iter = n_iter - finished_iter
             if n_iter < 0:
                 n_iter = 0
-            self.logger.info(
-                'Iterations already done: {} and running iterations {}'.format(finished_iterations, n_iter))
+            self.logger.info('Iterations already done: {} and running iterations {}'.format(finished_iter, n_iter))
             self.opt = optimizer
             self.logger.debug('Setting the provided optimizer')
             self.log_best_params()
@@ -366,12 +371,9 @@ class ParameterOptimizer(Learner):
             self.logger.info("Parameter Space after transformation: {}".format(space))
 
             # Todo: Make this passable
-            base_estimator = cook_estimator("GP", space=space,
-                                            random_state=gp_seed,
-                                            noise="gaussian")
-            self.opt = Optimizer(dimensions=self.parameter_ranges, random_state=opt_seed,
-                                 base_estimator=base_estimator, acq_func=acq_func,
-                                 **kwargs)
+            base_estimator = cook_estimator("GP", space=space, random_state=gp_seed, noise="gaussian")
+            self.opt = Optimizer(dimensions=self.parameter_ranges, random_state=opt_seed, base_estimator=base_estimator,
+                                 acq_func=acq_func, **kwargs)
         return n_iter
 
     def predict_pair(self, a, b, **kwargs):

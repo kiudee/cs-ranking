@@ -11,5 +11,5 @@ if __name__ == '__main__':
     log_path = os.path.join(DIR_PATH, 'logs', 'temp.log')
     configure_logging_numpy_keras(log_path=log_path)
     config_file_path = os.path.join(DIR_PATH, 'config', 'clusterdb.json')
-    self = DBConnector(config_file_path=config_file_path, is_gpu=True, schema='master')
+    self = DBConnector(config_file_path=config_file_path, is_gpu=True, schema='masterthesis')
     self.insert_new_jobs_with_different_fold()

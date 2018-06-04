@@ -103,11 +103,16 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         self.logger.info("Clearing memory")
         pass
 
-    def set_tunable_parameters(self, n_tune=500, n_sample=500, alpha=1e-3, beta=2.0, loss_function='', **point):
+    def set_tunable_parameters(self, n_tune=500, n_sample=500, alpha=1e-3, beta=2.0, n_nests=None, loss_function='',
+                               **point):
         self.n_tune = n_tune
         self.n_sample = n_sample
         self.alpha = alpha
         self.beta = beta
+        if n_nests is None:
+            self.n_nests = self.n_objects + int(self.n_objects / 2)
+        else:
+            self.n_nests = n_nests
         self.loss_function = likelihood_dict.get(loss_function, None)
         if len(point) > 0:
             self.logger.warning('This ranking algorithm does not support tunable parameters'

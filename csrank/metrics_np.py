@@ -7,7 +7,8 @@ from csrank.util import scores_to_rankings
 __all__ = ['spearman_mean_np', 'kendalls_mean_np', 'zero_one_accuracy_np',
            'zero_one_rank_loss_for_scores_ties_np', 'zero_one_rank_loss_for_scores_np',
            'auc_score', "instance_informedness", 'f1_measure', 'recall',
-           'average_precision', "precision", "spearman_scipy", "topk_categorical_accuracy", "categorical_accuracy"]
+           'average_precision', "precision", "spearman_scipy", "topk_categorical_accuracy_np",
+           "categorical_accuracy_np", "convert_to_loss"]
 
 
 def spearman_mean_np(y_true, s_pred):
@@ -98,7 +99,7 @@ def recall(y_true, y_pred):
     return recall_score(y_true, y_pred, average='samples')
 
 
-def topk_categorical_accuracy(k=5):
+def topk_categorical_accuracy_np(k=5):
     def topk_acc(y_true, y_pred):
         topK = y_pred.argsort(axis=1)[:, -k:][:, ::-1]
         accuracies = np.zeros_like(y_true, dtype=bool)
@@ -110,8 +111,15 @@ def topk_categorical_accuracy(k=5):
     return topk_acc
 
 
-def categorical_accuracy(y_true, y_pred):
+def categorical_accuracy_np(y_true, y_pred):
     y_true = np.argmax(y_true, axis=1)
     choices = np.argmax(y_pred, axis=1)
     accuracies = np.equal(y_true, choices)
     return np.mean(accuracies)
+
+
+def convert_to_loss(loss_function):
+    def loss(y_true, y_pred):
+        return 1.0 - loss_function(y_true, y_pred)
+
+    return loss
