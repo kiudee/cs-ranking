@@ -89,7 +89,7 @@ class TagGenomeDiscreteChoiceDatasetReader(TagGenomeDatasetReader):
                 tag_ids = tag_ids[0:length]
                 distances = [self.similarity_matrix[get_key_for_indices(i, j)] for j in range(self.n_movies)]
                 distances = np.array(distances)
-                critique_d = critique_dist(feature, movie_features, tag_ids, direction=direction)
+                critique_d = critique_dist(feature, self.movie_features, tag_ids, direction=direction)
                 critique_fit = np.multiply(critique_d, distances)
                 orderings = np.argsort(critique_fit, axis=-1)[:, ::-1]
                 minimum = [i]
