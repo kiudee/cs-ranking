@@ -13,9 +13,11 @@ from .util import get_key_for_indices, get_similarity_matrix, weighted_cosine_si
     critique_dist
 
 MOVIE_ID = 'movieId'
-
+TAG_ID = 'tagId'
+TAG = 'tag'
 TAG_POPULARITY = 'tagpopularity'
 DOC_FREQUENCY = 'docfrequency'
+RELEVANCE = "relevance"
 
 
 class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
@@ -23,34 +25,62 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
         super(TagGenomeDatasetReader, self).__init__(dataset_folder='movie_lens', **kwargs)
 
         self.logger = logging.getLogger(TagGenomeDatasetReader.__name__)
-        genome_scores = os.path.join(self.dirname, 'genome-scores.csv')
-        genome_tags = os.path.join(self.dirname, 'genome-tags.csv')
-        movies = os.path.join(self.dirname, 'movies.csv')
-        tag_rel_df = pd.read_csv(genome_scores)
-        tag_info_df = pd.read_csv(genome_tags)
-        movies_df = pd.read_csv(movies)
 
-        self.movies_file = movies
+        self.movies_file = os.path.join(self.dirname, 'movies.csv')
+        genome_scores = pd.read_csv(os.path.join(self.dirname, 'genome-scores.csv'))
+        tags_applies = pd.read_csv(os.path.join(self.dirname, 'tags.csv'))
+
+        self.tags_info_file = os.path.join(self.dirname, 'genome-tags.csv')
+        genome_tags = pd.read_csv(self.tags_info_file)
+        movies_df = pd.read_csv(self.movies_file)
         self.similarity_matrix_file = os.path.join(self.dirname, 'similarity_matrix.csv')
+
         self.n_objects = n_objects
-        self.n_features = np.array(tag_info_df['tagId']).shape[0]
+        self.n_features = np.array(genome_tags[TAG_ID]).shape[0]
         self.n_test_instances = n_test_instances
         self.n_train_instances = n_train_instances
         self.random_state = check_random_state(random_state)
-        self.weights = np.log(np.array(tag_info_df[TAG_POPULARITY])) / np.log(np.array(tag_info_df[DOC_FREQUENCY]))
         if not os.path.isfile(self.similarity_matrix_file):
-            self.__load_dataset__(tag_rel_df, tag_info_df, movies_df)
+            self.__load_dataset__(genome_scores, genome_tags, tags_applies, movies_df)
 
         self.similarity_matrix = get_similarity_matrix(self.similarity_matrix_file)
+        self.weights = np.log(np.array(genome_tags[TAG_POPULARITY])) / np.log(np.array(genome_tags[DOC_FREQUENCY]))
         self.movies_df = pd.read_csv(self.movies_file)
         self.n_movies = len(self.movies_df)
         self.movie_features = self.movies_df.as_matrix()[:, 3:].astype(float)
         self.logger.debug("Done creating the complete dataset")
 
-    def __load_dataset__(self, tag_rel_df, tag_info_df, movies_df):
+    def __load_dataset__(self, genome_scores, genome_tags, tags_applies, movies_df):
+        tags_applies[TAG] = tags_applies[TAG].str.lower()
+        values_with_pop = []
+        for tid, t in genome_tags.as_matrix():
+            tags_a = tags_applies.loc[tags_applies[TAG] == t.lower()]
+            tags_total = np.array(tags_a[MOVIE_ID])
+            values_with_pop.append([tid, t, len(tags_total)])
+            self.logger.info('Tag popularity for tag {} is: {}'.format(t, len(tags_total)))
+            if len(tags_total) == 0:
+                self.logger.info((tid, t))
+                self.logger.info('Tag popularity for tag {} is: {}'.format(t, len(tags_total)))
+                values_with_pop.append([tid, t, 2])
+        cols = list(genome_tags.columns)
+        cols.append(TAG_POPULARITY)
+        genome_tags = pd.DataFrame(values_with_pop, columns=cols)
+        doc_freq = []
+        for i, tag in enumerate(genome_tags.values):
+            df = genome_scores.loc[genome_scores['tagId'] == tag[0]]
+            freq = np.sum(np.array(df["relevance"]) > 0.5)
+            if freq == 0 or freq == 1:
+                freq = 2
+                self.logger.info('Document frequency for tag {} is: zero'.format(tag))
+            doc_freq.append(freq)
+        genome_tags[DOC_FREQUENCY] = doc_freq
+        genome_tags.to_csv(self.tags_info_file, index=False)
+        self.logger.debug("Done loading the tag popularity and doc frequency for the tags")
+        self.weights = np.log(np.array(genome_tags[TAG_POPULARITY])) / np.log(np.array(genome_tags[DOC_FREQUENCY]))
+
         objects = []
-        tags_rel = tag_rel_df.as_matrix()
-        movie_ids = np.unique(np.array(tag_rel_df[MOVIE_ID]))
+        tags_rel = genome_scores.as_matrix()
+        movie_ids = np.unique(np.array(genome_scores[MOVIE_ID]))
         for i, movie_id in enumerate(movie_ids):
             a = i * self.n_features
             b = (i + 1) * self.n_features
@@ -58,7 +88,7 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
         objects = np.array(objects)
         movies_df = movies_df[movies_df[MOVIE_ID].isin(movie_ids)]
 
-        for i, tag in enumerate(tag_info_df.values):
+        for i, tag in enumerate(genome_tags.values):
             movies_df[tag[1]] = objects[:, i]
         movies_df.to_csv(self.movies_file, index=False)
 
@@ -98,6 +128,7 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
                 query = random_state.choice(self.n_movies, size=1)
             one_row = [self.similarity_matrix[get_key_for_indices(i, j)] for i, j in product(query, subset)]
             scores[i] = np.array(one_row)
+        self.logger.info('Done')
         return X, scores
 
     @abstractmethod
@@ -123,6 +154,7 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
         indices = random_state.choice(X.shape[0], n_instances, replace=False)
         X = X[indices, :, :]
         scores = scores[indices, :]
+        self.logger.info('Done')
         return X, scores
 
     @abstractmethod
@@ -132,13 +164,17 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
         random_state = check_random_state(seed)
         X = []
         scores = []
-        threshold = np.min([(int(n_instances / self.n_movies) + 2), 35])
+        length = (int(n_instances / self.n_movies) + 1)
         for i, feature in enumerate(self.movie_features):
-            tag_ids = np.where(np.logical_and((feature > 0.45), (feature < 0.70)))[0]
-            length = np.min([len(tag_ids), threshold])
-            tag_ids = tag_ids[0:length]
+            quartile = np.percentile(feature, [95, 98])
+            tag_ids = np.where(np.logical_and((feature > quartile[0]), (feature < quartile[1])))[0]
+            tag_ids = tag_ids[np.argsort(feature[tag_ids])[::-1]]
+            if direction == -1:
+                tag_ids = tag_ids[0:length]
+            else:
+                tag_ids = tag_ids[-length:]
             distances = [self.similarity_matrix[get_key_for_indices(i, j)] for j in range(self.n_movies)]
-            distances = np.array(distances)
+            distances = np.array(distances) - 0.61
             critique_d = critique_dist(feature, self.movie_features, tag_ids, direction=direction)
             critique_fit = np.multiply(critique_d, distances)
             orderings = np.argsort(critique_fit, axis=-1)[:, ::-1][:, 0:n_objects]
@@ -151,6 +187,7 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
         indices = random_state.choice(X.shape[0], n_instances, replace=False)
         X = X[indices, :, :]
         scores = scores[indices, :]
+        self.logger.info('Done')
         return X, scores
 
     def get_dataset_dictionaries(self, lengths=[5, 6]):

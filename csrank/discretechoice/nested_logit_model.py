@@ -7,6 +7,7 @@ import theano.tensor as tt
 from sklearn.cluster import MiniBatchKMeans as clustering
 from sklearn.utils import check_random_state
 
+from csrank.discretechoice.util import replace_nan_theano, replace_nan_np, replace_inf_np, replace_inf_theano
 from csrank.learner import Learner
 from csrank.util import print_dictionary
 from .discrete_choice import DiscreteObjectChooser
@@ -14,18 +15,17 @@ from .likelihoods import likelihood_dict, LogLikelihood
 
 
 class NestedLogitModel(DiscreteObjectChooser, Learner):
-    def __init__(self, n_object_features, n_objects, n_nests=None, loss_function='', n_tune=500, n_sample=1000,
-                 alpha=1e-3, beta=2.0, random_state=None, **kwd):
+    def __init__(self, n_object_features, n_objects, n_nests=None, loss_function='', n_tune=500, n_sample=500,
+                 alpha=1e-2, random_state=None, **kwd):
         self.n_tune = n_tune
         self.n_sample = n_sample
         self.n_object_features = n_object_features
         self.n_objects = n_objects
         if n_nests is None:
-            self.n_nests = n_objects + int(n_objects / 2)
+            self.n_nests = int(n_objects / 2)
         else:
             self.n_nests = n_nests
         self.alpha = alpha
-        self.beta = beta
         self.random_state = check_random_state(random_state)
         self.logger = logging.getLogger(NestedLogitModel.__name__)
         self.cluster_model = None
@@ -33,6 +33,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         self.loss_function = likelihood_dict.get(loss_function, None)
         self.model = None
         self.trace = None
+        self.trace_vi = None
 
     def create_nests(self, X):
         n, n_obj, n_dim = X.shape
@@ -51,7 +52,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         y_nests = np.array(y_nests)
         return y_nests
 
-    def fit(self, X, Y, **kwargs):
+    def fit(self, X, Y, sampler="advi", n=20000, cores=8, sample=3, **kwargs):
         y_nests = self.create_nests(X)
 
         with pm.Model() as self.model:
@@ -63,20 +64,33 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
             sigma_weights_k = pm.HalfCauchy('sigma_weights_k', beta=1)
             weights_k = pm.Normal('weights_k', mu=mu_weights_k, sd=sigma_weights_k, shape=self.n_object_features)
             # lambda_k = pm.Uniform('lambda_k', self.alpha, 1.0 + self.alpha, shape=self.n_nests)
-            lambda_k = pm.HalfCauchy('lambda_k', beta=self.beta, shape=self.n_nests) + self.alpha
+            lambda_k = pm.Uniform('lambda_k', self.alpha, 1.0, shape=self.n_nests)
             weights = (weights / lambda_k[:, None])
 
             utility = eval_utility(X, y_nests, weights)
             utility_k = tt.dot(self.features_nests, weights_k)
+
+            utility = utility - (utility.max(axis=1, keepdims=True) + utility.min(axis=1, keepdims=True)) / 2
+            utility_k = utility_k - (utility_k.max() + utility_k.min()) / 2
             p = get_probability(y_nests, utility, lambda_k, utility_k)
 
             if self.loss_function is None:
                 Y = np.argmax(Y, axis=1)
                 yl = pm.Categorical('yl', p=p, observed=Y)
-                self.trace = pm.sample(self.n_sample, tune=self.n_tune, cores=8)
             else:
                 yl = LogLikelihood('yl', loss_func=self.loss_function, p=p, observed=Y)
-                self.trace = pm.sample(self.n_sample, tune=self.n_tune, cores=8)
+        if sampler in ['advi', 'fullrank_advi', 'svgd']:
+            with self.model:
+                self.trace = pm.sample(sample, tune=5, cores=cores)
+                self.trace_vi = pm.fit(n=n, start=self.trace[-1], method=sampler)
+                self.trace = self.trace_vi.sample(draws=self.n_sample)
+        elif sampler == 'metropolis':
+            with self.model:
+                start = pm.find_MAP()
+                self.trace = pm.sample(self.n_sample, tune=self.n_tune, step=pm.Metropolis(), start=start, cores=cores)
+        else:
+            with self.model:
+                self.trace = pm.sample(self.n_sample, tune=self.n_tune, step=pm.NUTS(), cores=cores)
 
     def _predict_scores_fixed(self, X, **kwargs):
         y_nests = self.create_nests(X)
@@ -103,14 +117,12 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         self.logger.info("Clearing memory")
         pass
 
-    def set_tunable_parameters(self, n_tune=500, n_sample=500, alpha=1e-3, beta=2.0, n_nests=None, loss_function='',
-                               **point):
+    def set_tunable_parameters(self, n_tune=500, n_sample=500, alpha=1e-2, n_nests=None, loss_function='', **point):
         self.n_tune = n_tune
         self.n_sample = n_sample
         self.alpha = alpha
-        self.beta = beta
         if n_nests is None:
-            self.n_nests = self.n_objects + int(self.n_objects / 2)
+            self.n_nests = int(self.n_objects / 2)
         else:
             self.n_nests = n_nests
         self.loss_function = likelihood_dict.get(loss_function, None)
@@ -134,23 +146,32 @@ def get_probability(y_nests, utility, lambda_k, utility_k):
     n_inst = y_nests.shape[0]
     n_nests = int(np.max(y_nests) + 1)
     ivm = tt.zeros(shape=(n_inst, n_nests))
-    trans_ivm = tt.zeros(shape=(tuple(y_nests.shape)))
     j = list(range(n_inst))
     for i in range(n_nests):
         (rows, cols) = np.where(y_nests != i)
         sub_tensor = tt.set_subtensor(utility[rows, cols], 0)
         it = pm.math.sum(sub_tensor, axis=1) + 1.0
         ivm = tt.set_subtensor(ivm[j, [i] * n_inst], it)
+    ivm = replace_inf_theano(ivm)
     ivm = tt.log(ivm)
+
+    trans_ivm = tt.zeros(shape=(tuple(y_nests.shape)))
     for i in range(n_nests):
         rows, cols = np.where(y_nests != i)
-        x_i = tt.exp(((lambda_k[i] - 1) * ivm[:, i]) + utility_k[i])
+        x_i = tt.exp(((lambda_k[i] - 1) * ivm[:, i]) + utility_k[i])[:, None]
+        x_i = replace_inf_theano(x_i)
         sub_tensor = theano.shared(np.ones(tuple(y_nests.shape)))
-        sub_tensor = sub_tensor * x_i[:, None]
+        sub_tensor = sub_tensor * x_i
         sub_tensor = tt.set_subtensor(sub_tensor[rows, cols], 0)
         trans_ivm = trans_ivm + sub_tensor
-    denominator = pm.math.sum(tt.exp((ivm * lambda_k) + utility_k), axis=1)
-    pr_j = utility * trans_ivm / denominator[:, None]
+    trans_ivm = replace_inf_theano(trans_ivm)
+
+    denominator = pm.math.sum(tt.exp((ivm * lambda_k) + utility_k), axis=1)[:, None]
+    denominator = replace_inf_theano(denominator)
+    if tt.any(denominator < 5e-100):
+        denominator = denominator + 1.0
+    pr_j = utility * trans_ivm / denominator
+    pr_j = replace_nan_theano(pr_j)
     return pr_j
 
 
@@ -168,6 +189,7 @@ def get_probability_np(y_nests, utility, lambda_k, utility_k):
     utility = np.exp(utility)
     n_inst = y_nests.shape[0]
     n_nests = int(np.max(y_nests) + 1)
+
     ivm = np.zeros((n_inst, n_nests))
     j = list(range(n_inst))
     for i in range(n_nests):
@@ -176,13 +198,22 @@ def get_probability_np(y_nests, utility, lambda_k, utility_k):
         sub_tensor[rows, cols] = 0
         it = np.log(np.sum(sub_tensor, axis=1) + 1.0)
         ivm[j, [i] * n_inst] = it
+    ivm = replace_inf_np(ivm)
+
     trans_ivm = np.zeros_like(utility)
     for i in range(n_nests):
         rows, cols = np.where(y_nests != i)
-        x_i = np.exp((lambda_k[i] - 1) * ivm[:, i] + utility_k[i])  # Wnl here
-        sub_tensor = np.ones(tuple(trans_ivm.shape)) * x_i[:, None]
+        x_i = np.exp((lambda_k[i] - 1) * ivm[:, i] + utility_k[i])[:, None]  # Wnl here
+        x_i = replace_inf_np(x_i)
+        sub_tensor = np.ones(tuple(trans_ivm.shape)) * x_i
         sub_tensor[rows, cols] = 0
         trans_ivm = trans_ivm + sub_tensor
-    denominator = np.sum(np.exp(((ivm * lambda_k) + utility_k)), axis=1)  # Wnl here
-    pr_j = utility * trans_ivm / denominator[:, None]
+    trans_ivm = replace_inf_np(trans_ivm)
+
+    denominator = np.sum(np.exp(((ivm * lambda_k) + utility_k)), axis=1)[:, None]  # Wnl here
+    denominator = replace_inf_np(denominator)
+    if np.any(np.abs(denominator) < 5e-100):
+        denominator = denominator + 1.0
+    pr_j = utility * trans_ivm / denominator
+    pr_j = replace_nan_np(pr_j)
     return pr_j

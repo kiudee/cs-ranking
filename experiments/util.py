@@ -88,6 +88,7 @@ ranking_metrics = {'KendallsTau': kendalls_mean_np, 'SpearmanCorrelation': spear
 discrete_choice_metrics = {'CategoricalAccuracy': categorical_accuracy_np,
                            'CategoricalTopK2': topk_categorical_accuracy_np(k=2),
                            'CategoricalTopK3': topk_categorical_accuracy_np(k=3),
+                           'CategoricalTopK4': topk_categorical_accuracy_np(k=4),
                            'CategoricalTopK5': topk_categorical_accuracy_np(k=5),
                            'CategoricalTopK{}': topk_categorical_accuracy_np}
 choice_metrics = {'F1Score': f1_measure, 'Precision': precision, 'Recall': recall,

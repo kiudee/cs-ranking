@@ -6,6 +6,7 @@ import pymc3 as pm
 import theano.tensor as tt
 from sklearn.utils import check_random_state
 
+from csrank.discretechoice.util import replace_inf_theano, replace_inf_np, replace_nan_theano, replace_nan_np
 from csrank.learner import Learner
 from csrank.util import print_dictionary, softmax
 from .discrete_choice import DiscreteObjectChooser
@@ -14,8 +15,8 @@ from .likelihoods import likelihood_dict, LogLikelihood
 
 class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
 
-    def __init__(self, n_object_features, n_objects, n_nests=None, loss_function='None', n_tune=500, n_sample=1000,
-                 alpha=1e-3, beta=2.0, random_state=None, **kwd):
+    def __init__(self, n_object_features, n_objects, n_tune=100, n_sample=100, n_nests=None, loss_function='None',
+                 alpha=5e-2, random_state=None, **kwd):
         self.n_tune = n_tune
         self.n_sample = n_sample
         self.n_object_features = n_object_features
@@ -25,44 +26,70 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
         else:
             self.n_nests = n_nests
         self.alpha = alpha
-        self.beta = beta
         self.random_state = check_random_state(random_state)
         self.logger = logging.getLogger(GeneralizedExtremeValueModel.__name__)
         self.loss_function = likelihood_dict.get(loss_function, None)
         self.model = None
         self.trace = None
+        self.trace_vi = None
 
     def get_probabilities(self, utility, lambda_k, alpha_ik, n_instances, n_objects):
         utility = tt.exp(utility)
         utility_nest = tt.zeros((n_instances, n_objects, self.n_nests))
+
         for i in range(self.n_nests):
             uti = tt.power(utility * alpha_ik[:, :, i], 1 / lambda_k[i])
             utility_nest = tt.set_subtensor(utility_nest[:, :, i], uti)
+        utility_nest = replace_inf_theano(utility_nest)
+
         sum_per_nest = utility_nest.sum(axis=1)
-        denominators = tt.sum(tt.power(sum_per_nest, lambda_k), axis=1)
+        sum_per_nest = replace_inf_theano(sum_per_nest)
+
+        denominators = tt.sum(tt.power(sum_per_nest, lambda_k), axis=1)[:, None]
+        denominators = replace_inf_theano(denominators)
+        if tt.any(pm.math.abs_(denominators) < 5e-100):
+            denominators = denominators + 1.0
+
         p = tt.zeros_like(utility)
         for i in range(n_objects):
-            numerator_i = tt.power(sum_per_nest, (lambda_k - 1)) * utility_nest[:, i, :]
-            p = tt.set_subtensor(p[:, i], numerator_i.sum(axis=1) / denominators)
+            power_ = tt.power(sum_per_nest, (lambda_k - 1))
+            power_ = replace_inf_theano(power_)
+
+            numerator_i = (power_ * utility_nest[:, i, :]) / denominators
+            p = tt.set_subtensor(p[:, i], numerator_i.sum(axis=1))
+        p = replace_nan_theano(p)
         return p
 
     def get_probabilities_np(self, utility, lambda_k, alpha_ik):
         n_instances, n_objects = utility.shape
         utility = np.exp(utility)
         utility_nest = np.zeros((n_instances, n_objects, self.n_nests))
+
         for i in range(self.n_nests):
             uti = np.power(utility * alpha_ik[:, :, i], 1 / lambda_k[i])
             utility_nest[:, :, i] = uti
+        utility_nest = replace_inf_np(utility_nest)
 
         sum_per_nest = utility_nest.sum(axis=1)
-        denominators = np.sum(np.power(sum_per_nest, lambda_k), axis=1)
+        sum_per_nest = replace_inf_np(sum_per_nest)
+
+        denominators = np.sum(np.power(sum_per_nest, lambda_k), axis=1)[:, None]
+        denominators = replace_inf_np(denominators)
+        if np.any(np.abs(denominators) < 5e-100):
+            denominators = denominators + 1.0
+
         p = np.zeros_like(utility)
         for i in range(n_objects):
-            numerator_i = np.power(sum_per_nest, (lambda_k - 1)) * utility_nest[:, i, :]
-            p[:, i] = numerator_i.sum(axis=1) / denominators
+            power_ = np.power(sum_per_nest, (lambda_k - 1))
+            power_ = replace_inf_np(power_)
+
+            numerator_i = (power_ * utility_nest[:, i, :]) / denominators
+            numerator_i = replace_inf_np(numerator_i)
+            p[:, i] = numerator_i.sum(axis=1)
+        p = replace_nan_np(p)
         return p
 
-    def fit(self, X, Y, **kwargs):
+    def fit(self, X, Y, sampler="advi", n=20000, cores=8, sample=3, **kwargs):
         with pm.Model() as self.model:
             mu_weights = pm.Normal('mu_weights', mu=0., sd=10)
             sigma_weights = pm.HalfCauchy('sigma_weights', beta=1)
@@ -75,18 +102,30 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
             alpha_ik = tt.dot(X, weights_ik)
             alpha_ik = softmax(alpha_ik, axis=2)
             utility = tt.dot(X, weights)
-            lambda_k = pm.HalfCauchy('lambda_k', beta=self.beta, shape=self.n_nests) + self.alpha
+            # Numerical stability
+            utility = utility - (utility.max(axis=1, keepdims=True) + utility.min(axis=1, keepdims=True)) / 2
+            lambda_k = pm.Uniform('lambda_k', self.alpha, 1.0, shape=self.n_nests)
             # lambda_k = pm.Uniform('lambda_k', self.alpha, self.beta + self.alpha, shape=self.n_nests)
             n_instances, n_objects, n_features = X.shape
             p = self.get_probabilities(utility, lambda_k, alpha_ik, n_instances, n_objects)
-
             if self.loss_function is None:
                 Y = np.argmax(Y, axis=1)
                 yl = pm.Categorical('yl', p=p, observed=Y)
-                self.trace = pm.sample(self.n_sample, tune=self.n_tune, cores=8)
             else:
                 yl = LogLikelihood('yl', loss_func=self.loss_function, p=p, observed=Y)
-                self.trace = pm.sample(self.n_sample, tune=self.n_tune, cores=8)
+
+        if sampler in ['advi', 'fullrank_advi', 'svgd']:
+            with self.model:
+                self.trace = pm.sample(sample, tune=5, cores=cores)
+                self.trace_vi = pm.fit(n=n, start=self.trace[-1], method=sampler)
+                self.trace = self.trace_vi.sample(draws=self.n_sample)
+        elif sampler == 'metropolis':
+            with self.model:
+                start = pm.find_MAP()
+                self.trace = pm.sample(self.n_sample, tune=self.n_tune, step=pm.Metropolis(), start=start, cores=cores)
+        else:
+            with self.model:
+                self.trace = pm.sample(self.n_sample, tune=self.n_tune, step=pm.NUTS(), cores=cores)
 
     def _predict_scores_fixed(self, X, **kwargs):
         mean_trace = dict(pm.summary(self.trace)['mean'])
@@ -114,12 +153,8 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
         self.logger.info("Clearing memory")
         pass
 
-    def set_tunable_parameters(self, n_tune=500, n_sample=1000, alpha=1e-3, beta=2.0, n_nests=None, loss_function='',
-                               **point):
-        self.n_tune = n_tune
-        self.n_sample = n_sample
+    def set_tunable_parameters(self, alpha=5e-2, n_nests=None, loss_function='', **point):
         self.alpha = alpha
-        self.beta = beta
         if n_nests is None:
             self.n_nests = self.n_objects + int(self.n_objects / 2)
         else:

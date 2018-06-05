@@ -11,14 +11,6 @@ from psycopg2.extras import DictCursor
 from csrank.util import get_duration_seconds, print_dictionary
 
 
-def is_json(myjson):
-    try:
-        json_object = json.loads(myjson)
-    except ValueError:
-        return False
-    return True
-
-
 class DBConnector(metaclass=ABCMeta):
 
     def __init__(self, config_file_path, is_gpu=False, schema='master', **kwargs):
@@ -63,8 +55,8 @@ class DBConnector(metaclass=ABCMeta):
         self.init_connection()
         avail_jobs = "{}.avail_jobs".format(self.schema)
         running_jobs = "{}.running_jobs".format(self.schema)
-        select_job = """SELECT * FROM {0} row WHERE EXISTS(SELECT job_id FROM {1} r WHERE r.interrupted = FALSE AND r.finished = FALSE AND r.job_id = row.job_id)""".format(
-            avail_jobs, running_jobs)
+        select_job = """SELECT * FROM {0} row WHERE EXISTS(SELECT job_id FROM {1} r WHERE r.interrupted = FALSE 
+                        AND r.finished = FALSE AND r.job_id = row.job_id)""".format(avail_jobs, running_jobs)
         self.cursor_db.execute(select_job)
         all_jobs = self.cursor_db.fetchall()
         self.close_connection()
@@ -83,8 +75,9 @@ class DBConnector(metaclass=ABCMeta):
         self.init_connection()
         avail_jobs = "{}.avail_jobs".format(self.schema)
         running_jobs = "{}.running_jobs".format(self.schema)
-        select_job = """SELECT job_id FROM {0} row WHERE (is_gpu = {2})AND NOT EXISTS(SELECT job_id FROM {1} r WHERE r.interrupted = FALSE AND r.job_id = row.job_id)""".format(
-            avail_jobs, running_jobs, self.is_gpu)
+        select_job = """SELECT job_id FROM {0} row WHERE (is_gpu = {2})AND 
+                        NOT EXISTS(SELECT job_id FROM {1} r WHERE r.interrupted = FALSE 
+                        AND r.job_id = row.job_id)""".format(avail_jobs, running_jobs, self.is_gpu)
 
         self.cursor_db.execute(select_job)
         job_ids = [j for i in self.cursor_db.fetchall() for j in i]
@@ -110,8 +103,8 @@ class DBConnector(metaclass=ABCMeta):
                 self.cursor_db.execute(select_job)
                 count_ = len(self.cursor_db.fetchall())
                 if count_ == 0:
-                    insert_job = """INSERT INTO {0} (job_id, cluster_id ,finished, interrupted) VALUES ({1}, {2},FALSE, FALSE)""".format(
-                        running_jobs, job_id, cluster_id)
+                    insert_job = """INSERT INTO {0} (job_id, cluster_id ,finished, interrupted) 
+                                    VALUES ({1}, {2},FALSE, FALSE)""".format(running_jobs, job_id, cluster_id)
                     self.cursor_db.execute(insert_job)
                     if self.cursor_db.rowcount == 1:
                         print("The job {} is inserted".format(job_id))
@@ -136,8 +129,8 @@ class DBConnector(metaclass=ABCMeta):
     def mark_running_job_finished(self, job_id, **kwargs):
         self.init_connection()
         running_jobs = "{}.running_jobs".format(self.schema)
-        update_job = "UPDATE {0} set finished = TRUE, interrupted = FALSE where job_id = {1}".format(running_jobs,
-                                                                                                     job_id)
+        update_job = "UPDATE {0} set finished = TRUE, interrupted = FALSE " \
+                     "WHERE job_id = {1}".format(running_jobs, job_id)
         self.cursor_db.execute(update_job)
         if self.cursor_db.rowcount == 1:
             self.logger.info("The job {} is finished".format(job_id))
@@ -252,7 +245,8 @@ class DBConnector(metaclass=ABCMeta):
     def insert_new_jobs_with_different_fold(self, dataset='synthetic_dc', folds=4):
         self.init_connection()
         avail_jobs = "{}.avail_jobs".format(self.schema)
-        select_job = "SELECT * FROM {0} WHERE {0}.dataset=\'{1}\' ORDER  BY {0}.job_id".format(avail_jobs, dataset)
+        select_job = "SELECT * FROM {0} WHERE {0}.dataset=\'{1}\' AND {0}.learner !=\'cmpnet_dc\' " \
+                     "ORDER  BY {0}.job_id".format(avail_jobs, dataset)
         self.cursor_db.execute(select_job)
         jobs_all = self.cursor_db.fetchall()
 

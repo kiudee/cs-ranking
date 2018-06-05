@@ -87,9 +87,9 @@ def quicksort(arr, matrix):
         return quicksort(left, matrix) + [pivot] + quicksort(right, matrix)
 
 
-def get_similarity_matrix(mypath):
-    dataFrame = pd.read_csv(mypath)
-    similarity_dictionary = dataFrame.set_index('col_major_index')['similarity'].to_dict()
+def get_similarity_matrix(file_path):
+    data_frame = pd.read_csv(file_path)
+    similarity_dictionary = data_frame.set_index('col_major_index')['similarity'].to_dict()
     return similarity_dictionary
 
 

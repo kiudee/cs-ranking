@@ -49,6 +49,7 @@ class DiscreteChoiceDatasetGenerator(SyntheticDatasetGenerator):
         X = np.array(X)
         Y = np.array(Y)
         Y = convert_to_label_encoding(Y, n_objects)
+        self.logger.info('Done')
         return X, Y
 
     def make_hv_dataset(self, n_instances=1000, n_objects=5, n_features=5, seed=42, **kwd):

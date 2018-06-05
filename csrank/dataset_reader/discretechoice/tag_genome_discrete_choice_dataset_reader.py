@@ -58,7 +58,13 @@ class TagGenomeDiscreteChoiceDatasetReader(TagGenomeDatasetReader):
             distances = [self.similarity_matrix[get_key_for_indices(i, j)] for j in range(self.n_movies)]
             distances = np.array(distances)
             orderings = np.argsort(distances)[::-1]
-            minimum = orderings[-length:][:, None]
+            quartile = np.percentile(distances, [95, 97.5])
+            last = np.where(np.logical_and(distances >= quartile[0], distances <= quartile[1]))[0]
+            minimum = random_state.choice(last, size=length, replace=False)[:, None]
+
+            # last = np.min([1000, self.n_movies - 50 * n_objects * length])
+            # minimum = random_state.choice(last, size=length, replace=False)
+            # minimum = orderings[-minimum][:, None]
             orderings = orderings[1:((n_objects - 1) * length + 1)]
             orderings = orderings.reshape(length, n_objects - 1)
             orderings = np.append(orderings, minimum, axis=1)
@@ -73,6 +79,7 @@ class TagGenomeDiscreteChoiceDatasetReader(TagGenomeDatasetReader):
         scores = scores[indices, :]
         Y = scores.argmin(axis=1)
         Y = convert_to_label_encoding(Y, n_objects)
+        self.logger.info('Done')
         return X, Y
 
     def make_dissimilar_critique_dataset(self, direction):
@@ -82,22 +89,30 @@ class TagGenomeDiscreteChoiceDatasetReader(TagGenomeDatasetReader):
             random_state = check_random_state(seed)
             X = []
             scores = []
-            threshold = np.min([(int(n_instances / self.n_movies) + 2), 35])
+            length = (int(n_instances / self.n_movies) + 1)
             for i, feature in enumerate(self.movie_features):
-                tag_ids = np.where(np.logical_and((feature > 0.45), (feature < 0.70)))[0]
-                length = np.min([len(tag_ids), threshold])
-                tag_ids = tag_ids[0:length]
+                quartile = np.percentile(feature, [95, 97.5])
+                tag_ids = np.where(np.logical_and((feature > quartile[0]), (feature < quartile[1])))[0]
+                tag_ids = tag_ids[np.argsort(feature[tag_ids])[::-1]]
+                if direction == -1:
+                    tag_ids = tag_ids[0:length]
+                else:
+                    tag_ids = tag_ids[-length:]
                 distances = [self.similarity_matrix[get_key_for_indices(i, j)] for j in range(self.n_movies)]
-                distances = np.array(distances)
+                distances = np.array(distances) - 0.61
                 critique_d = critique_dist(feature, self.movie_features, tag_ids, direction=direction)
                 critique_fit = np.multiply(critique_d, distances)
                 orderings = np.argsort(critique_fit, axis=-1)[:, ::-1]
-                minimum = [i]
-                while i in minimum:
-                    x = random_state.choice(1000, size=1)[0]
-                    minimum = orderings[:, -x][:, None]
+                minimum = np.zeros(length, dtype=int)
+                k = 0
+                for dist in critique_fit:
+                    last = np.where(dist == 0)[0]
+                    index = np.where(last == i)[0][0]
+                    last = np.delete(last, index)
+                    minimum[k] = random_state.choice(last, size=1)[0]
+                    k += 1
                 orderings = orderings[:, 0:n_objects - 1]
-                orderings = np.append(orderings, minimum, axis=1)
+                orderings = np.append(orderings, minimum[:, None], axis=1)
                 for o in orderings:
                     random_state.shuffle(o)
                 scores.extend(critique_fit[np.arange(length)[:, None], orderings])
@@ -111,5 +126,5 @@ class TagGenomeDiscreteChoiceDatasetReader(TagGenomeDatasetReader):
             Y = scores.argmin(axis=1)
             Y = convert_to_label_encoding(Y, n_objects)
             return X, Y
-
+            self.logger.info('Done')
         return dataset_generator
