@@ -48,7 +48,7 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
         self.movies_df = pd.read_csv(self.movies_file)
         self.n_movies = len(self.movies_df)
         self.movie_features = self.movies_df.as_matrix()[:, 3:].astype(float)
-        self.logger.debug("Done creating the complete dataset")
+        self.logger.info("Done creating the complete dataset")
 
     def __load_dataset__(self, genome_scores, genome_tags, tags_applies, movies_df):
         tags_applies[TAG] = tags_applies[TAG].str.lower()
@@ -75,7 +75,7 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
             doc_freq.append(freq)
         genome_tags[DOC_FREQUENCY] = doc_freq
         genome_tags.to_csv(self.tags_info_file, index=False)
-        self.logger.debug("Done loading the tag popularity and doc frequency for the tags")
+        self.logger.info("Done loading the tag popularity and doc frequency for the tags")
         self.weights = np.log(np.array(genome_tags[TAG_POPULARITY])) / np.log(np.array(genome_tags[DOC_FREQUENCY]))
 
         objects = []
@@ -92,7 +92,7 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
             movies_df[tag[1]] = objects[:, i]
         movies_df.to_csv(self.movies_file, index=False)
 
-        self.logger.debug("Done loading the features for the movies")
+        self.logger.info("Done loading the features for the movies")
 
         num_of_movies = movie_ids.shape[0]
         combinations_list = np.array(list(combinations(range(num_of_movies), 2)))
@@ -112,7 +112,7 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
         series = pd.Series(similarity_matrix)
         matrix_df = pd.DataFrame({'col_major_index': series.index, 'similarity': series.values})
         matrix_df.to_csv(self.similarity_matrix_file, index=False)
-        self.logger.debug("Done calculating the similarity matrix stored at: {}".format(self.similarity_matrix_file))
+        self.logger.info("Done calculating the similarity matrix stored at: {}".format(self.similarity_matrix_file))
 
     @abstractmethod
     def make_similarity_based_dataset(self, n_instances, n_objects, seed, **kwargs):
@@ -128,7 +128,6 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
                 query = random_state.choice(self.n_movies, size=1)
             one_row = [self.similarity_matrix[get_key_for_indices(i, j)] for i, j in product(query, subset)]
             scores[i] = np.array(one_row)
-        self.logger.info('Done')
         return X, scores
 
     @abstractmethod
@@ -154,7 +153,6 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
         indices = random_state.choice(X.shape[0], n_instances, replace=False)
         X = X[indices, :, :]
         scores = scores[indices, :]
-        self.logger.info('Done')
         return X, scores
 
     @abstractmethod
@@ -187,7 +185,6 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
         indices = random_state.choice(X.shape[0], n_instances, replace=False)
         X = X[indices, :, :]
         scores = scores[indices, :]
-        self.logger.info('Done')
         return X, scores
 
     def get_dataset_dictionaries(self, lengths=[5, 6]):
@@ -201,10 +198,12 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
             X, Y = self.dataset_function(total_instances, n_obj, seed=seed)
             x_1, x_2, y_1, y_2 = train_test_split(X, Y, random_state=self.random_state, test_size=self.n_test_instances)
             x_train[n_obj], x_test[n_obj], y_train[n_obj], y_test[n_obj] = x_1, x_2, y_1, y_2
+        self.logger.info('Done')
         return x_train, y_train, x_test, y_test
 
     def get_train_test_datasets(self, n_datasets=5):
         splits = np.array(n_datasets)
+        self.logger.info('Done')
         return self.splitter(splits)
 
     def get_single_train_test_split(self):
@@ -214,6 +213,7 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
         self.__check_dataset_validity__()
         x_train, x_test, y_train, y_test = train_test_split(self.X, self.Y, random_state=self.random_state,
                                                             test_size=self.n_test_instances)
+        self.logger.info('Done')
         return x_train, y_train, x_test, y_test
 
     def splitter(self, iter):

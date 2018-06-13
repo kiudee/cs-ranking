@@ -32,3 +32,17 @@ def replace_nan_np(p):
         p[np.isinf(p)] = 1.0
         p = normalize(p)
     return p
+
+
+def logsumexpnp(x):
+    max_x = np.max(x, axis=1, keepdims=True)
+    x = x - max_x
+    f = max_x[:, 0] + np.log(np.sum(np.exp(x), axis=1))
+    return f[:, None]
+
+
+def logsumexptheano(x):
+    max_x = tt.max(x, axis=1, keepdims=True)
+    x = x - max_x
+    f = max_x[:, 0] + tt.log(tt.sum(tt.exp(x), axis=1))
+    return f[:, None]

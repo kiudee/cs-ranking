@@ -1,3 +1,5 @@
+import logging
+
 from sklearn.model_selection import train_test_split
 from sklearn.utils import check_random_state
 
@@ -13,7 +15,8 @@ class SyntheticDatasetGenerator(DatasetReader):
         self.kwargs = kwargs
         self.n_test_instances = n_test_instances
         self.n_train_instances = n_train_instances
-        self.dr_logger.info("Key word arguments {}".format(kwargs))
+        self.logger = logging.getLogger(SyntheticDatasetGenerator.__name__)
+        self.logger.info("Key word arguments {}".format(kwargs))
 
     def __load_dataset__(self):
         pass
@@ -42,6 +45,7 @@ class SyntheticDatasetGenerator(DatasetReader):
             X, Y = self.dataset_function(**self.kwargs, seed=seed)
             x_1, x_2, y_1, y_2 = train_test_split(X, Y, random_state=self.random_state, test_size=self.n_test_instances)
             x_train[n_obj], x_test[n_obj], y_train[n_obj], y_test[n_obj] = x_1, x_2, y_1, y_2
+        self.logger.info('Done')
         return x_train, y_train, x_test, y_test
 
     def get_single_train_test_split(self):
@@ -52,6 +56,8 @@ class SyntheticDatasetGenerator(DatasetReader):
         self.__check_dataset_validity__()
         x_train, x_test, y_train, y_test = train_test_split(self.X, self.Y, random_state=self.random_state,
                                                             test_size=self.n_test_instances)
+        self.logger.info('Done')
+
         return x_train, y_train, x_test, y_test
 
 

@@ -79,7 +79,6 @@ class TagGenomeDiscreteChoiceDatasetReader(TagGenomeDatasetReader):
         scores = scores[indices, :]
         Y = scores.argmin(axis=1)
         Y = convert_to_label_encoding(Y, n_objects)
-        self.logger.info('Done')
         return X, Y
 
     def make_dissimilar_critique_dataset(self, direction):
@@ -126,5 +125,5 @@ class TagGenomeDiscreteChoiceDatasetReader(TagGenomeDatasetReader):
             Y = scores.argmin(axis=1)
             Y = convert_to_label_encoding(Y, n_objects)
             return X, Y
-            self.logger.info('Done')
+
         return dataset_generator

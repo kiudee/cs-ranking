@@ -2,12 +2,11 @@ import logging
 
 import numpy as np
 import pymc3 as pm
-import theano
 import theano.tensor as tt
 from sklearn.cluster import MiniBatchKMeans as clustering
 from sklearn.utils import check_random_state
 
-from csrank.discretechoice.util import replace_nan_theano, replace_nan_np, replace_inf_np, replace_inf_theano
+from csrank.discretechoice.util import logsumexpnp, logsumexptheano
 from csrank.learner import Learner
 from csrank.util import print_dictionary
 from .discrete_choice import DiscreteObjectChooser
@@ -63,15 +62,11 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
             mu_weights_k = pm.Normal('mu_weights_k', mu=0., sd=10)
             sigma_weights_k = pm.HalfCauchy('sigma_weights_k', beta=1)
             weights_k = pm.Normal('weights_k', mu=mu_weights_k, sd=sigma_weights_k, shape=self.n_object_features)
-            # lambda_k = pm.Uniform('lambda_k', self.alpha, 1.0 + self.alpha, shape=self.n_nests)
             lambda_k = pm.Uniform('lambda_k', self.alpha, 1.0, shape=self.n_nests)
             weights = (weights / lambda_k[:, None])
 
             utility = eval_utility(X, y_nests, weights)
             utility_k = tt.dot(self.features_nests, weights_k)
-
-            utility = utility - (utility.max(axis=1, keepdims=True) + utility.min(axis=1, keepdims=True)) / 2
-            utility_k = utility_k - (utility_k.max() + utility_k.min()) / 2
             p = get_probability(y_nests, utility, lambda_k, utility_k)
 
             if self.loss_function is None:
@@ -132,88 +127,61 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
 
 
 def eval_utility(x_train, y_nests, weights):
-    weights_t = theano.shared(np.zeros(tuple(x_train.shape)))
     n_nests = int(np.max(y_nests) + 1)
+    utility = tt.zeros(tuple(y_nests.shape))
     for i in range(n_nests):
         rows, cols = np.where(y_nests == i)
-        weights_t = tt.set_subtensor(weights_t[rows, cols], weights[i])
-    utility = tt.sum(x_train * weights_t, axis=2)
+        utility = tt.set_subtensor(utility[rows, cols], tt.dot(x_train[rows, cols], weights[i]))
     return utility
 
 
 def get_probability(y_nests, utility, lambda_k, utility_k):
-    utility = tt.exp(utility)
     n_inst = y_nests.shape[0]
     n_nests = int(np.max(y_nests) + 1)
-    ivm = tt.zeros(shape=(n_inst, n_nests))
+    pni_k = tt.zeros_like(utility)
     j = list(range(n_inst))
+    ivm = tt.zeros((n_inst, n_nests))
     for i in range(n_nests):
-        (rows, cols) = np.where(y_nests != i)
-        sub_tensor = tt.set_subtensor(utility[rows, cols], 0)
-        it = pm.math.sum(sub_tensor, axis=1) + 1.0
-        ivm = tt.set_subtensor(ivm[j, [i] * n_inst], it)
-    ivm = replace_inf_theano(ivm)
-    ivm = tt.log(ivm)
-
-    trans_ivm = tt.zeros(shape=(tuple(y_nests.shape)))
+        sub_tensor = tt.set_subtensor(utility[np.where(y_nests != i)], -1e50)
+        ink = logsumexptheano(sub_tensor)
+        pni_k = tt.set_subtensor(pni_k[np.where(y_nests == i)], tt.exp(sub_tensor - ink)[np.where(y_nests == i)])
+        ivm = tt.set_subtensor(ivm[:, i], lambda_k[i] * ink[:, 0] + utility_k[i])
+    pk = tt.exp(ivm - logsumexptheano(ivm))
+    pn_k = tt.zeros_like(pni_k)
     for i in range(n_nests):
-        rows, cols = np.where(y_nests != i)
-        x_i = tt.exp(((lambda_k[i] - 1) * ivm[:, i]) + utility_k[i])[:, None]
-        x_i = replace_inf_theano(x_i)
-        sub_tensor = theano.shared(np.ones(tuple(y_nests.shape)))
-        sub_tensor = sub_tensor * x_i
-        sub_tensor = tt.set_subtensor(sub_tensor[rows, cols], 0)
-        trans_ivm = trans_ivm + sub_tensor
-    trans_ivm = replace_inf_theano(trans_ivm)
-
-    denominator = pm.math.sum(tt.exp((ivm * lambda_k) + utility_k), axis=1)[:, None]
-    denominator = replace_inf_theano(denominator)
-    if tt.any(denominator < 5e-100):
-        denominator = denominator + 1.0
-    pr_j = utility * trans_ivm / denominator
-    pr_j = replace_nan_theano(pr_j)
-    return pr_j
+        rows, cols = np.where(y_nests == i)
+        p = tt.ones_like(pn_k) * pk[:, i][:, None]
+        pn_k = tt.set_subtensor(pn_k[rows, cols], p[rows, cols])
+    p = pni_k * pn_k
+    return p
 
 
 def eval_utility_np(x_t, y_nests, weights):
-    weights_t = np.zeros(tuple(x_t.shape))
     n_nests = int(np.max(y_nests) + 1)
+    utility = np.zeros(tuple(y_nests.shape))
     for i in range(n_nests):
         rows, cols = np.where(y_nests == i)
-        weights_t[rows, cols] = weights[i]
-    utility = np.sum(x_t * weights_t, axis=2)
+        utility[rows, cols] = np.dot(x_t[rows, cols], weights[i])
     return utility
 
 
 def get_probability_np(y_nests, utility, lambda_k, utility_k):
-    utility = np.exp(utility)
     n_inst = y_nests.shape[0]
     n_nests = int(np.max(y_nests) + 1)
-
-    ivm = np.zeros((n_inst, n_nests))
+    pni_k = np.zeros_like(utility)
     j = list(range(n_inst))
+    ivm = np.zeros((n_inst, n_nests))
     for i in range(n_nests):
         sub_tensor = np.copy(utility)
-        rows, cols = np.where(y_nests != i)
-        sub_tensor[rows, cols] = 0
-        it = np.log(np.sum(sub_tensor, axis=1) + 1.0)
-        ivm[j, [i] * n_inst] = it
-    ivm = replace_inf_np(ivm)
-
-    trans_ivm = np.zeros_like(utility)
+        sub_tensor[np.where(y_nests != i)] = -1e50
+        ink = logsumexpnp(sub_tensor)
+        pni_k[np.where(y_nests == i)] = np.exp(sub_tensor - ink)[np.where(y_nests == i)]
+        ivm[:, i] = lambda_k[i] * ink[:, 0] + utility_k[i]
+    pk = np.exp(ivm - logsumexpnp(ivm))
+    pn_k = np.zeros_like(pni_k)
     for i in range(n_nests):
-        rows, cols = np.where(y_nests != i)
-        x_i = np.exp((lambda_k[i] - 1) * ivm[:, i] + utility_k[i])[:, None]  # Wnl here
-        x_i = replace_inf_np(x_i)
-        sub_tensor = np.ones(tuple(trans_ivm.shape)) * x_i
-        sub_tensor[rows, cols] = 0
-        trans_ivm = trans_ivm + sub_tensor
-    trans_ivm = replace_inf_np(trans_ivm)
-
-    denominator = np.sum(np.exp(((ivm * lambda_k) + utility_k)), axis=1)[:, None]  # Wnl here
-    denominator = replace_inf_np(denominator)
-    if np.any(np.abs(denominator) < 5e-100):
-        denominator = denominator + 1.0
-    pr_j = utility * trans_ivm / denominator
-    pr_j = replace_nan_np(pr_j)
-    return pr_j
+        rows, cols = np.where(y_nests == i)
+        p = (np.ones(tuple(pn_k.shape)) * pk[:, i][:, None])
+        pn_k[rows, cols] = p[rows, cols]
+    p = pni_k * pn_k
+    return p
