@@ -4,11 +4,11 @@ from itertools import product
 import numpy as np
 import pymc3 as pm
 import theano.tensor as tt
-from sklearn.utils import check_random_state
-
-from csrank.discretechoice.util import replace_inf_theano, replace_inf_np, replace_nan_theano, replace_nan_np
+from csrank.discretechoice.util import logsumexpnp, logsumexptheano
 from csrank.learner import Learner
 from csrank.util import print_dictionary, softmax
+from sklearn.utils import check_random_state
+
 from .discrete_choice import DiscreteObjectChooser
 from .likelihoods import likelihood_dict, LogLikelihood
 
@@ -34,59 +34,34 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
         self.trace_vi = None
 
     def get_probabilities(self, utility, lambda_k, alpha_ik, n_instances, n_objects):
-        utility = tt.exp(utility)
-        utility_nest = tt.zeros((n_instances, n_objects, self.n_nests))
-
-        for i in range(self.n_nests):
-            uti = tt.power(utility * alpha_ik[:, :, i], 1 / lambda_k[i])
-            utility_nest = tt.set_subtensor(utility_nest[:, :, i], uti)
-        utility_nest = replace_inf_theano(utility_nest)
-
-        sum_per_nest = utility_nest.sum(axis=1)
-        sum_per_nest = replace_inf_theano(sum_per_nest)
-
-        denominators = tt.sum(tt.power(sum_per_nest, lambda_k), axis=1)[:, None]
-        denominators = replace_inf_theano(denominators)
-        if tt.any(pm.math.abs_(denominators) < 5e-100):
-            denominators = denominators + 1.0
-
-        p = tt.zeros_like(utility)
-        for i in range(n_objects):
-            power_ = tt.power(sum_per_nest, (lambda_k - 1))
-            power_ = replace_inf_theano(power_)
-
-            numerator_i = (power_ * utility_nest[:, i, :]) / denominators
-            p = tt.set_subtensor(p[:, i], numerator_i.sum(axis=1))
-        p = replace_nan_theano(p)
+        n_nests = self.n_nests
+        pik = tt.zeros((n_instances, n_objects, n_nests))
+        sum_per_nest = tt.zeros((n_instances, n_nests))
+        for i in range(n_nests):
+            uti = (utility + np.log(alpha_ik[:, :, i])) * 1 / lambda_k[i]
+            sum_n = logsumexptheano(uti)
+            pik = tt.set_subtensor(pik[:, :, i], tt.exp(uti - sum_n))
+            sum_per_nest = tt.set_subtensor(sum_per_nest[:, i], sum_n[:, 0] * lambda_k[i])
+        pnk = tt.exp(sum_per_nest - logsumexptheano(sum_per_nest))
+        pnk = pnk[:, None, :]
+        p = pik * pnk
+        p = p.sum(axis=2)
         return p
 
     def get_probabilities_np(self, utility, lambda_k, alpha_ik):
+        n_nests = self.n_nests
         n_instances, n_objects = utility.shape
-        utility = np.exp(utility)
-        utility_nest = np.zeros((n_instances, n_objects, self.n_nests))
-
-        for i in range(self.n_nests):
-            uti = np.power(utility * alpha_ik[:, :, i], 1 / lambda_k[i])
-            utility_nest[:, :, i] = uti
-        utility_nest = replace_inf_np(utility_nest)
-
-        sum_per_nest = utility_nest.sum(axis=1)
-        sum_per_nest = replace_inf_np(sum_per_nest)
-
-        denominators = np.sum(np.power(sum_per_nest, lambda_k), axis=1)[:, None]
-        denominators = replace_inf_np(denominators)
-        if np.any(np.abs(denominators) < 5e-100):
-            denominators = denominators + 1.0
-
-        p = np.zeros_like(utility)
-        for i in range(n_objects):
-            power_ = np.power(sum_per_nest, (lambda_k - 1))
-            power_ = replace_inf_np(power_)
-
-            numerator_i = (power_ * utility_nest[:, i, :]) / denominators
-            numerator_i = replace_inf_np(numerator_i)
-            p[:, i] = numerator_i.sum(axis=1)
-        p = replace_nan_np(p)
+        pik = np.zeros((n_instances, n_objects, n_nests))
+        sum_per_nest_x = np.zeros((n_instances, n_nests))
+        for i in range(n_nests):
+            uti = (utility + np.log(alpha_ik[:, :, i])) * 1 / lambda_k[i]
+            sum_n = logsumexpnp(uti)
+            pik[:, :, i] = np.exp(uti - sum_n)
+            sum_per_nest_x[:, i] = sum_n[:, 0] * lambda_k[i]
+        pnk = np.exp(sum_per_nest_x - logsumexpnp(sum_per_nest_x))
+        pnk = pnk[:, None, :]
+        p = pik * pnk
+        p = p.sum(axis=2)
         return p
 
     def fit(self, X, Y, sampler="advi", n=20000, cores=8, sample=3, **kwargs):
@@ -102,10 +77,8 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
             alpha_ik = tt.dot(X, weights_ik)
             alpha_ik = softmax(alpha_ik, axis=2)
             utility = tt.dot(X, weights)
-            # Numerical stability
-            utility = utility - (utility.max(axis=1, keepdims=True) + utility.min(axis=1, keepdims=True)) / 2
+
             lambda_k = pm.Uniform('lambda_k', self.alpha, 1.0, shape=self.n_nests)
-            # lambda_k = pm.Uniform('lambda_k', self.alpha, self.beta + self.alpha, shape=self.n_nests)
             n_instances, n_objects, n_features = X.shape
             p = self.get_probabilities(utility, lambda_k, alpha_ik, n_instances, n_objects)
             if self.loss_function is None:

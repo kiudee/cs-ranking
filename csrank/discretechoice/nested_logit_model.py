@@ -3,12 +3,12 @@ import logging
 import numpy as np
 import pymc3 as pm
 import theano.tensor as tt
-from sklearn.cluster import MiniBatchKMeans as clustering
-from sklearn.utils import check_random_state
-
 from csrank.discretechoice.util import logsumexpnp, logsumexptheano
 from csrank.learner import Learner
 from csrank.util import print_dictionary
+from sklearn.cluster import MiniBatchKMeans as clustering
+from sklearn.utils import check_random_state
+
 from .discrete_choice import DiscreteObjectChooser
 from .likelihoods import likelihood_dict, LogLikelihood
 
@@ -136,21 +136,20 @@ def eval_utility(x_train, y_nests, weights):
 
 
 def get_probability(y_nests, utility, lambda_k, utility_k):
-    n_inst = y_nests.shape[0]
+    n_instances, n_objects = y_nests.shape
     n_nests = int(np.max(y_nests) + 1)
-    pni_k = tt.zeros_like(utility)
-    j = list(range(n_inst))
-    ivm = tt.zeros((n_inst, n_nests))
+    pni_k = tt.zeros((n_instances, n_objects))
+    ivm = tt.zeros((n_instances, n_nests))
     for i in range(n_nests):
         sub_tensor = tt.set_subtensor(utility[np.where(y_nests != i)], -1e50)
         ink = logsumexptheano(sub_tensor)
         pni_k = tt.set_subtensor(pni_k[np.where(y_nests == i)], tt.exp(sub_tensor - ink)[np.where(y_nests == i)])
         ivm = tt.set_subtensor(ivm[:, i], lambda_k[i] * ink[:, 0] + utility_k[i])
     pk = tt.exp(ivm - logsumexptheano(ivm))
-    pn_k = tt.zeros_like(pni_k)
+    pn_k = tt.zeros((n_instances, n_objects))
     for i in range(n_nests):
         rows, cols = np.where(y_nests == i)
-        p = tt.ones_like(pn_k) * pk[:, i][:, None]
+        p = tt.ones((n_instances, n_objects)) * pk[:, i][:, None]
         pn_k = tt.set_subtensor(pn_k[rows, cols], p[rows, cols])
     p = pni_k * pn_k
     return p
@@ -166,11 +165,10 @@ def eval_utility_np(x_t, y_nests, weights):
 
 
 def get_probability_np(y_nests, utility, lambda_k, utility_k):
-    n_inst = y_nests.shape[0]
+    n_instances, n_objects = y_nests.shape
     n_nests = int(np.max(y_nests) + 1)
-    pni_k = np.zeros_like(utility)
-    j = list(range(n_inst))
-    ivm = np.zeros((n_inst, n_nests))
+    pni_k = np.zeros((n_instances, n_objects))
+    ivm = np.zeros((n_instances, n_nests))
     for i in range(n_nests):
         sub_tensor = np.copy(utility)
         sub_tensor[np.where(y_nests != i)] = -1e50
@@ -178,10 +176,10 @@ def get_probability_np(y_nests, utility, lambda_k, utility_k):
         pni_k[np.where(y_nests == i)] = np.exp(sub_tensor - ink)[np.where(y_nests == i)]
         ivm[:, i] = lambda_k[i] * ink[:, 0] + utility_k[i]
     pk = np.exp(ivm - logsumexpnp(ivm))
-    pn_k = np.zeros_like(pni_k)
+    pn_k = np.zeros((n_instances, n_objects))
     for i in range(n_nests):
         rows, cols = np.where(y_nests == i)
-        p = (np.ones(tuple(pn_k.shape)) * pk[:, i][:, None])
+        p = np.ones((n_instances, n_objects)) * pk[:, i][:, None]
         pn_k[rows, cols] = p[rows, cols]
     p = pni_k * pn_k
     return p
