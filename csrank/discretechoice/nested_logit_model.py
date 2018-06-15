@@ -39,7 +39,6 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         objects = X.reshape(n * n_obj, n_dim)
         if self.cluster_model is None:
             self.cluster_model = clustering(n_clusters=self.n_nests, random_state=self.random_state).fit(objects)
-            self.cluster_model.fit(objects)
             self.features_nests = self.cluster_model.cluster_centers_
             prediction = self.cluster_model.labels_
         else:
@@ -53,6 +52,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
 
     def fit(self, X, Y, sampler="advi", n=20000, cores=8, sample=3, **kwargs):
         y_nests = self.create_nests(X)
+        self.logger.info(y_nests)
 
         with pm.Model() as self.model:
             mu_weights = pm.Normal('mu_weights', mu=0., sd=10)
