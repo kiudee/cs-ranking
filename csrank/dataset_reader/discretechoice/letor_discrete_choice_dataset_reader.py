@@ -1,8 +1,8 @@
 import logging
 
+from csrank.constants import DISCRETE_CHOICE
 from sklearn.utils import check_random_state
 
-from csrank.constants import DISCRETE_CHOICE
 from .util import sub_sampling_discrete_choices, convert_to_label_encoding
 from ..letor_dataset_reader import LetorDatasetReader
 
@@ -27,11 +27,3 @@ class LetorDiscreteChoiceDatasetReader(LetorDatasetReader):
 
     def get_train_test_datasets(self, n_datasets):
         pass
-
-    def get_dataset_dictionaries(self):
-        return self.X_train, self.Y_train, self.X_test, self.Y_test
-
-    def get_single_train_test_split(self):
-        self.X, self.Y = self.sub_sampling_from_dictionary()
-        self.__check_dataset_validity__()
-        return self.X, self.Y, self.X_test, self.Y_test

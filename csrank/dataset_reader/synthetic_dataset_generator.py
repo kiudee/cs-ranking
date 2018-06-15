@@ -1,5 +1,6 @@
 import logging
 
+from csrank.dataset_reader.util import standardize_features
 from sklearn.model_selection import train_test_split
 from sklearn.utils import check_random_state
 
@@ -53,6 +54,7 @@ class SyntheticDatasetGenerator(DatasetReader):
         total_instances = self.n_test_instances + self.n_train_instances
         self.kwargs['n_instances'] = total_instances
         self.X, self.Y = self.dataset_function(**self.kwargs, seed=seed)
+        self.X = standardize_features(self.X)
         self.__check_dataset_validity__()
         x_train, x_test, y_train, y_test = train_test_split(self.X, self.Y, random_state=self.random_state,
                                                             test_size=self.n_test_instances)

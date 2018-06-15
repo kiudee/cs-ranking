@@ -4,6 +4,7 @@ import sys
 import numpy as np
 import pandas as pd
 from sklearn.metrics import f1_score
+from sklearn.preprocessing import StandardScaler
 
 
 def strongly_connected_components(graph):
@@ -129,3 +130,10 @@ def distance_metric_multilabel(X_labels, Y_labels, X, Y):
 def print_no_newline(i, total):
     sys.stdout.write("Iterations: {}  out of {} \r".format(i, total))
     sys.stdout.flush()
+
+
+def standardize_features(X):
+    scalar = StandardScaler()
+    for i in range(X.shape[0]):
+        X[i] = scalar.fit_transform(X[i])
+    return X

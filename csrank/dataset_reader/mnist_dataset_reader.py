@@ -1,0 +1,58 @@
+import logging
+import os
+
+import numpy as np
+from csrank import MNISTChoiceDatasetReader
+from csrank.dataset_reader.dataset_reader import DatasetReader
+from sklearn.model_selection import train_test_split
+from sklearn.utils import check_random_state
+
+
+class MNISTDatasetReader(DatasetReader):
+    def __init__(self, n_train_instances=10000, n_test_instances=10000, n_objects=10, random_state=None, **kwargs):
+        super(MNISTChoiceDatasetReader, self).__init__(dataset_folder='mnist', **kwargs)
+        self.logger = logging.getLogger(MNISTChoiceDatasetReader.__name__)
+        self.n_test_instances = n_test_instances
+        self.n_train_instances = n_train_instances
+        self.n_objects = n_objects
+        self.random_state = check_random_state(random_state)
+        self.n_features = None
+        self.__load_dataset__()
+
+    def __load_dataset__(self):
+        x_file = os.path.join(self.dirname, "X_raw_features.npy")
+        y_file = os.path.join(self.dirname, "y_labels.npy")
+        self.X_raw = np.load(x_file)
+        self.y_labels = np.load(y_file)
+        self.n_features = self.X_raw.shape[1]
+
+    def create_dataset(self):
+        pass
+
+    def get_single_train_test_split(self):
+        self.create_dataset()
+        x_train, x_test, y_train, y_test = train_test_split(self.X, self.Y, random_state=self.random_state,
+                                                            test_size=self.n_test_instances)
+
+        self.logger.info('Done')
+        return x_train, y_train, x_test, y_test
+
+    def splitter(self, iter):
+        pass
+
+    def get_dataset_dictionaries(self, lengths=[5, 6]):
+        x_train = dict()
+        y_train = dict()
+        x_test = dict()
+        y_test = dict()
+        for n_obj in lengths:
+            self.n_objects = n_obj
+            self.create_dataset()
+            x_1, x_2, y_1, y_2 = train_test_split(self.X, self.Y, random_state=self.random_state,
+                                                  test_size=self.n_test_instances)
+            x_train[n_obj], x_test[n_obj], y_train[n_obj], y_test[n_obj] = x_1, x_2, y_1, y_2
+        self.logger.info('Done')
+        return x_train, y_train, x_test, y_test
+
+    def get_train_test_datasets(self, n_datasets=5):
+        pass

@@ -5,12 +5,12 @@ from itertools import combinations, product
 
 import numpy as np
 import pandas as pd
+from csrank.dataset_reader.dataset_reader import DatasetReader
 from sklearn.model_selection import train_test_split
 from sklearn.utils import check_random_state
 
-from csrank.dataset_reader.dataset_reader import DatasetReader
 from .util import get_key_for_indices, get_similarity_matrix, weighted_cosine_similarity, \
-    critique_dist
+    critique_dist, standardize_features
 
 MOVIE_ID = 'movieId'
 TAG_ID = 'tagId'
@@ -196,6 +196,7 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
             seed = self.random_state.randint(2 ** 32, dtype='uint32')
             total_instances = self.n_test_instances + self.n_train_instances
             X, Y = self.dataset_function(total_instances, n_obj, seed=seed)
+            X = standardize_features(X)
             x_1, x_2, y_1, y_2 = train_test_split(X, Y, random_state=self.random_state, test_size=self.n_test_instances)
             x_train[n_obj], x_test[n_obj], y_train[n_obj], y_test[n_obj] = x_1, x_2, y_1, y_2
         self.logger.info('Done')
@@ -211,8 +212,10 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
         total_instances = self.n_test_instances + self.n_train_instances
         self.X, self.Y = self.dataset_function(total_instances, self.n_objects, seed=seed)
         self.__check_dataset_validity__()
+        self.X = standardize_features(self.X)
         x_train, x_test, y_train, y_test = train_test_split(self.X, self.Y, random_state=self.random_state,
                                                             test_size=self.n_test_instances)
+
         self.logger.info('Done')
         return x_train, y_train, x_test, y_test
 
@@ -221,6 +224,7 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
             seed = self.random_state.randint(2 ** 32, dtype='uint32') + i
             total_instances = self.n_test_instances + self.n_train_instances
             X, Y = self.dataset_function(total_instances, self.n_objects, seed=seed)
+            X = standardize_features(X)
             x_train, x_test, y_train, y_test = train_test_split(X, Y, random_state=self.random_state,
                                                                 test_size=self.n_test_instances)
             yield x_train, y_train, x_test, y_test

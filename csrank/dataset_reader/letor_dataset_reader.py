@@ -6,14 +6,15 @@ from abc import ABCMeta
 
 import h5py
 import numpy as np
+from csrank.dataset_reader.util import standardize_features
+from csrank.util import print_dictionary
 from scipy.stats import rankdata
 
-from csrank.util import print_dictionary
 from .dataset_reader import DatasetReader
 
 
 class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
-    def __init__(self, year=2007, fold_id=0, **kwargs):
+    def __init__(self, year=2007, fold_id=0, exclude_qf=False, **kwargs):
         super(LetorDatasetReader, self).__init__(dataset_folder='letor', **kwargs)
         self.DATASET_FOLDER_2007 = 'MQ{}-list'.format(year)
         self.DATASET_FOLDER_2008 = 'MQ{}-list'.format(year)
@@ -23,9 +24,10 @@ class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
             self.year = 2007
         else:
             self.year = year
+        self.exclude_qf = exclude_qf
         self.query_feature_indices = [4, 5, 6, 19, 20, 21, 34, 35, 36]
         self.query_document_feature_indices = np.delete(np.arange(0, 46), self.query_feature_indices)
-        self.logger.info("For Year {}".format(self.year))
+        self.logger.info("For Year {} excluding query features {}".format(self.year, self.exclude_qf))
 
         self.dataset_indices = np.arange(5)
         self.condition = np.zeros(5, dtype=bool)
@@ -65,6 +67,71 @@ class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
             else:
                 self.X_test, self.Y_test, self.scores_test = self.get_rankings_dict(h5py_file_path)
         self.logger.info("Done loading the dataset")
+
+    def get_rankings_dict(self, h5py_file_path):
+        file = h5py.File(h5py_file_path, 'r')
+        lengths = file["lengths"]
+        X = dict()
+        Y = dict()
+        scores = dict()
+        for ranking_length in np.array(lengths):
+            self.X = np.array(file["X_{}".format(ranking_length)])
+            if self.exclude_qf:
+                self.X = self.X[:, :, self.query_document_feature_indices]
+            self.Y = np.array(file["Y_{}".format(ranking_length)])
+            self.convert_output(ranking_length)
+            s = np.array(file["score_{}".format(ranking_length)])
+            self.__check_dataset_validity__()
+            X[ranking_length], Y[ranking_length], scores[ranking_length] = self.X, self.Y, s
+        file.close()
+        return X, Y, scores
+
+    def merge_to_train(self, X, Y, scores):
+        for key in X.keys():
+            x = X[key]
+            y = Y[key]
+            s = scores[key]
+            if key in self.X_train.keys():
+                self.X_train[key] = np.append(self.X_train[key], x, axis=0)
+                self.Y_train[key] = np.append(self.Y_train[key], y, axis=0)
+                self.scores_train[key] = np.append(self.scores_train[key], s, axis=0)
+            else:
+                self.X_train[key] = x
+                self.Y_train[key] = y
+                self.scores_train[key] = s
+
+    def sub_sampling_from_dictionary(self):
+        X = []
+        Y = []
+        for n in self.X_train.keys():
+            if n > self.n_objects:
+                x, y = self.sub_sampling_function(n)
+                if len(X) == 0:
+                    X = np.copy(x)
+                    Y = np.copy(y)
+                else:
+                    X = np.concatenate([X, x], axis=0)
+                    Y = np.concatenate([Y, y], axis=0)
+        if self.n_objects in self.X_train.keys():
+            X = np.concatenate([X, np.copy(self.X_train[self.n_objects])], axis=0)
+            Y = np.concatenate([Y, np.copy(self.Y_train[self.n_objects])], axis=0)
+        self.logger.info("Sampled instances {} objects {}".format(X.shape[0], X.shape[1]))
+        return X, Y
+
+    def sub_sampling_function(self, n):
+        pass
+
+    def convert_output(self, ranking_length):
+        pass
+
+    def get_dataset_dictionaries(self):
+        return self.X_train, self.Y_train, self.X_test, self.Y_test
+
+    def get_single_train_test_split(self):
+        self.X, self.Y = self.sub_sampling_from_dictionary()
+        self.X = standardize_features(self.X)
+        self.__check_dataset_validity__()
+        return self.X, self.Y, self.X_test, self.Y_test
 
     def create_rankings_dataset(self, dataset, hdf5file_path):
         self.logger.info("Writing in hd5 {}".format(hdf5file_path))
@@ -158,57 +225,3 @@ class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
             dataset_dictionaries[key] = dataset
             self.logger.info('Maximum length of ranking: {}'.format(np.max(array)))
         return dataset_dictionaries
-
-    def get_rankings_dict(self, h5py_file_path):
-        file = h5py.File(h5py_file_path, 'r')
-        lengths = file["lengths"]
-        X = dict()
-        Y = dict()
-        scores = dict()
-        for ranking_length in np.array(lengths):
-            self.X = np.array(file["X_{}".format(ranking_length)])
-            self.Y = np.array(file["Y_{}".format(ranking_length)])
-            self.convert_output(ranking_length)
-            s = np.array(file["score_{}".format(ranking_length)])
-            self.__check_dataset_validity__()
-            X[ranking_length], Y[ranking_length], scores[ranking_length] = self.X, self.Y, s
-        file.close()
-        return X, Y, scores
-
-    def merge_to_train(self, X, Y, scores):
-        for key in X.keys():
-            x = X[key]
-            y = Y[key]
-            s = scores[key]
-            if key in self.X_train.keys():
-                self.X_train[key] = np.append(self.X_train[key], x, axis=0)
-                self.Y_train[key] = np.append(self.Y_train[key], y, axis=0)
-                self.scores_train[key] = np.append(self.scores_train[key], s, axis=0)
-            else:
-                self.X_train[key] = x
-                self.Y_train[key] = y
-                self.scores_train[key] = s
-
-    def sub_sampling_from_dictionary(self):
-        X = []
-        Y = []
-        for n in self.X_train.keys():
-            if n > self.n_objects:
-                x, y = self.sub_sampling_function(n)
-                if len(X) == 0:
-                    X = np.copy(x)
-                    Y = np.copy(y)
-                else:
-                    X = np.concatenate([X, x], axis=0)
-                    Y = np.concatenate([Y, y], axis=0)
-        if self.n_objects in self.X_train.keys():
-            X = np.concatenate([X, np.copy(self.X_train[self.n_objects])], axis=0)
-            Y = np.concatenate([Y, np.copy(self.Y_train[self.n_objects])], axis=0)
-        self.logger.info("Sampled instances {} objects {}".format(X.shape[0], X.shape[1]))
-        return X, Y
-
-    def sub_sampling_function(self, n):
-        pass
-
-    def convert_output(self, ranking_length):
-        pass

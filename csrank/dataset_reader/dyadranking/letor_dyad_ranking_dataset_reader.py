@@ -1,6 +1,6 @@
+from csrank.constants import DYAD_RANKING
 from sklearn.utils import check_random_state
 
-from csrank.constants import DYAD_RANKING
 from ..letor_dataset_reader import LetorDatasetReader
 
 

@@ -1,5 +1,6 @@
 from csrank.constants import OBJECT_RANKING
 from csrank.util import scores_to_rankings
+
 from ..tag_genome_reader import TagGenomeDatasetReader
 
 
