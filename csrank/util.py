@@ -21,7 +21,7 @@ __all__ = ['check_learner_class', 'configure_logging_numpy_keras', 'create_dir_r
            'duration_tillnow', 'files_with_same_name', 'get_instances_objects', 'get_loss_for_array',
            'get_mean_loss_for_dictionary', 'get_rankings_tensor', 'get_tensor_value', 'heat_map', 'normalize',
            'print_dictionary', 'ranking_ordering_conversion', 'rename_file_if_exist', 'scores_to_rankings',
-           'seconds_to_time', 'tensorify', 'time_from_now', 'softmax', 'get_duration_seconds']
+           'seconds_to_time', 'tensorify', 'time_from_now', 'get_duration_seconds']
 
 
 def scores_to_rankings(score_matrix):
@@ -72,17 +72,6 @@ def get_tensor_value(x):
     if isinstance(x, tf.Tensor):
         return K.get_value(x)
     return x
-
-
-def softmax(x, axis=1):
-    """
-        Take softmax for the given two dimensional numpy array.
-        :param axis: The axis around which the softmax is applied
-        :param x: array-like, shape (n_samples, n_objects)
-        :return: softmax taken around the axis=1
-    """
-    e_x = np.exp(x - x.max(axis=axis, keepdims=True))
-    return e_x / e_x.sum(axis=axis, keepdims=True)
 
 
 def sigmoid(x):

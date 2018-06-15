@@ -2,22 +2,23 @@ import logging
 import os
 
 import numpy as np
-from csrank import MNISTChoiceDatasetReader
-from csrank.dataset_reader.dataset_reader import DatasetReader
 from sklearn.model_selection import train_test_split
 from sklearn.utils import check_random_state
+
+from csrank.dataset_reader.dataset_reader import DatasetReader
 
 
 class MNISTDatasetReader(DatasetReader):
     def __init__(self, n_train_instances=10000, n_test_instances=10000, n_objects=10, random_state=None, **kwargs):
-        super(MNISTChoiceDatasetReader, self).__init__(dataset_folder='mnist', **kwargs)
-        self.logger = logging.getLogger(MNISTChoiceDatasetReader.__name__)
+        super(MNISTDatasetReader, self).__init__(dataset_folder='mnist', **kwargs)
+        self.logger = logging.getLogger(MNISTDatasetReader.__name__)
         self.n_test_instances = n_test_instances
         self.n_train_instances = n_train_instances
         self.n_objects = n_objects
         self.random_state = check_random_state(random_state)
         self.n_features = None
         self.__load_dataset__()
+        self.logger.info('Done loading the dataset')
 
     def __load_dataset__(self):
         x_file = os.path.join(self.dirname, "X_raw_features.npy")

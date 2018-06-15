@@ -3,11 +3,10 @@ from itertools import combinations
 
 import numpy as np
 import pymc3 as pm
-import theano
 import theano.tensor as tt
 from sklearn.utils import check_random_state
 
-from csrank.discretechoice.util import replace_inf_theano, replace_inf_np, replace_nan_theano, replace_nan_np
+from csrank.discretechoice.util import logsumexptheano, logsumexpnp
 from csrank.learner import Learner
 from csrank.util import print_dictionary
 from .discrete_choice import DiscreteObjectChooser
@@ -33,72 +32,48 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         self.trace_vi = None
 
     def get_probabilities(self, utility, lambda_k, n_instances):
-        lambdas = tt.zeros((self.n_objects, self.n_objects), dtype=np.float)
-        for i, p in enumerate(self.nests_indices):
+        n_objects = self.n_objects
+        nests_indices = self.nests_indices
+        n_nests = self.n_nests
+        lambdas = tt.ones((n_objects, n_objects), dtype=np.float)
+        for i, p in enumerate(nests_indices):
             r = [p[0], p[1]]
             c = [p[1], p[0]]
             lambdas = tt.set_subtensor(lambdas[r, c], lambda_k[i])
-        p = tt.zeros((n_instances, self.n_objects))
-        denominators = theano.shared(np.zeros(n_instances))
-        utility_nest = tt.transpose(utility[:, None, :] / lambdas, (0, 2, 1))
-        utility_nest = tt.exp(utility_nest)
-        utility_nest = replace_inf_theano(utility_nest)
-
-        for i in range(self.n_objects):
-            other = list(range(self.n_objects))
-            other.remove(i)
-            nestwise_i = utility_nest[:, i, other] + utility_nest[:, other, i]
-            nestwise_i = replace_inf_theano(nestwise_i)
-
-            part = np.power(nestwise_i, (lambdas[i, other] - 1)[None, :])
-            part = replace_inf_theano(part)
-
-            numerator = np.multiply(utility_nest[:, i, other], part)
-            numerator = replace_inf_theano(numerator)
-
-            p = tt.set_subtensor(p[:, i], p[:, i] + numerator.sum(axis=1))
-            denominators += tt.power(nestwise_i, lambdas[i, other][None, :]).sum(axis=1)
-
-        denominators = (denominators / 2)[:, None]
-        denominators = replace_inf_theano(denominators)
-        if tt.any(pm.math.abs_(denominators) < 5e-100):
-            denominators = denominators + 1.0
-        p = p / denominators
-        p = replace_nan_theano(p)
+        uti_per_nest = tt.transpose(utility[:, None, :] / lambdas, (0, 2, 1))
+        ind = np.array([[[i1, i2], [i2, i1]] for i1, i2 in nests_indices])
+        ind = ind.reshape(2 * n_nests, 2)
+        x = uti_per_nest[:, ind[:, 0], ind[:, 1]].reshape((n_instances * n_nests, 2))
+        log_sum_exp_nest = logsumexptheano(x).reshape((n_instances, n_nests))
+        pnk = tt.exp(log_sum_exp_nest * lambda_k - logsumexptheano(log_sum_exp_nest * lambda_k))
+        p = tt.zeros((n_instances, n_objects), dtype=float)
+        for i in range(n_nests):
+            i1, i2 = nests_indices[i]
+            x1 = tt.exp(uti_per_nest[:, i1, i2] - log_sum_exp_nest[:, i]) * pnk[:, i]
+            x2 = np.exp(uti_per_nest[:, i2, i1] - log_sum_exp_nest[:, i]) * pnk[:, i]
+            p = tt.set_subtensor(p[:, i1], p[:, i1] + x1)
+            p = tt.set_subtensor(p[:, i2], p[:, i2] + x2)
         return p
 
     def get_probabilities_np(self, utility, lambda_k):
         n_instances = utility.shape[0]
-        lambdas = np.zeros((self.n_objects, self.n_objects), dtype=np.float)
-        lambdas[self.nests_indices[:, 0], self.nests_indices[:, 1]] = lambdas.T[
-            self.nests_indices[:, 0], self.nests_indices[:, 1]] = lambda_k
-
-        p = np.zeros((n_instances, self.n_objects))
-        denominators = np.zeros(n_instances)
-        utility_nest = np.transpose((utility[:, None] / lambdas), (0, 2, 1))
-        utility_nest = np.exp(utility_nest)
-        utility_nest = replace_inf_np(utility_nest)
-
-        for i in range(self.n_objects):
-            other = list(range(self.n_objects))
-            other.remove(i)
-            nestwise_i = utility_nest[:, i, other] + utility_nest[:, other, i]
-            nestwise_i = replace_inf_np(nestwise_i)
-
-            part = np.power(nestwise_i, (lambdas[i, other] - 1)[None, :])
-            part = replace_inf_np(part)
-
-            numerator = np.multiply(utility_nest[:, i, other], part)
-            numerator = replace_inf_np(numerator)
-            p[:, i] += numerator.sum(axis=1)
-            denominators += np.power(nestwise_i, lambdas[i, other][None, :]).sum(axis=1)
-
-        denominators = (denominators / 2)[:, None]
-        denominators = replace_inf_np(denominators)
-        if np.any(np.abs(denominators) < 5e-100):
-            denominators = denominators + 1.0
-        p = p / denominators
-        p = replace_nan_np(p)
+        n_objects = self.n_objects
+        nests_indices = self.nests_indices
+        n_nests = self.n_nests
+        lambdas = np.ones((n_objects, n_objects), lambda_k.dtype)
+        lambdas[nests_indices[:, 0], nests_indices[:, 1]] = lambdas.T[
+            nests_indices[:, 0], nests_indices[:, 1]] = lambda_k
+        uti_per_nest = np.transpose((utility[:, None] / lambdas), (0, 2, 1))
+        ind = np.array([[[i1, i2], [i2, i1]] for i1, i2 in nests_indices])
+        ind = ind.reshape(2 * n_nests, 2)
+        x = uti_per_nest[:, ind[:, 0], ind[:, 1]].reshape(n_instances * n_nests, 2)
+        log_sum_exp_nest = logsumexpnp(x).reshape(n_instances, n_nests)
+        pnk = np.exp(log_sum_exp_nest * lambda_k - logsumexpnp(log_sum_exp_nest * lambda_k))
+        p = np.zeros((n_instances, n_objects), dtype=float)
+        for i in range(n_nests):
+            i1, i2 = nests_indices[i]
+            p[:, i1] += np.exp(uti_per_nest[:, i1, i2] - log_sum_exp_nest[:, i]) * pnk[:, i]
+            p[:, i2] += np.exp(uti_per_nest[:, i2, i1] - log_sum_exp_nest[:, i]) * pnk[:, i]
         return p
 
     def fit(self, X, Y, sampler="advi", n=20000, **kwargs):

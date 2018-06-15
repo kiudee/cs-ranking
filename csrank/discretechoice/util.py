@@ -34,15 +34,43 @@ def replace_nan_np(p):
     return p
 
 
-def logsumexpnp(x):
-    max_x = np.max(x, axis=1, keepdims=True)
+def logsumexpnp(x, axis=1):
+    max_x = x.max(axis=axis, keepdims=True)
     x = x - max_x
-    f = max_x[:, 0] + np.log(np.sum(np.exp(x), axis=1))
-    return f[:, None]
+    f = np.squeeze(max_x, axis=axis) + np.log(np.sum(np.exp(x), axis=axis))
+    return np.expand_dims(f, axis=axis)
 
 
-def logsumexptheano(x):
-    max_x = tt.max(x, axis=1, keepdims=True)
+def logsumexptheano(x, axis=1):
+    max_x = x.max(axis=axis, keepdims=True)
     x = x - max_x
-    f = max_x[:, 0] + tt.log(tt.sum(tt.exp(x), axis=1))
-    return f[:, None]
+    f = max_x.squeeze() + tt.log(tt.sum(tt.exp(x), axis=axis))
+    if axis == 1:
+        f = f[:, None]
+    if axis == 2:
+        f = f[:, :, None]
+    if axis == 3:
+        f = f[:, :, :, None]
+    return f
+
+
+def softmax_theano(x, axis=1):
+    """
+        Take softmax for the given two dimensional numpy array.
+        :param axis: The axis around which the softmax is applied
+        :param x: array-like, shape (n_samples, n_objects)
+        :return: softmax taken around the axis=1
+    """
+    lse = logsumexptheano(x, axis=axis)
+    return tt.exp(x - lse)
+
+
+def softmax_np(x, axis=1):
+    """
+        Take softmax for the given two dimensional numpy array.
+        :param axis: The axis around which the softmax is applied
+        :param x: array-like, shape (n_samples, n_objects)
+        :return: softmax taken around the axis=1
+    """
+    lse = logsumexpnp(x, axis=axis)
+    return np.exp(x - lse)
