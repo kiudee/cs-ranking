@@ -6,10 +6,10 @@ from abc import ABCMeta
 
 import h5py
 import numpy as np
-from csrank.dataset_reader.util import standardize_features
-from csrank.util import print_dictionary
 from scipy.stats import rankdata
 
+from csrank.dataset_reader.util import standardize_features
+from csrank.util import print_dictionary
 from .dataset_reader import DatasetReader
 
 

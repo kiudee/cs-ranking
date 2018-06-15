@@ -3,8 +3,8 @@ import os
 
 import h5py
 import numpy as np
-from csrank.constants import OBJECT_RANKING
 
+from csrank.constants import OBJECT_RANKING
 from .util import sub_sampling_rankings
 from ..dataset_reader import DatasetReader
 

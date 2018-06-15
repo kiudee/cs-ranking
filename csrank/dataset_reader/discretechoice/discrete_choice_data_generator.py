@@ -1,11 +1,11 @@
 import numpy as np
-from csrank.constants import DISCRETE_CHOICE
 from pygmo import hypervolume
 from scipy.spatial.distance import squareform, pdist
 from sklearn.datasets import make_regression, make_blobs
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.utils import check_random_state
 
+from csrank.constants import DISCRETE_CHOICE
 from .util import convert_to_label_encoding
 from ..synthetic_dataset_generator import SyntheticDatasetGenerator
 from ..util import create_pairwise_prob_matrix

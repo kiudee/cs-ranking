@@ -3,12 +3,12 @@ import logging
 import numpy as np
 import pymc3 as pm
 import theano.tensor as tt
-from csrank.discretechoice.util import logsumexpnp, logsumexptheano
-from csrank.learner import Learner
-from csrank.util import print_dictionary
 from sklearn.cluster import MiniBatchKMeans as clustering
 from sklearn.utils import check_random_state
 
+from csrank.discretechoice.util import logsumexpnp, logsumexptheano
+from csrank.learner import Learner
+from csrank.util import print_dictionary
 from .discrete_choice import DiscreteObjectChooser
 from .likelihoods import likelihood_dict, LogLikelihood
 

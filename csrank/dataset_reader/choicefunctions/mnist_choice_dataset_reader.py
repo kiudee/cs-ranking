@@ -1,7 +1,7 @@
 import numpy as np
+
 from csrank.constants import CHOICE_FUNCTIONS
 from csrank.dataset_reader.util import standardize_features
-
 from ..mnist_dataset_reader import MNISTDatasetReader
 
 

@@ -5,10 +5,10 @@ from itertools import combinations, product
 
 import numpy as np
 import pandas as pd
-from csrank.dataset_reader.dataset_reader import DatasetReader
 from sklearn.model_selection import train_test_split
 from sklearn.utils import check_random_state
 
+from csrank.dataset_reader.dataset_reader import DatasetReader
 from .util import get_key_for_indices, get_similarity_matrix, weighted_cosine_similarity, \
     critique_dist, standardize_features
 

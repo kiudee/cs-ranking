@@ -1,6 +1,5 @@
 import logging
 
-import numpy as np
 import tensorflow as tf
 from keras import optimizers, Input, Model, backend as K
 from keras.layers import Dense, Lambda, add
