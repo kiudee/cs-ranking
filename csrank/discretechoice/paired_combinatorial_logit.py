@@ -15,11 +15,8 @@ from .likelihoods import likelihood_dict, LogLikelihood
 
 class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
 
-    def __init__(self, n_object_features, n_objects, loss_function='', n_tune=500, n_sample=500, alpha=5e-2,
-                 random_state=None, **kwd):
+    def __init__(self, n_object_features, n_objects, loss_function='', alpha=5e-2, random_state=None, **kwd):
         self.logger = logging.getLogger(PairedCombinatorialLogit.__name__)
-        self.n_tune = n_tune
-        self.n_sample = n_sample
         self.n_object_features = n_object_features
         self.n_objects = n_objects
         self.nests_indices = np.array(list(combinations(np.arange(n_objects), 2)))
@@ -76,22 +73,13 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
             p[:, i2] += np.exp(uti_per_nest[:, i2, i1] - log_sum_exp_nest[:, i]) * pnk[:, i]
         return p
 
-    def fit(self, X, Y, sampler="advi", n=20000, **kwargs):
+    def fit(self, X, Y, sampler="advi", **kwargs):
         with pm.Model() as self.model:
             mu_weights = pm.Normal('mu_weights', mu=0., sd=10)
             sigma_weights = pm.HalfCauchy('sigma_weights', beta=1)
             weights = pm.Normal('weights', mu=mu_weights, sd=sigma_weights, shape=self.n_object_features)
-            # weights = pm.Uniform('weights', lower=-1.0, upper=1.0, shape=self.n_object_features)
             utility = tt.dot(X, weights)
-
-            # Numerical stability
-            utility = utility - (utility.max(axis=1, keepdims=True) + utility.min(axis=1, keepdims=True)) / 2
-
             lambda_k = pm.Uniform('lambda_k', self.alpha, 1.0, shape=self.n_nests)
-            # lambda_k = pm.HalfCauchy('lambda_k', beta=2, shape=self.n_nests) + self.alpha
-            # lambda_k = lambda_k/lambda_k.sum()
-            # lambda_k = pm.Uniform('lambda_k', self.alpha, 1.0)
-            # lambda_k = tt.zeros(self.n_nests) + lambda_k
             p = self.get_probabilities(utility, lambda_k, X.shape[0])
 
             if self.loss_function is None:
@@ -99,18 +87,22 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
                 yl = pm.Categorical('yl', p=p, observed=Y)
             else:
                 yl = LogLikelihood('yl', loss_func=self.loss_function, p=p, observed=Y)
-        if sampler in ['advi', 'fullrank_advi', 'svgd']:
+
+        if sampler == 'vi':
             with self.model:
-                self.trace = pm.sample(5, tune=5, cores=8)
-                self.trace_vi = pm.fit(n=n, start=self.trace[-1], method=sampler)
-                self.trace = self.trace_vi.sample(draws=self.n_sample)
+                sample_params = kwargs['sample_params']
+                self.trace = pm.sample(**sample_params)
+                vi_params = kwargs['vi_params']
+                vi_params['start'] = self.trace[-1]
+                self.trace_vi = pm.fit(**vi_params)
+                self.trace = self.trace_vi.sample(draws=kwargs['draws'])
         elif sampler == 'metropolis':
             with self.model:
                 start = pm.find_MAP()
-                self.trace = pm.sample(self.n_sample, tune=self.n_tune, step=pm.Metropolis(), start=start, cores=8)
+                self.trace = pm.sample(**kwargs, step=pm.Metropolis(), start=start)
         else:
             with self.model:
-                self.trace = pm.sample(self.n_sample, tune=self.n_tune, step=pm.NUTS(), cores=8)
+                self.trace = pm.sample(**kwargs, step=pm.NUTS())
 
     def _predict_scores_fixed(self, X, **kwargs):
         mean_trace = dict(pm.summary(self.trace)['mean'])

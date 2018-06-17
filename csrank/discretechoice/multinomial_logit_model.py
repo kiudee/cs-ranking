@@ -11,9 +11,7 @@ from .likelihoods import likelihood_dict, LogLikelihood
 
 
 class MultinomialLogitModel(DiscreteObjectChooser, Learner):
-    def __init__(self, n_object_features, n_tune=500, n_sample=500, loss_function='', **kwargs):
-        self.n_tune = n_tune
-        self.n_sample = n_sample
+    def __init__(self, n_object_features, loss_function='', **kwargs):
         self.n_object_features = n_object_features
         self.logger = logging.getLogger(MultinomialLogitModel.__name__)
         self.loss_function = likelihood_dict.get(loss_function, None)
@@ -21,7 +19,7 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
         self.trace = None
         self.trace_vi = None
 
-    def fit(self, X, Y, sampler='advi', n=20000, cores=8, sample=3, **kwargs):
+    def fit(self, X, Y, sampler='advi', **kwargs):
         with pm.Model() as self.model:
             mu_weights = pm.Normal('mu_weights', mu=0., sd=10)
             sigma_weights = pm.HalfCauchy('sigma_weights', beta=1)
@@ -36,18 +34,21 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
             else:
                 yl = LogLikelihood('yl', loss_func=self.loss_function, p=p, observed=Y)
 
-        if sampler in ['advi', 'fullrank_advi', 'svgd']:
+        if sampler == 'vi':
             with self.model:
-                self.trace = pm.sample(sample, tune=5, cores=cores)
-                self.trace_vi = pm.fit(n=n, start=self.trace[-1], method=sampler)
-                self.trace = self.trace_vi.sample(draws=self.n_sample)
+                sample_params = kwargs['sample_params']
+                self.trace = pm.sample(**sample_params)
+                vi_params = kwargs['vi_params']
+                vi_params['start'] = self.trace[-1]
+                self.trace_vi = pm.fit(**vi_params)
+                self.trace = self.trace_vi.sample(draws=kwargs['draws'])
         elif sampler == 'metropolis':
             with self.model:
                 start = pm.find_MAP()
-                self.trace = pm.sample(self.n_sample, tune=self.n_tune, step=pm.Metropolis(), start=start, cores=cores)
+                self.trace = pm.sample(**kwargs, step=pm.Metropolis(), start=start)
         else:
             with self.model:
-                self.trace = pm.sample(self.n_sample, tune=self.n_tune, step=pm.NUTS(), cores=cores)
+                self.trace = pm.sample(**kwargs, step=pm.NUTS())
 
     def _predict_scores_fixed(self, X, **kwargs):
         d = dict(pm.summary(self.trace)['mean'])
@@ -70,9 +71,7 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
         self.logger.info("Clearing memory")
         pass
 
-    def set_tunable_parameters(self, n_tune=500, n_sample=500, loss_function='', **point):
-        self.n_tune = n_tune
-        self.n_sample = n_sample
+    def set_tunable_parameters(self, loss_function='', **point):
         self.loss_function = likelihood_dict.get(loss_function, None)
         if len(point) > 0:
             self.logger.warning('This ranking algorithm does not support'

@@ -15,10 +15,8 @@ from .likelihoods import likelihood_dict, LogLikelihood
 
 class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
 
-    def __init__(self, n_object_features, n_objects, n_tune=100, n_sample=100, n_nests=None, loss_function='None',
-                 alpha=5e-2, random_state=None, **kwd):
-        self.n_tune = n_tune
-        self.n_sample = n_sample
+    def __init__(self, n_object_features, n_objects, n_nests=None, loss_function='None', alpha=5e-2, random_state=None,
+                 **kwd):
         self.n_object_features = n_object_features
         self.n_objects = n_objects
         if n_nests is None:
@@ -64,7 +62,7 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
         p = p.sum(axis=2)
         return p
 
-    def fit(self, X, Y, sampler="advi", n=20000, cores=8, sample=3, **kwargs):
+    def fit(self, X, Y, sampler="advi", **kwargs):
         with pm.Model() as self.model:
             mu_weights = pm.Normal('mu_weights', mu=0., sd=10)
             sigma_weights = pm.HalfCauchy('sigma_weights', beta=1)
@@ -87,18 +85,21 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
             else:
                 yl = LogLikelihood('yl', loss_func=self.loss_function, p=p, observed=Y)
 
-        if sampler in ['advi', 'fullrank_advi', 'svgd']:
+        if sampler == 'vi':
             with self.model:
-                self.trace = pm.sample(sample, tune=5, cores=cores)
-                self.trace_vi = pm.fit(n=n, start=self.trace[-1], method=sampler)
-                self.trace = self.trace_vi.sample(draws=self.n_sample)
+                sample_params = kwargs['sample_params']
+                self.trace = pm.sample(**sample_params)
+                vi_params = kwargs['vi_params']
+                vi_params['start'] = self.trace[-1]
+                self.trace_vi = pm.fit(**vi_params)
+                self.trace = self.trace_vi.sample(draws=kwargs['draws'])
         elif sampler == 'metropolis':
             with self.model:
                 start = pm.find_MAP()
-                self.trace = pm.sample(self.n_sample, tune=self.n_tune, step=pm.Metropolis(), start=start, cores=cores)
+                self.trace = pm.sample(**kwargs, step=pm.Metropolis(), start=start)
         else:
             with self.model:
-                self.trace = pm.sample(self.n_sample, tune=self.n_tune, step=pm.NUTS(), cores=cores)
+                self.trace = pm.sample(**kwargs, step=pm.NUTS())
 
     def _predict_scores_fixed(self, X, **kwargs):
         mean_trace = dict(pm.summary(self.trace)['mean'])
