@@ -1,7 +1,7 @@
 from abc import ABCMeta
 
 from csrank.constants import LABEL_RANKING
-from csrank.util import scores_to_rankings
+from csrank.numpy_util import scores_to_rankings
 
 
 class LabelRanker(metaclass=ABCMeta):

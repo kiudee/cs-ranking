@@ -108,21 +108,14 @@ def weighted_cosine_similarity(weights):
     return distance_function
 
 
-def weighted_cosine_distance(weights):
-    def distance_function(x, y):
-        return 1.0 - weighted_cosine_similarity(weights)(x, y)
-
-    return distance_function
-
-
 def critique_dist(ic, irs, tag_ids, direction=-1):
     distances = ((irs[:, tag_ids] - ic[tag_ids]) * direction).T
     distances = np.maximum(np.zeros_like(distances), distances)
     return distances
 
 
-def distance_metric_multilabel(X_labels, Y_labels, X, Y):
-    similarity = f1_score(X_labels, Y_labels, average='macro')
+def distance_metric_multilabel(x_labels, y_labels, X, Y):
+    similarity = f1_score(x_labels, y_labels, average='macro')
     similarity = np.dot(X, Y) / (np.linalg.norm(X) * np.linalg.norm(Y)) + similarity
     return similarity
 

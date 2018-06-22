@@ -1,6 +1,6 @@
 from csrank.dyadranking.contextual_ranking import ContextualRanker
 from csrank.fate_network import FATENetwork
-from csrank.util import scores_to_rankings
+from csrank.numpy_util import scores_to_rankings
 
 
 class FATEContextualRanker(FATENetwork, ContextualRanker):

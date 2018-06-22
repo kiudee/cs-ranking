@@ -9,7 +9,8 @@ from csrank.labelranking.label_ranker import LabelRanker
 from csrank.labelranking.placketluce_model import get_pl_parameters_for_rankings
 from csrank.learner import Learner
 from csrank.tunable import Tunable
-from csrank.util import ranking_ordering_conversion, print_dictionary, scores_to_rankings
+from csrank.util import print_dictionary
+from csrank.numpy_util import scores_to_rankings, ranking_ordering_conversion
 
 
 class InstanceBasedLabelRanker(LabelRanker, Learner, Tunable):

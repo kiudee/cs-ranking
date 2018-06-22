@@ -8,7 +8,7 @@ from sklearn.model_selection import ShuffleSplit
 from sklearn.utils import check_random_state
 
 from csrank.constants import LABEL_RANKING
-from csrank.util import ranking_ordering_conversion
+from csrank.numpy_util import ranking_ordering_conversion
 from ..dataset_reader import DatasetReader
 
 

@@ -2,13 +2,13 @@ import numpy as np
 from scipy.stats import spearmanr
 from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_score, average_precision_score
 
-from csrank.util import scores_to_rankings
+from csrank.numpy_util import scores_to_rankings
 
 __all__ = ['spearman_mean_np', 'kendalls_mean_np', 'zero_one_accuracy_np',
            'zero_one_rank_loss_for_scores_ties_np', 'zero_one_rank_loss_for_scores_np',
            'auc_score', "instance_informedness", 'f1_measure', 'recall',
            'average_precision', "precision", "spearman_scipy", "topk_categorical_accuracy_np",
-           "categorical_accuracy_np", "convert_to_loss"]
+           "categorical_accuracy_np"]
 
 
 def spearman_mean_np(y_true, s_pred):
@@ -139,10 +139,3 @@ def categorical_accuracy_np(y_true, y_pred):
     choices = np.argmax(y_pred, axis=1)
     accuracies = np.equal(y_true, choices)
     return np.mean(accuracies)
-
-
-def convert_to_loss(loss_function):
-    def loss(y_true, y_pred):
-        return 1.0 - loss_function(y_true, y_pred)
-
-    return loss

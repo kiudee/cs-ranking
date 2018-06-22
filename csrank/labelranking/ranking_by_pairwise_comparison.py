@@ -9,7 +9,8 @@ from sklearn.utils import check_random_state
 from csrank.labelranking.label_ranker import LabelRanker
 from csrank.learner import Learner
 from csrank.tunable import Tunable
-from csrank.util import print_dictionary, scores_to_rankings
+from csrank.util import print_dictionary
+from csrank.numpy_util import scores_to_rankings
 
 
 class RankingbyPairwiseComparisonLabelRanker(LabelRanker, Learner, Tunable):

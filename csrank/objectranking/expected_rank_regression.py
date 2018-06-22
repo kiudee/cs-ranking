@@ -6,7 +6,8 @@ from sklearn.utils import check_random_state
 
 from csrank.learner import Learner
 from csrank.objectranking.object_ranker import ObjectRanker
-from csrank.util import print_dictionary, normalize
+from csrank.util import print_dictionary
+from csrank.numpy_util import normalize
 from ..dataset_reader.objectranking.util import \
     complete_linear_regression_dataset
 

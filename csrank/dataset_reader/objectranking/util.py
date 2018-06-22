@@ -3,7 +3,7 @@ from itertools import combinations
 
 import numpy as np
 
-from csrank.util import ranking_ordering_conversion
+from csrank.numpy_util import ranking_ordering_conversion
 
 __all__ = ['generate_complete_pairwise_dataset', 'complete_linear_regression_dataset',
            'complete_linear_regression_dataset', "sub_sampling_rankings"]

@@ -24,7 +24,8 @@ from csrank import ObjectRankingDatasetGenerator, FETAObjectRanker, RankNet, Lis
     ExpectedRankRegression
 from csrank.callbacks import DebugOutput, LRScheduler
 from csrank.metrics import zero_one_rank_loss_for_scores
-from csrank.util import rename_file_if_exist, configure_logging_numpy_keras, get_tensor_value
+from csrank.util import rename_file_if_exist
+from csrank.tensorflow_util import get_tensor_value, configure_logging_numpy_keras
 
 MODEL = "aModel"
 

@@ -19,10 +19,11 @@ from csrank.learner import Learner
 from csrank.metrics import *
 from csrank.metrics import zero_one_rank_loss
 from csrank.metrics_np import *
-from csrank.metrics_np import categorical_accuracy_np, convert_to_loss
-from csrank.util import duration_tillnow, create_dir_recursively, \
+from csrank.metrics_np import categorical_accuracy_np
+from csrank.tunable import Tunable
+from csrank.util import duration_till_now, create_dir_recursively, \
     seconds_to_time, \
-    get_mean_loss_for_dictionary, get_loss_for_array, check_learner_class
+    get_mean_loss_for_dictionary, get_loss_for_array, convert_to_loss
 
 PARAMETER_OPTIMIZER = "ParameterOptimizer"
 
@@ -170,7 +171,7 @@ class ParameterOptimizer(Learner):
             loss = get_mean_loss_for_dictionary(self.validation_loss, ytest, ypred)
         else:
             loss = get_loss_for_array(self.validation_loss, ytest, ypred)
-        time_taken = duration_tillnow(start)
+        time_taken = duration_till_now(start)
         return loss, time_taken
 
     def fit(self, X, Y, total_duration=600, n_iter=100, cv_iter=None, acq_func='gp_hedge', **kwargs):
@@ -229,7 +230,7 @@ class ParameterOptimizer(Learner):
 
         self._callbacks_set_optimizer(self.opt)
         self._callbacks_on_optimization_begin()
-        time_taken = duration_tillnow(start)
+        time_taken = duration_till_now(start)
         total_duration -= time_taken
         max_fit_duration = -np.inf
         self.logger.info('Time left for {} iterations is {}'.format(n_iter, seconds_to_time(total_duration)))
@@ -285,7 +286,7 @@ class ParameterOptimizer(Learner):
                     "Main optimizer iterations done {} and saving the model".format(np.array(self.opt.yi).shape[0]))
                 dump(self.opt, self.optimizer_path)
 
-                time_taken = duration_tillnow(start)
+                time_taken = duration_till_now(start)
                 total_duration -= time_taken
                 self.logger.info('Time left for simulations is {} '.format(seconds_to_time(total_duration)))
 
@@ -410,3 +411,16 @@ class ParameterOptimizer(Learner):
 
     def set_tunable_parameters(self, **point):
         self.model.set_tunable_parameters(**point)
+
+
+def check_learner_class(ranker):
+    """ Function which checks if the ranker is an instance of the :class:`csrank.tunning.Tunable` class
+
+    Parameters
+    ----------
+    ranker: object
+        The ranker object to be checked
+    """
+    if not (isinstance(ranker, Tunable) and hasattr(ranker, 'set_tunable_parameters')):
+        logging.error('The given object ranker is not tunable')
+        raise AttributeError

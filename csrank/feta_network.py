@@ -13,7 +13,8 @@ from csrank.constants import allowed_dense_kwargs
 from csrank.layers import NormalizedDense
 from csrank.learner import Learner
 from csrank.losses import hinged_rank_loss
-from csrank.util import tensorify, print_dictionary
+from csrank.util import print_dictionary
+from csrank.tensorflow_util import tensorify
 
 
 class FETANetwork(Learner):

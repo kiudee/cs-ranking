@@ -4,7 +4,7 @@ import os
 
 import pandas as pd
 
-from csrank.util import configure_logging_numpy_keras
+from csrank.tensorflow_util import configure_logging_numpy_keras
 from experiments.dbconnection import DBConnector
 
 if __name__ == '__main__':

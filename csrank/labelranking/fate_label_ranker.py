@@ -7,7 +7,7 @@ from csrank.fate_network import FATENetwork
 from csrank.labelranking.label_ranker import LabelRanker
 from csrank.losses import hinged_rank_loss
 from csrank.metrics import zero_one_rank_loss_for_scores_ties
-from csrank.util import tensorify
+from csrank.tensorflow_util import tensorify
 
 
 class FATELabelRanker(FATENetwork, LabelRanker):

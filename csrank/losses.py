@@ -1,7 +1,7 @@
 import tensorflow as tf
 from keras import backend as K
 
-from .util import tensorify
+from csrank.tensorflow_util import tensorify
 
 __all__ = ['hinged_rank_loss', 'make_smooth_ndcg_loss', 'smooth_rank_loss',
            'plackett_luce_loss']

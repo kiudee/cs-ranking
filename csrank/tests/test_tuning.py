@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from keras.metrics import binary_accuracy
 
-from csrank.util import check_learner_class
+from csrank.tuning import check_learner_class
 from ..tuning import ParameterOptimizer
 
 OPTIMIZER_PATH = os.path.join(os.getcwd(), 'opt')

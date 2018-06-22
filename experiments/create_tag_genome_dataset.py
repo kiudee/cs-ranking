@@ -3,7 +3,7 @@ import logging
 import os
 
 from csrank import TagGenomeObjectRankingDatasetReader
-from csrank.util import configure_logging_numpy_keras
+from csrank.tensorflow_util import configure_logging_numpy_keras
 
 if __name__ == '__main__':
     DIR_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))

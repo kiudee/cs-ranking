@@ -192,13 +192,11 @@ class FATENetwork(FATENetworkCore):
         n_features = self.n_object_features
 
         for n_objects in buckets.keys():
-            input_layer = Input(shape=(n_objects, n_features),
-                                name="input_node")
+            input_layer = Input(shape=(n_objects, n_features), name="input_node")
 
             set_repr = self.set_layer(input_layer)
 
-            scores = self.join_input_layers(input_layer, set_repr,
-                                            n_objects=n_objects,
+            scores = self.join_input_layers(input_layer, set_repr, n_objects=n_objects,
                                             n_layers=self.n_hidden_set_layers)
             model = Model(inputs=input_layer, outputs=scores)
             model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
@@ -217,10 +215,8 @@ class FATENetwork(FATENetworkCore):
         else:
             self.model.set_weights(weights)
 
-    def _fit(self, X=None, Y=None, generator=None, epochs=35, inner_epochs=1,
-             callbacks=None, validation_split=0.1, verbose=0, global_lr=1.0,
-             global_momentum=0.9, min_bucket_size=500, refit=False,
-             optimizer=None, **kwargs):
+    def _fit(self, X=None, Y=None, generator=None, epochs=35, inner_epochs=1, callbacks=None, validation_split=0.1,
+             verbose=0, global_lr=1.0, global_momentum=0.9, min_bucket_size=500, refit=False, optimizer=None, **kwargs):
         if optimizer is not None:
             self.optimizer = optimizer
         if isinstance(X, dict):
@@ -305,10 +301,8 @@ class FATENetwork(FATENetworkCore):
                                          **kwargs)
             self.logger.info("Fitting complete")
 
-    def fit(self, X, Y, epochs=35, inner_epochs=1, callbacks=None,
-            validation_split=0.1, verbose=0,
-            global_lr=1.0, global_momentum=0.9,
-            min_bucket_size=500, refit=False, **kwargs):
+    def fit(self, X, Y, epochs=35, inner_epochs=1, callbacks=None, validation_split=0.1, verbose=0, global_lr=1.0,
+            global_momentum=0.9, min_bucket_size=500, refit=False, **kwargs):
         """Fit a generic object ranking model on a provided set of queries.
 
         The provided queries can be of a fixed size (numpy arrays) or of
@@ -493,3 +487,6 @@ class FATENetwork(FATENetworkCore):
             self.model = None
         if hasattr(self, 'models'):
             self.models = None
+
+
+

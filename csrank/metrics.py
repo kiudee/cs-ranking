@@ -2,8 +2,7 @@ import numpy as np
 import tensorflow as tf
 from keras import backend as K
 
-from csrank.util import tensorify, get_instances_objects, \
-    get_rankings_tensor
+from csrank.tensorflow_util import scores_to_rankings, get_instances_objects, tensorify
 
 __all__ = ['zero_one_rank_loss', 'zero_one_rank_loss_for_scores',
            'zero_one_rank_loss_for_scores_ties',
@@ -92,7 +91,7 @@ def kendalls_tau_for_scores(y_true, y_pred):
 def spearman_correlation_for_scores(y_true, y_pred):
     y_true, y_pred = tensorify(y_true), tensorify(y_pred)
     n_instances, n_objects = get_instances_objects(y_true)
-    predicted_rankings = get_rankings_tensor(n_objects, y_pred)
+    predicted_rankings = scores_to_rankings(n_objects, y_pred)
     y_true = K.cast(y_true, dtype='float32')
     sum_of_squared_distances = tf.constant(0.0)
     for i in np.arange(K.int_shape(y_pred)[1]):
@@ -108,7 +107,7 @@ def spearman_correlation_for_scores(y_true, y_pred):
 def zero_one_accuracy_for_scores(y_true, y_pred):
     y_true, y_pred = tensorify(y_true), tensorify(y_pred)
     n_instances, n_objects = get_instances_objects(y_true)
-    predicted_rankings = get_rankings_tensor(n_objects, y_pred)
+    predicted_rankings = scores_to_rankings(n_objects, y_pred)
     y_true = K.cast(y_true, dtype='float32')
     equal_ranks = K.cast(K.all(K.equal(predicted_rankings, y_true), axis=1), dtype='float32')
     denominator = K.cast(n_instances, dtype='float32')

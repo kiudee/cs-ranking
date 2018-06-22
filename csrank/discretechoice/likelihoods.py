@@ -3,7 +3,7 @@ import theano.tensor as tt
 from pymc3 import Discrete
 from pymc3.distributions.dist_math import bound
 
-from csrank.util import normalize
+from csrank.numpy_util import normalize
 
 
 def categorical_crossentropy(p, y_true):
@@ -49,6 +49,8 @@ class LogLikelihood(Discrete):
 
     def __init__(self, loss_func, p, *args, **kwargs):
         super(LogLikelihood, self).__init__(*args, **kwargs)
+        if loss_func is None:
+            loss_func = categorical_crossentropy
         self.loss_func = loss_func
         try:
             self.k = tt.shape(p)[-1].tag.test_value
@@ -57,13 +59,16 @@ class LogLikelihood(Discrete):
         self.p = tt.as_tensor_variable(p)
         self.mode = tt.argmax(p)
 
-    def random(self, point=None, size=None, repeat=None):
+    def random(self, **kwargs):
         return NotImplemented
 
     def logp(self, value):
         p = self.p
+        k = self.k
         a = self.loss_func(p, value)
         p = normalize(p)
-        sumto1 = theano.gradient.zero_grad(
+        sum_to1 = theano.gradient.zero_grad(
             tt.le(abs(tt.sum(p, axis=-1) - 1), 1e-5))
-        return bound(a, sumto1)
+
+        value_k = tt.argmax(value, axis=1)
+        return bound(a, value_k >= 0, value_k <= (k - 1), sum_to1)

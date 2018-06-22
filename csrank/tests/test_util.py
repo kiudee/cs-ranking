@@ -4,7 +4,8 @@ import tensorflow as tf
 from keras import backend as K
 
 from csrank import SyntheticIterator
-from ..util import tensorify, check_learner_class
+from csrank.tensorflow_util import tensorify
+from csrank.tuning import check_learner_class
 
 
 def test_tensorify():
