@@ -3,12 +3,8 @@ import re
 from datetime import datetime, timedelta
 from pathlib import Path
 
-import numpy as np
-
-from csrank.tensorflow_util import get_tensor_value
-
-__all__ = ['create_dir_recursively', 'duration_till_now', 'get_loss_for_array', 'get_mean_loss_for_dictionary',
-           'print_dictionary', 'rename_file_if_exist', 'seconds_to_time', 'time_from_now', 'get_duration_seconds']
+__all__ = ['create_dir_recursively', 'duration_till_now', 'print_dictionary', 'rename_file_if_exist', 'seconds_to_time',
+           'time_from_now', 'get_duration_seconds']
 
 
 def print_dictionary(dictionary):
@@ -38,26 +34,6 @@ def rename_file_if_exist(file_path):
         my_file = Path(file_path)
         i += 1
     return file_path
-
-
-def get_mean_loss_for_dictionary(metric, y_true, y_pred):
-    losses = []
-    total_instances = 0
-    for n in y_pred.keys():
-        loss = get_loss_for_array(metric, y_true[n], y_pred[n])
-        if loss is not np.nan:
-            loss = loss * y_pred[n].shape[0]
-            total_instances += y_pred[n].shape[0]
-            losses.append(loss)
-    losses = np.array(losses)
-    weighted_mean = np.sum(losses) / total_instances
-    return weighted_mean
-
-
-def get_loss_for_array(metric, y_true, y_pred):
-    x = metric(y_true, y_pred)
-    x = get_tensor_value(x)
-    return np.nanmean(x)
 
 
 def get_duration_seconds(duration):

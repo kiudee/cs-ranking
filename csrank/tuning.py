@@ -23,7 +23,8 @@ from csrank.metrics_np import categorical_accuracy_np
 from csrank.tunable import Tunable
 from csrank.util import duration_till_now, create_dir_recursively, \
     seconds_to_time, \
-    get_mean_loss_for_dictionary, get_loss_for_array, convert_to_loss
+    convert_to_loss
+from csrank.tensorflow_util import get_mean_loss_for_dictionary, get_loss_for_array
 
 PARAMETER_OPTIMIZER = "ParameterOptimizer"
 
