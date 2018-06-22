@@ -3,11 +3,13 @@ from itertools import combinations
 
 import numpy as np
 import pymc3 as pm
+import theano
 import theano.tensor as tt
 from sklearn.utils import check_random_state
 
-from csrank.discretechoice.util import logsumexptheano, logsumexpnp
 from csrank.learner import Learner
+import csrank.numpy_util as npu
+import csrank.theano_util as ttu
 from csrank.util import print_dictionary
 from .discrete_choice import DiscreteObjectChooser
 from .likelihoods import likelihood_dict, LogLikelihood
@@ -27,8 +29,11 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         self.model = None
         self.trace = None
         self.trace_vi = None
+        self.Xt = None
+        self.Yt = None
+        self.p = None
 
-    def get_probabilities(self, utility, lambda_k, n_instances):
+    def get_probabilities(self, utility, lambda_k):
         n_objects = self.n_objects
         nests_indices = self.nests_indices
         n_nests = self.n_nests
@@ -40,10 +45,10 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         uti_per_nest = tt.transpose(utility[:, None, :] / lambdas, (0, 2, 1))
         ind = np.array([[[i1, i2], [i2, i1]] for i1, i2 in nests_indices])
         ind = ind.reshape(2 * n_nests, 2)
-        x = uti_per_nest[:, ind[:, 0], ind[:, 1]].reshape((n_instances * n_nests, 2))
-        log_sum_exp_nest = logsumexptheano(x).reshape((n_instances, n_nests))
-        pnk = tt.exp(log_sum_exp_nest * lambda_k - logsumexptheano(log_sum_exp_nest * lambda_k))
-        p = tt.zeros((n_instances, n_objects), dtype=float)
+        x = uti_per_nest[:, ind[:, 0], ind[:, 1]].reshape((-1, 2))
+        log_sum_exp_nest = ttu.logsumexp(x).reshape((-1, n_nests))
+        pnk = tt.exp(log_sum_exp_nest * lambda_k - ttu.logsumexp(log_sum_exp_nest * lambda_k))
+        p = tt.zeros(tuple(utility.shape), dtype=float)
         for i in range(n_nests):
             i1, i2 = nests_indices[i]
             x1 = tt.exp(uti_per_nest[:, i1, i2] - log_sum_exp_nest[:, i]) * pnk[:, i]
@@ -53,7 +58,6 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         return p
 
     def get_probabilities_np(self, utility, lambda_k):
-        n_instances = utility.shape[0]
         n_objects = self.n_objects
         nests_indices = self.nests_indices
         n_nests = self.n_nests
@@ -63,30 +67,27 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         uti_per_nest = np.transpose((utility[:, None] / lambdas), (0, 2, 1))
         ind = np.array([[[i1, i2], [i2, i1]] for i1, i2 in nests_indices])
         ind = ind.reshape(2 * n_nests, 2)
-        x = uti_per_nest[:, ind[:, 0], ind[:, 1]].reshape(n_instances * n_nests, 2)
-        log_sum_exp_nest = logsumexpnp(x).reshape(n_instances, n_nests)
-        pnk = np.exp(log_sum_exp_nest * lambda_k - logsumexpnp(log_sum_exp_nest * lambda_k))
-        p = np.zeros((n_instances, n_objects), dtype=float)
+        x = uti_per_nest[:, ind[:, 0], ind[:, 1]].reshape(-1, 2)
+        log_sum_exp_nest = npu.logsumexp(x).reshape(-1, n_nests)
+        pnk = np.exp(log_sum_exp_nest * lambda_k - npu.logsumexp(log_sum_exp_nest * lambda_k))
+        p = np.zeros(tuple(utility.shape), dtype=float)
         for i in range(n_nests):
             i1, i2 = nests_indices[i]
             p[:, i1] += np.exp(uti_per_nest[:, i1, i2] - log_sum_exp_nest[:, i]) * pnk[:, i]
             p[:, i2] += np.exp(uti_per_nest[:, i2, i1] - log_sum_exp_nest[:, i]) * pnk[:, i]
         return p
 
-    def fit(self, X, Y, sampler="advi", **kwargs):
+    def fit(self, X, Y, sampler="vi", **kwargs):
         with pm.Model() as self.model:
+            self.Xt = theano.shared(X)
+            self.Yt = theano.shared(Y)
             mu_weights = pm.Normal('mu_weights', mu=0., sd=10)
             sigma_weights = pm.HalfCauchy('sigma_weights', beta=1)
             weights = pm.Normal('weights', mu=mu_weights, sd=sigma_weights, shape=self.n_object_features)
-            utility = tt.dot(X, weights)
+            utility = tt.dot(self.Xt, weights)
             lambda_k = pm.Uniform('lambda_k', self.alpha, 1.0, shape=self.n_nests)
-            p = self.get_probabilities(utility, lambda_k, X.shape[0])
-
-            if self.loss_function is None:
-                Y = np.argmax(Y, axis=1)
-                yl = pm.Categorical('yl', p=p, observed=Y)
-            else:
-                yl = LogLikelihood('yl', loss_func=self.loss_function, p=p, observed=Y)
+            self.p = self.get_probabilities(utility, lambda_k)
+            yl = LogLikelihood('yl', loss_func=self.loss_function, p=self.p, observed=self.Yt)
 
         if sampler == 'vi':
             with self.model:
@@ -125,9 +126,7 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         self.logger.info("Clearing memory")
         pass
 
-    def set_tunable_parameters(self, n_tune=500, n_sample=500, alpha=5e-2, loss_function='', **point):
-        self.n_tune = n_tune
-        self.n_sample = n_sample
+    def set_tunable_parameters(self, alpha=5e-2, loss_function='', **point):
         self.alpha = alpha
         self.loss_function = likelihood_dict.get(loss_function, None)
         if len(point) > 0:

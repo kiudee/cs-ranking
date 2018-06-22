@@ -2,12 +2,14 @@ import logging
 
 import numpy as np
 import pymc3 as pm
+import theano
 import theano.tensor as tt
 from sklearn.cluster import MiniBatchKMeans as clustering
 from sklearn.utils import check_random_state
 
-from csrank.discretechoice.util import logsumexpnp, logsumexptheano
 from csrank.learner import Learner
+import csrank.numpy_util as npu
+import csrank.theano_util as ttu
 from csrank.util import print_dictionary
 from .discrete_choice import DiscreteObjectChooser
 from .likelihoods import likelihood_dict, LogLikelihood
@@ -31,6 +33,9 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         self.model = None
         self.trace = None
         self.trace_vi = None
+        self.Xt = None
+        self.Yt = None
+        self.p = None
 
     def create_nests(self, X):
         n, n_obj, n_dim = X.shape
@@ -48,10 +53,12 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         y_nests = np.array(y_nests)
         return y_nests
 
-    def fit(self, X, Y, sampler="advi", **kwargs):
+    def fit(self, X, Y, sampler="vi", **kwargs):
         y_nests = self.create_nests(X)
 
         with pm.Model() as self.model:
+            self.Xt = theano.shared(X)
+            self.Yt = theano.shared(Y)
             mu_weights = pm.Normal('mu_weights', mu=0., sd=10)
             sigma_weights = pm.HalfCauchy('sigma_weights', beta=1)
             weights = pm.Normal('weights', mu=mu_weights, sd=sigma_weights, shape=self.n_object_features)
@@ -62,15 +69,11 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
             lambda_k = pm.Uniform('lambda_k', self.alpha, 1.0, shape=self.n_nests)
             weights = (weights / lambda_k[:, None])
 
-            utility = eval_utility(X, y_nests, weights)
+            utility = eval_utility(self.Xt, y_nests, weights)
             utility_k = tt.dot(self.features_nests, weights_k)
-            p = get_probability(y_nests, utility, lambda_k, utility_k)
+            self.p = get_probability(y_nests, utility, lambda_k, utility_k)
 
-            if self.loss_function is None:
-                Y = np.argmax(Y, axis=1)
-                yl = pm.Categorical('yl', p=p, observed=Y)
-            else:
-                yl = LogLikelihood('yl', loss_func=self.loss_function, p=p, observed=Y)
+            yl = LogLikelihood('yl', loss_func=self.loss_function, p=self.p, observed=self.Yt)
 
         if sampler == 'vi':
             with self.model:
@@ -141,10 +144,10 @@ def get_probability(y_nests, utility, lambda_k, utility_k):
     ivm = tt.zeros((n_instances, n_nests))
     for i in range(n_nests):
         sub_tensor = tt.set_subtensor(utility[np.where(y_nests != i)], -1e50)
-        ink = logsumexptheano(sub_tensor)
+        ink = ttu.logsumexp(sub_tensor)
         pni_k = tt.set_subtensor(pni_k[np.where(y_nests == i)], tt.exp(sub_tensor - ink)[np.where(y_nests == i)])
         ivm = tt.set_subtensor(ivm[:, i], lambda_k[i] * ink[:, 0] + utility_k[i])
-    pk = tt.exp(ivm - logsumexptheano(ivm))
+    pk = tt.exp(ivm - ttu.logsumexp(ivm))
     pn_k = tt.zeros((n_instances, n_objects))
     for i in range(n_nests):
         rows, cols = np.where(y_nests == i)
@@ -171,10 +174,10 @@ def get_probability_np(y_nests, utility, lambda_k, utility_k):
     for i in range(n_nests):
         sub_tensor = np.copy(utility)
         sub_tensor[np.where(y_nests != i)] = -1e50
-        ink = logsumexpnp(sub_tensor)
+        ink = npu.logsumexp(sub_tensor)
         pni_k[np.where(y_nests == i)] = np.exp(sub_tensor - ink)[np.where(y_nests == i)]
         ivm[:, i] = lambda_k[i] * ink[:, 0] + utility_k[i]
-    pk = np.exp(ivm - logsumexpnp(ivm))
+    pk = np.exp(ivm - npu.logsumexp(ivm))
     pn_k = np.zeros((n_instances, n_objects))
     for i in range(n_nests):
         rows, cols = np.where(y_nests == i)

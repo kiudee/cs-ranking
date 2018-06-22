@@ -2,8 +2,10 @@ import logging
 
 import numpy as np
 import pymc3 as pm
+import theano
 import theano.tensor as tt
 
+import csrank.theano_util as ttu
 from csrank.learner import Learner
 from csrank.util import print_dictionary
 from .discrete_choice import DiscreteObjectChooser
@@ -18,21 +20,22 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
         self.model = None
         self.trace = None
         self.trace_vi = None
+        self.Xt = None
+        self.Yt = None
+        self.p = None
 
-    def fit(self, X, Y, sampler='advi', **kwargs):
+    def fit(self, X, Y, sampler='vi', **kwargs):
         with pm.Model() as self.model:
+            self.Xt = theano.shared(X)
+            self.Yt = theano.shared(Y)
             mu_weights = pm.Normal('mu_weights', mu=0., sd=10)
             sigma_weights = pm.HalfCauchy('sigma_weights', beta=1)
             weights = pm.Normal('weights', mu=mu_weights, sd=sigma_weights, shape=self.n_object_features)
             intercept = pm.Normal('intercept', mu=0, sd=10)
-            utility = tt.dot(X, weights) + intercept
-            p = tt.nnet.softmax(utility)
+            utility = tt.dot(self.Xt, weights) + intercept
+            self.p = ttu.softmax(utility, axis=1)
 
-            if self.loss_function is None:
-                Y = np.argmax(Y, axis=1)
-                yl = pm.Categorical('yl', p=p, observed=Y)
-            else:
-                yl = LogLikelihood('yl', loss_func=self.loss_function, p=p, observed=Y)
+            yl = LogLikelihood('yl', loss_func=self.loss_function, p=self.p, observed=self.Yt)
 
         if sampler == 'vi':
             with self.model:

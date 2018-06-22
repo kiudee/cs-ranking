@@ -3,10 +3,12 @@ from itertools import product
 
 import numpy as np
 import pymc3 as pm
+import theano
 import theano.tensor as tt
 from sklearn.utils import check_random_state
 
-from csrank.discretechoice.util import logsumexpnp, logsumexptheano, softmax_np, softmax_theano
+import csrank.numpy_util as npu
+import csrank.theano_util as ttu
 from csrank.learner import Learner
 from csrank.util import print_dictionary
 from .discrete_choice import DiscreteObjectChooser
@@ -30,6 +32,9 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
         self.model = None
         self.trace = None
         self.trace_vi = None
+        self.Xt = None
+        self.Yt = None
+        self.p = None
 
     def get_probabilities(self, utility, lambda_k, alpha_ik, n_instances, n_objects):
         n_nests = self.n_nests
@@ -37,10 +42,10 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
         sum_per_nest = tt.zeros((n_instances, n_nests))
         for i in range(n_nests):
             uti = (utility + tt.log(alpha_ik[:, :, i])) * 1 / lambda_k[i]
-            sum_n = logsumexptheano(uti)
+            sum_n = ttu.logsumexp(uti)
             pik = tt.set_subtensor(pik[:, :, i], tt.exp(uti - sum_n))
             sum_per_nest = tt.set_subtensor(sum_per_nest[:, i], sum_n[:, 0] * lambda_k[i])
-        pnk = tt.exp(sum_per_nest - logsumexptheano(sum_per_nest))
+        pnk = tt.exp(sum_per_nest - ttu.logsumexp(sum_per_nest))
         pnk = pnk[:, None, :]
         p = pik * pnk
         p = p.sum(axis=2)
@@ -53,17 +58,20 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
         sum_per_nest_x = np.zeros((n_instances, n_nests))
         for i in range(n_nests):
             uti = (utility + np.log(alpha_ik[:, :, i])) * 1 / lambda_k[i]
-            sum_n = logsumexpnp(uti)
+            sum_n = npu.logsumexp(uti)
             pik[:, :, i] = np.exp(uti - sum_n)
             sum_per_nest_x[:, i] = sum_n[:, 0] * lambda_k[i]
-        pnk = np.exp(sum_per_nest_x - logsumexpnp(sum_per_nest_x))
+        pnk = np.exp(sum_per_nest_x - npu.logsumexp(sum_per_nest_x))
         pnk = pnk[:, None, :]
         p = pik * pnk
         p = p.sum(axis=2)
         return p
 
-    def fit(self, X, Y, sampler="advi", **kwargs):
+    def fit(self, X, Y, sampler="vi", **kwargs):
+
         with pm.Model() as self.model:
+            self.Xt = theano.shared(X)
+            self.Yt = theano.shared(Y)
             mu_weights = pm.Normal('mu_weights', mu=0., sd=10)
             sigma_weights = pm.HalfCauchy('sigma_weights', beta=1)
             weights = pm.Normal('weights', mu=mu_weights, sd=sigma_weights, shape=self.n_object_features)
@@ -72,18 +80,14 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
             sigma_weights_k = pm.HalfCauchy('sigma_weights_k', beta=1)
             weights_ik = pm.Normal('weights_ik', mu=mu_weights_k, sd=sigma_weights_k,
                                    shape=(self.n_object_features, self.n_nests))
-            alpha_ik = tt.dot(X, weights_ik)
-            alpha_ik = softmax_theano(alpha_ik, axis=2)
-            utility = tt.dot(X, weights)
+            alpha_ik = tt.dot(self.Xt, weights_ik)
+            alpha_ik = ttu.softmax(alpha_ik, axis=2)
+            utility = tt.dot(self.Xt, weights)
 
             lambda_k = pm.Uniform('lambda_k', self.alpha, 1.0, shape=self.n_nests)
             n_instances, n_objects, n_features = X.shape
-            p = self.get_probabilities(utility, lambda_k, alpha_ik, n_instances, n_objects)
-            if self.loss_function is None:
-                Y = np.argmax(Y, axis=1)
-                yl = pm.Categorical('yl', p=p, observed=Y)
-            else:
-                yl = LogLikelihood('yl', loss_func=self.loss_function, p=p, observed=Y)
+            self.p = self.get_probabilities(utility, lambda_k, alpha_ik, n_instances, n_objects)
+            yl = LogLikelihood('yl', loss_func=self.loss_function, p=self.p, observed=self.Yt)
 
         if sampler == 'vi':
             with self.model:
@@ -109,7 +113,7 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
         for i, k in product(range(self.n_object_features), range(self.n_nests)):
             weights_ik[i][k] = mean_trace['weights_ik__{}_{}'.format(i, k)]
         alpha_ik = np.dot(X, weights_ik)
-        alpha_ik = softmax_np(alpha_ik, axis=2)
+        alpha_ik = npu.softmax(alpha_ik, axis=2)
         utility = np.dot(X, weights)
         p = self.get_probabilities_np(utility, lambda_k, alpha_ik)
         return p
