@@ -3,7 +3,7 @@ import theano.tensor as tt
 from pymc3 import Discrete
 from pymc3.distributions.dist_math import bound
 
-from csrank.numpy_util import normalize
+from csrank.theano_util import normalize
 
 
 def categorical_crossentropy(p, y_true):

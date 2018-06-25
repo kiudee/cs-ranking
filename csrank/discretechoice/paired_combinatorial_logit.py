@@ -7,9 +7,9 @@ import theano
 import theano.tensor as tt
 from sklearn.utils import check_random_state
 
-from csrank.learner import Learner
 import csrank.numpy_util as npu
 import csrank.theano_util as ttu
+from csrank.learner import Learner
 from csrank.util import print_dictionary
 from .discrete_choice import DiscreteObjectChooser
 from .likelihoods import likelihood_dict, LogLikelihood

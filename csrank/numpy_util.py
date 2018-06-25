@@ -1,6 +1,5 @@
 import numpy as np
 from scipy.stats import rankdata
-from functools import partial
 
 
 def replace_inf_np(x):
@@ -66,4 +65,3 @@ def scores_to_rankings(score_matrix):
 def ranking_ordering_conversion(input):
     output = np.argsort(input, axis=1)
     return output
-

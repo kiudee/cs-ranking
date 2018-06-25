@@ -1,10 +1,12 @@
+import inspect
+import logging
 import os
 import re
 from datetime import datetime, timedelta
 from pathlib import Path
 
 __all__ = ['create_dir_recursively', 'duration_till_now', 'print_dictionary', 'rename_file_if_exist', 'seconds_to_time',
-           'time_from_now', 'get_duration_seconds']
+           'time_from_now', 'get_duration_seconds', 'setup_logger']
 
 
 def print_dictionary(dictionary):
@@ -63,3 +65,15 @@ def convert_to_loss(loss_function):
         return 1.0 - loss_function(y_true, y_pred)
 
     return loss
+
+
+def setup_logger(log_path=None):
+    """Function setup as many loggers as you want"""
+    if log_path is None:
+        dirname = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+        dirname = os.path.dirname(dirname)
+        log_path = os.path.join(dirname, "experiments", "logs", "logs.log")
+        create_dir_recursively(log_path, True)
+    logging.basicConfig(filename=log_path, level=logging.DEBUG,
+                        format='%(asctime)s %(name)s %(levelname)-8s %(message)s',
+                        datefmt='%Y-%m-%d %H:%M:%S')

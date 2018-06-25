@@ -1,4 +1,3 @@
-import inspect
 import logging
 import multiprocessing
 import os
@@ -8,7 +7,7 @@ import tensorflow as tf
 from keras import backend as K
 from tensorflow.python.client import device_lib
 
-from csrank.util import create_dir_recursively
+from csrank.util import setup_logger
 
 
 def scores_to_rankings(n_objects, y_pred):
@@ -38,18 +37,6 @@ def get_tensor_value(x):
     if isinstance(x, tf.Tensor):
         return K.get_value(x)
     return x
-
-
-def setup_logger(log_path=None):
-    """Function setup as many loggers as you want"""
-    if log_path is None:
-        dirname = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-        dirname = os.path.dirname(dirname)
-        log_path = os.path.join(dirname, "experiments", "logs", "logs.log")
-        create_dir_recursively(log_path, True)
-    logging.basicConfig(filename=log_path, level=logging.DEBUG,
-                        format='%(asctime)s %(name)s %(levelname)-8s %(message)s',
-                        datefmt='%Y-%m-%d %H:%M:%S')
 
 
 def configure_logging_numpy_keras(seed=42, log_path=None):

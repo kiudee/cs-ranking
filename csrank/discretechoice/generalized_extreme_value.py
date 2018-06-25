@@ -36,8 +36,9 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
         self.Yt = None
         self.p = None
 
-    def get_probabilities(self, utility, lambda_k, alpha_ik, n_instances, n_objects):
+    def get_probabilities(self, utility, lambda_k, alpha_ik):
         n_nests = self.n_nests
+        n_instances, n_objects = utility.shape
         pik = tt.zeros((n_instances, n_objects, n_nests))
         sum_per_nest = tt.zeros((n_instances, n_nests))
         for i in range(n_nests):
@@ -80,10 +81,10 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
             sigma_weights_k = pm.HalfCauchy('sigma_weights_k', beta=1)
             weights_ik = pm.Normal('weights_ik', mu=mu_weights_k, sd=sigma_weights_k,
                                    shape=(self.n_object_features, self.n_nests))
+
             alpha_ik = tt.dot(self.Xt, weights_ik)
             alpha_ik = ttu.softmax(alpha_ik, axis=2)
             utility = tt.dot(self.Xt, weights)
-
             lambda_k = pm.Uniform('lambda_k', self.alpha, 1.0, shape=self.n_nests)
             n_instances, n_objects, n_features = X.shape
             self.p = self.get_probabilities(utility, lambda_k, alpha_ik, n_instances, n_objects)
