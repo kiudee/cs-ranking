@@ -1,3 +1,4 @@
+import pymc3 as pm
 import theano
 import theano.tensor as tt
 from pymc3 import Discrete
@@ -72,3 +73,18 @@ class LogLikelihood(Discrete):
 
         value_k = tt.argmax(value, axis=1)
         return bound(a, value_k >= 0, value_k <= (k - 1), sum_to1)
+
+
+def create_weight_dictionary(model_args, shapes):
+    weights_dict = dict()
+    for key, value in model_args.items():
+        prior, params = value
+
+        for k in params.keys():
+            if isinstance(params[k], tuple):
+                params[k][1]['name'] = '{}_{}'.format(key, k)
+                params[k] = params[k][0](**params[k][1])
+        params['name'] = key
+        params['shape'] = shapes[key]
+        weights_dict[key] = prior(**params)
+    return weights_dict

@@ -9,34 +9,44 @@ import csrank.theano_util as ttu
 from csrank.learner import Learner
 from csrank.util import print_dictionary
 from .discrete_choice import DiscreteObjectChooser
-from .likelihoods import likelihood_dict, LogLikelihood
+from .likelihoods import likelihood_dict, LogLikelihood, create_weight_dictionary
+
+default_configuration = {
+    'weights': (pm.Normal, {'mu': (pm.Normal, {'mu': 0, 'sd': 10}), 'sd': (pm.HalfCauchy, {'beta': 2})})}
 
 
 class MultinomialLogitModel(DiscreteObjectChooser, Learner):
-    def __init__(self, n_object_features, loss_function='', **kwargs):
+    def __init__(self, n_object_features, loss_function='', model_args={}, **kwargs):
         self.n_object_features = n_object_features
         self.logger = logging.getLogger(MultinomialLogitModel.__name__)
         self.loss_function = likelihood_dict.get(loss_function, None)
+        self.model_args = dict()
+        for key, value in default_model_configuration.items():
+            self.model_args[key] = model_args.get(key, value)
+
         self.model = None
         self.trace = None
         self.trace_vi = None
         self.Xt = None
         self.Yt = None
         self.p = None
+        self.mu_weights = None
 
-    def fit(self, X, Y, sampler='vi', **kwargs):
+    def construct_model(self, X, Y):
         with pm.Model() as self.model:
             self.Xt = theano.shared(X)
             self.Yt = theano.shared(Y)
-            mu_weights = pm.Normal('mu_weights', mu=0., sd=10)
-            sigma_weights = pm.HalfCauchy('sigma_weights', beta=1)
-            weights = pm.Normal('weights', mu=mu_weights, sd=sigma_weights, shape=self.n_object_features)
+            shapes = {'weights': self.n_object_features}
+
+            weights_dict = create_weight_dictionary(self.model_args, shapes)
             intercept = pm.Normal('intercept', mu=0, sd=10)
-            utility = tt.dot(self.Xt, weights) + intercept
+            utility = tt.dot(self.Xt, weights_dict['weights']) + intercept
             self.p = ttu.softmax(utility, axis=1)
 
             yl = LogLikelihood('yl', loss_func=self.loss_function, p=self.p, observed=self.Yt)
 
+    def fit(self, X, Y, sampler='vi', **kwargs):
+        self.construct_model(X, Y)
         if sampler == 'vi':
             with self.model:
                 sample_params = kwargs['sample_params']

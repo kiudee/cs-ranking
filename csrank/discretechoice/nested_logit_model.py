@@ -9,15 +9,20 @@ from sklearn.utils import check_random_state
 
 import csrank.numpy_util as npu
 import csrank.theano_util as ttu
+from csrank.discretechoice.likelihoods import create_weight_dictionary
 from csrank.learner import Learner
 from csrank.util import print_dictionary
 from .discrete_choice import DiscreteObjectChooser
 from .likelihoods import likelihood_dict, LogLikelihood
 
+default_configuration = {
+    'weights': (pm.Normal, {'mu': (pm.Normal, {'mu': 0, 'sd': 10}), 'sd': (pm.HalfCauchy, {'beta': 2})}),
+    'weights_k': (pm.Normal, {'mu': (pm.Normal, {'mu': 0, 'sd': 10}), 'sd': (pm.HalfCauchy, {'beta': 2})})}
+
 
 class NestedLogitModel(DiscreteObjectChooser, Learner):
     def __init__(self, n_object_features, n_objects, n_nests=None, loss_function='', alpha=1e-2, random_state=None,
-                 **kwd):
+                 model_args={}, **kwd):
         self.n_object_features = n_object_features
         self.n_objects = n_objects
         if n_nests is None:
@@ -27,9 +32,13 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         self.alpha = alpha
         self.random_state = check_random_state(random_state)
         self.logger = logging.getLogger(NestedLogitModel.__name__)
+        self.loss_function = likelihood_dict.get(loss_function, None)
+        self.model_args = dict()
+        for key, value in default_model_configuration.items():
+            self.model_args[key] = model_args.get(key, value)
+
         self.cluster_model = None
         self.features_nests = None
-        self.loss_function = likelihood_dict.get(loss_function, None)
         self.model = None
         self.trace = None
         self.trace_vi = None
@@ -37,6 +46,23 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         self.Yt = None
         self.p = None
         self.y_nests = None
+
+    def construct_model(self, X, Y):
+        y_nests = self.create_nests(X)
+        with pm.Model() as self.model:
+            self.Xt = theano.shared(X)
+            self.Yt = theano.shared(Y)
+            self.y_nests = theano.shared(y_nests)
+            shapes = {'weights': self.n_object_features, 'weights_k': self.n_object_features}
+
+            weights_dict = create_weight_dictionary(self.model_args, shapes)
+            lambda_k = pm.Uniform('lambda_k', self.alpha, 1.0, shape=self.n_nests)
+            weights = (weights_dict['weights'] / lambda_k[:, None])
+            utility = self.eval_utility(weights)
+            utility_k = tt.dot(self.features_nests, weights_dict['weights_k'])
+            self.p = self.get_probability(utility, lambda_k, utility_k)
+
+            yl = LogLikelihood('yl', loss_func=self.loss_function, p=self.p, observed=self.Yt)
 
     def create_nests(self, X):
         n, n_obj, n_dim = X.shape
@@ -55,27 +81,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         return y_nests
 
     def fit(self, X, Y, sampler="vi", **kwargs):
-        y_nests = self.create_nests(X)
-        with pm.Model() as self.model:
-            self.Xt = theano.shared(X)
-            self.Yt = theano.shared(Y)
-            self.y_nests = theano.shared(y_nests)
-            mu_weights = pm.Normal('mu_weights', mu=0., sd=10)
-            sigma_weights = pm.HalfCauchy('sigma_weights', beta=1)
-            weights = pm.Normal('weights', mu=mu_weights, sd=sigma_weights, shape=self.n_object_features)
-
-            mu_weights_k = pm.Normal('mu_weights_k', mu=0., sd=10)
-            sigma_weights_k = pm.HalfCauchy('sigma_weights_k', beta=1)
-            weights_k = pm.Normal('weights_k', mu=mu_weights_k, sd=sigma_weights_k, shape=self.n_object_features)
-
-            lambda_k = pm.Uniform('lambda_k', self.alpha, 1.0, shape=self.n_nests)
-            weights = (weights / lambda_k[:, None])
-            utility = self.eval_utility(weights)
-            utility_k = tt.dot(self.features_nests, weights_k)
-            self.p = self.get_probability(utility, lambda_k, utility_k)
-
-            yl = LogLikelihood('yl', loss_func=self.loss_function, p=self.p, observed=self.Yt)
-
+        self.construct_model(X, Y)
         if sampler == 'vi':
             with self.model:
                 sample_params = kwargs['sample_params']
@@ -180,3 +186,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
             pn_k[rows, cols] = p[rows, cols]
         p = pni_k * pn_k
         return p
+
+    def construct_weights(self):
+
+        return weights

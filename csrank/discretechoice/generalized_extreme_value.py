@@ -12,13 +12,16 @@ import csrank.theano_util as ttu
 from csrank.learner import Learner
 from csrank.util import print_dictionary
 from .discrete_choice import DiscreteObjectChooser
-from .likelihoods import likelihood_dict, LogLikelihood
+from .likelihoods import likelihood_dict, LogLikelihood, create_weight_dictionary
+
+default_configuration = {
+    'weights': (pm.Normal, {'mu': (pm.Normal, {'mu': 0, 'sd': 10}), 'sd': (pm.HalfCauchy, {'beta': 2})}),
+    'weights_ik': (pm.Normal, {'mu': (pm.Normal, {'mu': 0, 'sd': 10}), 'sd': (pm.HalfCauchy, {'beta': 2})})}
 
 
 class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
-
     def __init__(self, n_object_features, n_objects, n_nests=None, loss_function='None', alpha=5e-2, random_state=None,
-                 **kwd):
+                 model_args={}, **kwd):
         self.n_object_features = n_object_features
         self.n_objects = n_objects
         if n_nests is None:
@@ -27,6 +30,9 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
             self.n_nests = n_nests
         self.alpha = alpha
         self.random_state = check_random_state(random_state)
+        self.model_args = dict()
+        for key, value in default_configuration.items():
+            self.model_args[key] = model_args.get(key, value)
         self.logger = logging.getLogger(GeneralizedExtremeValueModel.__name__)
         self.loss_function = likelihood_dict.get(loss_function, None)
         self.model = None
@@ -73,21 +79,14 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
         with pm.Model() as self.model:
             self.Xt = theano.shared(X)
             self.Yt = theano.shared(Y)
-            mu_weights = pm.Normal('mu_weights', mu=0., sd=10)
-            sigma_weights = pm.HalfCauchy('sigma_weights', beta=1)
-            weights = pm.Normal('weights', mu=mu_weights, sd=sigma_weights, shape=self.n_object_features)
+            shapes = {'weights': self.n_object_features, 'weights_ik': (self.n_object_features, self.n_nests)}
+            weights_dict = create_weight_dictionary(self.model_args, shapes)
 
-            mu_weights_k = pm.Normal('mu_weights_k', mu=0., sd=10)
-            sigma_weights_k = pm.HalfCauchy('sigma_weights_k', beta=1)
-            weights_ik = pm.Normal('weights_ik', mu=mu_weights_k, sd=sigma_weights_k,
-                                   shape=(self.n_object_features, self.n_nests))
-
-            alpha_ik = tt.dot(self.Xt, weights_ik)
+            alpha_ik = tt.dot(self.Xt, weights_dict['weights_ik'])
             alpha_ik = ttu.softmax(alpha_ik, axis=2)
-            utility = tt.dot(self.Xt, weights)
+            utility = tt.dot(self.Xt, weights_dict['weights'])
             lambda_k = pm.Uniform('lambda_k', self.alpha, 1.0, shape=self.n_nests)
-            n_instances, n_objects, n_features = X.shape
-            self.p = self.get_probabilities(utility, lambda_k, alpha_ik, n_instances, n_objects)
+            self.p = self.get_probabilities(utility, lambda_k, alpha_ik)
             yl = LogLikelihood('yl', loss_func=self.loss_function, p=self.p, observed=self.Yt)
 
         if sampler == 'vi':
