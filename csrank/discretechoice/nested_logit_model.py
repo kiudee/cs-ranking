@@ -16,8 +16,8 @@ from .discrete_choice import DiscreteObjectChooser
 from .likelihoods import likelihood_dict, LogLikelihood
 
 default_configuration = {
-    'weights': (pm.Normal, {'mu': (pm.Normal, {'mu': 0, 'sd': 10}), 'sd': (pm.HalfCauchy, {'beta': 2})}),
-    'weights_k': (pm.Normal, {'mu': (pm.Normal, {'mu': 0, 'sd': 10}), 'sd': (pm.HalfCauchy, {'beta': 2})})}
+    'weights': [pm.Normal, {'mu': (pm.Normal, {'mu': 0, 'sd': 10}), 'sd': (pm.HalfCauchy, {'beta': 2})}],
+    'weights_k': [pm.Normal, {'mu': (pm.Normal, {'mu': 0, 'sd': 10}), 'sd': (pm.HalfCauchy, {'beta': 2})}]}
 
 
 class NestedLogitModel(DiscreteObjectChooser, Learner):
@@ -34,7 +34,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         self.logger = logging.getLogger(NestedLogitModel.__name__)
         self.loss_function = likelihood_dict.get(loss_function, None)
         self.model_args = dict()
-        for key, value in default_model_configuration.items():
+        for key, value in default_configuration.items():
             self.model_args[key] = model_args.get(key, value)
 
         self.cluster_model = None
@@ -186,7 +186,3 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
             pn_k[rows, cols] = p[rows, cols]
         p = pni_k * pn_k
         return p
-
-    def construct_weights(self):
-
-        return weights

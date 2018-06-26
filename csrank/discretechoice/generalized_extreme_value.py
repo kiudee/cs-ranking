@@ -15,8 +15,8 @@ from .discrete_choice import DiscreteObjectChooser
 from .likelihoods import likelihood_dict, LogLikelihood, create_weight_dictionary
 
 default_configuration = {
-    'weights': (pm.Normal, {'mu': (pm.Normal, {'mu': 0, 'sd': 10}), 'sd': (pm.HalfCauchy, {'beta': 2})}),
-    'weights_ik': (pm.Normal, {'mu': (pm.Normal, {'mu': 0, 'sd': 10}), 'sd': (pm.HalfCauchy, {'beta': 2})})}
+    'weights': [pm.Normal, {'mu': (pm.Normal, {'mu': 0, 'sd': 10}), 'sd': (pm.HalfCauchy, {'beta': 2})}],
+    'weights_ik': [pm.Normal, {'mu': (pm.Normal, {'mu': 0, 'sd': 10}), 'sd': (pm.HalfCauchy, {'beta': 2})}]}
 
 
 class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
@@ -42,40 +42,7 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
         self.Yt = None
         self.p = None
 
-    def get_probabilities(self, utility, lambda_k, alpha_ik):
-        n_nests = self.n_nests
-        n_instances, n_objects = utility.shape
-        pik = tt.zeros((n_instances, n_objects, n_nests))
-        sum_per_nest = tt.zeros((n_instances, n_nests))
-        for i in range(n_nests):
-            uti = (utility + tt.log(alpha_ik[:, :, i])) * 1 / lambda_k[i]
-            sum_n = ttu.logsumexp(uti)
-            pik = tt.set_subtensor(pik[:, :, i], tt.exp(uti - sum_n))
-            sum_per_nest = tt.set_subtensor(sum_per_nest[:, i], sum_n[:, 0] * lambda_k[i])
-        pnk = tt.exp(sum_per_nest - ttu.logsumexp(sum_per_nest))
-        pnk = pnk[:, None, :]
-        p = pik * pnk
-        p = p.sum(axis=2)
-        return p
-
-    def get_probabilities_np(self, utility, lambda_k, alpha_ik):
-        n_nests = self.n_nests
-        n_instances, n_objects = utility.shape
-        pik = np.zeros((n_instances, n_objects, n_nests))
-        sum_per_nest_x = np.zeros((n_instances, n_nests))
-        for i in range(n_nests):
-            uti = (utility + np.log(alpha_ik[:, :, i])) * 1 / lambda_k[i]
-            sum_n = npu.logsumexp(uti)
-            pik[:, :, i] = np.exp(uti - sum_n)
-            sum_per_nest_x[:, i] = sum_n[:, 0] * lambda_k[i]
-        pnk = np.exp(sum_per_nest_x - npu.logsumexp(sum_per_nest_x))
-        pnk = pnk[:, None, :]
-        p = pik * pnk
-        p = p.sum(axis=2)
-        return p
-
-    def fit(self, X, Y, sampler="vi", **kwargs):
-
+    def construct_model(self, X, Y):
         with pm.Model() as self.model:
             self.Xt = theano.shared(X)
             self.Yt = theano.shared(Y)
@@ -88,6 +55,10 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
             lambda_k = pm.Uniform('lambda_k', self.alpha, 1.0, shape=self.n_nests)
             self.p = self.get_probabilities(utility, lambda_k, alpha_ik)
             yl = LogLikelihood('yl', loss_func=self.loss_function, p=self.p, observed=self.Yt)
+
+    def fit(self, X, Y, sampler="vi", **kwargs):
+
+        self.construct_model(X, Y)
 
         if sampler == 'vi':
             with self.model:
@@ -141,3 +112,35 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
         if len(point) > 0:
             self.logger.warning('This ranking algorithm does not support tunable parameters'
                                 ' called: {}'.format(print_dictionary(point)))
+
+    def get_probabilities(self, utility, lambda_k, alpha_ik):
+        n_nests = self.n_nests
+        n_instances, n_objects = utility.shape
+        pik = tt.zeros((n_instances, n_objects, n_nests))
+        sum_per_nest = tt.zeros((n_instances, n_nests))
+        for i in range(n_nests):
+            uti = (utility + tt.log(alpha_ik[:, :, i])) * 1 / lambda_k[i]
+            sum_n = ttu.logsumexp(uti)
+            pik = tt.set_subtensor(pik[:, :, i], tt.exp(uti - sum_n))
+            sum_per_nest = tt.set_subtensor(sum_per_nest[:, i], sum_n[:, 0] * lambda_k[i])
+        pnk = tt.exp(sum_per_nest - ttu.logsumexp(sum_per_nest))
+        pnk = pnk[:, None, :]
+        p = pik * pnk
+        p = p.sum(axis=2)
+        return p
+
+    def get_probabilities_np(self, utility, lambda_k, alpha_ik):
+        n_nests = self.n_nests
+        n_instances, n_objects = utility.shape
+        pik = np.zeros((n_instances, n_objects, n_nests))
+        sum_per_nest_x = np.zeros((n_instances, n_nests))
+        for i in range(n_nests):
+            uti = (utility + np.log(alpha_ik[:, :, i])) * 1 / lambda_k[i]
+            sum_n = npu.logsumexp(uti)
+            pik[:, :, i] = np.exp(uti - sum_n)
+            sum_per_nest_x[:, i] = sum_n[:, 0] * lambda_k[i]
+        pnk = np.exp(sum_per_nest_x - npu.logsumexp(sum_per_nest_x))
+        pnk = pnk[:, None, :]
+        p = pik * pnk
+        p = p.sum(axis=2)
+        return p

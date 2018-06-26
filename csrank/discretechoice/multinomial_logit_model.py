@@ -12,7 +12,7 @@ from .discrete_choice import DiscreteObjectChooser
 from .likelihoods import likelihood_dict, LogLikelihood, create_weight_dictionary
 
 default_configuration = {
-    'weights': (pm.Normal, {'mu': (pm.Normal, {'mu': 0, 'sd': 10}), 'sd': (pm.HalfCauchy, {'beta': 2})})}
+    'weights': [pm.Normal, {'mu': (pm.Normal, {'mu': 0, 'sd': 10}), 'sd': (pm.HalfCauchy, {'beta': 2})}]}
 
 
 class MultinomialLogitModel(DiscreteObjectChooser, Learner):
@@ -21,7 +21,8 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
         self.logger = logging.getLogger(MultinomialLogitModel.__name__)
         self.loss_function = likelihood_dict.get(loss_function, None)
         self.model_args = dict()
-        for key, value in default_model_configuration.items():
+        self.model_args = dict()
+        for key, value in default_configuration.items():
             self.model_args[key] = model_args.get(key, value)
 
         self.model = None
