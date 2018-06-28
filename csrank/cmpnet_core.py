@@ -9,7 +9,7 @@ from keras.optimizers import SGD
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
 
-from csrank.constants import allowed_dense_kwargs, THRESHOLD
+from csrank.constants import allowed_dense_kwargs
 from csrank.layers import NormalizedDense
 from csrank.learner import Learner
 from csrank.util import print_dictionary
@@ -95,7 +95,7 @@ class CmpNetCore(Learner):
             if key not in allowed_dense_kwargs:
                 del kwargs[key]
         self.kwargs = kwargs
-        self.threshold_instances = THRESHOLD
+        self.threshold_instances = int(1e10)
         self.random_state = check_random_state(random_state)
         self.model = None
         self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,

@@ -6,7 +6,6 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.svm import LinearSVC
 from sklearn.utils import check_random_state
 
-from csrank.constants import THRESHOLD
 from csrank.learner import Learner
 from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.util import print_dictionary
@@ -53,7 +52,7 @@ class RankSVM(ObjectRanker, Learner):
         self.tol = tol
         self.logger = logging.getLogger('RankSVM')
         self.random_state = check_random_state(random_state)
-        self.threshold_instances = THRESHOLD
+        self.threshold_instances = int(1e10)
         self.fit_intercept = fit_intercept
         self.weights = None
         self.model = None

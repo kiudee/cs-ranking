@@ -8,7 +8,7 @@ from keras.optimizers import SGD
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
 
-from csrank.constants import allowed_dense_kwargs, THRESHOLD
+from csrank.constants import allowed_dense_kwargs
 from csrank.layers import NormalizedDense, create_input_lambda
 from csrank.learner import Learner
 from csrank.losses import plackett_luce_loss
@@ -91,7 +91,7 @@ class ListNet(Learner, ObjectRanker):
         self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
                                activation=self.activation, **self.kwargs)
 
-        self.threshold_instances = THRESHOLD
+        self.threshold_instances = int(1e10)
         self.batch_size = batch_size
         self.random_state = check_random_state(random_state)
         self.hash_file = hash_file

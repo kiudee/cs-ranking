@@ -7,7 +7,7 @@ from keras.optimizers import SGD
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
 
-from csrank.constants import allowed_dense_kwargs, THRESHOLD
+from csrank.constants import allowed_dense_kwargs
 from csrank.layers import NormalizedDense
 from csrank.learner import Learner
 from csrank.util import print_dictionary
@@ -83,7 +83,7 @@ class RankNetCore(Learner):
             if key not in allowed_dense_kwargs:
                 del kwargs[key]
         self.kwargs = kwargs
-        self.threshold_instances = THRESHOLD
+        self.threshold_instances = int(1e10)
         self.batch_size = batch_size
         self.hash_file = hash_file
         self._scoring_model = None
