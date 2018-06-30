@@ -14,14 +14,11 @@ from csrank.util import print_dictionary
 from .discrete_choice import DiscreteObjectChooser
 from .likelihoods import likelihood_dict, LogLikelihood, create_weight_dictionary
 
-default_configuration = {
-    'weights': [pm.Normal, {'mu': (pm.Normal, {'mu': 0, 'sd': 10}), 'sd': (pm.HalfCauchy, {'beta': 2})}],
-    'weights_ik': [pm.Normal, {'mu': (pm.Normal, {'mu': 0, 'sd': 10}), 'sd': (pm.HalfCauchy, {'beta': 2})}]}
-
 
 class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
     def __init__(self, n_object_features, n_objects, n_nests=None, loss_function='None', alpha=5e-2, random_state=None,
                  model_args={}, **kwd):
+        self.logger = logging.getLogger(GeneralizedExtremeValueModel.__name__)
         self.n_object_features = n_object_features
         self.n_objects = n_objects
         if n_nests is None:
@@ -31,9 +28,9 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
         self.alpha = alpha
         self.random_state = check_random_state(random_state)
         self.model_args = dict()
-        for key, value in default_configuration.items():
+        for key, value in self.default_configuration.items():
             self.model_args[key] = model_args.get(key, value)
-        self.logger = logging.getLogger(GeneralizedExtremeValueModel.__name__)
+        self.logger.info('Creating model_args config {}'.format(print_dictionary(self.model_args)))
         self.loss_function = likelihood_dict.get(loss_function, None)
         self.model = None
         self.trace = None
@@ -41,6 +38,15 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
         self.Xt = None
         self.Yt = None
         self.p = None
+
+    @property
+    def default_configuration(self):
+        config_dict = {
+            'weights': [pm.Normal, {'mu': (pm.Normal, {'mu': 0, 'sd': 10}), 'sd': (pm.HalfCauchy, {'beta': 2})}],
+            'weights_ik': [pm.Normal, {'mu': (pm.Normal, {'mu': 0, 'sd': 10}), 'sd': (pm.HalfCauchy, {'beta': 2})}]}
+        self.logger.info('Creating default config {}'.format(print_dictionary(config_dict)))
+
+        return config_dict
 
     def construct_model(self, X, Y):
         with pm.Model() as self.model:

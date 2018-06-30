@@ -28,9 +28,9 @@ def sub_sampling_discrete_choices(Xt, St, n_objects=5):
 
 
 def generate_pairwise_instances(x, choice):
-    pairs = np.array( list(product(choice[None,:], x)) + list(product(x, choice[None,:])) )
+    pairs = np.array(list(product(choice[None, :], x)) + list(product(x, choice[None, :])))
     n_pairs = len(pairs)
-    neg_indices = np.arange(int(n_pairs/2), n_pairs)
+    neg_indices = np.arange(int(n_pairs / 2), n_pairs)
     X1 = pairs[:, 0]
     X2 = pairs[:, 1]
     Y_double = np.ones([n_pairs, 1]) * np.array([1, 0])
@@ -59,7 +59,7 @@ def generate_complete_pairwise_dataset(X, Y):
     X2 = np.array(X2)
     Y_double = np.array(Y_double)
     Y_single = np.array(Y_single)
-    #X_train = X1 - X2
+    # X_train = X1 - X2
     return X1, X2, Y_double, Y_single
 
 

@@ -14,9 +14,6 @@ from csrank.util import print_dictionary
 from .discrete_choice import DiscreteObjectChooser
 from .likelihoods import likelihood_dict, LogLikelihood, create_weight_dictionary
 
-default_configuration = {
-    'weights': [pm.Normal, {'mu': (pm.Normal, {'mu': 0, 'sd': 10}), 'sd': (pm.HalfCauchy, {'beta': 2})}]}
-
 
 class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
 
@@ -31,15 +28,22 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         self.random_state = check_random_state(random_state)
         self.loss_function = likelihood_dict.get(loss_function, None)
         self.model_args = dict()
-        for key, value in default_configuration.items():
+        for key, value in self.default_configuration.items():
             self.model_args[key] = model_args.get(key, value)
-
+        self.logger.info('Creating model_args config {}'.format(print_dictionary(self.model_args)))
         self.model = None
         self.trace = None
         self.trace_vi = None
         self.Xt = None
         self.Yt = None
         self.p = None
+
+    @property
+    def default_configuration(self):
+        config_dict = {
+            'weights': [pm.Normal, {'mu': (pm.Normal, {'mu': 0, 'sd': 10}), 'sd': (pm.HalfCauchy, {'beta': 2})}]}
+        self.logger.info('Creating default config {}'.format(print_dictionary(config_dict)))
+        return config_dict
 
     def construct_model(self, X, Y):
         with pm.Model() as self.model:

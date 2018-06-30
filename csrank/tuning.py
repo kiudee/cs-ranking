@@ -20,11 +20,11 @@ from csrank.metrics import *
 from csrank.metrics import zero_one_rank_loss
 from csrank.metrics_np import *
 from csrank.metrics_np import categorical_accuracy_np
+from csrank.tensorflow_util import get_mean_loss_for_dictionary, get_loss_for_array
 from csrank.tunable import Tunable
 from csrank.util import duration_till_now, create_dir_recursively, \
     seconds_to_time, \
     convert_to_loss
-from csrank.tensorflow_util import get_mean_loss_for_dictionary, get_loss_for_array
 
 PARAMETER_OPTIMIZER = "ParameterOptimizer"
 
@@ -310,7 +310,7 @@ class ParameterOptimizer(Learner):
 
         finally:
             self._callbacks_on_optimization_end()
-            self._fit_params["epochs"] = self._fit_params.get("epochs", 500)
+            self._fit_params["epochs"] = self._fit_params.get("epochs", 500) * 2
             if "ps" in self.opt.acq_func:
                 best_point = self.opt.Xi[np.argmin(np.array(self.opt.yi)[:, 0])]
             else:
