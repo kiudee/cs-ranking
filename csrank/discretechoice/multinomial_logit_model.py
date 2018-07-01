@@ -13,15 +13,18 @@ from .likelihoods import likelihood_dict, LogLikelihood, create_weight_dictionar
 
 
 class MultinomialLogitModel(DiscreteObjectChooser, Learner):
-    def __init__(self, n_object_features, loss_function='', model_args={}, **kwargs):
+    def __init__(self, n_object_features, loss_function='', regularization='l2', model_args={}, **kwargs):
         self.logger = logging.getLogger(MultinomialLogitModel.__name__)
         self.n_object_features = n_object_features
         self.loss_function = likelihood_dict.get(loss_function, None)
-        self.model_args = dict()
-        self.model_args = dict()
-        for key, value in self.default_configuration.items():
-            self.model_args[key] = model_args.get(key, value)
-        self.logger.info('Creating model_args config {}'.format(print_dictionary(self.model_args)))
+        if regularization in ['l1', 'l2']:
+            self.regularization = regularization
+        else:
+            self.regularization = 'l2'
+        if isinstance(model_args, dict):
+            self.model_args = model_args
+        else:
+            self.model_args = dict()
 
         self.model = None
         self.trace = None
@@ -29,16 +32,24 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
         self.Xt = None
         self.Yt = None
         self.p = None
-        self.mu_weights = None
 
     @property
     def default_configuration(self):
+        if self.regularization == 'l2':
+            weight = pm.Normal
+            prior = 'sd'
+        elif self.regularization == 'l1':
+            weight = pm.Laplace
+            prior = 'b'
         config_dict = {
-            'weights': [pm.Normal, {'mu': (pm.Normal, {'mu': 0, 'sd': 10}), 'sd': (pm.HalfCauchy, {'beta': 2})}]}
+            'weights': [weight, {'mu': (pm.Normal, {'mu': 0, 'sd': 5}), prior: (pm.HalfCauchy, {'beta': 1})}]}
         self.logger.info('Creating default config {}'.format(print_dictionary(config_dict)))
         return config_dict
 
     def construct_model(self, X, Y):
+        for key, value in self.default_configuration.items():
+            self.model_args[key] = self.model_args.get(key, value)
+        self.logger.info('Creating model_args config {}'.format(print_dictionary(self.model_args)))
         with pm.Model() as self.model:
             self.Xt = theano.shared(X)
             self.Yt = theano.shared(Y)
@@ -50,6 +61,7 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
             self.p = ttu.softmax(utility, axis=1)
 
             yl = LogLikelihood('yl', loss_func=self.loss_function, p=self.p, observed=self.Yt)
+        self.logger.info("Model construction completed")
 
     def fit(self, X, Y, sampler='vi', **kwargs):
         self.construct_model(X, Y)
@@ -90,8 +102,16 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
         self.logger.info("Clearing memory")
         pass
 
-    def set_tunable_parameters(self, loss_function='', **point):
+    def set_tunable_parameters(self, loss_function='', regularization="l1", **point):
         self.loss_function = likelihood_dict.get(loss_function, None)
+        self.regularization = regularization
+        self.model = None
+        self.trace = None
+        self.trace_vi = None
+        self.Xt = None
+        self.Yt = None
+        self.p = None
+        self.model_args = dict()
         if len(point) > 0:
             self.logger.warning('This ranking algorithm does not support'
                                 ' tunable parameters called: {}'.format(print_dictionary(point)))

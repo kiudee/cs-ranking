@@ -16,8 +16,8 @@ from .likelihoods import likelihood_dict, LogLikelihood, create_weight_dictionar
 
 
 class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
-    def __init__(self, n_object_features, n_objects, n_nests=None, loss_function='None', alpha=5e-2, random_state=None,
-                 model_args={}, **kwd):
+    def __init__(self, n_object_features, n_objects, n_nests=None, loss_function='None', regularization='l1',
+                 alpha=5e-2, random_state=None, model_args={}, **kwd):
         self.logger = logging.getLogger(GeneralizedExtremeValueModel.__name__)
         self.n_object_features = n_object_features
         self.n_objects = n_objects
@@ -26,12 +26,17 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
         else:
             self.n_nests = n_nests
         self.alpha = alpha
-        self.random_state = check_random_state(random_state)
-        self.model_args = dict()
-        for key, value in self.default_configuration.items():
-            self.model_args[key] = model_args.get(key, value)
-        self.logger.info('Creating model_args config {}'.format(print_dictionary(self.model_args)))
         self.loss_function = likelihood_dict.get(loss_function, None)
+
+        self.random_state = check_random_state(random_state)
+        if regularization in ['l1', 'l2']:
+            self.regularization = regularization
+        else:
+            self.regularization = 'l2'
+        if isinstance(model_args, dict):
+            self.model_args = model_args
+        else:
+            self.model_args = dict()
         self.model = None
         self.trace = None
         self.trace_vi = None
@@ -41,14 +46,55 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
 
     @property
     def default_configuration(self):
+        if self.regularization == 'l2':
+            weight = pm.Normal
+            prior = 'sd'
+        elif self.regularization == 'l1':
+            weight = pm.Laplace
+            prior = 'b'
         config_dict = {
-            'weights': [pm.Normal, {'mu': (pm.Normal, {'mu': 0, 'sd': 10}), 'sd': (pm.HalfCauchy, {'beta': 2})}],
-            'weights_ik': [pm.Normal, {'mu': (pm.Normal, {'mu': 0, 'sd': 10}), 'sd': (pm.HalfCauchy, {'beta': 2})}]}
+            'weights': [weight, {'mu': (pm.Normal, {'mu': 0, 'sd': 5}), prior: (pm.HalfCauchy, {'beta': 1})}],
+            'weights_ik': [weight, {'mu': (pm.Normal, {'mu': 0, 'sd': 5}), prior: (pm.HalfCauchy, {'beta': 1})}]}
         self.logger.info('Creating default config {}'.format(print_dictionary(config_dict)))
 
         return config_dict
 
+    def get_probabilities(self, utility, lambda_k, alpha_ik):
+        n_nests = self.n_nests
+        n_instances, n_objects = utility.shape
+        pik = tt.zeros((n_instances, n_objects, n_nests))
+        sum_per_nest = tt.zeros((n_instances, n_nests))
+        for i in range(n_nests):
+            uti = (utility + tt.log(alpha_ik[:, :, i])) * 1 / lambda_k[i]
+            sum_n = ttu.logsumexp(uti)
+            pik = tt.set_subtensor(pik[:, :, i], tt.exp(uti - sum_n))
+            sum_per_nest = tt.set_subtensor(sum_per_nest[:, i], sum_n[:, 0] * lambda_k[i])
+        pnk = tt.exp(sum_per_nest - ttu.logsumexp(sum_per_nest))
+        pnk = pnk[:, None, :]
+        p = pik * pnk
+        p = p.sum(axis=2)
+        return p
+
+    def get_probabilities_np(self, utility, lambda_k, alpha_ik):
+        n_nests = self.n_nests
+        n_instances, n_objects = utility.shape
+        pik = np.zeros((n_instances, n_objects, n_nests))
+        sum_per_nest_x = np.zeros((n_instances, n_nests))
+        for i in range(n_nests):
+            uti = (utility + np.log(alpha_ik[:, :, i])) * 1 / lambda_k[i]
+            sum_n = npu.logsumexp(uti)
+            pik[:, :, i] = np.exp(uti - sum_n)
+            sum_per_nest_x[:, i] = sum_n[:, 0] * lambda_k[i]
+        pnk = np.exp(sum_per_nest_x - npu.logsumexp(sum_per_nest_x))
+        pnk = pnk[:, None, :]
+        p = pik * pnk
+        p = p.sum(axis=2)
+        return p
+
     def construct_model(self, X, Y):
+        for key, value in self.default_configuration.items():
+            self.model_args[key] = self.model_args.get(key, value)
+        self.logger.info('Creating model_args config {}'.format(print_dictionary(self.model_args)))
         with pm.Model() as self.model:
             self.Xt = theano.shared(X)
             self.Yt = theano.shared(Y)
@@ -61,11 +107,10 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
             lambda_k = pm.Uniform('lambda_k', self.alpha, 1.0, shape=self.n_nests)
             self.p = self.get_probabilities(utility, lambda_k, alpha_ik)
             yl = LogLikelihood('yl', loss_func=self.loss_function, p=self.p, observed=self.Yt)
+        self.logger.info("Model construction completed")
 
     def fit(self, X, Y, sampler="vi", **kwargs):
-
         self.construct_model(X, Y)
-
         if sampler == 'vi':
             with self.model:
                 sample_params = kwargs['sample_params']
@@ -108,45 +153,21 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
         self.logger.info("Clearing memory")
         pass
 
-    def set_tunable_parameters(self, alpha=5e-2, n_nests=None, loss_function='', **point):
+    def set_tunable_parameters(self, alpha=5e-2, n_nests=None, loss_function='', regularization='l1', **point):
         self.alpha = alpha
         if n_nests is None:
             self.n_nests = self.n_objects + int(self.n_objects / 2)
         else:
             self.n_nests = n_nests
         self.loss_function = likelihood_dict.get(loss_function, None)
+        self.regularization = regularization
+        self.model = None
+        self.trace = None
+        self.trace_vi = None
+        self.Xt = None
+        self.Yt = None
+        self.p = None
+        self.model_args = dict()
         if len(point) > 0:
             self.logger.warning('This ranking algorithm does not support tunable parameters'
                                 ' called: {}'.format(print_dictionary(point)))
-
-    def get_probabilities(self, utility, lambda_k, alpha_ik):
-        n_nests = self.n_nests
-        n_instances, n_objects = utility.shape
-        pik = tt.zeros((n_instances, n_objects, n_nests))
-        sum_per_nest = tt.zeros((n_instances, n_nests))
-        for i in range(n_nests):
-            uti = (utility + tt.log(alpha_ik[:, :, i])) * 1 / lambda_k[i]
-            sum_n = ttu.logsumexp(uti)
-            pik = tt.set_subtensor(pik[:, :, i], tt.exp(uti - sum_n))
-            sum_per_nest = tt.set_subtensor(sum_per_nest[:, i], sum_n[:, 0] * lambda_k[i])
-        pnk = tt.exp(sum_per_nest - ttu.logsumexp(sum_per_nest))
-        pnk = pnk[:, None, :]
-        p = pik * pnk
-        p = p.sum(axis=2)
-        return p
-
-    def get_probabilities_np(self, utility, lambda_k, alpha_ik):
-        n_nests = self.n_nests
-        n_instances, n_objects = utility.shape
-        pik = np.zeros((n_instances, n_objects, n_nests))
-        sum_per_nest_x = np.zeros((n_instances, n_nests))
-        for i in range(n_nests):
-            uti = (utility + np.log(alpha_ik[:, :, i])) * 1 / lambda_k[i]
-            sum_n = npu.logsumexp(uti)
-            pik[:, :, i] = np.exp(uti - sum_n)
-            sum_per_nest_x[:, i] = sum_n[:, 0] * lambda_k[i]
-        pnk = np.exp(sum_per_nest_x - npu.logsumexp(sum_per_nest_x))
-        pnk = pnk[:, None, :]
-        p = pik * pnk
-        p = p.sum(axis=2)
-        return p

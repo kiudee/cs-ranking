@@ -1,4 +1,5 @@
-import pymc3 as pm
+import copy
+
 import theano
 import theano.tensor as tt
 from pymc3 import Discrete
@@ -78,8 +79,7 @@ class LogLikelihood(Discrete):
 def create_weight_dictionary(model_args, shapes):
     weights_dict = dict()
     for key, value in model_args.items():
-        prior, params = value
-
+        prior, params = copy.deepcopy(value)
         for k in params.keys():
             if isinstance(params[k], tuple):
                 params[k][1]['name'] = '{}_{}'.format(key, k)
