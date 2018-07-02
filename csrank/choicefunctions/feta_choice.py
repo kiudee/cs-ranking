@@ -14,8 +14,9 @@ from .choice_functions import ChoiceFunctions
 
 
 class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
-    def __init__(self, loss_function=binary_crossentropy, metrics=None, **kwargs):
-        super().__init__(loss_function=loss_function, metrics=metrics, **kwargs)
+    def __init__(self, loss_function=binary_crossentropy, metrics=None, max_number_of_objects=10, **kwargs):
+        super().__init__(loss_function=loss_function, metrics=metrics, max_number_of_objects=max_number_of_objects,
+                         **kwargs)
         self.threshold = 0.5
         self.logger = logging.getLogger(FETAChoiceFunction.__name__)
 
@@ -103,23 +104,19 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
                 threshold = p
                 best = f1
         self.logger.info('Tuned threshold, obtained {:.2f} which achieved'
-                         ' a micro F1-measure of {:.2f}'.format(
-            threshold, best))
+                         ' a micro F1-measure of {:.2f}'.format(threshold, best))
         return threshold
 
-    def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1,
-            tune_size=0.1, thin_thresholds=1, verbose=0, **kwd):
+    def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, tune_size=0.1, thin_thresholds=1, verbose=0,
+            **kwd):
         if tune_size > 0:
-            X_train, X_val, Y_train, Y_val = train_test_split(
-                X, Y, test_size=tune_size)
+            X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=tune_size)
             try:
                 super().fit(X_train, Y_train, epochs, callbacks,
                             validation_split, verbose, **kwd)
             finally:
                 self.logger.info('Fitting utility function finished. Start tuning threshold.')
-                self.threshold = self._tune_threshold(
-                    X_val, Y_val,
-                    thin_thresholds=thin_thresholds)
+                self.threshold = self._tune_threshold(X_val, Y_val, thin_thresholds=thin_thresholds)
         else:
             super().fit(X, Y, epochs, callbacks, validation_split, verbose,
                         **kwd)
@@ -129,7 +126,7 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
         if self._n_objects <= self.max_number_of_objects:
             return X, Y
         n_objects = self.max_number_of_objects
-        bucket_size = 1  # int(X.shape[1] / n_objects) + 2
+        bucket_size = int(X.shape[1] / n_objects)
         X_train = []
         Y_train = []
         for x, y in zip(X, Y):
@@ -182,6 +179,9 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
                                                                   X_train.shape[1]))
         return X_train, Y_train
 
+    def _predict_scores_fixed(self, X, **kwargs):
+        return super()._predict_scores_fixed(X, **kwargs)
+
     def predict_scores(self, X, **kwargs):
         return super().predict_scores(X, **kwargs)
 
@@ -189,10 +189,8 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
         return ChoiceFunctions.predict_for_scores(self, scores, **kwargs)
 
     def predict(self, X, **kwargs):
-        return super().predict(self, X, **kwargs)
-
-    def _predict_scores_fixed(self, X, **kwargs):
-        return super()._predict_scores_fixed(self, X, **kwargs)
+        return super().predict(X, **kwargs)
 
     def clear_memory(self, **kwargs):
-        super().clear_memory(self, **kwargs)
+        self.logger.info("Clearing memory")
+        super().clear_memory(**kwargs)

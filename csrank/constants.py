@@ -39,7 +39,6 @@ FATE_CHOICE = "fate_choice"
 TAG_GENOME_OR = 'tag_genome_or'
 TAG_GENOME_DC = 'tag_genome_dc'
 
-
 FETA_DC = 'feta_dc'
 FATE_DC = "fate_dc"
 RANKNET_DC = "ranknet_dc"

@@ -31,7 +31,7 @@ class RankSVM(ObjectRanker, Learner):
         tol : float, optional
             Optimization tolerance
         normalize : bool, optional
-            If True, the regressors will be normalized before fitting.
+            If True, the data will be normalized before fitting.
         fit_intercept : bool, optional
             If True, the linear model will also fit an intercept.
         random_state : int, RandomState instance or None, optional
@@ -88,11 +88,10 @@ class RankSVM(ObjectRanker, Learner):
     def _predict_scores_fixed(self, X, **kwargs):
         assert X.shape[-1] == self.n_object_features
         self.logger.info("For Test instances {} objects {} features {}".format(*X.shape))
-        weights = np.array(self.model.coef_)[0]
-        try:
-            scores = np.dot(X, weights)
-        except ValueError:
-            scores = np.dot(X, weights[1:])
+        if self.fit_intercept:
+            scores = np.dot(X, self.weights[:-1])
+        else:
+            scores = np.dot(X, self.weights)
         self.logger.info("Done predicting scores")
         return np.array(scores)
 

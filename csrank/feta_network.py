@@ -13,8 +13,8 @@ from csrank.constants import allowed_dense_kwargs
 from csrank.layers import NormalizedDense
 from csrank.learner import Learner
 from csrank.losses import hinged_rank_loss
-from csrank.util import print_dictionary
 from csrank.tensorflow_util import tensorify
+from csrank.util import print_dictionary
 
 
 class FETANetwork(Learner):
@@ -158,6 +158,7 @@ class FETANetwork(Learner):
 
             merged_output = concatenate([n_g, n_l])
             self._pairwise_model = Model(inputs=[x1, x2], outputs=merged_output)
+            self.logger.info('Done creating pairwise model')
         return self._pairwise_model
 
     def _predict_pair(self, a, b, only_pairwise=False, **kwargs):
@@ -184,6 +185,8 @@ class FETANetwork(Learner):
             scores[n] += result.reshape(n_objects, n_objects - 1).mean(axis=1)
             scores[n] = 1. / (1. + np.exp(-scores[n]))
             del result
+            if n % int(n_instances / 10) == 0:
+                self.logger.info("Predict using pairs instances done: {}".format(n))
         del pairs
         return scores
 
@@ -274,7 +277,7 @@ class FETANetwork(Learner):
 
     def _predict_scores_fixed(self, X, **kwargs):
         n_instances, n_objects, n_features = tensorify(X).get_shape().as_list()
-        self.logger.info("For Test instances {} objects {} features {}".format(n_instances, n_objects, n_features))
+        self.logger.info("For Test instances {} objects {} features {}".format(*X.shape))
         if self.max_number_of_objects < self._n_objects or self.n_objects != n_objects:
             scores = self._predict_scores_using_pairs(X, **kwargs)
         else:

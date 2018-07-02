@@ -125,8 +125,16 @@ def print_no_newline(i, total):
     sys.stdout.flush()
 
 
-def standardize_features(X):
+def standardize_features(x_train, x_test):
     scalar = StandardScaler()
-    for i in range(X.shape[0]):
-        X[i] = scalar.fit_transform(X[i])
-    return X
+    n_objects, n_features = x_train.shape[-2:]
+
+    x_train = x_train.reshape(-1, n_features)
+    x_test = x_test.reshape(-1, n_features)
+
+    x_train = scalar.fit_transform(x_train)
+    x_test = scalar.transform(x_test)
+
+    x_train = x_train.reshape(-1, n_objects, n_features)
+    x_test = x_test.reshape(-1, n_objects, n_features)
+    return x_train, x_test

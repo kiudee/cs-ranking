@@ -13,9 +13,9 @@ class ModelSelector(metaclass=ABCMeta):
         self.uniform_prior = [pm.Uniform, {'lower': -20, 'upper': 20}]
         self.prior_indices = np.arange(len(self.priors))
         self.parameter_f = [(pm.Normal, {'mu': 0, 'sd': 5}), (pm.Cauchy, {'alpha': 0, 'beta': 1}), 0, -5, 5]
-        self.parameter_s = [(pm.HalfCauchy, {'beta': 2}), (pm.HalfNormal, {'sd': 0.5}), (pm.Exponential, {'lam': 0.5}),
+        self.parameter_s = [(pm.HalfCauchy, {'beta': 1}), (pm.HalfNormal, {'sd': 0.5}), (pm.Exponential, {'lam': 0.5}),
                             (pm.Uniform, {'lower': 1, 'upper': 10}), 10]
-        # ,(pm.HalfCauchy, {'beta': 1}), (pm.HalfNormal, {'sd': 1}),(pm.Exponential, {'lam': 1.0})]
+        # ,(pm.HalfCauchy, {'beta': 2}), (pm.HalfNormal, {'sd': 1}),(pm.Exponential, {'lam': 1.0})]
         self.learner_cls = learner_cls
         self.model_params = model_params
         self.fit_params = fit_params

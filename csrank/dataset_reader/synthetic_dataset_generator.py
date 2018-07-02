@@ -30,6 +30,7 @@ class SyntheticDatasetGenerator(DatasetReader):
             X, Y = self.dataset_function(**self.kwargs, seed=seed)
             x_train, x_test, y_train, y_test = train_test_split(X, Y, random_state=self.random_state,
                                                                 test_size=self.n_test_instances)
+            x_train, x_test = standardize_features(x_train, x_test)
             yield x_train, y_train, x_test, y_test
 
     def get_dataset_dictionaries(self, lengths=[5, 6]):
@@ -45,6 +46,7 @@ class SyntheticDatasetGenerator(DatasetReader):
             self.kwargs['n_instances'] = total_instances
             X, Y = self.dataset_function(**self.kwargs, seed=seed)
             x_1, x_2, y_1, y_2 = train_test_split(X, Y, random_state=self.random_state, test_size=self.n_test_instances)
+            x_1, x_2 = standardize_features(x_1, x_2)
             x_train[n_obj], x_test[n_obj], y_train[n_obj], y_test[n_obj] = x_1, x_2, y_1, y_2
         self.logger.info('Done')
         return x_train, y_train, x_test, y_test
@@ -54,10 +56,10 @@ class SyntheticDatasetGenerator(DatasetReader):
         total_instances = self.n_test_instances + self.n_train_instances
         self.kwargs['n_instances'] = total_instances
         self.X, self.Y = self.dataset_function(**self.kwargs, seed=seed)
-        self.X = standardize_features(self.X)
         self.__check_dataset_validity__()
         x_train, x_test, y_train, y_test = train_test_split(self.X, self.Y, random_state=self.random_state,
                                                             test_size=self.n_test_instances)
+        x_train, x_test = standardize_features(x_train, x_test)
         self.logger.info('Done')
 
         return x_train, y_train, x_test, y_test

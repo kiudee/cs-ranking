@@ -98,14 +98,15 @@ class TagGenomeDiscreteChoiceDatasetReader(TagGenomeDatasetReader):
                 else:
                     tag_ids = tag_ids[-length:]
                 distances = [self.similarity_matrix[get_key_for_indices(i, j)] for j in range(self.n_movies)]
-                distances = np.array(distances) - 0.61
+                # distances = np.array(distances) - 0.61
                 critique_d = critique_dist(feature, self.movie_features, tag_ids, direction=direction)
                 critique_fit = np.multiply(critique_d, distances)
                 orderings = np.argsort(critique_fit, axis=-1)[:, ::-1]
                 minimum = np.zeros(length, dtype=int)
                 k = 0
                 for dist in critique_fit:
-                    last = np.where(dist == 0)[0]
+                    quartile = np.percentile(dist, [0, 5])
+                    last = np.where(np.logical_and((dist >= quartile[0]), (dist <= quartile[1])))[0]
                     index = np.where(last == i)[0][0]
                     last = np.delete(last, index)
                     minimum[k] = random_state.choice(last, size=1)[0]

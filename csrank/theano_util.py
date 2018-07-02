@@ -45,4 +45,3 @@ def normalize(x, axis=1):
         :return: normalize the array around the axis=1
     """
     return x / tt.sum(x, axis=axis, keepdims=True)
-

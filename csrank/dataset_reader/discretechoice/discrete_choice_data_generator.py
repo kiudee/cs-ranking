@@ -51,16 +51,25 @@ class DiscreteChoiceDatasetGenerator(SyntheticDatasetGenerator):
         Y = convert_to_label_encoding(Y, n_objects)
         return X, Y
 
-    def make_hv_dataset(self, n_instances=1000, n_objects=5, n_features=5, seed=42, **kwd):
+    def make_hv_dataset(self, n_instances=1000, n_objects=5, n_features=5, seed=42, cluster_spread=1.0, **kwd):
+        def sample_unit_ball(n_f=2, rng=None, radius=1.):
+            rng = check_random_state(rng)
+            X = rng.randn(1, n_f)
+            u = rng.uniform(size=1)[:, None]
+            X /= np.linalg.norm(X, axis=1, ord=2)[:, None]
+            X *= radius * u
+            return X[0]
+
         random_state = check_random_state(seed=seed)
-        X = random_state.randn(n_instances, n_objects, n_features)
+        X = random_state.rand(n_instances, n_objects, n_features)
         # Normalize to unit circle and fold to lower quadrant
         X = -np.abs(X / np.sqrt(np.power(X, 2).sum(axis=2))[..., None])
         Y = np.empty(n_instances, dtype=int)
-        reference = np.zeros(n_features)
-        for i, x in enumerate(X):
-            hv = hypervolume(x)
-            cont = hv.contributions(reference)
+        for i in range(n_instances):
+            center = sample_unit_ball(n_f=n_features, rng=i, radius=cluster_spread)
+            X[i] = X[i] + center
+            hv = hypervolume(X[i])
+            cont = hv.contributions(center)
             Y[i] = np.argmax(cont)
         Y = convert_to_label_encoding(Y, n_objects)
         return X, Y

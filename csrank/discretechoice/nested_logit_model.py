@@ -17,7 +17,8 @@ from .likelihoods import likelihood_dict, LogLikelihood
 
 
 class NestedLogitModel(DiscreteObjectChooser, Learner):
-    def __init__(self, n_object_features, n_objects, n_nests=None, loss_function='', regularization='l1', alpha=1e-2,random_state=None, model_args={}, **kwd):
+    def __init__(self, n_object_features, n_objects, n_nests=None, loss_function='', regularization='l1', alpha=1e-2,
+                 random_state=None, model_args={}, **kwd):
         self.logger = logging.getLogger(NestedLogitModel.__name__)
         self.n_object_features = n_object_features
         self.n_objects = n_objects

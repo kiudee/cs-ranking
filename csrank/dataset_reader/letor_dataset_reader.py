@@ -8,7 +8,6 @@ import h5py
 import numpy as np
 from scipy.stats import rankdata
 
-from csrank.dataset_reader.util import standardize_features
 from csrank.util import print_dictionary
 from .dataset_reader import DatasetReader
 
@@ -129,7 +128,7 @@ class LetorDatasetReader(DatasetReader, metaclass=ABCMeta):
 
     def get_single_train_test_split(self):
         self.X, self.Y = self.sub_sampling_from_dictionary()
-        self.X = standardize_features(self.X)
+        # self.X = standardize_features(self.X)
         self.__check_dataset_validity__()
         return self.X, self.Y, self.X_test, self.Y_test
 

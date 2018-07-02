@@ -101,13 +101,8 @@ class FATENetworkCore(Learner, Tunable):
 
         return scores
 
-    def set_tunable_parameters(self,
-                               n_hidden_joint_units=32,
-                               n_hidden_joint_layers=2,
-                               reg_strength=1e-4,
-                               learning_rate=1e-3,
-                               batch_size=128,
-                               **point):
+    def set_tunable_parameters(self, n_hidden_joint_units=32, n_hidden_joint_layers=2, reg_strength=1e-4,
+                               learning_rate=1e-3, batch_size=128, **point):
         self.n_hidden_joint_layers = n_hidden_joint_layers
         self.n_hidden_joint_units = n_hidden_joint_units
         self.kernel_regularizer = l2(reg_strength)
@@ -128,14 +123,13 @@ class FATENetworkCore(Learner, Tunable):
 class FATENetwork(FATENetworkCore):
     def __init__(self, hash_file, n_object_features, n_hidden_set_layers=1, n_hidden_set_units=1, **kwargs):
         FATENetworkCore.__init__(self, **kwargs)
-        self.logger_gorc = logging.getLogger(self.__class__.__name__)
+        self.logger_gorc = logging.getLogger(FATENetwork.__name__)
 
         self.n_hidden_set_layers = n_hidden_set_layers
         self.n_hidden_set_units = n_hidden_set_units
         self.n_object_features = n_object_features
         self.model = None
         self.set_layer = None
-        self.logger_gorc.info("args: {}".format(repr(kwargs)))
         self._create_set_layers(activation=self.activation,
                                 kernel_initializer=self.kernel_initializer,
                                 kernel_regularizer=self.kernel_regularizer)
@@ -149,7 +143,6 @@ class FATENetwork(FATENetworkCore):
         do not know the size(s) of the set(s) in advance."""
         self.logger_gorc.info("Creating set layers with set units {} set layer {} ".format(self.n_hidden_set_units,
                                                                                            self.n_hidden_set_layers))
-
         if self.n_hidden_set_layers >= 1:
             self.set_layer = DeepSet(units=self.n_hidden_set_units, layers=self.n_hidden_set_layers, **kwargs)
         else:
@@ -465,18 +458,11 @@ class FATENetwork(FATENetworkCore):
         self.model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
         self.model.load_weights(self.hash_file)
 
-    def set_tunable_parameters(self, n_hidden_set_units=32,
-                               n_hidden_set_layers=2,
-                               n_hidden_joint_units=32,
-                               n_hidden_joint_layers=2,
-                               reg_strength=1e-4,
-                               learning_rate=1e-3,
-                               batch_size=128,
-                               **point):
+    def set_tunable_parameters(self, n_hidden_set_units=32, n_hidden_set_layers=2, n_hidden_joint_units=32,
+                               n_hidden_joint_layers=2, reg_strength=1e-4, learning_rate=1e-3, batch_size=128, **point):
         FATENetworkCore.set_tunable_parameters(self, n_hidden_joint_units=n_hidden_joint_units,
                                                n_hidden_joint_layers=n_hidden_joint_layers, reg_strength=reg_strength,
-                                               learning_rate=learning_rate,
-                                               batch_size=batch_size, **point)
+                                               learning_rate=learning_rate, batch_size=batch_size, **point)
 
         self.n_hidden_set_units = n_hidden_set_units
         self.n_hidden_set_layers = n_hidden_set_layers
@@ -487,6 +473,3 @@ class FATENetwork(FATENetworkCore):
             self.model = None
         if hasattr(self, 'models'):
             self.models = None
-
-
-

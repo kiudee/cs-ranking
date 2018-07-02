@@ -1,5 +1,7 @@
 from abc import ABCMeta
 
+import numpy as np
+
 from csrank.constants import CHOICE_FUNCTIONS
 
 __all__ = ['ChoiceFunctions']
@@ -34,6 +36,8 @@ class ChoiceFunctions(metaclass=ABCMeta):
             result = dict()
             for n, score in scores.items():
                 result[n] = score > self.threshold
+                result[n] = np.array(result[n], dtype=int)
         else:
             result = scores > self.threshold
+            result = np.array(result, dtype=int)
         return result

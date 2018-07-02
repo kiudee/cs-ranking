@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import check_random_state
 
 from csrank.dataset_reader.dataset_reader import DatasetReader
+from csrank.dataset_reader.util import standardize_features
 
 
 class MNISTDatasetReader(DatasetReader):
@@ -34,7 +35,7 @@ class MNISTDatasetReader(DatasetReader):
         self.create_dataset()
         x_train, x_test, y_train, y_test = train_test_split(self.X, self.Y, random_state=self.random_state,
                                                             test_size=self.n_test_instances)
-
+        x_train, x_test = standardize_features(x_train, x_test)
         self.logger.info('Done')
         return x_train, y_train, x_test, y_test
 
@@ -51,6 +52,7 @@ class MNISTDatasetReader(DatasetReader):
             self.create_dataset()
             x_1, x_2, y_1, y_2 = train_test_split(self.X, self.Y, random_state=self.random_state,
                                                   test_size=self.n_test_instances)
+            x_1, x_2 = standardize_features(x_1, x_2)
             x_train[n_obj], x_test[n_obj], y_train[n_obj], y_test[n_obj] = x_1, x_2, y_1, y_2
         self.logger.info('Done')
         return x_train, y_train, x_test, y_test

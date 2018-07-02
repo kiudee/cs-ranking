@@ -1,7 +1,6 @@
 import numpy as np
 
 from csrank.constants import CHOICE_FUNCTIONS
-from csrank.dataset_reader.util import standardize_features
 from ..mnist_dataset_reader import MNISTDatasetReader
 
 
@@ -24,5 +23,4 @@ class MNISTChoiceDatasetReader(MNISTDatasetReader):
                 if largest_numbers[i] in y_number[i]:
                     break
         self.Y = (y_number == largest_numbers[:, None]).astype(int)
-        self.X = standardize_features(self.X)
         self.__check_dataset_validity__()
