@@ -10,7 +10,7 @@ from sklearn.metrics import hamming_loss
 from sklearn.model_selection import ShuffleSplit
 from sklearn.utils import check_random_state
 from skopt import Optimizer
-from skopt.space import check_dimension
+from skopt.space import check_dimension, Categorical
 from skopt.utils import cook_estimator, normalize_dimensions, dump, load
 
 from csrank.constants import OBJECT_RANKING, LABEL_RANKING, DISCRETE_CHOICE, \
@@ -366,13 +366,18 @@ class ParameterOptimizer(Learner):
             for param in self.parameter_ranges:
                 transformed.append(check_dimension(param))
             self.logger.info("Parameter Space: {}".format(transformed))
-            space = normalize_dimensions(transformed)
-            self.logger.info("Parameter Space after transformation: {}".format(space))
+            norm_space = normalize_dimensions(transformed)
+            self.logger.info("Parameter Space after transformation: {}".format(norm_space))
+            categorical_space = np.array([isinstance(s, Categorical) for s in norm_space])
+            self.logger.info("categorical_space: {}".format(categorical_space))
+            if np.all(categorical_space):
+                base_estimator = cook_estimator("RF", space=norm_space, random_state=gp_seed)
+            else:
+                base_estimator = cook_estimator("GP", space=norm_space, random_state=gp_seed, noise="gaussian")
 
-            # Todo: Make this passable
-            base_estimator = cook_estimator("GP", space=space, random_state=gp_seed, noise="gaussian")
             self.opt = Optimizer(dimensions=self.parameter_ranges, random_state=opt_seed, base_estimator=base_estimator,
                                  acq_func=acq_func, **kwargs)
+
         return n_iter
 
     def predict_pair(self, a, b, **kwargs):

@@ -13,7 +13,7 @@ class CmpNetDiscreteChoiceFunction(CmpNetCore, DiscreteObjectChooser):
 
     def convert_instances(self, X, Y):
         self.logger.debug('Creating the Dataset')
-        x1, x2, y_double, garbage = generate_complete_pairwise_dataset(X, Y)
+        x1, x2, garbage, y_double, garbage = generate_complete_pairwise_dataset(X, Y)
         del garbage
         self.logger.debug('Finished the Dataset')
         if x1.shape[0] > self.threshold_instances:

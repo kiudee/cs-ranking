@@ -5,9 +5,9 @@ from sklearn.linear_model import LinearRegression, ElasticNet, Ridge
 from sklearn.utils import check_random_state
 
 from csrank.learner import Learner
+from csrank.numpy_util import normalize
 from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.util import print_dictionary
-from csrank.numpy_util import normalize
 from ..dataset_reader.objectranking.util import \
     complete_linear_regression_dataset
 
@@ -18,8 +18,7 @@ class ExpectedRankRegression(ObjectRanker, Learner):
     _tunable = None
 
     def __init__(self, n_object_features, alpha=0.0, l1_ratio=0.5, tol=1e-4,
-                 normalize=True, fit_intercept=True, random_state=None,
-                 **kwargs):
+                 normalize=True, fit_intercept=True, random_state=None, **kwargs):
         """Create an expected rank regression model.
 
         This model normalizes the ranks to [0, 1] and treats them as regression
@@ -64,8 +63,8 @@ class ExpectedRankRegression(ObjectRanker, Learner):
 
     def fit(self, X, Y, **kwargs):
         self.logger.debug('Creating the Dataset')
-        X_train, Y_train = complete_linear_regression_dataset(X, Y)
-        assert X_train.shape[1] == self.n_object_features
+        x_train, y_train = complete_linear_regression_dataset(X, Y)
+        assert x_train.shape[1] == self.n_object_features
         self.logger.debug('Finished the Dataset')
         if self.alpha < 1e-3:
             self.model = LinearRegression(normalize=self.normalize, fit_intercept=self.fit_intercept)
@@ -82,7 +81,7 @@ class ExpectedRankRegression(ObjectRanker, Learner):
                                    random_state=self.random_state)
                 self.logger.info("Ridge")
         self.logger.debug('Finished Creating the model, now fitting started')
-        self.model.fit(X_train, Y_train)
+        self.model.fit(x_train, y_train)
         self.weights = self.model.coef_.flatten()
         if self.fit_intercept:
             self.weights = np.append(self.weights, self.model.intercept_)
@@ -90,15 +89,10 @@ class ExpectedRankRegression(ObjectRanker, Learner):
 
     def _predict_scores_fixed(self, X, **kwargs):
         n_instances, n_objects, n_features = X.shape
-        self.logger.info(
-            "For Test instances {} objects {} features {}".format(n_instances,
-                                                                  n_objects,
-                                                                  n_features))
-        scores = np.empty((n_instances, n_objects))
-        for i, data_test in enumerate(X):
-            assert data_test.shape[1] == self.n_object_features
-            score = n_objects - self.model.predict(data_test)
-            scores[i] = score
+        self.logger.info("For Test instances {} objects {} features {}".format(*X.shape))
+        X1 = X.reshape(n_instances * n_objects, n_features)
+        scores = n_objects - self.model.predict(X1)
+        scores = scores.reshape(n_instances, n_objects)
         scores = normalize(scores)
         self.logger.info("Done predicting scores")
         return scores

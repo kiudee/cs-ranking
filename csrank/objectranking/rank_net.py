@@ -16,15 +16,15 @@ class RankNet(RankNetCore, ObjectRanker):
 
     def convert_instances(self, X, Y):
         self.logger.debug('Creating the Dataset')
-        garbage, X1, X2, garbage, Y_single = generate_complete_pairwise_dataset(X, Y)
+        garbage, x1, x2, garbage, y_single = generate_complete_pairwise_dataset(X, Y)
         del garbage
-        if X1.shape[0] > self.threshold_instances:
-            indices = self.random_state.choice(X1.shape[0], self.threshold_instances, replace=False)
-            X1 = X1[indices, :]
-            X2 = X2[indices, :]
-            Y_single = Y_single[indices]
+        if x1.shape[0] > self.threshold_instances:
+            indices = self.random_state.choice(x1.shape[0], self.threshold_instances, replace=False)
+            x1 = x1[indices, :]
+            x2 = x2[indices, :]
+            y_single = y_single[indices]
         self.logger.debug('Finished the Dataset')
-        return X1, X2, Y_single
+        return x1, x2, y_single
 
     def fit(self, X, Y, **kwd):
         super().fit(X, Y, **kwd)

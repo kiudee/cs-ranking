@@ -42,25 +42,25 @@ def generate_pairwise_instances(x, choice):
 
 
 def generate_complete_pairwise_dataset(X, Y):
-    Y_double = []
-    X1 = []
-    X2 = []
-    Y_single = []
+    y_double = []
+    x1 = []
+    x2 = []
+    y_single = []
     Y = Y.argmax(axis=1)
     for x, y in zip(X, Y):
         choice = x[y]
         x = np.delete(x, y, 0)
         x1, x2, y1, y2 = generate_pairwise_instances(x, choice)
-        X1.extend(x1)
-        X2.extend(x2)
-        Y_double.extend(y1)
-        Y_single.extend(y2)
-    X1 = np.array(X1)
-    X2 = np.array(X2)
-    Y_double = np.array(Y_double)
-    Y_single = np.array(Y_single)
-    # X_train = X1 - X2
-    return X1, X2, Y_double, Y_single
+        x1.extend(x1)
+        x2.extend(x2)
+        y_double.extend(y1)
+        y_single.extend(y2)
+    x1 = np.array(x1)
+    x2 = np.array(x2)
+    y_double = np.array(y_double)
+    y_single = np.array(y_single)
+    x_train = x1 - x2
+    return x1, x2, x_train, y_double, y_single
 
 
 def convert_to_label_encoding(Y, n_objects):

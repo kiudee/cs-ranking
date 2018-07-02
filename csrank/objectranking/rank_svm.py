@@ -58,14 +58,7 @@ class RankSVM(ObjectRanker, Learner):
         self.model = None
 
     def fit(self, X, Y, **kwargs):
-        self.logger.debug('Creating the Dataset')
-        x_train, garbage, garbage, garbage, Y_single = generate_complete_pairwise_dataset(
-            X, Y)
-        del garbage
-        assert x_train.shape[1] == self.n_object_features
-
-        self.logger.debug(
-            'Finished the Dataset with instances {}'.format(x_train.shape[0]))
+        x_train, y_single = self.convert_instances(X, Y)
         if x_train.shape[0] > self.threshold_instances:
             self.model = LogisticRegression(C=self.C, tol=self.tol, fit_intercept=self.fit_intercept,
                                             random_state=self.random_state)
@@ -78,27 +71,28 @@ class RankSVM(ObjectRanker, Learner):
             x_train = std_scalar.fit_transform(x_train)
         self.logger.debug('Finished Creating the model, now fitting started')
 
-        self.model.fit(x_train, Y_single)
+        self.model.fit(x_train, y_single)
         self.weights = self.model.coef_.flatten()
         if self.fit_intercept:
             self.weights = np.append(self.weights, self.model.intercept_)
         self.logger.debug('Fitting Complete')
 
+    def convert_instances(self, X, Y):
+        self.logger.debug('Creating the Dataset')
+        x_train, garbage, garbage, garbage, y_single = generate_complete_pairwise_dataset(X, Y)
+        del garbage
+        assert x_train.shape[1] == self.n_object_features
+        self.logger.debug('Finished the Dataset with instances {}'.format(x_train.shape[0]))
+        return x_train, y_single
+
     def _predict_scores_fixed(self, X, **kwargs):
-        n_instances, n_objects, n_features = X.shape
-        self.logger.info(
-            "For Test instances {} objects {} features {}".format(n_instances,
-                                                                  n_objects,
-                                                                  n_features))
-        scores = []
-        for data_test in X:
-            assert data_test.shape[1] == self.n_object_features
-            weights = np.array(self.model.coef_)[0]
-            try:
-                score = np.sum(weights * data_test, axis=1)
-            except ValueError:
-                score = np.sum(weights[1:] * data_test, axis=1)
-            scores.append(score)
+        assert X.shape[-1] == self.n_object_features
+        self.logger.info("For Test instances {} objects {} features {}".format(*X.shape))
+        weights = np.array(self.model.coef_)[0]
+        try:
+            scores = np.dot(X, weights)
+        except ValueError:
+            scores = np.dot(X, weights[1:])
         self.logger.info("Done predicting scores")
         return np.array(scores)
 

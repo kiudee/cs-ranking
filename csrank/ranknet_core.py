@@ -156,7 +156,7 @@ class RankNetCore(Learner):
     def _predict_scores_fixed(self, X, **kwargs):
         # assert X1.shape[1] == self.n_features
         n_instances, n_objects, n_features = X.shape
-        self.logger.info("For Test instances {} objects {} features {}".format(n_instances, n_objects, n_features))
+        self.logger.info("For Test instances {} objects {} features {}".format(*X.shape))
         X1 = X.reshape(n_instances * n_objects, n_features)
         scores = self.scoring_model.predict(X1, **kwargs)
         scores = scores.reshape(n_instances, n_objects)
@@ -177,10 +177,7 @@ class RankNetCore(Learner):
         self.model = Model(inputs=[self.x1, self.x2], outputs=output)
         self.model.load_weights(self.hash_file)
 
-    def set_tunable_parameters(self, n_hidden=32,
-                               n_units=2,
-                               reg_strength=1e-4,
-                               learning_rate=1e-3,
+    def set_tunable_parameters(self, n_hidden=32, n_units=2, reg_strength=1e-4, learning_rate=1e-3,
                                batch_size=128, **point):
         self.n_hidden = n_hidden
         self.n_units = n_units
@@ -193,5 +190,4 @@ class RankNetCore(Learner):
                                activation=self.activation, **self.kwargs)
         if len(point) > 0:
             self.logger.warning('This ranking algorithm does not support'
-                                ' tunable parameters'
-                                ' called: {}'.format(print_dictionary(point)))
+                                ' tunable parameters called: {}'.format(print_dictionary(point)))
