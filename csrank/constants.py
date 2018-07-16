@@ -47,6 +47,7 @@ MNL = "multinomial_logit_model"
 NLM = 'nested_logit_model'
 GEV = 'generalized_extreme_value'
 PCL = 'paired_combinatorial_logit'
+RANKSVM_DC = 'ranksvm_dc'
 
 allowed_dense_kwargs = ['input_shape', 'batch_input_shape', 'batch_size', 'dtype', 'name', 'trainable', 'weights',
                         'input_dtype', 'activation', 'use_bias', 'kernel_initializer', 'bias_initializer',

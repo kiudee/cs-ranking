@@ -13,7 +13,6 @@ from csrank.constants import allowed_dense_kwargs
 from csrank.layers import NormalizedDense
 from csrank.learner import Learner
 from csrank.losses import hinged_rank_loss
-from csrank.tensorflow_util import tensorify
 from csrank.util import print_dictionary
 
 
@@ -276,7 +275,7 @@ class FETANetwork(Learner):
         return X, Y
 
     def _predict_scores_fixed(self, X, **kwargs):
-        n_instances, n_objects, n_features = tensorify(X).get_shape().as_list()
+        n_objects = X.shape[-2]
         self.logger.info("For Test instances {} objects {} features {}".format(*X.shape))
         if self.max_number_of_objects < self._n_objects or self.n_objects != n_objects:
             scores = self._predict_scores_using_pairs(X, **kwargs)

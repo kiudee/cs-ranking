@@ -31,14 +31,14 @@ class MNISTDiscreteChoiceDatasetReader(MNISTDatasetReader):
     def create_dataset(self):
         num_classes = len(np.unique(self.y_labels))
         n_total = self.n_test_instances + self.n_train_instances
-        largest_numbers = self.random_state.randint(0, num_classes, size=n_total)
+        unique_number = self.random_state.randint(0, num_classes, size=n_total)
         self.X = np.empty((n_total, self.n_objects, self.n_features))
         self.Y = np.empty(n_total, dtype=int)
         classes = np.arange(num_classes)
         for i in range(n_total):
             s = int((self.n_objects - 1) / 2)
-            choices = self.random_state.choice(np.delete(classes, largest_numbers[i]), size=s)
-            ind = self.random_state.choice(np.where(self.y_labels == largest_numbers[i])[0], size=1)[0]
+            choices = self.random_state.choice(np.delete(classes, unique_number[i]), size=s)
+            ind = self.random_state.choice(np.where(self.y_labels == unique_number[i])[0], size=1)[0]
             indices = [ind]
             for j, c in enumerate(choices):
                 remaining = np.where(self.y_labels == c)[0]
@@ -49,7 +49,7 @@ class MNISTDiscreteChoiceDatasetReader(MNISTDatasetReader):
                 indices = indices + ind
             self.random_state.shuffle(indices)
             self.X[i] = self.X_raw[indices]
-            position = np.where(self.y_labels[indices] == largest_numbers[i])
+            position = np.where(self.y_labels[indices] == unique_number[i])
             self.Y[i] = position[0][0]
         self.Y = convert_to_label_encoding(self.Y, self.n_objects)
         self.__check_dataset_validity__()

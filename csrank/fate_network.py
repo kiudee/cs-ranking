@@ -390,8 +390,8 @@ class FATENetwork(FATENetworkCore):
                   min_bucket_size=min_bucket_size, refit=refit, **kwargs)
 
     def get_set_representation(self, X, kwargs):
-        n_instances, n_objects, n_features = X.shape
-        self.logger.info("Test Set instances {} objects {} features {}".format(n_instances, n_objects, n_features))
+        n_objects = X.shape[-2]
+        self.logger.info("Test Set instances {} objects {} features {}".format(*X.shape))
         input_layer_scorer = Input(shape=(n_objects, self.n_object_features), name="input_node")
         if self.n_hidden_set_layers >= 1:
             self.set_layer(input_layer_scorer)

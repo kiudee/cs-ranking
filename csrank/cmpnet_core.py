@@ -154,7 +154,7 @@ class CmpNetCore(Learner):
 
     def _predict_scores_fixed(self, X, **kwargs):
         n_instances, n_objects, n_features = X.shape
-        self.logger.info("For Test instances {} objects {} features {}".format(n_instances, n_objects, n_features))
+        self.logger.info("Test Set instances {} objects {} features {}".format(*X.shape))
         n2 = n_objects * (n_objects - 1)
         pairs = np.empty((n2, 2, n_features))
         scores = np.empty((n_instances, n_objects))

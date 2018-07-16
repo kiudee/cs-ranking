@@ -8,7 +8,7 @@ __all__ = ['spearman_mean_np', 'kendalls_mean_np', 'zero_one_accuracy_np',
            'zero_one_rank_loss_for_scores_ties_np', 'zero_one_rank_loss_for_scores_np',
            'auc_score', "instance_informedness", 'f1_measure', 'recall',
            'average_precision', "precision", "spearman_scipy", "topk_categorical_accuracy_np",
-           "categorical_accuracy_np"]
+           "categorical_accuracy_np", "make_ndcg_at_k_loss_np"]
 
 
 def spearman_mean_np(y_true, s_pred):

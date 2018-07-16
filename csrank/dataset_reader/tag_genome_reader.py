@@ -48,6 +48,7 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
         self.movies_df = pd.read_csv(self.movies_file)
         self.n_movies = len(self.movies_df)
         self.movie_features = self.movies_df.as_matrix()[:, 3:].astype(float)
+        self.tags_info_df = pd.read_csv(self.tags_info_file)
         self.logger.info("Done creating the complete dataset")
 
     def __load_dataset__(self, genome_scores, genome_tags, tags_applies, movies_df):
@@ -155,6 +156,18 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
         scores = scores[indices, :]
         return X, scores
 
+    def get_genre_tag_id(self):
+        genres = []
+        for g in self.movies_df['genres']:
+            arr = g.lower().split('|')
+            genres.extend(arr)
+        genres = list(set(genres))
+        genre_tag_id = []
+        for row in self.tags_info_df.sort_values('tagpopularity', ascending=False).values:
+            if row[1].lower() in genres or len(genre_tag_id) < 18:
+                genre_tag_id.append(row[0] - 1)
+        return np.array(genre_tag_id)
+
     @abstractmethod
     def make_critique_fit_dataset(self, n_instances, n_objects, seed, direction, **kwargs):
         self.logger.info('For instances {} objects {}, seed {}, direction {}'.format(n_instances, n_objects, seed,
@@ -163,16 +176,15 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
         X = []
         scores = []
         length = (int(n_instances / self.n_movies) + 1)
+        genre_ids = self.get_genre_tag_id()
         for i, feature in enumerate(self.movie_features):
-            quartile = np.percentile(feature, [95, 98])
-            tag_ids = np.where(np.logical_and((feature > quartile[0]), (feature < quartile[1])))[0]
-            tag_ids = tag_ids[np.argsort(feature[tag_ids])[::-1]]
+            tag_ids = genre_ids[np.argsort(feature[genre_ids])[::-1]]
             if direction == -1:
                 tag_ids = tag_ids[0:length]
             else:
                 tag_ids = tag_ids[-length:]
             distances = [self.similarity_matrix[get_key_for_indices(i, j)] for j in range(self.n_movies)]
-            distances = np.array(distances) - 0.61
+            distances = np.array(distances)
             critique_d = critique_dist(feature, self.movie_features, tag_ids, direction=direction)
             critique_fit = np.multiply(critique_d, distances)
             orderings = np.argsort(critique_fit, axis=-1)[:, ::-1][:, 0:n_objects]

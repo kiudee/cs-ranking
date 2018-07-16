@@ -5,7 +5,6 @@ from csrank.callbacks import EarlyStoppingWithWeights, LRScheduler, DebugOutput
 from csrank.constants import *
 from csrank.metrics import zero_one_rank_loss, zero_one_accuracy, make_ndcg_at_k_loss
 from csrank.metrics_np import *
-from csrank.metrics_np import make_ndcg_at_k_loss_np
 from csrank.objectranking.fate_object_ranker import FATEObjectRanker
 from csrank.util import print_dictionary
 
@@ -67,12 +66,12 @@ learners = {FETA_RANKER: FETAObjectRanker, RANKNET: RankNet, CMPNET: CmpNet, ERR
 try:
     from csrank import GeneralizedExtremeValueModel, FETADiscreteChoiceFunction, FATEDiscreteChoiceFunction, \
         RankNetDiscreteChoiceFunction, MultinomialLogitModel, NestedLogitModel, PairedCombinatorialLogit, \
-        CmpNetDiscreteChoiceFunction
+        CmpNetDiscreteChoiceFunction, RankSVMDCM
 
     dcm_learners = {FETA_DC: FETADiscreteChoiceFunction, FATE_DC: FATEDiscreteChoiceFunction,
                     RANKNET_DC: RankNetDiscreteChoiceFunction, CMPNET_DC: CmpNetDiscreteChoiceFunction,
                     MNL: MultinomialLogitModel, NLM: NestedLogitModel, GEV: GeneralizedExtremeValueModel,
-                    PCL: PairedCombinatorialLogit}
+                    PCL: PairedCombinatorialLogit, RANKSVM_DC: RankSVMDCM}
 
 except ImportError:
     dcm_learners = {}

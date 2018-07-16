@@ -154,9 +154,8 @@ class RankNetCore(Learner):
         return output
 
     def _predict_scores_fixed(self, X, **kwargs):
-        # assert X1.shape[1] == self.n_features
         n_instances, n_objects, n_features = X.shape
-        self.logger.info("For Test instances {} objects {} features {}".format(*X.shape))
+        self.logger.info("Test Set instances {} objects {} features {}".format(*X.shape))
         X1 = X.reshape(n_instances * n_objects, n_features)
         scores = self.scoring_model.predict(X1, **kwargs)
         scores = scores.reshape(n_instances, n_objects)

@@ -31,9 +31,9 @@ from sklearn.model_selection import ShuffleSplit
 from csrank import *
 from csrank.metrics import make_ndcg_at_k_loss
 from csrank.metrics_np import topk_categorical_accuracy_np
+from csrank.tensorflow_util import configure_logging_numpy_keras, get_mean_loss_for_dictionary, get_loss_for_array
 from csrank.util import create_dir_recursively, duration_till_now, seconds_to_time, \
     print_dictionary, get_duration_seconds
-from csrank.tensorflow_util import configure_logging_numpy_keras, get_mean_loss_for_dictionary, get_loss_for_array
 from experiments.dbconnection import DBConnector
 from experiments.util import get_dataset_reader, log_test_train_data, create_optimizer_parameters, \
     lp_metric_dict, ERROR_OUTPUT_STRING, \
@@ -84,6 +84,9 @@ if __name__ == "__main__":
 
             log_path = os.path.join(DIR_PATH, LOGS_FOLDER, "{}.log".format(hash_value))
             optimizer_path = os.path.join(DIR_PATH, OPTIMIZER_FOLDER, "{}".format(hash_value))
+            create_dir_recursively(log_path, True)
+            create_dir_recursively(optimizer_path, True)
+
             configure_logging_numpy_keras(seed=seed, log_path=log_path)
             logger = logging.getLogger('Experiment')
             logger.info("DB config filePath {}".format(config_file_path))
@@ -117,13 +120,25 @@ if __name__ == "__main__":
             optimizer_model = ParameterOptimizer(**hp_params)
             optimizer_model.fit(X_train, Y_train, **hp_fit_params)
             if isinstance(X_test, dict):
-                batch_size = 10000
+                batch_size = 1000
             else:
+                size = sys.getsizeof(X_test)
                 batch_size = X_test.shape[0]
+                logger.info("Test dataset size {}".format(size))
+                logger.info("Batch_size {}".format(batch_size))
 
-            s_pred = optimizer_model.predict_scores(X_test, batch_size=batch_size)
+            s_pred = None
+            while s_pred is None:
+                try:
+                    if batch_size == 0:
+                        break
+                    logger.info("Batch_size {}".format(batch_size))
+                    s_pred = optimizer_model.predict_scores(X_test, batch_size=batch_size)
+                except:
+                    logger.error("Unexpected Error {}".format(sys.exc_info()[0]))
+                    s_pred = None
+                    batch_size = int(batch_size / 10)
             y_pred = optimizer_model.predict_for_scores(s_pred)
-
             if isinstance(s_pred, dict):
                 pred_file = os.path.join(DIR_PATH, PREDICTIONS_FOLDER, "{}.pkl".format(hash_value))
                 create_dir_recursively(pred_file, True)

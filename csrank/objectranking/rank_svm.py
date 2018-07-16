@@ -62,9 +62,11 @@ class RankSVM(ObjectRanker, Learner):
         if x_train.shape[0] > self.threshold_instances:
             self.model = LogisticRegression(C=self.C, tol=self.tol, fit_intercept=self.fit_intercept,
                                             random_state=self.random_state)
+            self.logger.info("Logistic Regression model ")
         else:
             self.model = LinearSVC(C=self.C, tol=self.tol, fit_intercept=self.fit_intercept,
                                    random_state=self.random_state)
+            self.logger.info("Linear SVC model ")
 
         if self.normalize:
             std_scalar = prep.StandardScaler()

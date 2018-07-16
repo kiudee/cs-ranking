@@ -35,28 +35,30 @@ def generate_complete_pairwise_dataset(X, rankings):
         rankings = rankings.astype(int)
         rankings -= np.min(rankings)
         orderings = ranking_ordering_conversion(rankings)
-        X_sorted = [X[i, orderings[i], :] for i in range(n_instances)]
+        del rankings
+        x_sorted = [X[i, orderings[i], :] for i in range(n_instances)]
+        del orderings
     except ValueError:
         # TODO Add the code to change the rankings to orderings and sort X according to that
         logger = logging.getLogger("generate_complete_pairwise_dataset")
         logger.error("Value Error: {}, {} ".format(X[0], rankings[0]))
-        X_sorted = X
-    Y_double = []
-    X1 = []
-    X2 = []
-    Y_single = []
-    for features in X_sorted:
+        x_sorted = X
+    y_double = []
+    x_train1 = []
+    x_train2 = []
+    y_single = []
+    for features in x_sorted:
         x1, x2, y1, y2 = generate_pairwise_instances(features)
-        X1.extend(x1)
-        X2.extend(x2)
-        Y_double.extend(y1)
-        Y_single.extend(y2)
-    X1 = np.array(X1)
-    X2 = np.array(X2)
-    Y_double = np.array(Y_double)
-    Y_single = np.array(Y_single)
-    X_train = X1 - X2
-    return X_train, X1, X2, Y_double, Y_single
+        x_train1.extend(x1)
+        x_train2.extend(x2)
+        y_double.extend(y1)
+        y_single.extend(y2)
+    x_train1 = np.array(x_train1)
+    x_train2 = np.array(x_train2)
+    y_double = np.array(y_double)
+    y_single = np.array(y_single)
+    x_train = x_train1 - x_train2
+    return x_train, x_train1, x_train2, y_double, y_single
 
 
 def complete_linear_regression_dataset(X, rankings):
