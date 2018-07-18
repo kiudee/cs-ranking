@@ -14,7 +14,7 @@ from csrank.util import print_dictionary
 
 
 class RankNetCore(Learner):
-    def __init__(self, n_object_features, hash_file, n_hidden=2, n_units=8, loss_function='binary_crossentropy',
+    def __init__(self, n_object_features, n_hidden=2, n_units=8, loss_function='binary_crossentropy',
                  batch_normalization=True, kernel_regularizer=l2(l=1e-4), kernel_initializer='lecun_normal',
                  activation='relu', optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9), metrics=['binary_accuracy'],
                  batch_size=256, random_state=None, **kwargs):
@@ -85,9 +85,9 @@ class RankNetCore(Learner):
         self.kwargs = kwargs
         self.threshold_instances = int(1e10)
         self.batch_size = batch_size
-        self.hash_file = hash_file
         self._scoring_model = None
         self.model = None
+        self.hash_file = None
         self.random_state = check_random_state(random_state)
         self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
                                activation=self.activation, **self.kwargs)
@@ -163,18 +163,22 @@ class RankNetCore(Learner):
         return scores
 
     def clear_memory(self, **kwargs):
-        self.model.save_weights(self.hash_file)
-        K.clear_session()
-        sess = tf.Session()
-        K.set_session(sess)
+        if self.hash_file is not None:
+            self.model.save_weights(self.hash_file)
+            K.clear_session()
+            sess = tf.Session()
+            K.set_session(sess)
 
-        self._scoring_model = None
-        self.optimizer = self.optimizer.from_config(self._optimizer_config)
-        self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
-                               activation=self.activation, **self.kwargs)
-        output = self.construct_model()
-        self.model = Model(inputs=[self.x1, self.x2], outputs=output)
-        self.model.load_weights(self.hash_file)
+            self._scoring_model = None
+            self.optimizer = self.optimizer.from_config(self._optimizer_config)
+            self._construct_layers(kernel_regularizer=self.kernel_regularizer,
+                                   kernel_initializer=self.kernel_initializer,
+                                   activation=self.activation, **self.kwargs)
+            output = self.construct_model()
+            self.model = Model(inputs=[self.x1, self.x2], outputs=output)
+            self.model.load_weights(self.hash_file)
+        else:
+            self.logger.info("Cannot clear the memory")
 
     def set_tunable_parameters(self, n_hidden=32, n_units=2, reg_strength=1e-4, learning_rate=1e-3,
                                batch_size=128, **point):

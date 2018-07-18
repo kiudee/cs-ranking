@@ -7,8 +7,9 @@ from ..mnist_dataset_reader import MNISTDatasetReader
 class MNISTChoiceDatasetReader(MNISTDatasetReader):
     def __init__(self, **kwargs):
         super(MNISTChoiceDatasetReader, self).__init__(learning_problem=CHOICE_FUNCTIONS, **kwargs)
+        self.dataset_function = self.create_dataset_largest
 
-    def create_dataset(self):
+    def create_dataset_largest(self):
         num_classes = len(np.unique(self.y_labels))
         n_total = self.n_test_instances + self.n_train_instances
         largest_numbers = self.random_state.randint(1, num_classes, size=n_total)

@@ -63,7 +63,7 @@ class Learner(Tunable, metaclass=ABCMeta):
 
     def clear_memory(self, n_instances, n_objects, n_features):
         """
-        Clear the memory, restores the currently fitted model  back to prevent memory leaks.
+        Clear the memory, restores the currently fitted model back to prevent memory leaks.
         """
         raise NotImplemented
 

@@ -28,11 +28,8 @@ class MNISTDatasetReader(DatasetReader):
         self.y_labels = np.load(y_file)
         self.n_features = self.X_raw.shape[1]
 
-    def create_dataset(self):
-        pass
-
     def get_single_train_test_split(self):
-        self.create_dataset()
+        self.dataset_function()
         x_train, x_test, y_train, y_test = train_test_split(self.X, self.Y, random_state=self.random_state,
                                                             test_size=self.n_test_instances)
         x_train, x_test = standardize_features(x_train, x_test)
@@ -49,7 +46,7 @@ class MNISTDatasetReader(DatasetReader):
         y_test = dict()
         for n_obj in lengths:
             self.n_objects = n_obj
-            self.create_dataset()
+            self.dataset_function()
             x_1, x_2, y_1, y_2 = train_test_split(self.X, self.Y, random_state=self.random_state,
                                                   test_size=self.n_test_instances)
             x_1, x_2 = standardize_features(x_1, x_2)

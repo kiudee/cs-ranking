@@ -121,7 +121,7 @@ class FATENetworkCore(Learner, Tunable):
 
 
 class FATENetwork(FATENetworkCore):
-    def __init__(self, hash_file, n_object_features, n_hidden_set_layers=1, n_hidden_set_units=1, **kwargs):
+    def __init__(self, n_object_features, n_hidden_set_layers=1, n_hidden_set_units=1, **kwargs):
         FATENetworkCore.__init__(self, **kwargs)
         self.logger_gorc = logging.getLogger(FATENetwork.__name__)
 
@@ -134,7 +134,7 @@ class FATENetwork(FATENetworkCore):
                                 kernel_initializer=self.kernel_initializer,
                                 kernel_regularizer=self.kernel_regularizer)
         self.is_variadic = True
-        self.hash_file = hash_file
+        self.hash_file = None
 
     def _create_set_layers(self, **kwargs):
         """Create layers for learning the representation of the query set.
@@ -442,21 +442,24 @@ class FATENetwork(FATENetworkCore):
         return predicted_scores
 
     def clear_memory(self, n_objects=5, **kwargs):
-        self.model.save_weights(self.hash_file)
-        K.clear_session()
-        sess = tf.Session()
-        K.set_session(sess)
-        self.optimizer = self.optimizer.from_config(self._optimizer_config)
-        self._construct_layers(activation=self.activation, kernel_initializer=self.kernel_initializer,
-                               kernel_regularizer=self.kernel_regularizer, **self.kwargs)
-        self._create_set_layers(activation=self.activation, kernel_initializer=self.kernel_initializer,
-                                kernel_regularizer=self.kernel_regularizer, **self.kwargs)
-        input_layer = Input(shape=(n_objects, self.n_object_features), name="input_node")
-        set_repr = self.set_layer(input_layer)
-        scores = self.join_input_layers(input_layer, set_repr, n_objects=n_objects, n_layers=self.n_hidden_set_layers)
-        self.model = Model(inputs=input_layer, outputs=scores)
-        self.model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
-        self.model.load_weights(self.hash_file)
+        if self.hash_file is not None:
+            self.model.save_weights(self.hash_file)
+            K.clear_session()
+            sess = tf.Session()
+            K.set_session(sess)
+            self.optimizer = self.optimizer.from_config(self._optimizer_config)
+            self._construct_layers(activation=self.activation, kernel_initializer=self.kernel_initializer,
+                                   kernel_regularizer=self.kernel_regularizer, **self.kwargs)
+            self._create_set_layers(activation=self.activation, kernel_initializer=self.kernel_initializer,
+                                    kernel_regularizer=self.kernel_regularizer, **self.kwargs)
+            input_layer = Input(shape=(n_objects, self.n_object_features), name="input_node")
+            set_repr = self.set_layer(input_layer)
+            scores = self.join_input_layers(input_layer, set_repr, n_objects=n_objects, n_layers=self.n_hidden_set_layers)
+            self.model = Model(inputs=input_layer, outputs=scores)
+            self.model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
+            self.model.load_weights(self.hash_file)
+        else:
+            self.logger.info("Cannot clear the memory")
 
     def set_tunable_parameters(self, n_hidden_set_units=32, n_hidden_set_layers=2, n_hidden_joint_units=32,
                                n_hidden_joint_layers=2, reg_strength=1e-4, learning_rate=1e-3, batch_size=128, **point):

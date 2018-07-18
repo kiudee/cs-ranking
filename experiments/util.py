@@ -30,10 +30,11 @@ def get_dataset_reader(dataset_name, dataset_params):
     return dataset_func
 
 
-def create_optimizer_parameters(fit_params, hp_ranges, learner_params, learner_name):
+def create_optimizer_parameters(fit_params, hp_ranges, learner_params, learner_name, hash_file):
     hp_params = {}
     learner = learners[learner_name]
     learner = learner(**learner_params)
+    learner.hash_file = hash_file
     if learner_name in hp_ranges.keys():
         hp_ranges[learner] = hp_ranges[learner_name]
         del hp_ranges[learner_name]

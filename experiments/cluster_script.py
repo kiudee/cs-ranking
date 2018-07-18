@@ -101,8 +101,9 @@ if __name__ == "__main__":
             n_objects = log_test_train_data(X_train, X_test, logger)
             inner_cv = ShuffleSplit(n_splits=n_inner_folds, test_size=0.1, random_state=random_state)
 
-            learner_params['hash_file'] = os.path.join(DIR_PATH, MODEL_FOLDER, "{}.h5".format(hash_value))
-            hp_params = create_optimizer_parameters(fit_params, hp_ranges, learner_params, learner_name)
+            fit_params['random_seed'] = seed + fold_id
+            hash_file = os.path.join(DIR_PATH, MODEL_FOLDER, "{}.h5".format(hash_value))
+            hp_params = create_optimizer_parameters(fit_params, hp_ranges, learner_params, learner_name, hash_file)
             hp_params['optimizer_path'] = optimizer_path
             hp_params['random_state'] = random_state
             hp_params['learning_problem'] = learning_problem

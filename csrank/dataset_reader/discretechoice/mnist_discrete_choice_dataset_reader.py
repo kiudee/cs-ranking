@@ -6,29 +6,58 @@ from ..mnist_dataset_reader import MNISTDatasetReader
 
 
 class MNISTDiscreteChoiceDatasetReader(MNISTDatasetReader):
-    def __init__(self, **kwargs):
+    def __init__(self, dataset_type='unique', **kwargs):
+        dataset_func_dict = {"unique": self.create_dataset_unique, "largest": self.create_dataset_largest,
+                             "median": self.create_dataset_median}
+        if dataset_type not in dataset_func_dict.keys():
+            dataset_type = "median"
+        self.dataset_function = dataset_func_dict[dataset_type]
         super(MNISTDiscreteChoiceDatasetReader, self).__init__(learning_problem=DISCRETE_CHOICE, **kwargs)
+        self.logger.info("Dataset type {}".format(dataset_type))
 
-    def create_dataset_largest(self):
-        num_classes = len(np.unique(self.y_labels))
+    def create_dataset_median(self):
+        self.logger.info("create_dataset_median")
+        if self.n_objects % 2 == 0:
+            self.n_objects = self.n_objects - 1
+            self.logger.info(
+                "Cannot create the dataset for even numbered sets so decreasing the set size {}".format(self.n_objects))
+
         n_total = self.n_test_instances + self.n_train_instances
-        largest_numbers = self.random_state.randint(1, num_classes, size=n_total)
         self.X = np.empty((n_total, self.n_objects, self.n_features))
         self.Y = np.empty(n_total, dtype=int)
+        all_indices = np.arange(len(self.X_raw))
         for i in range(n_total):
-            remaining = self.X_raw[self.y_labels < largest_numbers[i]]
-            largest = self.X_raw[self.y_labels == largest_numbers[i]]
-            indices = self.random_state.choice(len(remaining), size=self.n_objects, replace=False)
-            ind = self.random_state.choice(len(largest), size=1)[0]
-            choice = largest[ind]
-            self.X[i] = remaining[indices]
-            position = self.random_state.choice(self.n_objects, size=1)[0]
-            self.X[i][position] = choice
-            self.Y[i] = position
+            choice = np.arange(3)
+            while len(choice) != 1:
+                indices = self.random_state.choice(all_indices, size=self.n_objects, replace=False)
+                labels = self.y_labels[indices]
+                choice = np.where(labels == np.median(labels))[0]
+                if len(choice) == 1:
+                    self.X[i] = self.X_raw[indices]
+                    self.Y[i] = choice
         self.Y = convert_to_label_encoding(self.Y, self.n_objects)
         self.__check_dataset_validity__()
 
-    def create_dataset(self):
+    def create_dataset_largest(self):
+        self.logger.info("create_dataset_largest new")
+        n_total = self.n_test_instances + self.n_train_instances
+        self.X = np.empty((n_total, self.n_objects, self.n_features))
+        self.Y = np.empty(n_total, dtype=int)
+        all_indices = np.arange(len(self.X_raw))
+        for i in range(n_total):
+            choice = np.arange(3)
+            while len(choice) != 1:
+                indices = self.random_state.choice(all_indices, size=self.n_objects, replace=False)
+                labels = self.y_labels[indices]
+                choice = np.where(labels == np.max(labels))[0]
+                if len(choice) == 1:
+                    self.X[i] = self.X_raw[indices]
+                    self.Y[i] = choice
+        self.Y = convert_to_label_encoding(self.Y, self.n_objects)
+        self.__check_dataset_validity__()
+
+    def create_dataset_unique(self):
+        self.logger.info("create_dataset_unique")
         num_classes = len(np.unique(self.y_labels))
         n_total = self.n_test_instances + self.n_train_instances
         unique_number = self.random_state.randint(0, num_classes, size=n_total)

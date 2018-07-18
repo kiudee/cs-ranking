@@ -17,7 +17,7 @@ from csrank.util import print_dictionary
 
 
 class FETANetwork(Learner):
-    def __init__(self, n_objects, n_object_features, hash_file, n_hidden=2, n_units=8, add_zeroth_order_model=False,
+    def __init__(self, n_objects, n_object_features, n_hidden=2, n_units=8, add_zeroth_order_model=False,
                  max_number_of_objects=5, num_subsample=5, loss_function=hinged_rank_loss, batch_normalization=False,
                  kernel_regularizer=l2(l=1e-4), kernel_initializer='lecun_normal', activation='selu',
                  optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9), metrics=None, batch_size=256, random_state=None,
@@ -80,7 +80,7 @@ class FETANetwork(Learner):
         self.num_subsample = num_subsample
         self.n_object_features = n_object_features
         self.batch_size = batch_size
-        self.hash_file = hash_file
+        self.hash_file = None
         self.optimizer = optimizers.get(optimizer)
         self._optimizer_config = self.optimizer.get_config()
         self._use_zeroth_model = add_zeroth_order_model
@@ -303,15 +303,18 @@ class FETANetwork(Learner):
                                 ' called: {}'.format(print_dictionary(point)))
 
     def clear_memory(self, **kwargs):
-        self.model.save_weights(self.hash_file)
-        K.clear_session()
-        sess = tf.Session()
-        K.set_session(sess)
+        if self.hash_file is not None:
+            self.model.save_weights(self.hash_file)
+            K.clear_session()
+            sess = tf.Session()
+            K.set_session(sess)
 
-        self._pairwise_model = None
-        self.optimizer = self.optimizer.from_config(self._optimizer_config)
-        self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
-                               activation=self.activation, **self.kwargs)
-        scores = self.construct_model()
-        self.model = Model(inputs=self.input_layer, outputs=scores)
-        self.model.load_weights(self.hash_file)
+            self._pairwise_model = None
+            self.optimizer = self.optimizer.from_config(self._optimizer_config)
+            self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
+                                   activation=self.activation, **self.kwargs)
+            scores = self.construct_model()
+            self.model = Model(inputs=self.input_layer, outputs=scores)
+            self.model.load_weights(self.hash_file)
+        else:
+            self.logger.info("Cannot clear the memory")
