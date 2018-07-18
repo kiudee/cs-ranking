@@ -157,9 +157,11 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         if sampler == 'vi':
             with self.model:
                 sample_params = kwargs['sample_params']
+                sample_params['random_seed'] = kwargs['random_seed']
                 self.trace = pm.sample(**sample_params)
                 vi_params = kwargs['vi_params']
                 vi_params['start'] = self.trace[-1]
+                vi_params['random_seed'] = kwargs['random_seed']
                 self.trace_vi = pm.fit(**vi_params)
                 self.trace = self.trace_vi.sample(draws=kwargs['draws'])
         elif sampler == 'metropolis':
