@@ -103,6 +103,5 @@ lp_metric_dict = {
     DISCRETE_CHOICE: discrete_choice_metrics,
     CHOICE_FUNCTIONS: choice_metrics
 }
-ERROR_OUTPUT_STRING = 'Out of sample error %s : %0.4f'
 metrics_on_predictions = [f1_measure, precision, recall, zero_one_loss, hamming_loss, instance_informedness,
                           zero_one_rank_loss, zero_one_accuracy, make_ndcg_at_k_loss]

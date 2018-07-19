@@ -1,13 +1,23 @@
 import logging
 
+from keras.optimizers import SGD
+from keras.regularizers import l2
+
 from csrank.cmpnet_core import CmpNetCore
 from csrank.dataset_reader.discretechoice.util import generate_complete_pairwise_dataset
 from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 
 
 class CmpNetDiscreteChoiceFunction(CmpNetCore, DiscreteObjectChooser):
-    def __init__(self, loss_function='binary_crossentropy', metrics=['binary_accuracy'], **kwargs):
-        super().__init__(loss_function=loss_function, metrics=metrics, **kwargs)
+    def __init__(self, n_object_features, n_hidden=2, n_units=8, loss_function='binary_crossentropy',
+                 batch_normalization=True, kernel_regularizer=l2(l=1e-4), kernel_initializer='lecun_normal',
+                 activation='relu', optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9), metrics=['binary_accuracy'],
+                 batch_size=256, random_state=None, **kwargs):
+        super().__init__(n_object_features=n_object_features, n_hidden=n_hidden, n_units=n_units,
+                         loss_function=loss_function, batch_normalization=batch_normalization,
+                         kernel_regularizer=kernel_regularizer, kernel_initializer=kernel_initializer,
+                         activation=activation, optimizer=optimizer, metrics=metrics, batch_size=batch_size,
+                         random_state=random_state, **kwargs)
         self.logger = logging.getLogger(CmpNetDiscreteChoiceFunction.__name__)
         self.logger.info("Initializing network with object features {}".format(self.n_object_features))
 

@@ -120,9 +120,8 @@ class RankNetCore(Learner):
         self.model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
         self.logger.debug('Finished Creating the model, now fitting started')
 
-        self.model.fit([X1, X2], Y_single, batch_size=self.batch_size, epochs=epochs,
-                       callbacks=callbacks, validation_split=validation_split,
-                       verbose=verbose, **kwd)
+        self.model.fit([X1, X2], Y_single, batch_size=self.batch_size, epochs=epochs, callbacks=callbacks,
+                       validation_split=validation_split, verbose=verbose, **kwd)
 
         self.logger.debug('Fitting Complete')
 

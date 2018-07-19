@@ -214,8 +214,7 @@ class FATENetwork(FATENetworkCore):
             self.optimizer = optimizer
         if isinstance(X, dict):
             if generator is not None:
-                self.logger.error("Variadic training does not support"
-                                  " generators yet.")
+                self.logger.error("Variadic training does not support generators yet.")
                 raise NotImplementedError
             self.is_variadic = True
             decay_rate = global_lr / epochs
@@ -232,8 +231,7 @@ class FATENetwork(FATENetworkCore):
             #  Iterate training
             for epoch in range(epochs):
 
-                self.logger.info("Epoch: {}, Learning rate: {}"
-                                 .format(epoch, learning_rate))
+                self.logger.info("Epoch: {}, Learning rate: {}".format(epoch, learning_rate))
 
                 # In the spirit of mini-batch SGD we also shuffle the buckets
                 # each epoch:
@@ -254,14 +252,9 @@ class FATENetwork(FATENetworkCore):
                     # Save weight vector for momentum:
                     w_old = w_before
                     w_before = np.array(self.get_weights())
-                    self.models_[bucket_id].fit(
-                        x=x, y=y,
-                        epochs=inner_epochs,
-                        batch_size=self.batch_size,
-                        validation_split=validation_split,
-                        verbose=verbose,
-                        **kwargs
-                    )
+                    self.models_[bucket_id].fit(x=x, y=y, epochs=inner_epochs, batch_size=self.batch_size,
+                                                validation_split=validation_split,
+                                                verbose=verbose, **kwargs)
                     w_after = np.array(self.get_weights())
                     self.set_weights(w_before
                                      + learning_rate * freq[bucket_id]
@@ -334,16 +327,12 @@ class FATENetwork(FATENetworkCore):
             If True, create a new model object, otherwise continue fitting the
             existing one if one exists.
         """
-        self._fit(X=X, Y=Y, epochs=epochs, inner_epochs=inner_epochs,
-                  callbacks=callbacks,
-                  validation_split=validation_split, verbose=verbose,
-                  global_lr=global_lr, global_momentum=global_momentum,
-                  min_bucket_size=min_bucket_size, refit=refit, **kwargs)
+        self._fit(X=X, Y=Y, epochs=epochs, inner_epochs=inner_epochs, callbacks=callbacks,
+                  validation_split=validation_split, verbose=verbose, global_lr=global_lr,
+                  global_momentum=global_momentum, min_bucket_size=min_bucket_size, refit=refit, **kwargs)
 
-    def fit_generator(self, generator, epochs=35, steps_per_epoch=10,
-                      inner_epochs=1, callbacks=None, verbose=0,
-                      global_lr=1.0, global_momentum=0.9, min_bucket_size=500,
-                      refit=False, **kwargs):
+    def fit_generator(self, generator, epochs=35, steps_per_epoch=10, inner_epochs=1, callbacks=None, verbose=0,
+                      global_lr=1.0, global_momentum=0.9, min_bucket_size=500, refit=False, **kwargs):
         """Fit a generic object ranking model on a set of queries provided by
         a generator.
 
@@ -383,10 +372,8 @@ class FATENetwork(FATENetworkCore):
             If True, create a new model object, otherwise continue fitting the
             existing one if one exists.
         """
-        self._fit(generator=generator, epochs=epochs,
-                  steps_per_epoch=steps_per_epoch, inner_epochs=inner_epochs,
-                  callbacks=callbacks, verbose=verbose,
-                  global_lr=global_lr, global_momentum=global_momentum,
+        self._fit(generator=generator, epochs=epochs, steps_per_epoch=steps_per_epoch, inner_epochs=inner_epochs,
+                  callbacks=callbacks, verbose=verbose, global_lr=global_lr, global_momentum=global_momentum,
                   min_bucket_size=min_bucket_size, refit=refit, **kwargs)
 
     def get_set_representation(self, X, kwargs):
@@ -454,7 +441,8 @@ class FATENetwork(FATENetworkCore):
                                     kernel_regularizer=self.kernel_regularizer, **self.kwargs)
             input_layer = Input(shape=(n_objects, self.n_object_features), name="input_node")
             set_repr = self.set_layer(input_layer)
-            scores = self.join_input_layers(input_layer, set_repr, n_objects=n_objects, n_layers=self.n_hidden_set_layers)
+            scores = self.join_input_layers(input_layer, set_repr, n_objects=n_objects,
+                                            n_layers=self.n_hidden_set_layers)
             self.model = Model(inputs=input_layer, outputs=scores)
             self.model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
             self.model.load_weights(self.hash_file)

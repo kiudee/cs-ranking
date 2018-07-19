@@ -29,21 +29,23 @@ from docopt import docopt
 from sklearn.model_selection import ShuffleSplit
 
 from csrank import *
+from csrank.constants import GEV, NLM, PCL, MNL
 from csrank.metrics import make_ndcg_at_k_loss
 from csrank.metrics_np import topk_categorical_accuracy_np
 from csrank.tensorflow_util import configure_logging_numpy_keras, get_mean_loss_for_dictionary, get_loss_for_array
 from csrank.util import create_dir_recursively, duration_till_now, seconds_to_time, \
     print_dictionary, get_duration_seconds
 from experiments.dbconnection import DBConnector
-from experiments.util import get_dataset_reader, log_test_train_data, create_optimizer_parameters, \
-    lp_metric_dict, ERROR_OUTPUT_STRING, \
-    metrics_on_predictions
+from experiments.util import get_dataset_reader, log_test_train_data, metrics_on_predictions, lp_metric_dict, \
+    create_optimizer_parameters
 
 DIR_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 LOGS_FOLDER = 'logs'
 OPTIMIZER_FOLDER = 'optimizers'
 PREDICTIONS_FOLDER = 'predictions'
 MODEL_FOLDER = 'models'
+ERROR_OUTPUT_STRING = 'Out of sample error %s : %0.4f'
+
 if __name__ == "__main__":
     start = datetime.now()
 
@@ -100,8 +102,8 @@ if __name__ == "__main__":
             X_train, Y_train, X_test, Y_test = dataset_reader.get_single_train_test_split()
             n_objects = log_test_train_data(X_train, X_test, logger)
             inner_cv = ShuffleSplit(n_splits=n_inner_folds, test_size=0.1, random_state=random_state)
-
-            fit_params['random_seed'] = seed + fold_id
+            if learner_name in [MNL, PCL, NLM, GEV]:
+                fit_params['random_seed'] = seed + fold_id
             hash_file = os.path.join(DIR_PATH, MODEL_FOLDER, "{}.h5".format(hash_value))
             hp_params = create_optimizer_parameters(fit_params, hp_ranges, learner_params, learner_name, hash_file)
             hp_params['optimizer_path'] = optimizer_path

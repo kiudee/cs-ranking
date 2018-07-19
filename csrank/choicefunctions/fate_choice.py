@@ -3,6 +3,8 @@ import logging
 import numpy as np
 from keras.layers import Dense
 from keras.losses import binary_crossentropy
+from keras.optimizers import SGD
+from keras.regularizers import l2
 from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
 
@@ -11,11 +13,19 @@ from .choice_functions import ChoiceFunctions
 
 
 class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
-    def __init__(self, loss_function=binary_crossentropy, metrics=None, **kwargs):
+    def __init__(self, n_object_features, n_hidden_set_layers=2, n_hidden_set_units=2,
+                 loss_function=binary_crossentropy, n_hidden_joint_layers=32, n_hidden_joint_units=32,
+                 activation='selu', kernel_initializer='lecun_normal', kernel_regularizer=l2(l=0.01),
+                 optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9), batch_size=256, metrics=None, random_state=None,
+                 **kwargs):
         self.loss_function = loss_function
         self.metrics = metrics
-        super().__init__(**kwargs)
-        self.logger = logging.Logger(FATEChoiceFunction.__name__)
+        super().__init__(n_object_features=n_object_features, n_hidden_set_layers=n_hidden_set_layers,
+                         n_hidden_set_units=n_hidden_set_units, n_hidden_joint_layers=n_hidden_joint_layers,
+                         n_hidden_joint_units=n_hidden_joint_units, activation=activation,
+                         kernel_initializer=kernel_initializer, kernel_regularizer=kernel_regularizer,
+                         optimizer=optimizer, batch_size=batch_size, random_state=random_state, **kwargs)
+        self.logger = logging.getLogger(FATEChoiceFunction.__name__)
         self.threshold = 0.5
 
     def _construct_layers(self, **kwargs):

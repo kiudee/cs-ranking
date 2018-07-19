@@ -189,8 +189,7 @@ class FETANetwork(Learner):
         del pairs
         return scores
 
-    def fit(self, X, Y, epochs=10, callbacks=None,
-            validation_split=0.1, verbose=0, **kwd):
+    def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
         self.logger.debug('Enter fit function...')
 
         X, Y = self.sub_sampling(X, Y)
@@ -204,9 +203,8 @@ class FETANetwork(Learner):
         self.model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
         self.logger.debug('Starting gradient descent...')
 
-        self.model.fit(x=X, y=Y, batch_size=self.batch_size, epochs=epochs,
-                       callbacks=callbacks, validation_split=validation_split,
-                       verbose=verbose, **kwd)
+        self.model.fit(x=X, y=Y, batch_size=self.batch_size, epochs=epochs, callbacks=callbacks,
+                       validation_split=validation_split, verbose=verbose, **kwd)
 
     def construct_model(self):
         def create_input_lambda(i):
@@ -284,10 +282,7 @@ class FETANetwork(Learner):
         self.logger.info("Done predicting scores")
         return scores
 
-    def set_tunable_parameters(self, n_hidden=32,
-                               n_units=2,
-                               reg_strength=1e-4,
-                               learning_rate=1e-3,
+    def set_tunable_parameters(self, n_hidden=32, n_units=2, reg_strength=1e-4, learning_rate=1e-3,
                                batch_size=128, **point):
         self.n_hidden = n_hidden
         self.n_units = n_units
@@ -311,7 +306,8 @@ class FETANetwork(Learner):
 
             self._pairwise_model = None
             self.optimizer = self.optimizer.from_config(self._optimizer_config)
-            self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
+            self._construct_layers(kernel_regularizer=self.kernel_regularizer,
+                                   kernel_initializer=self.kernel_initializer,
                                    activation=self.activation, **self.kwargs)
             scores = self.construct_model()
             self.model = Model(inputs=self.input_layer, outputs=scores)

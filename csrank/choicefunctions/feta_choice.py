@@ -5,6 +5,8 @@ import numpy as np
 from keras import Input, backend as K
 from keras.layers import Dense, concatenate, Lambda, add, Activation
 from keras.losses import binary_crossentropy
+from keras.optimizers import SGD
+from keras.regularizers import l2
 from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
 
@@ -14,9 +16,18 @@ from .choice_functions import ChoiceFunctions
 
 
 class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
-    def __init__(self, loss_function=binary_crossentropy, metrics=None, max_number_of_objects=10, **kwargs):
-        super().__init__(loss_function=loss_function, metrics=metrics, max_number_of_objects=max_number_of_objects,
-                         **kwargs)
+    def __init__(self, n_objects, n_object_features, n_hidden=2, n_units=8, add_zeroth_order_model=False,
+                 max_number_of_objects=10, num_subsample=5, loss_function=binary_crossentropy,
+                 batch_normalization=False, kernel_regularizer=l2(l=1e-4), kernel_initializer='lecun_normal',
+                 activation='selu', optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
+                 metrics=['binary_accuracy'], batch_size=256, random_state=None,
+                 **kwargs):
+        super().__init__(n_objects=n_objects, n_object_features=n_object_features, n_hidden=n_hidden, n_units=n_units,
+                         add_zeroth_order_model=add_zeroth_order_model, max_number_of_objects=max_number_of_objects,
+                         num_subsample=num_subsample, loss_function=loss_function,
+                         batch_normalization=batch_normalization, kernel_regularizer=kernel_regularizer,
+                         kernel_initializer=kernel_initializer, activation=activation, optimizer=optimizer,
+                         metrics=metrics, batch_size=batch_size, random_state=random_state, **kwargs)
         self.threshold = 0.5
         self.logger = logging.getLogger(FETAChoiceFunction.__name__)
 
@@ -94,10 +105,10 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
 
     def _tune_threshold(self, X_val, Y_val, thin_thresholds=1):
         scores = self.predict_scores(X_val)
-        probs = np.unique(scores)[::thin_thresholds]
+        probabilities = np.unique(scores)[::thin_thresholds]
         threshold = 0.0
         best = f1_score(Y_val, scores > threshold, average='samples')
-        for i, p in enumerate(probs):
+        for i, p in enumerate(probabilities):
             pred = scores > p
             f1 = f1_score(Y_val, pred, average='samples')
             if f1 > best:
