@@ -25,8 +25,8 @@ def generate_complete_pairwise_dataset(X, Y):
     # Y = np.where(Y==1)
     for x, y in zip(X, Y):
         choice = x[y == 1]
-        if len(choice) != 0:
-            x = np.delete(x, np.where(y == 1)[0], 0)
+        x = np.delete(x, np.where(y == 1)[0], 0)
+        if len(choice) != 0 and len(x) != 0:
             x1, x2, y1, y2 = generate_pairwise_instances(x, choice)
             X1.extend(x1)
             X2.extend(x2)
