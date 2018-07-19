@@ -1,6 +1,6 @@
 import logging
 
-from csrank.dataset_reader.discretechoice.util import generate_complete_pairwise_dataset
+from csrank.choicefunctions.util import generate_complete_pairwise_dataset
 from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 from csrank.objectranking.rank_svm import RankSVM
 

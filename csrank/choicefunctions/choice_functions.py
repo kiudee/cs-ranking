@@ -1,6 +1,7 @@
 from abc import ABCMeta
 
 import numpy as np
+from sklearn.metrics import f1_score
 
 from csrank.constants import CHOICE_FUNCTIONS
 
@@ -41,3 +42,18 @@ class ChoiceFunctions(metaclass=ABCMeta):
             result = scores > self.threshold
             result = np.array(result, dtype=int)
         return result
+
+    def _tune_threshold(self, X_val, Y_val, thin_thresholds=1):
+        scores = self.predict_scores(X_val)
+        probabilities = np.unique(scores)[::thin_thresholds]
+        threshold = 0.0
+        best = f1_score(Y_val, scores > threshold, average='samples')
+        for i, p in enumerate(probabilities):
+            pred = scores > p
+            f1 = f1_score(Y_val, pred, average='samples')
+            if f1 > best:
+                threshold = p
+                best = f1
+        self.logger.info('Tuned threshold, obtained {:.2f} which achieved'
+                         ' a micro F1-measure of {:.2f}'.format(threshold, best))
+        return threshold

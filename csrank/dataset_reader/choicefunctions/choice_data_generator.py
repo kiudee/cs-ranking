@@ -23,7 +23,7 @@ class ChoiceDatasetGenerator(SyntheticDatasetGenerator):
         return super(ChoiceDatasetGenerator, self).get_train_test_datasets(n_datasets=n_datasets)
 
     def make_globular_pareto_choices(self, n_instances=10000, n_features=2, n_objects=10, seed=42,
-                                     cluster_spread=1., cluster_size=10):
+                                     cluster_spread=1., cluster_size=10, **kwargs):
         def pareto_front(X, signs=None):
             n_points, n_attributes = X.shape
             if signs is None:
@@ -56,7 +56,7 @@ class ChoiceDatasetGenerator(SyntheticDatasetGenerator):
 
         rand = check_random_state(seed)
         X = np.empty((n_instances, n_objects, n_features))
-        Y = np.empty((n_instances, n_objects), dtype=bool)
+        Y = np.empty((n_instances, n_objects), dtype=int)
         for i in range(int(n_instances / cluster_size)):
             center = sample_unit_ball(n_inst=1, n_features=n_features,
                                       rng=rand, radius=cluster_spread)
@@ -67,7 +67,7 @@ class ChoiceDatasetGenerator(SyntheticDatasetGenerator):
         return X, Y
 
     def make_latent_linear_choices(self, n_instances=10000, n_features=2, n_objects=6, n_rep_units=5, threshold=0.,
-                                   seed=42):
+                                   seed=42, **kwargs):
         rand = check_random_state(seed)
         ranw = check_random_state(rand.randint(2 ** 32, dtype='uint32'))
         X = rand.uniform(-1, 1, size=(n_instances, n_objects, n_features))
@@ -79,4 +79,5 @@ class ChoiceDatasetGenerator(SyntheticDatasetGenerator):
             joint_matrix[i] = np.concatenate((X[:, i], rep), axis=-1)
         scores = joint_matrix.dot(w_join)
         Y = scores > threshold
+        Y = Y.astype(int)
         return X, Y.T

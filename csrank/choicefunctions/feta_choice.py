@@ -7,7 +7,6 @@ from keras.layers import Dense, concatenate, Lambda, add, Activation
 from keras.losses import binary_crossentropy
 from keras.optimizers import SGD
 from keras.regularizers import l2
-from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
 
 from csrank.feta_network import FETANetwork
@@ -102,21 +101,6 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
         if self._use_zeroth_model:
             scores = add([scores, zeroth_order_scores])
         return Activation('sigmoid')(scores)
-
-    def _tune_threshold(self, X_val, Y_val, thin_thresholds=1):
-        scores = self.predict_scores(X_val)
-        probabilities = np.unique(scores)[::thin_thresholds]
-        threshold = 0.0
-        best = f1_score(Y_val, scores > threshold, average='samples')
-        for i, p in enumerate(probabilities):
-            pred = scores > p
-            f1 = f1_score(Y_val, pred, average='samples')
-            if f1 > best:
-                threshold = p
-                best = f1
-        self.logger.info('Tuned threshold, obtained {:.2f} which achieved'
-                         ' a micro F1-measure of {:.2f}'.format(threshold, best))
-        return threshold
 
     def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, tune_size=0.1, thin_thresholds=1, verbose=0,
             **kwd):

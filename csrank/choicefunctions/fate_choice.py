@@ -1,11 +1,9 @@
 import logging
 
-import numpy as np
 from keras.layers import Dense
 from keras.losses import binary_crossentropy
 from keras.optimizers import SGD
 from keras.regularizers import l2
-from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
 
 from csrank.fate_network import FATENetwork
@@ -48,21 +46,6 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
             self.joint_layers.append(Dense(self.n_hidden_joint_units, name="joint_layer_{}".format(i), **kwargs))
         self.logger.info('Construct output score node')
         self.scorer = Dense(1, name="output_node", activation='sigmoid', kernel_regularizer=self.kernel_regularizer)
-
-    def _tune_threshold(self, X_val, Y_val, thin_thresholds=1):
-        scores = self.predict_scores(X_val)
-        probabilities = np.unique(scores)[::thin_thresholds]
-        threshold = 0.0
-        best = f1_score(Y_val, scores > threshold, average='samples')
-        for i, p in enumerate(probabilities):
-            predictions = scores > p
-            f1 = f1_score(Y_val, predictions, average='samples')
-            if f1 > best:
-                threshold = p
-                best = f1
-        self.logger.info(
-            'Tuned threshold, obtained {:.2f} which achieved a micro F1-measure of {:.2f}'.format(threshold, best))
-        return threshold
 
     def fit(self, X, Y, tune_size=0.1, thin_thresholds=1, **kwargs):
         if tune_size > 0:
