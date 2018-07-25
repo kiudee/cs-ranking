@@ -245,8 +245,9 @@ class DBConnector(metaclass=ABCMeta):
     def insert_new_jobs_with_different_fold(self, dataset='synthetic_dc', folds=4):
         self.init_connection()
         avail_jobs = "{}.avail_jobs".format(self.schema)
-        select_job = "SELECT * FROM {0} WHERE {0}.dataset=\'{1}\' AND {0}.learner !=\'cmpnet_dc\' " \
-                     "ORDER  BY {0}.job_id".format(avail_jobs, dataset)
+        select_job = "SELECT * FROM {0} WHERE {0}.dataset=\'{1}\' ORDER  BY {0}.job_id".format(avail_jobs, dataset)
+        # AND {0}.learner =\'ranksvm_dc\' " \
+
         self.cursor_db.execute(select_job)
         jobs_all = self.cursor_db.fetchall()
 

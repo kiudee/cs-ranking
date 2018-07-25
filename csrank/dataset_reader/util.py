@@ -98,22 +98,6 @@ def get_key_for_indices(idx1, idx2):
     return str(tuple(sorted([idx1, idx2])))
 
 
-def weighted_cosine_similarity(weights):
-    def distance_function(x, y):
-        denominator = np.sqrt(np.sum(weights * x * x)) * np.sqrt(
-            np.sum(weights * y * y))
-        sim = np.sum(weights * x * y) / denominator
-        return sim
-
-    return distance_function
-
-
-def critique_dist(ic, irs, tag_ids, direction=-1):
-    distances = ((irs[:, tag_ids] - ic[tag_ids]) * direction).T
-    distances = np.maximum(np.zeros_like(distances), distances)
-    return distances
-
-
 def distance_metric_multilabel(x_labels, y_labels, X, Y):
     similarity = f1_score(x_labels, y_labels, average='macro')
     similarity = np.dot(X, Y) / (np.linalg.norm(X) * np.linalg.norm(Y)) + similarity

@@ -1,7 +1,7 @@
 import logging
 import os
 from abc import ABCMeta, abstractmethod
-from itertools import combinations, product
+from itertools import combinations
 
 import numpy as np
 import pandas as pd
@@ -9,8 +9,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import check_random_state
 
 from csrank.dataset_reader.dataset_reader import DatasetReader
-from .util import get_key_for_indices, get_similarity_matrix, weighted_cosine_similarity, \
-    critique_dist, standardize_features
+from .util import get_key_for_indices, get_similarity_matrix, standardize_features
 
 MOVIE_ID = 'movieId'
 TAG_ID = 'tagId'
@@ -116,7 +115,7 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
         self.logger.info("Done calculating the similarity matrix stored at: {}".format(self.similarity_matrix_file))
 
     @abstractmethod
-    def make_similarity_based_dataset(self, n_instances, n_objects, seed, **kwargs):
+    def make_nearest_neighbour_dataset(self, n_instances, n_objects, seed, **kwargs):
         self.logger.info('For instances {} objects {}, seed {}'.format(n_instances, n_objects, seed))
         random_state = check_random_state(seed)
         X = np.empty((n_instances, n_objects, self.n_features), dtype=float)
@@ -124,36 +123,12 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
         for i in range(n_instances):
             subset = random_state.choice(self.n_movies, size=n_objects, replace=False)
             X[i] = self.movie_features[subset]
-            query = subset[0]
-            while query in subset:
-                query = random_state.choice(self.n_movies, size=1)
-            one_row = [self.similarity_matrix[get_key_for_indices(i, j)] for i, j in product(query, subset)]
-            scores[i] = np.array(one_row)
-        return X, scores
-
-    @abstractmethod
-    def make_nearest_neighbour_dataset(self, n_instances, n_objects, seed, **kwargs):
-        self.logger.info('For instances {} objects {}, seed {}'.format(n_instances, n_objects, seed))
-        random_state = check_random_state(seed)
-        length = (int(n_instances / self.n_movies) + 1)
-        X = []
-        scores = []
-        for i, feature in enumerate(self.movie_features):
-            distances = [self.similarity_matrix[get_key_for_indices(i, j)] for j in range(self.n_movies)]
-            distances = np.array(distances)
-            orderings = np.argsort(distances)[::-1][1:(n_objects * length + 1)]
-            indices = np.arange(n_objects * length)
-            random_state.shuffle(indices)
-            orderings = orderings[indices]
-            X.append(self.movie_features[orderings])
-            scores.append(distances[orderings])
-        X = np.array(X)
-        scores = np.array(scores)
-        X = X.reshape(length * self.n_movies, n_objects, self.n_features)
-        scores = scores.reshape(length * self.n_movies, n_objects)
-        indices = random_state.choice(X.shape[0], n_instances, replace=False)
-        X = X[indices, :, :]
-        scores = scores[indices, :]
+            D = np.ones((n_objects, n_objects), dtype=float)
+            for j, k in combinations(np.arange(n_objects), 2):
+                D[j, k] = D[k, j] = self.similarity_matrix[get_key_for_indices(subset[j], subset[k])]
+            sum_dist = D.mean(axis=0)
+            medoid = np.argmax(sum_dist)
+            scores[i] = D[medoid]
         return X, scores
 
     def get_genre_tag_id(self):
@@ -176,18 +151,21 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
         X = []
         scores = []
         length = (int(n_instances / self.n_movies) + 1)
-        genre_ids = self.get_genre_tag_id()
+        popular_tags = self.get_genre_tag_id()
         for i, feature in enumerate(self.movie_features):
-            tag_ids = genre_ids[np.argsort(feature[genre_ids])[::-1]]
-            if direction == -1:
-                tag_ids = tag_ids[0:length]
+            if direction == 1:
+                quartile_tags = np.where(np.logical_and(feature >= 1 / 3, feature < 2 / 3))[0]
             else:
-                tag_ids = tag_ids[-length:]
+                quartile_tags = np.where(feature > 2 / 3)[0]
+            if len(quartile_tags) < length:
+                quartile_tags = popular_tags
+            tag_ids = random_state.choice(quartile_tags, size=length)
             distances = [self.similarity_matrix[get_key_for_indices(i, j)] for j in range(self.n_movies)]
             distances = np.array(distances)
             critique_d = critique_dist(feature, self.movie_features, tag_ids, direction=direction)
             critique_fit = np.multiply(critique_d, distances)
-            orderings = np.argsort(critique_fit, axis=-1)[:, ::-1][:, 0:n_objects]
+            orderings = np.argsort(critique_fit, axis=-1)[:, ::-1][:, 0:(n_objects - 1)]
+            orderings = np.append(orderings, np.zeros(length, dtype=int)[:, None] + i, axis=1)
             for o in orderings:
                 random_state.shuffle(o)
             scores.extend(critique_fit[np.arange(length)[:, None], orderings])
@@ -240,3 +218,20 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
             x_train, x_test = standardize_features(x_train, x_test)
 
             yield x_train, y_train, x_test, y_test
+
+
+def weighted_cosine_similarity(weights):
+    def distance_function(x, y):
+        denominator = np.sqrt(np.sum(weights * x * x)) * np.sqrt(
+            np.sum(weights * y * y))
+        similarity = np.sum(weights * x * y) / denominator
+        return similarity
+
+    return distance_function
+
+
+def critique_dist(ic, irs, tag_ids, direction=-1, relu=True):
+    distances = ((irs[:, tag_ids] - ic[tag_ids]) * direction).T
+    if relu:
+        distances = np.maximum(np.zeros_like(distances), distances)
+    return distances

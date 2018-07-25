@@ -21,7 +21,7 @@ __all__ = ["ListNet"]
 
 class ListNet(Learner, ObjectRanker):
 
-    def __init__(self, n_object_features, n_top, hash_file, n_hidden=2, n_units=8, loss_function=plackett_luce_loss,
+    def __init__(self, n_object_features, n_top, n_hidden=2, n_units=8, loss_function=plackett_luce_loss,
                  batch_normalization=False, kernel_regularizer=l2(l=1e-4), activation="selu",
                  kernel_initializer='lecun_normal', optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
                  metrics=[zero_one_rank_loss_for_scores_ties], batch_size=256, random_state=None, **kwargs):
@@ -94,7 +94,7 @@ class ListNet(Learner, ObjectRanker):
         self.threshold_instances = int(1e10)
         self.batch_size = batch_size
         self.random_state = check_random_state(random_state)
-        self.hash_file = hash_file
+        self.hash_file = None
         self.model = None
         self._scoring_model = None
 
@@ -177,20 +177,25 @@ class ListNet(Learner, ObjectRanker):
         return super().predict(X, **kwargs)
 
     def clear_memory(self, **kwargs):
-        self.model.save_weights(self.hash_file)
-        K.clear_session()
-        sess = tf.Session()
-        K.set_session(sess)
-        self._scoring_model = None
-        self.optimizer = self.optimizer.from_config(self._optimizer_config)
-        self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
-                               activation=self.activation, **self.kwargs)
-        output = self.construct_model()
-        self.model = Model(inputs=self.input_layer, outputs=output)
-        self.model.load_weights(self.hash_file)
+        if self.hash_file is not None:
+            self.model.save_weights(self.hash_file)
+            K.clear_session()
+            sess = tf.Session()
+            K.set_session(sess)
+            self._scoring_model = None
+            self.optimizer = self.optimizer.from_config(self._optimizer_config)
+            self._construct_layers(kernel_regularizer=self.kernel_regularizer,
+                                   kernel_initializer=self.kernel_initializer,
+                                   activation=self.activation, **self.kwargs)
+            output = self.construct_model()
+            self.model = Model(inputs=self.input_layer, outputs=output)
+            self.model.load_weights(self.hash_file)
+        else:
+            self.logger.info("Cannot clear the memory")
 
     def set_tunable_parameters(self, n_hidden=32, n_units=2, reg_strength=1e-4, learning_rate=1e-3, batch_size=128,
                                **point):
+
         self.n_hidden = n_hidden
         self.n_units = n_units
         self.kernel_regularizer = l2(reg_strength)
