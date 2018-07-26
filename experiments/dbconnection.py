@@ -41,12 +41,12 @@ class DBConnector(metaclass=ABCMeta):
         self.connection.close()
 
     def create_hash_value(self):
-        keys = ['learner', 'dataset_params', 'fit_params', 'learner_params', 'hp_ranges', 'hp_fit_params',
-                'inner_folds', 'validation_loss', 'fold_id']
+        keys = ['fold_id', 'learner', 'dataset_params', 'fit_params', 'learner_params', 'hp_ranges', 'hp_fit_params',
+                'inner_folds', 'validation_loss']
         hash_string = ""
-        for k, v in self.job_description.items():
-            if k in keys:
-                hash_string = hash_string + str(k) + ':' + str(v)
+        for k in keys:
+            hash_string = hash_string + str(k) + ':' + str(self.job_description[k])
+        print("Hash_string {}".format(hash_string))
         hash_object = hashlib.sha1(hash_string.encode())
         hex_dig = hash_object.hexdigest()
         return str(hex_dig)
@@ -90,7 +90,7 @@ class DBConnector(metaclass=ABCMeta):
                 select_job = "SELECT * FROM {0} WHERE {0}.job_id = {1}".format(avail_jobs, job_id)
                 self.cursor_db.execute(select_job)
                 self.job_description = self.cursor_db.fetchone()
-
+                print(print_dictionary(self.job_description))
                 hash_value = self.create_hash_value()
                 self.job_description["hash_value"] = hash_value
 
@@ -241,6 +241,32 @@ class DBConnector(metaclass=ABCMeta):
             d_param = json.dumps(self.job_description['dataset_params'])
             self.cursor_db.execute(update_job, (file_name_new, d_param, job_id))
         self.close_connection()
+
+    def clone_job(self, cluster_id, fold_id):
+        job_desc = dict(self.job_description)
+        job_id = job_desc['job_id']
+        del job_desc['job_id']
+        keys = list(job_desc.keys())
+        columns = ', '.join(keys)
+        index = keys.index('fold_id')
+        self.logger.info("fold_id index {} fold_id {}".format(index, keys[index]))
+        keys[index] = str(fold_id)
+        values_str = ', '.join(keys)
+        avail_jobs = "{}.avail_jobs".format(self.schema)
+        running_jobs = "{}.running_jobs".format(self.schema)
+        insert_result = "INSERT INTO {0} ({1}) SELECT {2} FROM {0} where {0}.job_id = {3} RETURNING job_id".format(
+            avail_jobs, columns, values_str, job_id)
+        self.logger.info("Inserting job with new fold: {}".format(insert_result))
+        self.init_connection(cursor_factory=None)
+        self.cursor_db.execute(insert_result)
+        job_id = self.cursor_db.fetchone()[0]
+        insert_job_running = """INSERT INTO {0} (job_id, cluster_id ,finished, interrupted) 
+                                            VALUES ({1}, {2},FALSE, FALSE)""".format(running_jobs, job_id, cluster_id)
+        self.cursor_db.execute(insert_job_running)
+        if self.cursor_db.rowcount == 1:
+            self.logger.info("Job_successfully inserted {}".format(job_id))
+        self.close_connection()
+        return job_id
 
     def insert_new_jobs_with_different_fold(self, dataset='synthetic_dc', folds=4):
         self.init_connection()
