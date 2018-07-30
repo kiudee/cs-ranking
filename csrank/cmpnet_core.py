@@ -38,8 +38,6 @@ class CmpNetCore(Learner):
             ----------
             n_object_features : int
                 Number of features of the object space
-            hash_file: str
-                File path of the model where the weights are stored to get the predictions after clearing the memory
             n_hidden : int
                 Number of hidden layers used in the scoring network
             n_units : int

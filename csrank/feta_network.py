@@ -32,8 +32,6 @@ class FETANetwork(Learner):
             Number of objects to be ranked
         n_object_features : int
             Dimensionality of the feature space of each object
-        hash_file: str
-            File path of the model where the weights are stored to get the predictions after clearing the memory
         n_hidden : int
             Number of hidden layers
         n_units : int

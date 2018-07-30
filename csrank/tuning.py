@@ -1,5 +1,6 @@
 import copy
 import logging
+import traceback
 from datetime import datetime
 
 import numpy as np
@@ -166,13 +167,19 @@ class ParameterOptimizer(Learner):
     def _fit_ranker(self, xtrain, ytrain, xtest, ytest, next_point):
         start = datetime.now()
         self._set_new_parameters(next_point)
-        self.learner.fit(xtrain, ytrain, **self._fit_params)
-        ypred = self.learner(xtest)
-        if isinstance(xtest, dict):
-            loss = get_mean_loss_for_dictionary(self.validation_loss, ytest, ypred)
-        else:
-            loss = get_loss_for_array(self.validation_loss, ytest, ypred)
-        time_taken = duration_till_now(start)
+        try:
+            self.learner.fit(xtrain, ytrain, **self._fit_params)
+            ypred = self.learner(xtest)
+            if isinstance(xtest, dict):
+                loss = get_mean_loss_for_dictionary(self.validation_loss, ytest, ypred)
+            else:
+                loss = get_loss_for_array(self.validation_loss, ytest, ypred)
+            time_taken = duration_till_now(start)
+        except:
+            self.logger.error(traceback.format_exc())
+            self.logger.info("For current parameter error occured so taking loss as maximum value")
+            loss = 1.00
+            time_taken = duration_till_now(start)
         return loss, time_taken
 
     def fit(self, X, Y, total_duration=600, n_iter=100, cv_iter=None, acq_func='gp_hedge', **kwargs):

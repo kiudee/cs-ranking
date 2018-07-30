@@ -162,14 +162,23 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
             tag_ids = random_state.choice(quartile_tags, size=length)
             distances = [self.similarity_matrix[get_key_for_indices(i, j)] for j in range(self.n_movies)]
             distances = np.array(distances)
-            critique_d = critique_dist(feature, self.movie_features, tag_ids, direction=direction)
+            critique_d = critique_dist(feature, self.movie_features, tag_ids, direction=direction, relu=False)
             critique_fit = np.multiply(critique_d, distances)
             orderings = np.argsort(critique_fit, axis=-1)[:, ::-1][:, 0:(n_objects - 1)]
             orderings = np.append(orderings, np.zeros(length, dtype=int)[:, None] + i, axis=1)
-            for o in orderings:
-                random_state.shuffle(o)
-            scores.extend(critique_fit[np.arange(length)[:, None], orderings])
-            X.extend(self.movie_features[orderings])
+            to_remove = []
+            for j, ordering in enumerate(orderings):
+                random_state.shuffle(ordering)
+                if len(np.unique(critique_fit[j, ordering])) != n_objects:
+                    to_remove.append(j)
+            cf_scores = critique_fit[np.arange(length)[:, None], orderings]
+            movies = self.movie_features[orderings]
+            if len(to_remove) != 0:
+                self.logger.info("Removing instances due to ties {}".format(to_remove))
+                cf_scores = np.delete(cf_scores, to_remove, 0)
+                movies = np.delete(movies, to_remove, 0)
+            scores.extend(cf_scores)
+            X.extend(movies)
         X = np.array(X)
         scores = np.array(scores)
         indices = random_state.choice(X.shape[0], n_instances, replace=False)
