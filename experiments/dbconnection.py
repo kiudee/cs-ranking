@@ -198,8 +198,9 @@ class DBConnector(metaclass=ABCMeta):
         error_message = "cluster{}".format(cur_message[0]) + error_message
         if cur_message[1] != 'NA':
             error_message = error_message + ';\n' + cur_message[1]
-        update_job = "UPDATE {0} SET error_history = %s, interrupted = %s WHERE job_id = %s".format(running_jobs)
-        self.cursor_db.execute(update_job, (error_message, True, job_id))
+        update_job = "UPDATE {0} SET error_history = %s, interrupted = %s, finished=%s WHERE job_id = %s".format(
+            running_jobs)
+        self.cursor_db.execute(update_job, (error_message, True, False, job_id))
         if self.cursor_db.rowcount == 1:
             self.logger.info("The job {} is interrupted".format(job_id))
         self.close_connection()
@@ -243,29 +244,54 @@ class DBConnector(metaclass=ABCMeta):
         self.close_connection()
 
     def clone_job(self, cluster_id, fold_id):
-        job_desc = dict(self.job_description)
-        job_id = job_desc['job_id']
-        del job_desc['job_id']
-        keys = list(job_desc.keys())
-        columns = ', '.join(keys)
-        index = keys.index('fold_id')
-        self.logger.info("fold_id index {} fold_id {}".format(index, keys[index]))
-        keys[index] = str(fold_id)
-        values_str = ', '.join(keys)
         avail_jobs = "{}.avail_jobs".format(self.schema)
         running_jobs = "{}.running_jobs".format(self.schema)
-        insert_result = "INSERT INTO {0} ({1}) SELECT {2} FROM {0} where {0}.job_id = {3} RETURNING job_id".format(
-            avail_jobs, columns, values_str, job_id)
-        self.logger.info("Inserting job with new fold: {}".format(insert_result))
         self.init_connection(cursor_factory=None)
-        self.cursor_db.execute(insert_result)
+        job_desc = dict(self.job_description)
+        job_desc['fold_id'] = fold_id
+        job_id = job_desc['job_id']
+        del job_desc['job_id']
+        learner, dataset, dataset_type = job_desc['learner'], job_desc['dataset'], job_desc['dataset_params'][
+            'dataset_type']
+        select_job = "SELECT job_id from {} where fold_id = {} AND learner = \'{}\' AND dataset = \'{}\' AND " \
+                     "dataset_params->>'dataset_type' = \'{}\'".format(avail_jobs, fold_id, learner, dataset,
+                                                                       dataset_type)
+        self.cursor_db.execute(select_job)
+
+        if self.cursor_db.rowcount == 0:
+            keys = list(job_desc.keys())
+            columns = ', '.join(keys)
+            index = keys.index('fold_id')
+            keys[index] = str(fold_id)
+            values_str = ', '.join(keys)
+            insert_job = "INSERT INTO {0} ({1}) SELECT {2} FROM {0} where {0}.job_id = {3} RETURNING job_id".format(
+                avail_jobs, columns, values_str, job_id)
+            self.logger.info("Inserting job with new fold: {}".format(insert_job))
+            self.cursor_db.execute(insert_job)
         job_id = self.cursor_db.fetchone()[0]
-        insert_job_running = """INSERT INTO {0} (job_id, cluster_id ,finished, interrupted) 
-                                            VALUES ({1}, {2},FALSE, FALSE)""".format(running_jobs, job_id, cluster_id)
-        self.cursor_db.execute(insert_job_running)
-        if self.cursor_db.rowcount == 1:
-            self.logger.info("Job_successfully inserted {}".format(job_id))
+        self.logger.info("Job {} with fold id {} updated/inserted".format(fold_id, job_id))
+        start = datetime.now()
+        update_job = """UPDATE {} set job_allocated_time = %s WHERE job_id = %s""".format(avail_jobs)
+        self.cursor_db.execute(update_job, (start, job_id))
+        select_job = """SELECT * FROM {0} WHERE {0}.job_id = {1} AND {0}.interrupted = {2} FOR UPDATE""".format(
+            running_jobs, job_id, True)
+        self.cursor_db.execute(select_job)
+        count_ = len(self.cursor_db.fetchall())
+        if count_ == 0:
+            insert_job = """INSERT INTO {0} (job_id, cluster_id ,finished, interrupted) 
+                            VALUES ({1}, {2},FALSE, FALSE)""".format(running_jobs, job_id, cluster_id)
+            self.cursor_db.execute(insert_job)
+            if self.cursor_db.rowcount == 1:
+                self.logger.info("The job {} is updated in running jobs".format(job_id))
+        else:
+            self.logger.info("Job with job_id {} present in the updating and row locked".format(job_id))
+            update_job = """UPDATE {} set cluster_id = %s, interrupted = %s WHERE job_id = %s""".format(
+                running_jobs)
+            self.cursor_db.execute(update_job, (cluster_id, 'FALSE', job_id))
+            if self.cursor_db.rowcount == 1:
+                self.logger.info("The job {} is updated in running jobs".format(job_id))
         self.close_connection()
+
         return job_id
 
     def insert_new_jobs_with_different_fold(self, dataset='synthetic_dc', folds=4):

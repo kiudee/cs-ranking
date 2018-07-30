@@ -132,18 +132,13 @@ if __name__ == "__main__":
                     dataset_params['fold_id'] = fold_id
                     dataset_reader = get_dataset_reader(dataset_name, dataset_params)
                     X_train, Y_train, X_test, Y_test = dataset_reader.get_single_train_test_split()
-                    job_id = dbConnector.clone_job(cluster_id=cluster_id, fold_id=fold_id)
+                    current_job_id = dbConnector.clone_job(cluster_id=cluster_id, fold_id=fold_id)
                     optimizer_model.fit(X_train, Y_train, **hp_fit_params)
-                if isinstance(X_test, dict):
-                    batch_size = 1000
                 else:
-                    size = sys.getsizeof(X_test)
-                    batch_size = X_test.shape[0]
-                    logger.info("Test dataset size {}".format(size))
-                    logger.info("Batch_size {}".format(batch_size))
+                    current_job_id = job_id
+                logger.info('current job id {}'.format(current_job_id))
 
                 s_pred = optimizer_model.predict_scores(X_test)
-
                 y_pred = optimizer_model.predict_for_scores(s_pred)
                 if isinstance(s_pred, dict):
                     pred_file = os.path.join(DIR_PATH, PREDICTIONS_FOLDER, "{}.pkl".format(hash_value))
@@ -158,7 +153,7 @@ if __name__ == "__main__":
                     f.create_dataset('scores', data=s_pred)
                     f.close()
                 logger.info("Saved predictions at: {}".format(pred_file))
-                results = {'job_id': str(job_id), 'cluster_id': str(cluster_id)}
+                results = {'job_id': str(current_job_id), 'cluster_id': str(cluster_id)}
                 for name, evaluation_metric in lp_metric_dict[learning_problem].items():
                     predictions = s_pred
                     if evaluation_metric in metrics_on_predictions:
@@ -183,7 +178,9 @@ if __name__ == "__main__":
                         results[name] = "{0:.4f}".format(metric_loss)
                 dbConnector.insert_results(experiment_schema=experiment_schema, experiment_table=experiment_table,
                                            results=results)
-                dbConnector.mark_running_job_finished(job_id)
+                if fold_id != 0:
+                    dbConnector.mark_running_job_finished(current_job_id)
+            dbConnector.mark_running_job_finished(job_id)
         except Exception as e:
             if hasattr(e, 'message'):
                 message = e.message

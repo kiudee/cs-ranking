@@ -90,7 +90,7 @@ discrete_choice_metrics = {'CategoricalAccuracy': categorical_accuracy_np,
                            'CategoricalTopK3': topk_categorical_accuracy_np(k=3),
                            'CategoricalTopK4': topk_categorical_accuracy_np(k=4),
                            'CategoricalTopK5': topk_categorical_accuracy_np(k=5),
-                           'CategoricalTopK{}': topk_categorical_accuracy_np}
+                           'CategoricalTopK6': topk_categorical_accuracy_np(k=6)}
 choice_metrics = {'F1Score': f1_measure, 'Precision': precision, 'Recall': recall,
                   'Subset01loss': zero_one_loss, 'HammingLoss': hamming_loss, 'Informedness': instance_informedness,
                   "AucScore": auc_score, "AveragePrecisionScore": average_precision}

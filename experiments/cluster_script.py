@@ -31,7 +31,6 @@ from sklearn.model_selection import ShuffleSplit
 from csrank import *
 from csrank.constants import GEV, NLM, PCL, MNL
 from csrank.metrics import make_ndcg_at_k_loss
-from csrank.metrics_np import topk_categorical_accuracy_np
 from csrank.tensorflow_util import configure_logging_numpy_keras, get_mean_loss_for_dictionary, get_loss_for_array
 from csrank.util import create_dir_recursively, duration_till_now, seconds_to_time, \
     print_dictionary, get_duration_seconds
@@ -130,7 +129,6 @@ if __name__ == "__main__":
                 size = sys.getsizeof(X_test)
                 batch_size = X_test.shape[0]
                 logger.info("Test dataset size {}".format(size))
-                logger.info("Batch_size {}".format(batch_size))
 
             s_pred = None
             while s_pred is None:
@@ -166,11 +164,6 @@ if __name__ == "__main__":
                 if "NDCG" in name:
                     evaluation_metric = make_ndcg_at_k_loss(k=n_objects)
                     predictions = y_pred
-                if "CategoricalTopK{}" == name:
-                    k = int(n_objects / 2) + 1
-                    evaluation_metric = topk_categorical_accuracy_np(k=k)
-                    name = name.format(k)
-
                 if isinstance(Y_test, dict):
                     metric_loss = get_mean_loss_for_dictionary(evaluation_metric, Y_test, predictions)
                 else:
