@@ -156,7 +156,7 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
             if direction == 1:
                 quartile_tags = np.where(np.logical_and(feature >= 1 / 3, feature < 2 / 3))[0]
             else:
-                quartile_tags = np.where(feature > 2 / 3)[0]
+                quartile_tags = np.where(feature > 1 / 2)[0]
             if len(quartile_tags) < length:
                 quartile_tags = popular_tags
             tag_ids = random_state.choice(quartile_tags, size=length)

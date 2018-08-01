@@ -8,7 +8,8 @@ from ..mnist_dataset_reader import MNISTDatasetReader
 class MNISTDiscreteChoiceDatasetReader(MNISTDatasetReader):
     def __init__(self, dataset_type='unique', **kwargs):
         dataset_func_dict = {"unique": self.create_dataset_unique, "largest": self.create_dataset_largest,
-                             "median": self.create_dataset_median}
+                             "median": self.create_dataset_median,
+                             'unique_max_occurring': self.create_dataset_maximum_occurring_number}
         if dataset_type not in dataset_func_dict.keys():
             dataset_type = "median"
         self.dataset_function = dataset_func_dict[dataset_type]
@@ -53,6 +54,28 @@ class MNISTDiscreteChoiceDatasetReader(MNISTDatasetReader):
                 if len(choice) == 1:
                     self.X[i] = self.X_raw[indices]
                     self.Y[i] = choice
+        self.Y = convert_to_label_encoding(self.Y, self.n_objects)
+        self.__check_dataset_validity__()
+
+    def create_dataset_maximum_occurring_number(self):
+        self.logger.info("create_dataset_maximum_occurring_number")
+        n_total = self.n_test_instances + self.n_train_instances
+        self.X = np.empty((n_total, self.n_objects, self.n_features))
+        self.Y = np.empty(n_total, dtype=int)
+        all_indices = np.arange(len(self.X_raw))
+        weights = self.random_state.randn(self.n_features)
+        for i in range(n_total):
+            while True:
+                indices = self.random_state.choice(all_indices, size=self.n_objects, replace=False)
+                labels = self.y_labels[indices]
+                numbers, counts = np.unique(labels, return_counts=True)
+                max_count = np.where(counts == np.max(counts))[0]
+                if len(max_count) == 1:
+                    self.X[i] = self.X_raw[indices]
+                    largest_set = np.where(labels == numbers[max_count])[0]
+                    scores = np.dot(self.X_raw[largest_set], weights)
+                    self.Y[i] = largest_set[np.argmin(scores)]
+                    break
         self.Y = convert_to_label_encoding(self.Y, self.n_objects)
         self.__check_dataset_validity__()
 
