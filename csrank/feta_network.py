@@ -187,23 +187,6 @@ class FETANetwork(Learner):
         del pairs
         return scores
 
-    def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
-        self.logger.debug('Enter fit function...')
-
-        X, Y = self.sub_sampling(X, Y)
-        scores = self.construct_model()
-        self.model = Model(inputs=self.input_layer, outputs=scores)
-
-        if self._use_zeroth_model:
-            self.zero_order_model = self._create_zeroth_order_model()
-
-        self.logger.debug('Compiling complete model...')
-        self.model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
-        self.logger.debug('Starting gradient descent...')
-
-        self.model.fit(x=X, y=Y, batch_size=self.batch_size, epochs=epochs, callbacks=callbacks,
-                       validation_split=validation_split, verbose=verbose, **kwd)
-
     def construct_model(self):
         def create_input_lambda(i):
             return Lambda(lambda x: x[:, i])
@@ -254,6 +237,24 @@ class FETANetwork(Learner):
         if self._use_zeroth_model:
             scores = add([scores, zeroth_order_scores])
         return scores
+
+    def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
+        self.logger.debug('Enter fit function...')
+
+        X, Y = self.sub_sampling(X, Y)
+        scores = self.construct_model()
+        self.model = Model(inputs=self.input_layer, outputs=scores)
+
+        if self._use_zeroth_model:
+            self.zero_order_model = self._create_zeroth_order_model()
+
+        self.logger.debug('Compiling complete model...')
+        self.model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
+        self.logger.debug('Starting gradient descent...')
+
+        self.model.fit(x=X, y=Y, batch_size=self.batch_size, epochs=epochs, callbacks=callbacks,
+                       validation_split=validation_split, verbose=verbose, **kwd)
+        self.model.save_weights(self.hash_file)
 
     def sub_sampling(self, X, Y):
         if self._n_objects > self.max_number_of_objects:

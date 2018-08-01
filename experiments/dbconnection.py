@@ -59,6 +59,7 @@ class DBConnector(metaclass=ABCMeta):
                         AND r.finished = FALSE AND r.job_id = row.job_id)""".format(avail_jobs, running_jobs)
         self.cursor_db.execute(select_job)
         all_jobs = self.cursor_db.fetchall()
+        print("Running jobs are ".format(all_jobs))
         self.close_connection()
         for job in all_jobs:
             date_time = job['job_allocated_time']
@@ -269,12 +270,11 @@ class DBConnector(metaclass=ABCMeta):
             self.logger.info("Inserting job with new fold: {}".format(insert_job))
             self.cursor_db.execute(insert_job)
         job_id = self.cursor_db.fetchone()[0]
-        self.logger.info("Job {} with fold id {} updated/inserted".format(fold_id, job_id))
+        self.logger.info("Job {} with fold id {} updated/inserted".format(job_id, fold_id))
         start = datetime.now()
         update_job = """UPDATE {} set job_allocated_time = %s WHERE job_id = %s""".format(avail_jobs)
         self.cursor_db.execute(update_job, (start, job_id))
-        select_job = """SELECT * FROM {0} WHERE {0}.job_id = {1} AND {0}.interrupted = {2} FOR UPDATE""".format(
-            running_jobs, job_id, True)
+        select_job = """SELECT * FROM {0} WHERE {0}.job_id = {1} FOR UPDATE""".format(running_jobs, job_id)
         self.cursor_db.execute(select_job)
         count_ = len(self.cursor_db.fetchall())
         if count_ == 0:
@@ -282,12 +282,12 @@ class DBConnector(metaclass=ABCMeta):
                             VALUES ({1}, {2},FALSE, FALSE)""".format(running_jobs, job_id, cluster_id)
             self.cursor_db.execute(insert_job)
             if self.cursor_db.rowcount == 1:
-                self.logger.info("The job {} is updated in running jobs".format(job_id))
+                self.logger.info("The job {} is inserted in running jobs".format(job_id))
         else:
             self.logger.info("Job with job_id {} present in the updating and row locked".format(job_id))
-            update_job = """UPDATE {} set cluster_id = %s, interrupted = %s WHERE job_id = %s""".format(
+            update_job = """UPDATE {} set cluster_id = %s, interrupted = %s, finished = %s WHERE job_id = %s""".format(
                 running_jobs)
-            self.cursor_db.execute(update_job, (cluster_id, 'FALSE', job_id))
+            self.cursor_db.execute(update_job, (cluster_id, 'FALSE', 'FALSE', job_id))
             if self.cursor_db.rowcount == 1:
                 self.logger.info("The job {} is updated in running jobs".format(job_id))
         self.close_connection()
