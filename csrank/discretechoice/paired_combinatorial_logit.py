@@ -1,4 +1,5 @@
 import logging
+import traceback
 from itertools import combinations
 
 import numpy as np
@@ -117,17 +118,29 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
 
     def fit(self, X, Y, sampler="vi", **kwargs):
         self.construct_model(X, Y)
-
         if sampler == 'vi':
             with self.model:
                 sample_params = kwargs['sample_params']
                 sample_params['random_seed'] = kwargs['random_seed']
-                self.trace = pm.sample(**sample_params)
                 vi_params = kwargs['vi_params']
-                vi_params['start'] = self.trace[-1]
                 vi_params['random_seed'] = kwargs['random_seed']
-                self.trace_vi = pm.fit(**vi_params)
-                self.trace = self.trace_vi.sample(draws=kwargs['draws'])
+                self.trace_vi = None
+                count = 3
+                while self.trace_vi is None and count > 0:
+                    try:
+                        self.trace = pm.sample(**sample_params)
+                        vi_params['start'] = self.trace[-1]
+                        self.trace_vi = pm.fit(**vi_params)
+                        self.trace = self.trace_vi.sample(draws=kwargs['draws'])
+                    except:
+                        self.logger.error(traceback.format_exc())
+                        self.trace_vi = None
+                        sample_params['tune'] = sample_params['tune'] * 2
+                        sample_params['draws'] = sample_params['draws'] * 2
+                        vi_params['n'] = np.max([10000, vi_params['n'] - 10000])
+                        count = count - 1
+                        self.logger.info("Error in starting point draws {} count {}".format(sample_params['draws']),
+                                         count)
         elif sampler == 'metropolis':
             with self.model:
                 start = pm.find_MAP()

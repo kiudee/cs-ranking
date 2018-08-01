@@ -177,7 +177,7 @@ class ParameterOptimizer(Learner):
             time_taken = duration_till_now(start)
         except:
             self.logger.error(traceback.format_exc())
-            self.logger.info("For current parameter error occured so taking loss as maximum value")
+            self.logger.info("For current parameter error occurred so taking loss as maximum value")
             loss = 1.00
             time_taken = duration_till_now(start)
         return loss, time_taken
