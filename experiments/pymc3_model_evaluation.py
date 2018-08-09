@@ -46,6 +46,24 @@ PREDICTIONS_FOLDER = 'predictions'
 MODEL_FOLDER = 'models'
 ERROR_OUTPUT_STRING = 'Out of sample error %s : %0.4f'
 
+
+def get_scores(object, batch_size):
+    s_pred = None
+    while s_pred is None:
+        try:
+            if batch_size == 0:
+                break
+            logger.info("Batch_size {}".format(batch_size))
+            s_pred = object.predict_scores(X_test, batch_size=batch_size)
+        except:
+            logger.error("Unexpected Error {}".format(sys.exc_info()[0]))
+            s_pred = None
+            batch_size = int(batch_size / 10)
+    y_pred = object.predict_for_scores(s_pred)
+
+    return s_pred, y_pred
+
+
 if __name__ == "__main__":
     start = datetime.now()
 
@@ -127,32 +145,34 @@ if __name__ == "__main__":
 
             for fold_id in range(5):
                 if fold_id != 0:
+                    del dataset_reader, X_train, X_test, Y_test, Y_train, optimizer_model
                     random_state = np.random.RandomState(seed=seed + fold_id)
                     dataset_params['random_state'] = random_state
                     dataset_params['fold_id'] = fold_id
                     dataset_reader = get_dataset_reader(dataset_name, dataset_params)
                     X_train, Y_train, X_test, Y_test = dataset_reader.get_single_train_test_split()
                     current_job_id = dbConnector.clone_job(cluster_id=cluster_id, fold_id=fold_id)
+                    optimizer_model = ParameterOptimizer(**hp_params)
                     optimizer_model.fit(X_train, Y_train, **hp_fit_params)
                 else:
                     current_job_id = job_id
                 logger.info('current job id {}'.format(current_job_id))
-
-                s_pred = optimizer_model.predict_scores(X_test)
-                y_pred = optimizer_model.predict_for_scores(s_pred)
-                if isinstance(s_pred, dict):
-                    pred_file = os.path.join(DIR_PATH, PREDICTIONS_FOLDER, "{}.pkl".format(hash_value))
-                    create_dir_recursively(pred_file, True)
-                    f = open(pred_file, "wb")
-                    pk.dump(s_pred, f)
-                    f.close()
-                else:
-                    pred_file = os.path.join(DIR_PATH, PREDICTIONS_FOLDER, "{}.h5".format(hash_value))
-                    create_dir_recursively(pred_file, True)
-                    f = h5py.File(pred_file, 'w')
-                    f.create_dataset('scores', data=s_pred)
-                    f.close()
-                logger.info("Saved predictions at: {}".format(pred_file))
+                batch_size = X_test.shape[0]
+                s_pred, y_pred = get_scores(optimizer_model, batch_size)
+                if fold_id == 0:
+                    if isinstance(s_pred, dict):
+                        pred_file = os.path.join(DIR_PATH, PREDICTIONS_FOLDER, "{}.pkl".format(hash_value))
+                        create_dir_recursively(pred_file, True)
+                        f = open(pred_file, "wb")
+                        pk.dump(s_pred, f)
+                        f.close()
+                    else:
+                        pred_file = os.path.join(DIR_PATH, PREDICTIONS_FOLDER, "{}.h5".format(hash_value))
+                        create_dir_recursively(pred_file, True)
+                        f = h5py.File(pred_file, 'w')
+                        f.create_dataset('scores', data=s_pred)
+                        f.close()
+                    logger.info("Saved predictions at: {}".format(pred_file))
                 results = {'job_id': str(current_job_id), 'cluster_id': str(cluster_id)}
                 for name, evaluation_metric in lp_metric_dict[learning_problem].items():
                     predictions = s_pred

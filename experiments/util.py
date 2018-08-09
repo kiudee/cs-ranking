@@ -1,3 +1,4 @@
+import pymc3 as pm
 from sklearn.metrics import hamming_loss, zero_one_loss
 
 from csrank import *
@@ -48,6 +49,16 @@ def create_optimizer_parameters(fit_params, hp_ranges, learner_params, learner_n
                 hp_ranges[callback] = hp_ranges[key]
                 del hp_ranges[key]
         fit_params["callbacks"] = callbacks
+    if "vi_params" in fit_params.keys():
+        vi_params = fit_params["vi_params"]
+        if "callbacks" in vi_params.keys():
+            callbacks = []
+            for key, value in vi_params.get("callbacks", {}).items():
+                callback = callbacks_dictionary[key]
+                callback = callback(**value)
+                callbacks.append(callback)
+            vi_params["callbacks"] = callbacks
+        fit_params['vi_params'] = vi_params
     hp_params['learner'] = learner
     hp_params['fit_params'] = fit_params
     hp_params['tunable_parameter_ranges'] = hp_ranges
@@ -95,7 +106,8 @@ choice_metrics = {'F1Score': f1_measure, 'Precision': precision, 'Recall': recal
                   'Subset01loss': zero_one_loss, 'HammingLoss': hamming_loss, 'Informedness': instance_informedness,
                   "AucScore": auc_score, "AveragePrecisionScore": average_precision}
 callbacks_dictionary = {'EarlyStoppingWithWeights': EarlyStoppingWithWeights, 'LRScheduler': LRScheduler,
-                        'DebugOutput': DebugOutput}
+                        'DebugOutput': DebugOutput, "CheckConvergence": pm.callbacks.CheckParametersConvergence,
+                        "Tracker": pm.callbacks.Tracker}
 lp_metric_dict = {
     OBJECT_RANKING: ranking_metrics,
     LABEL_RANKING: ranking_metrics,
