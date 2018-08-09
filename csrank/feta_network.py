@@ -254,7 +254,8 @@ class FETANetwork(Learner):
 
         self.model.fit(x=X, y=Y, batch_size=self.batch_size, epochs=epochs, callbacks=callbacks,
                        validation_split=validation_split, verbose=verbose, **kwd)
-        self.model.save_weights(self.hash_file)
+        if self.hash_file is not None:
+            self.model.save_weights(self.hash_file)
 
     def sub_sampling(self, X, Y):
         if self._n_objects > self.max_number_of_objects:

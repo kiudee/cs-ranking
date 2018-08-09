@@ -1,9 +1,9 @@
 import logging
 from itertools import combinations
 
-from keras import Input
+from keras import Input, Model
 from keras import backend as K
-from keras.layers import Dense, Lambda, concatenate, add, Activation
+from keras.layers import Dense, Lambda, concatenate, Activation, Conv1D
 from keras.optimizers import SGD
 from keras.regularizers import l2
 
@@ -17,7 +17,7 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
                  max_number_of_objects=10, num_subsample=5, loss_function='categorical_hinge',
                  batch_normalization=False, kernel_regularizer=l2(l=1e-4), kernel_initializer='lecun_normal',
                  activation='selu', optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
-                 metrics=['categorical_accuracy', 'top_k_categorical_accuracy'], batch_size=256, random_state=None,
+                 metrics=['categorical_accuracy'], batch_size=256, random_state=None,
                  **kwargs):
         super().__init__(n_objects=n_objects, n_object_features=n_object_features, n_hidden=n_hidden, n_units=n_units,
                          add_zeroth_order_model=add_zeroth_order_model, max_number_of_objects=max_number_of_objects,
@@ -96,8 +96,33 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
         scores = concatenate(scores)
         self.logger.debug('1st order model finished')
         if self._use_zeroth_model:
-            scores = add([scores, zeroth_order_scores])
+            def expand_dims():
+                return Lambda(lambda x: x[..., None])
+
+            def squeeze_dims():
+                return Lambda(lambda x: x[:, :, 0])
+
+            scores = expand_dims()(scores)
+            zeroth_order_scores = expand_dims()(zeroth_order_scores)
+            concat = concatenate([scores, zeroth_order_scores], axis=-1)
+            convolution = Conv1D(name='convolution', filters=1, kernel_size=(1), strides=1, activation='linear',
+                                 kernel_initializer=self.kernel_initializer, input_shape=(self.n_objects, 2),
+                                 kernel_regularizer=self.kernel_regularizer, use_bias=True)
+            scores = convolution(concat)
+            scores = squeeze_dims()(scores)
+        # if self._use_zeroth_model:
+        #     scores = add([scores, zeroth_order_scores])
         return Activation('sigmoid')(scores)
+
+    def _create_zeroth_order_model(self):
+        inp = Input(shape=(self.n_object_features,))
+
+        x = inp
+        for hidden in self.hidden_layers_zeroth:
+            x = hidden(x)
+        zeroth_output = self.output_node_zeroth(x)
+
+        return Model(inputs=[inp], outputs=Activation('sigmoid')(zeroth_output))
 
     def fit(self, X, Y, **kwd):
         super().fit(X, Y, **kwd)
