@@ -1,7 +1,7 @@
 """Thin experiment runner which takes all simulation parameters from a database.
 
 Usage:
-  experiment_cv.py --cindex=<id> --config_fileName=<config_fileName> --isgpu=<bool> --schema=<schema>
+  experiment_cv.py --cindex=<id> --jobid=<jobid> --config_fileName=<config_fileName> --isgpu=<bool> --schema=<schema>
   experiment_cv.py (-h | --help)
 
 Arguments:
@@ -10,6 +10,8 @@ Arguments:
 Options:
   -h --help                             Show this screen.
   --cindex=<cindex>                     Index given by the cluster to specify which job
+                                        is to be executed [default: 0]
+  --jobid=<jobid>                       JobId which needs to be re-evaluated
                                         is to be executed [default: 0]
   --config_fileName=<config_fileName>   File name of the database config
   --isgpu=<bool>                        Boolean to show if the gpu is to be used or not
@@ -51,6 +53,7 @@ if __name__ == "__main__":
     ######################## DOCOPT ARGUMENTS: #################################
     arguments = docopt(__doc__)
     cluster_id = int(arguments["--cindex"])
+    job_id = int(arguments["--jobid"])
     config_fileName = arguments["--config_fileName"]
     is_gpu = bool(int(arguments["--isgpu"]))
     schema = arguments["--schema"]
@@ -59,7 +62,7 @@ if __name__ == "__main__":
     dbConnector = DBConnector(config_file_path=config_file_path, is_gpu=is_gpu, schema=schema)
     if 'CCS_REQID' in os.environ.keys():
         cluster_id = int(os.environ['CCS_REQID'])
-    dbConnector.fetch_job_arguments(cluster_id=cluster_id)
+    dbConnector.get_job_for_id(job_id=job_id, cluster_id=cluster_id)
 
     if dbConnector.job_description is not None:
         try:

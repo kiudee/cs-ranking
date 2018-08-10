@@ -15,6 +15,7 @@ Options:
   --isgpu=<bool>                        Boolean to show if the gpu is to be used or not
   --schema=<schema>                     Schema containing the job information
 """
+import copy
 import inspect
 import logging
 import os
@@ -80,26 +81,27 @@ if __name__ == "__main__":
         cluster_id = int(os.environ['CCS_REQID'])
     dbConnector.fetch_job_arguments(cluster_id=cluster_id)
 
-    if dbConnector.job_description is not None:
+    job_description = copy.deepcopy(dict(dbConnector.job_description))
+    if job_description is not None:
         try:
-            seed = int(dbConnector.job_description["seed"])
-            job_id = int(dbConnector.job_description["job_id"])
-            fold_id = int(dbConnector.job_description["fold_id"])
-            dataset_name = dbConnector.job_description["dataset"]
-            n_inner_folds = int(dbConnector.job_description["inner_folds"])
-            dataset_params = dbConnector.job_description["dataset_params"]
-            learner_name = dbConnector.job_description["learner"]
-            fit_params = dbConnector.job_description["fit_params"]
-            learner_params = dbConnector.job_description["learner_params"]
-            duration = dbConnector.job_description["duration"]
-            hp_iters = int(dbConnector.job_description["hp_iters"])
-            hp_ranges = dbConnector.job_description["hp_ranges"]
-            hp_fit_params = dbConnector.job_description["hp_fit_params"]
-            learning_problem = dbConnector.job_description["learning_problem"]
-            experiment_schema = dbConnector.job_description["experiment_schema"]
-            experiment_table = dbConnector.job_description["experiment_table"]
-            validation_loss = dbConnector.job_description["validation_loss"]
-            hash_value = dbConnector.job_description["hash_value"]
+            seed = int(job_description["seed"])
+            job_id = int(job_description["job_id"])
+            fold_id = int(job_description["fold_id"])
+            dataset_name = job_description["dataset"]
+            n_inner_folds = int(job_description["inner_folds"])
+            dataset_params = job_description["dataset_params"]
+            learner_name = job_description["learner"]
+            fit_params = job_description["fit_params"]
+            learner_params = job_description["learner_params"]
+            duration = job_description["duration"]
+            hp_iters = int(job_description["hp_iters"])
+            hp_ranges = job_description["hp_ranges"]
+            hp_fit_params = job_description["hp_fit_params"]
+            learning_problem = job_description["learning_problem"]
+            experiment_schema = job_description["experiment_schema"]
+            experiment_table = job_description["experiment_table"]
+            validation_loss = job_description["validation_loss"]
+            hash_value = job_description["hash_value"]
             random_state = np.random.RandomState(seed=seed + fold_id)
 
             log_path = os.path.join(DIR_PATH, LOGS_FOLDER, "{}.log".format(hash_value))
@@ -111,7 +113,7 @@ if __name__ == "__main__":
             logger = logging.getLogger('Experiment')
             logger.info("DB config filePath {}".format(config_file_path))
             logger.info("Arguments {}".format(arguments))
-            logger.info("Job Description {}".format(print_dictionary(dbConnector.job_description)))
+            logger.info("Job Description {}".format(print_dictionary(job_description)))
             duration = get_duration_seconds(duration)
 
             dataset_params['random_state'] = random_state
@@ -119,6 +121,7 @@ if __name__ == "__main__":
             dataset_reader = get_dataset_reader(dataset_name, dataset_params)
             X_train, Y_train, X_test, Y_test = dataset_reader.get_single_train_test_split()
             n_objects = log_test_train_data(X_train, X_test, logger)
+            del dataset_reader
             inner_cv = ShuffleSplit(n_splits=n_inner_folds, test_size=0.1, random_state=random_state)
             if learner_name in [MNL, PCL, NLM, GEV]:
                 fit_params['random_seed'] = seed + fold_id
@@ -145,7 +148,7 @@ if __name__ == "__main__":
 
             for fold_id in range(5):
                 if fold_id != 0:
-                    del dataset_reader, X_train, X_test, Y_test, Y_train, optimizer_model
+                    del X_train, X_test, Y_test, Y_train, optimizer_model
                     random_state = np.random.RandomState(seed=seed + fold_id)
                     dataset_params['random_state'] = random_state
                     dataset_params['fold_id'] = fold_id

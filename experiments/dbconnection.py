@@ -71,6 +71,43 @@ class DBConnector(metaclass=ABCMeta):
                 error_message = "exception{}".format("InterruptedDueToSomeError")
                 self.append_error_string_in_running_job(job_id=job_id, error_message=error_message)
 
+    def get_job_for_id(self, cluster_id, job_id):
+        self.init_connection()
+        avail_jobs = "{}.avail_jobs".format(self.schema)
+        running_jobs = "{}.running_jobs".format(self.schema)
+        select_job = """SELECT * FROM {0}  WHERE {0}.job_id={1}""".format(avail_jobs, job_id)
+        self.cursor_db.execute(select_job)
+
+        if self.cursor_db.rowcount == 1:
+            try:
+                self.job_description = self.cursor_db.fetchall()[0]
+                print('Jobs found {}'.format(print_dictionary(self.job_description)))
+                start = datetime.now()
+                update_job = """UPDATE {} set job_allocated_time = %s WHERE job_id = %s""".format(
+                    avail_jobs)
+                self.cursor_db.execute(update_job, (start, job_id))
+                select_job = """SELECT * FROM {0} WHERE {0}.job_id = {1} AND {0}.interrupted = {2} AND
+                                {0}.finished = {3} FOR UPDATE""".format(running_jobs, job_id, False, True)
+                self.cursor_db.execute(select_job)
+                running_job = self.cursor_db.fetchall()
+                if len(running_job) == 0:
+                    self.job_description = None
+                    print("The job is not evaluated yet")
+                else:
+                    print("Job with job_id {} present in the updating and row locked".format(job_id))
+                    update_job = """UPDATE {} set cluster_id = %s, interrupted = %s, finished = %s 
+                                    WHERE job_id = %s""".format(running_jobs)
+                    self.cursor_db.execute(update_job, (cluster_id, 'FALSE', 'FALSE', job_id))
+                    if self.cursor_db.rowcount == 1:
+                        print("The job {} is updated".format(job_id))
+                self.close_connection()
+            except psycopg2.IntegrityError as e:
+                print("IntegrityError for the job {}, already assigned to another node error {}".format(job_id, str(e)))
+                self.job_description = None
+                self.connection.rollback()
+            except (ValueError, IndexError) as e:
+                print("Error as the all jobs are already assigned to another nodes {}".format(str(e)))
+
     def fetch_job_arguments(self, cluster_id):
         self.add_jobs_in_avail_which_failed()
         self.init_connection()
@@ -206,93 +243,103 @@ class DBConnector(metaclass=ABCMeta):
             self.logger.info("The job {} is interrupted".format(job_id))
         self.close_connection()
 
-    def rename_all_jobs(self, DIR_PATH, LOGS_FOLDER, OPTIMIZER_FOLDER):
-        self.init_connection()
-        avail_jobs = "{}.avail_jobs".format(self.schema)
-        select_job = "SELECT * FROM {0} WHERE {0}.dataset=\'synthetic_or\'".format(avail_jobs)
-        self.cursor_db.execute(select_job)
-        jobs_all = self.cursor_db.fetchall()
-        for job in jobs_all:
-            job_id = job['job_id']
-            self.logger.info(job['hash_value'])
-            self.job_description = job
-            self.logger.info(print_dictionary(job))
-            self.logger.info('old file name {}'.format(self.create_hash_value()))
-            file_name_old = self.create_hash_value()
-            old_log_path = os.path.join(DIR_PATH, LOGS_FOLDER, "{}.log".format(file_name_old))
-            old_opt_path = os.path.join(DIR_PATH, OPTIMIZER_FOLDER, "{}".format(file_name_old))
-
-            # Change the current description
-            self.job_description['dataset_params']['n_test_instances'] = self.job_description['dataset_params'][
-                                                                             'n_train_instances'] * 10
-            file_name_new = self.create_hash_value()
-            new_log_path = os.path.join(DIR_PATH, LOGS_FOLDER, "{}.log".format(file_name_new))
-            new_opt_path = os.path.join(DIR_PATH, OPTIMIZER_FOLDER, "{}".format(file_name_new))
-            self.logger.info("log file exist {}".format(os.path.exists(old_log_path)))
-            self.logger.info("opt file exist {}".format(os.path.exists(old_opt_path)))
-
-            # Rename the old optimizers and log files
-            if os.path.exists(old_log_path):
-                os.rename(old_log_path, new_log_path)
-            if os.path.exists(old_opt_path):
-                os.rename(old_opt_path, new_opt_path)
-            self.logger.info("renaming {} to {}".format(old_opt_path, new_opt_path))
-            self.logger.info('new file name {}'.format(self.create_hash_value()))
-            update_job = "UPDATE {0} set hash_value = %s, dataset_params = %s where job_id =%s".format(avail_jobs)
-            self.logger.info(update_job)
-            d_param = json.dumps(self.job_description['dataset_params'])
-            self.cursor_db.execute(update_job, (file_name_new, d_param, job_id))
-        self.close_connection()
+    # def rename_all_jobs(self, DIR_PATH, LOGS_FOLDER, OPTIMIZER_FOLDER):
+    #     self.init_connection()
+    #     avail_jobs = "{}.avail_jobs".format(self.schema)
+    #     select_job = "SELECT * FROM {0} WHERE {0}.dataset=\'synthetic_or\'".format(avail_jobs)
+    #     self.cursor_db.execute(select_job)
+    #     jobs_all = self.cursor_db.fetchall()
+    #     for job in jobs_all:
+    #         job_id = job['job_id']
+    #         self.logger.info(job['hash_value'])
+    #         self.job_description = job
+    #         self.logger.info(print_dictionary(job))
+    #         self.logger.info('old file name {}'.format(self.create_hash_value()))
+    #         file_name_old = self.create_hash_value()
+    #         old_log_path = os.path.join(DIR_PATH, LOGS_FOLDER, "{}.log".format(file_name_old))
+    #         old_opt_path = os.path.join(DIR_PATH, OPTIMIZER_FOLDER, "{}".format(file_name_old))
+    #
+    #         # Change the current description
+    #         self.job_description['dataset_params']['n_test_instances'] = self.job_description['dataset_params'][
+    #                                                                          'n_train_instances'] * 10
+    #         file_name_new = self.create_hash_value()
+    #         new_log_path = os.path.join(DIR_PATH, LOGS_FOLDER, "{}.log".format(file_name_new))
+    #         new_opt_path = os.path.join(DIR_PATH, OPTIMIZER_FOLDER, "{}".format(file_name_new))
+    #         self.logger.info("log file exist {}".format(os.path.exists(old_log_path)))
+    #         self.logger.info("opt file exist {}".format(os.path.exists(old_opt_path)))
+    #
+    #         # Rename the old optimizers and log files
+    #         if os.path.exists(old_log_path):
+    #             os.rename(old_log_path, new_log_path)
+    #         if os.path.exists(old_opt_path):
+    #             os.rename(old_opt_path, new_opt_path)
+    #         self.logger.info("renaming {} to {}".format(old_opt_path, new_opt_path))
+    #         self.logger.info('new file name {}'.format(self.create_hash_value()))
+    #         update_job = "UPDATE {0} set hash_value = %s, dataset_params = %s where job_id =%s".format(avail_jobs)
+    #         self.logger.info(update_job)
+    #         d_param = json.dumps(self.job_description['dataset_params'])
+    #         self.cursor_db.execute(update_job, (file_name_new, d_param, job_id))
+    #     self.close_connection()
 
     def clone_job(self, cluster_id, fold_id):
         avail_jobs = "{}.avail_jobs".format(self.schema)
         running_jobs = "{}.running_jobs".format(self.schema)
-        self.init_connection(cursor_factory=None)
+        self.init_connection()
         job_desc = dict(self.job_description)
         job_desc['fold_id'] = fold_id
-        job_id = job_desc['job_id']
+        query_job_id = job_desc['job_id']
         del job_desc['job_id']
-        learner, dataset, dataset_type = job_desc['learner'], job_desc['dataset'], job_desc['dataset_params'][
-            'dataset_type']
-        select_job = "SELECT job_id from {} where fold_id = {} AND learner = \'{}\' AND dataset = \'{}\' AND " \
-                     "dataset_params->>'dataset_type' = \'{}\'".format(avail_jobs, fold_id, learner, dataset,
-                                                                       dataset_type)
+        learner, learner_params = job_desc['learner'], job_desc['learner_params']
+        dataset, dataset_type = job_desc['dataset'], job_desc['dataset_params']['dataset_type']
+        self.logger.info("learner_params {}".format(learner_params))
+        select_job = "SELECT job_id, learner_params from {} where fold_id = {} AND learner = \'{}\' AND " \
+                     "dataset = \'{}\' AND dataset_params->>'dataset_type' = \'{}\'".format(avail_jobs, fold_id,
+                                                                                            learner, dataset,
+                                                                                            dataset_type)
+        self.logger.info("Select job for duplication {}".format(select_job))
         self.cursor_db.execute(select_job)
-
-        if self.cursor_db.rowcount == 0:
+        new_job_id = None
+        if self.cursor_db.rowcount != 0:
+            query = dict(self.cursor_db.fetchall()[0])
+            self.logger.info("Duplicate job {}".format(query))
+            if learner_params == query['learner_params']:
+                new_job_id = query['job_id']
+                self.logger.info("The job {} with fold {} already exist".format(new_job_id, fold_id))
+        if new_job_id is None:
             keys = list(job_desc.keys())
             columns = ', '.join(keys)
             index = keys.index('fold_id')
             keys[index] = str(fold_id)
             values_str = ', '.join(keys)
             insert_job = "INSERT INTO {0} ({1}) SELECT {2} FROM {0} where {0}.job_id = {3} RETURNING job_id".format(
-                avail_jobs, columns, values_str, job_id)
+                avail_jobs, columns, values_str, query_job_id)
             self.logger.info("Inserting job with new fold: {}".format(insert_job))
             self.cursor_db.execute(insert_job)
-        job_id = self.cursor_db.fetchone()[0]
-        self.logger.info("Job {} with fold id {} updated/inserted".format(job_id, fold_id))
+            new_job_id = self.cursor_db.fetchone()[0]
+
+        self.logger.info("Job {} with fold id {} updated/inserted".format(new_job_id, fold_id))
         start = datetime.now()
         update_job = """UPDATE {} set job_allocated_time = %s WHERE job_id = %s""".format(avail_jobs)
-        self.cursor_db.execute(update_job, (start, job_id))
-        select_job = """SELECT * FROM {0} WHERE {0}.job_id = {1} FOR UPDATE""".format(running_jobs, job_id)
+        self.cursor_db.execute(update_job, (start, new_job_id))
+        select_job = """SELECT * FROM {0} WHERE {0}.job_id = {1} FOR UPDATE""".format(running_jobs, new_job_id)
         self.cursor_db.execute(select_job)
         count_ = len(self.cursor_db.fetchall())
         if count_ == 0:
             insert_job = """INSERT INTO {0} (job_id, cluster_id ,finished, interrupted) 
-                            VALUES ({1}, {2},FALSE, FALSE)""".format(running_jobs, job_id, cluster_id)
+                            VALUES ({1}, {2},FALSE, FALSE)""".format(running_jobs, new_job_id, cluster_id)
             self.cursor_db.execute(insert_job)
             if self.cursor_db.rowcount == 1:
-                self.logger.info("The job {} is inserted in running jobs".format(job_id))
+                self.logger.info("The job {} is inserted in running jobs".format(new_job_id))
         else:
-            self.logger.info("Job with job_id {} present in the updating and row locked".format(job_id))
+            self.logger.info("Job with job_id {} present in the updating and row locked".format(new_job_id))
             update_job = """UPDATE {} set cluster_id = %s, interrupted = %s, finished = %s WHERE job_id = %s""".format(
                 running_jobs)
-            self.cursor_db.execute(update_job, (cluster_id, 'FALSE', 'FALSE', job_id))
+            self.cursor_db.execute(update_job, (cluster_id, 'FALSE', 'FALSE', new_job_id))
             if self.cursor_db.rowcount == 1:
-                self.logger.info("The job {} is updated in running jobs".format(job_id))
+                self.logger.info("The job {} is updated in running jobs".format(new_job_id))
         self.close_connection()
 
-        return job_id
+        return new_job_id
 
     def insert_new_jobs_with_different_fold(self, dataset='synthetic_dc', folds=4):
         self.init_connection()
