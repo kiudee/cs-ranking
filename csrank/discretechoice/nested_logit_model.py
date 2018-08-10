@@ -189,7 +189,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
                 with self.model:
                     self.logger.info("Error in vi ADVI sampler using nuts sampler with draws {}".format(draws_))
                     nuts_params = copy.deepcopy(sample_params)
-                    nuts_params['tune'] = nuts_params['draws'] = 200
+                    nuts_params['tune'] = nuts_params['draws'] = 50
                     self.logger.info("Params {}".format(nuts_params))
                     self.trace = pm.sample(**nuts_params)
         elif sampler == 'metropolis':
