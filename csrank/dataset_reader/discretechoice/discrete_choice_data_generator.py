@@ -16,21 +16,20 @@ class DiscreteChoiceDatasetGenerator(SyntheticDatasetGenerator):
         super(DiscreteChoiceDatasetGenerator, self).__init__(learning_problem=DISCRETE_CHOICE, **kwargs)
         dataset_function_options = {'linear': self.make_linear_transitive,
                                     'medoid': self.make_intransitive_medoids,
+                                    'nearest_neighbour_medoid': self.nearest_neighbour,
                                     'hypervolume': self.make_hv_dataset,
                                     'gp_transitive': self.make_gp_transitive,
                                     'gp_non_transitive': self.make_gp_non_transitive}
         if dataset_type not in dataset_function_options.keys():
             dataset_type = "medoid"
+        self.logger.info("dataset type {}".format(dataset_type))
         self.dataset_function = dataset_function_options[dataset_type]
 
     def make_linear_transitive(self, n_instances=1000, n_objects=5, noise=0.0, n_features=100, n_informative=10,
                                seed=42, **kwd):
         random_state = check_random_state(seed=seed)
-        X, y, coeff = make_regression(n_samples=n_instances * n_objects,
-                                      n_features=n_features,
-                                      n_informative=n_informative, coef=True,
-                                      noise=noise,
-                                      random_state=random_state)
+        X, y, coeff = make_regression(n_samples=n_instances * n_objects, n_features=n_features,
+                                      n_informative=n_informative, coef=True, noise=noise, random_state=random_state)
         X = X.reshape(n_instances, n_objects, n_features)
         y = y.reshape(n_instances, n_objects)
         Y = y.argmax(axis=1)
@@ -46,6 +45,20 @@ class DiscreteChoiceDatasetGenerator(SyntheticDatasetGenerator):
             sum_dist = D.mean(axis=0)
             medoid = np.argmin(sum_dist)
             Y[i] = medoid
+        X = np.array(X)
+        Y = np.array(Y)
+        Y = convert_to_label_encoding(Y, n_objects)
+        return X, Y
+
+    def nearest_neighbour(self, n_instances=100, n_objects=5, n_features=100, seed=42, **kwd):
+        random_state = check_random_state(seed=seed)
+        X = random_state.uniform(size=(n_instances, n_objects, n_features))
+        Y = np.empty(n_instances)
+        for i in range(n_instances):
+            D = squareform(pdist(X[i], metric='euclidean'))
+            sum_dist = D.mean(axis=0)
+            medoid = np.argmin(sum_dist)
+            Y[i] = np.argsort(D[medoid])[1]
         X = np.array(X)
         Y = np.array(Y)
         Y = convert_to_label_encoding(Y, n_objects)

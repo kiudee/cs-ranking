@@ -42,7 +42,9 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
         if not os.path.isfile(self.similarity_matrix_file):
             self.__load_dataset__(genome_scores, genome_tags, tags_applies, movies_df)
 
+        self.logger.info("Loading similarity matrix")
         self.similarity_matrix = get_similarity_matrix(self.similarity_matrix_file)
+        self.logger.info("Done loading similarity matrix")
         self.weights = np.log(np.array(genome_tags[TAG_POPULARITY])) / np.log(np.array(genome_tags[DOC_FREQUENCY]))
         self.movies_df = pd.read_csv(self.movies_file)
         self.n_movies = len(self.movies_df)
