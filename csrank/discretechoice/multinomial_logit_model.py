@@ -123,7 +123,8 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
         pass
 
     def set_tunable_parameters(self, loss_function='', regularization="l1", **point):
-        self.loss_function = likelihood_dict.get(loss_function, None)
+        if loss_function in likelihood_dict.keys():
+            self.loss_function = likelihood_dict.get(loss_function, None)
         self.regularization = regularization
         self.model = None
         self.trace = None
@@ -132,6 +133,7 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
         self.Yt = None
         self.p = None
         self.model_args = dict()
+        self.logger.info(self.__dict__)
         if len(point) > 0:
             self.logger.warning('This ranking algorithm does not support'
                                 ' tunable parameters called: {}'.format(print_dictionary(point)))

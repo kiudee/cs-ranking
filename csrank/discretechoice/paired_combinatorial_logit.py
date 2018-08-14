@@ -175,8 +175,10 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         pass
 
     def set_tunable_parameters(self, alpha=5e-2, loss_function='', regularization='l2', **point):
-        self.alpha = alpha
-        self.loss_function = likelihood_dict.get(loss_function, None)
+        if alpha is not None:
+            self.alpha = alpha
+        if loss_function in likelihood_dict.keys():
+            self.loss_function = likelihood_dict.get(loss_function, None)
         self.regularization = regularization
         self.model = None
         self.trace = None
@@ -185,6 +187,7 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         self.Yt = None
         self.p = None
         self.model_args = dict()
+        self.logger.info(self.__dict__)
         if len(point) > 0:
             self.logger.warning('This ranking algorithm does not support tunable parameters'
                                 ' called: {}'.format(print_dictionary(point)))

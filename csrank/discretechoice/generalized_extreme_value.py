@@ -20,6 +20,7 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
     def __init__(self, n_object_features, n_objects, n_nests=None, loss_function='None', regularization='l1',
                  alpha=5e-2, random_state=None, model_args={}, **kwd):
         self.logger = logging.getLogger(GeneralizedExtremeValueModel.__name__)
+
         self.n_object_features = n_object_features
         self.n_objects = n_objects
         if n_nests is None:
@@ -112,6 +113,16 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
 
     def fit(self, X, Y, sampler="vi", **kwargs):
         self.construct_model(X, Y)
+        callbacks = kwargs['vi_params']["callbacks"]
+        for i, c in enumerate(callbacks):
+            if isinstance(c, pm.callbacks.CheckParametersConvergence):
+                params = c.__dict__
+                params.pop('_diff')
+                params.pop('prev')
+                params.pop('ord')
+                params['diff'] = 'absolute'
+                print(params)
+                callbacks[i] = pm.callbacks.CheckParametersConvergence(**params)
         if sampler == 'vi':
             random_seed = kwargs['random_seed']
             with self.model:
@@ -173,13 +184,15 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
         self.logger.info("Clearing memory")
         pass
 
-    def set_tunable_parameters(self, alpha=5e-2, n_nests=None, loss_function='', regularization='l1', **point):
-        self.alpha = alpha
+    def set_tunable_parameters(self, alpha=None, n_nests=None, loss_function='', regularization='l1', **point):
+        if alpha is not None:
+            self.alpha = alpha
         if n_nests is None:
             self.n_nests = self.n_objects + int(self.n_objects / 2)
         else:
             self.n_nests = n_nests
-        self.loss_function = likelihood_dict.get(loss_function, None)
+        if loss_function in likelihood_dict.keys():
+            self.loss_function = likelihood_dict.get(loss_function, None)
         self.regularization = regularization
         self.model = None
         self.trace = None
@@ -188,6 +201,7 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
         self.Yt = None
         self.p = None
         self.model_args = dict()
+        self.logger.info(self.__dict__)
         if len(point) > 0:
             self.logger.warning('This ranking algorithm does not support tunable parameters'
                                 ' called: {}'.format(print_dictionary(point)))

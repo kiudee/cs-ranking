@@ -7,7 +7,6 @@ from csrank.constants import *
 from csrank.metrics import zero_one_rank_loss, zero_one_accuracy, make_ndcg_at_k_loss
 from csrank.metrics_np import *
 from csrank.objectranking.fate_object_ranker import FATEObjectRanker
-from csrank.util import print_dictionary
 
 
 def log_test_train_data(X_train, X_test, logger):
@@ -90,7 +89,7 @@ except ImportError:
     print('DCM models not implemented yet')
 
 learners = {**learners, **dcm_learners}
-print('Current learners \n', print_dictionary(learners))
+
 ranking_metrics = {'KendallsTau': kendalls_mean_np, 'SpearmanCorrelation': spearman_scipy,
                    'ZeroOneRankLoss': zero_one_rank_loss_for_scores_np,
                    'ZeroOneRankLossTies': zero_one_rank_loss_for_scores_ties_np,

@@ -3,7 +3,7 @@ from itertools import combinations
 
 from keras import Input, Model
 from keras import backend as K
-from keras.layers import Dense, Lambda, concatenate, Activation, Conv1D
+from keras.layers import Dense, Lambda, concatenate, Activation
 from keras.optimizers import SGD
 from keras.regularizers import l2
 
@@ -44,9 +44,10 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
             self.hidden_layers = [Dense(self.n_units, name="hidden_{}".format(x), **kwargs)
                                   for x in range(self.n_hidden)]
         assert len(self.hidden_layers) == self.n_hidden
-        self.output_node = Dense(1, activation="linear", kernel_regularizer=self.kernel_regularizer)
+        self.output_node = Dense(1, activation="linear", kernel_regularizer=self.kernel_regularizer, name="score")
         if self._use_zeroth_model:
-            self.output_node_zeroth = Dense(1, activation="linear", kernel_regularizer=self.kernel_regularizer)
+            self.output_node_zeroth = Dense(1, activation="linear", kernel_regularizer=self.kernel_regularizer,
+                                            name="zero_score")
 
     def construct_model(self):
         def create_input_lambda(i):
@@ -95,24 +96,39 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
         scores = [Lambda(sum_fun)(x) for x in outputs]
         scores = concatenate(scores)
         self.logger.debug('1st order model finished')
+
         if self._use_zeroth_model:
-            def expand_dims():
-                return Lambda(lambda x: x[..., None])
+            def get_score_object(i):
+                return Lambda(lambda x: x[:, i, None])
 
-            def squeeze_dims():
-                return Lambda(lambda x: x[:, :, 0])
-
-            scores = expand_dims()(scores)
-            zeroth_order_scores = expand_dims()(zeroth_order_scores)
-            concat = concatenate([scores, zeroth_order_scores], axis=-1)
-            convolution = Conv1D(name='convolution', filters=1, kernel_size=(1), strides=1, activation='linear',
-                                 kernel_initializer=self.kernel_initializer, input_shape=(self.n_objects, 2),
-                                 kernel_regularizer=self.kernel_regularizer, use_bias=True)
-            scores = convolution(concat)
-            scores = squeeze_dims()(scores)
+            concat_scores = [concatenate([get_score_object(i)(scores), get_score_object(i)(zeroth_order_scores)]) for i
+                             in range(self.n_objects)]
+            weighted_sum = Dense(1, activation='sigmoid', kernel_initializer=self.kernel_initializer,
+                                 kernel_regularizer=self.kernel_regularizer, name='weighted_sum')
+            scores = []
+            for i in range(self.n_objects):
+                scores.append(weighted_sum(concat_scores[i]))
+            scores = concatenate(scores)
         # if self._use_zeroth_model:
         #     scores = add([scores, zeroth_order_scores])
-        return Activation('sigmoid')(scores)
+        # if self._use_zeroth_model:
+        #     def expand_dims():
+        #         return Lambda(lambda x: x[..., None])
+        #
+        #     def squeeze_dims():
+        #         return Lambda(lambda x: x[:, :, 0])
+        #
+        #     scores = expand_dims()(scores)
+        #     zeroth_order_scores = expand_dims()(zeroth_order_scores)
+        #     concat_scores = concatenate([scores, zeroth_order_scores], axis=-1)
+        #     weighted_sum = Conv1D(name='weighted_sum', filters=1, kernel_size=(1), strides=1, activation='linear',
+        #                          kernel_initializer=self.kernel_initializer, input_shape=(self.n_objects, 2),
+        #                          kernel_regularizer=self.kernel_regularizer, use_bias=False)
+        #     scores = weighted_sum(concat_scores)
+        #     scores = squeeze_dims()(scores)
+        if not self._use_zeroth_model:
+            scores = Activation('sigmoid')(scores)
+        return scores
 
     def _create_zeroth_order_model(self):
         inp = Input(shape=(self.n_object_features,))
