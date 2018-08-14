@@ -20,7 +20,8 @@ RELEVANCE = "relevance"
 
 
 class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
-    def __init__(self, n_train_instances=10000, n_test_instances=10000, n_objects=5, random_state=None, **kwargs):
+    def __init__(self, n_train_instances=10000, n_test_instances=10000, n_objects=5, random_state=None,
+                 standardize=True, **kwargs):
         super(TagGenomeDatasetReader, self).__init__(dataset_folder='movie_lens', **kwargs)
 
         self.logger = logging.getLogger(TagGenomeDatasetReader.__name__)
@@ -33,7 +34,7 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
         genome_tags = pd.read_csv(self.tags_info_file)
         movies_df = pd.read_csv(self.movies_file)
         self.similarity_matrix_file = os.path.join(self.dirname, 'similarity_matrix.csv')
-
+        self.standardize = standardize
         self.n_objects = n_objects
         self.n_features = np.array(genome_tags[TAG_ID]).shape[0]
         self.n_test_instances = n_test_instances
@@ -176,7 +177,6 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
             cf_scores = critique_fit[np.arange(length)[:, None], orderings]
             movies = self.movie_features[orderings]
             if len(to_remove) != 0:
-                self.logger.info("Removing instances due to ties {}".format(to_remove))
                 cf_scores = np.delete(cf_scores, to_remove, 0)
                 movies = np.delete(movies, to_remove, 0)
             scores.extend(cf_scores)
@@ -198,7 +198,8 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
             total_instances = self.n_test_instances + self.n_train_instances
             X, Y = self.dataset_function(total_instances, n_obj, seed=seed)
             x_1, x_2, y_1, y_2 = train_test_split(X, Y, random_state=self.random_state, test_size=self.n_test_instances)
-            x_1, x_2 = standardize_features(x_1, x_2)
+            if self.standardize:
+                x_1, x_2 = standardize_features(x_1, x_2)
             x_train[n_obj], x_test[n_obj], y_train[n_obj], y_test[n_obj] = x_1, x_2, y_1, y_2
         self.logger.info('Done')
         return x_train, y_train, x_test, y_test
@@ -215,7 +216,8 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
         self.__check_dataset_validity__()
         x_train, x_test, y_train, y_test = train_test_split(self.X, self.Y, random_state=self.random_state,
                                                             test_size=self.n_test_instances)
-        x_train, x_test = standardize_features(x_train, x_test)
+        if self.standardize:
+            x_train, x_test = standardize_features(x_train, x_test)
         self.logger.info('Done')
         return x_train, y_train, x_test, y_test
 
@@ -226,7 +228,8 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
             X, Y = self.dataset_function(total_instances, self.n_objects, seed=seed)
             x_train, x_test, y_train, y_test = train_test_split(X, Y, random_state=self.random_state,
                                                                 test_size=self.n_test_instances)
-            x_train, x_test = standardize_features(x_train, x_test)
+            if self.standardize:
+                x_train, x_test = standardize_features(x_train, x_test)
 
             yield x_train, y_train, x_test, y_test
 

@@ -10,7 +10,8 @@ from csrank.dataset_reader.util import standardize_features
 
 
 class MNISTDatasetReader(DatasetReader):
-    def __init__(self, n_train_instances=10000, n_test_instances=10000, n_objects=10, random_state=None, **kwargs):
+    def __init__(self, n_train_instances=10000, n_test_instances=10000, n_objects=10, random_state=None,
+                 standardize=True, **kwargs):
         super(MNISTDatasetReader, self).__init__(dataset_folder='mnist', **kwargs)
         self.logger = logging.getLogger(MNISTDatasetReader.__name__)
         self.n_test_instances = n_test_instances
@@ -18,6 +19,7 @@ class MNISTDatasetReader(DatasetReader):
         self.n_objects = n_objects
         self.random_state = check_random_state(random_state)
         self.n_features = None
+        self.standardize = standardize
         self.__load_dataset__()
         self.logger.info('Done loading the dataset')
 
@@ -32,7 +34,8 @@ class MNISTDatasetReader(DatasetReader):
         self.dataset_function()
         x_train, x_test, y_train, y_test = train_test_split(self.X, self.Y, random_state=self.random_state,
                                                             test_size=self.n_test_instances)
-        x_train, x_test = standardize_features(x_train, x_test)
+        if self.standardize:
+            x_train, x_test = standardize_features(x_train, x_test)
         self.logger.info('Done')
         return x_train, y_train, x_test, y_test
 
@@ -49,7 +52,8 @@ class MNISTDatasetReader(DatasetReader):
             self.dataset_function()
             x_1, x_2, y_1, y_2 = train_test_split(self.X, self.Y, random_state=self.random_state,
                                                   test_size=self.n_test_instances)
-            x_1, x_2 = standardize_features(x_1, x_2)
+            if self.standardize:
+                x_1, x_2 = standardize_features(x_1, x_2)
             x_train[n_obj], x_test[n_obj], y_train[n_obj], y_test[n_obj] = x_1, x_2, y_1, y_2
         self.logger.info('Done')
         return x_train, y_train, x_test, y_test
