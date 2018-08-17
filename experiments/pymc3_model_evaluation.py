@@ -33,9 +33,9 @@ from csrank import *
 from csrank.constants import GEV, NLM, PCL, MNL
 from csrank.metrics import make_ndcg_at_k_loss
 from csrank.metrics_np import topk_categorical_accuracy_np
-from csrank.tensorflow_util import configure_logging_numpy_keras, get_mean_loss_for_dictionary, get_loss_for_array
+from csrank.tensorflow_util import configure_numpy_keras, get_mean_loss_for_dictionary, get_loss_for_array
 from csrank.util import create_dir_recursively, duration_till_now, seconds_to_time, \
-    print_dictionary, get_duration_seconds
+    print_dictionary, get_duration_seconds, setup_logging
 from experiments.dbconnection import DBConnector
 from experiments.util import get_dataset_reader, log_test_train_data, metrics_on_predictions, lp_metric_dict, \
     create_optimizer_parameters
@@ -108,8 +108,8 @@ if __name__ == "__main__":
             optimizer_path = os.path.join(DIR_PATH, OPTIMIZER_FOLDER, "{}".format(hash_value))
             create_dir_recursively(log_path, True)
             create_dir_recursively(optimizer_path, True)
-
-            configure_logging_numpy_keras(seed=seed, log_path=log_path)
+            setup_logging(log_path=log_path)
+            configure_numpy_keras(seed=seed)
             logger = logging.getLogger('Experiment')
             logger.info("DB config filePath {}".format(config_file_path))
             logger.info("Arguments {}".format(arguments))

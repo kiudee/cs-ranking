@@ -1,3 +1,5 @@
+import sys
+
 import pymc3 as pm
 from sklearn.metrics import hamming_loss, zero_one_loss
 
@@ -32,8 +34,40 @@ def get_dataset_reader(dataset_name, dataset_params):
 
 def create_optimizer_parameters(fit_params, hp_ranges, learner_params, learner_name, hash_file):
     hp_params = {}
-    learner = learners[learner_name]
-    learner = learner(**learner_params)
+    learner_func = learners[learner_name]
+    learner = learner_func(**learner_params)
+    learner.hash_file = hash_file
+    if learner_name in hp_ranges.keys():
+        hp_ranges[learner] = hp_ranges[learner_name]
+        del hp_ranges[learner_name]
+    if "callbacks" in fit_params.keys():
+        callbacks = []
+        for key, value in fit_params.get("callbacks", {}).items():
+            callback = callbacks_dictionary[key]
+            callback = callback(**value)
+            callbacks.append(callback)
+            if key in hp_ranges.keys():
+                hp_ranges[callback] = hp_ranges[key]
+                del hp_ranges[key]
+        fit_params["callbacks"] = callbacks
+    if "vi_params" in fit_params.keys():
+        vi_params = fit_params["vi_params"]
+        if "callbacks" in vi_params.keys():
+            callbacks = []
+            for key, value in vi_params.get("callbacks", {}).items():
+                callback = callbacks_dictionary[key]
+                callback = callback(**value)
+                callbacks.append(callback)
+            vi_params["callbacks"] = callbacks
+        fit_params['vi_params'] = vi_params
+    hp_params['learner'] = learner
+    hp_params['fit_params'] = fit_params
+    hp_params['tunable_parameter_ranges'] = hp_ranges
+    return hp_params
+
+
+def create_optimizer_parameters2(fit_params, hp_ranges, learner, learner_name, hash_file):
+    hp_params = {}
     learner.hash_file = hash_file
     if learner_name in hp_ranges.keys():
         hp_ranges[learner] = hp_ranges[learner_name]
@@ -116,3 +150,20 @@ lp_metric_dict = {
 }
 metrics_on_predictions = [f1_measure, precision, recall, zero_one_loss, hamming_loss, instance_informedness,
                           zero_one_rank_loss, zero_one_accuracy, make_ndcg_at_k_loss]
+
+
+def get_scores(object, batch_size, X_test, logger):
+    s_pred = None
+    while s_pred is None:
+        try:
+            if batch_size == 0:
+                break
+            logger.info("Batch_size {}".format(batch_size))
+            s_pred = object.predict_scores(X_test, batch_size=batch_size)
+        except:
+            logger.error("Unexpected Error {}".format(sys.exc_info()[0]))
+            s_pred = None
+            batch_size = int(batch_size / 10)
+    y_pred = object.predict_for_scores(s_pred)
+
+    return s_pred, y_pred

@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 __all__ = ['create_dir_recursively', 'duration_till_now', 'print_dictionary', 'rename_file_if_exist', 'seconds_to_time',
-           'time_from_now', 'get_duration_seconds', 'setup_logger']
+           'time_from_now', 'get_duration_seconds', 'setup_logging']
 
 
 def print_dictionary(dictionary):
@@ -67,8 +67,8 @@ def convert_to_loss(loss_function):
     return loss
 
 
-def setup_logger(log_path=None):
-    """Function setup as many loggers as you want"""
+def setup_logging(log_path=None):
+    """Function setup as many logging for the experiments"""
     if log_path is None:
         dirname = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
         dirname = os.path.dirname(dirname)
@@ -77,3 +77,5 @@ def setup_logger(log_path=None):
     logging.basicConfig(filename=log_path, level=logging.DEBUG,
                         format='%(asctime)s %(name)s %(levelname)-8s %(message)s',
                         datefmt='%Y-%m-%d %H:%M:%S')
+    logger = logging.getLogger("SetupLogger")
+    logger.info("log file path: {}".format(log_path))

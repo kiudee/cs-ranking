@@ -24,8 +24,8 @@ from csrank import ObjectRankingDatasetGenerator, FETAObjectRanker, RankNet, Lis
     ExpectedRankRegression
 from csrank.callbacks import DebugOutput, LRScheduler
 from csrank.metrics import zero_one_rank_loss_for_scores
-from csrank.tensorflow_util import get_tensor_value, configure_logging_numpy_keras
-from csrank.util import rename_file_if_exist
+from csrank.tensorflow_util import get_tensor_value, configure_numpy_keras
+from csrank.util import rename_file_if_exist, setup_logging
 
 MODEL = "aModel"
 
@@ -66,7 +66,8 @@ if __name__ == '__main__':
 
     rows_list = []
 
-    configure_logging_numpy_keras(seed=seed, log_path=log_path)
+    setup_logging(log_path=log_path)
+    configure_numpy_keras(seed=seed)
     logger = logging.getLogger('Generalization Experiment')
     X_train, Y_train, _, _ = generate_dataset(dataset_type, n_objects=n_train_objects, random_state=seed)
     n_instances, n_train_objects, n_features = X_train.shape

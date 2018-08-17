@@ -7,8 +7,6 @@ import tensorflow as tf
 from keras import backend as K
 from tensorflow.python.client import device_lib
 
-from csrank.util import setup_logger
-
 
 def scores_to_rankings(n_objects, y_pred):
     # indices = orderings
@@ -39,12 +37,11 @@ def get_tensor_value(x):
     return x
 
 
-def configure_logging_numpy_keras(seed=42, log_path=None):
-    setup_logger(log_path=log_path)
+def configure_numpy_keras(seed=42):
     tf.set_random_seed(seed)
     os.environ["KERAS_BACKEND"] = "tensorflow"
     devices = [x.name for x in device_lib.list_local_devices()]
-    logger = logging.getLogger("Configure Keras")
+    logger = logging.getLogger("ConfigureKeras")
     logger.info("Devices {}".format(devices))
     n_gpus = len([x.name for x in device_lib.list_local_devices() if x.device_type == 'GPU'])
     if n_gpus == 0:
@@ -59,7 +56,6 @@ def configure_logging_numpy_keras(seed=42, log_path=None):
     K.set_session(sess)
     np.random.seed(seed)
     logger.info("Number of GPUS {}".format(n_gpus))
-    logger.info("log file path: {}".format(log_path))
 
 
 def get_mean_loss_for_dictionary(metric, y_true, y_pred):

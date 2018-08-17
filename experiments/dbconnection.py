@@ -300,11 +300,13 @@ class DBConnector(metaclass=ABCMeta):
         self.cursor_db.execute(select_job)
         new_job_id = None
         if self.cursor_db.rowcount != 0:
-            query = dict(self.cursor_db.fetchall()[0])
-            self.logger.info("Duplicate job {}".format(query))
-            if learner_params == query['learner_params']:
-                new_job_id = query['job_id']
-                self.logger.info("The job {} with fold {} already exist".format(new_job_id, fold_id))
+            for query in self.cursor_db.fetchall():
+                query = dict(query)
+                self.logger.info("Duplicate job {}".format(query))
+                if learner_params == query['learner_params']:
+                    new_job_id = query['job_id']
+                    self.logger.info("The job {} with fold {} already exist".format(new_job_id, fold_id))
+                    break
         if new_job_id is None:
             keys = list(job_desc.keys())
             columns = ', '.join(keys)

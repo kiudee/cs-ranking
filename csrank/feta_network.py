@@ -182,7 +182,7 @@ class FETANetwork(Learner):
             scores[n] += result.reshape(n_objects, n_objects - 1).mean(axis=1)
             scores[n] = 1. / (1. + np.exp(-scores[n]))
             del result
-            if n % int(n_instances / 10) == 0:
+            if n % int(n_instances / 2) == 0:
                 self.logger.info("Predict using pairs instances done: {}".format(n))
         del pairs
         return scores

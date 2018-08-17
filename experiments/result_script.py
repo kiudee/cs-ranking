@@ -4,13 +4,13 @@ import os
 
 import pandas as pd
 
-from csrank.tensorflow_util import configure_logging_numpy_keras
+from csrank.util import setup_logging
 from experiments.dbconnection import DBConnector
 
 if __name__ == '__main__':
     DIR_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
     log_path = os.path.join(DIR_PATH, 'logs', 'results.log')
-    configure_logging_numpy_keras(log_path=log_path)
+    setup_logging(log_path=log_path)
     logger = logging.getLogger('Result parsing')
     config_file_path = os.path.join(DIR_PATH, 'config', 'clusterdb.json')
     self = DBConnector(config_file_path=config_file_path, is_gpu=True, schema='master')
