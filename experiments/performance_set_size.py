@@ -22,6 +22,7 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
+import pymc3 as pm
 from docopt import docopt
 from sklearn.model_selection import ShuffleSplit
 from skopt.utils import load
@@ -71,9 +72,9 @@ if __name__ == '__main__':
     dataset_type = str(arguments['--dataset_type'])
     model = str(arguments['--model'])
     run_opt = bool(int(arguments['--runopt']))
-    dirname = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    log_path = os.path.join(dirname, LOGS_FOLDER, "performance_sets_{}_{}_{}.log".format(dataset, dataset_type, model))
-    df_path = os.path.join(dirname, RESULT_FOLDER, "performance_sets_{}_{}_{}.csv".format(dataset, dataset_type, model))
+    log_path = os.path.join(DIR_PATH, LOGS_FOLDER, "performance_sets_{}_{}_{}.log".format(dataset, dataset_type, model))
+    df_path = os.path.join(DIR_PATH, RESULT_FOLDER,
+                           "performance_sets_{}_{}_{}.csv".format(dataset, dataset_type, model))
     config_file_path = os.path.join(DIR_PATH, 'config', 'clusterdb.json')
 
     setup_logging(log_path=log_path)
@@ -85,7 +86,7 @@ if __name__ == '__main__':
     models_done = []
     df = None
     if os.path.isfile(df_path):
-        df = pd.read_csv(df_path)
+        df = pd.read_csv(df_path, index_col=0)
         models_done = list(df.columns)
     logger.info("Models done {}".format(models_done))
     run_jobs = []
@@ -140,6 +141,8 @@ if __name__ == '__main__':
     inner_cv = ShuffleSplit(n_splits=n_inner_folds, test_size=0.1, random_state=random_state)
     if learner_name in [MNL, PCL, NLM, GEV]:
         fit_params['random_seed'] = seed + fold_id
+        fit_params['vi_params']["callbacks"] = [pm.callbacks.CheckParametersConvergence(diff="absolute", tolerance=0.01
+                                                                                        , every=50)]
     optimizer = load(optimizer_path)
     if "ps" in optimizer.acq_func:
         best_i = np.argmin(np.array(optimizer.yi)[:, 0])
@@ -165,7 +168,6 @@ if __name__ == '__main__':
         all[n_objects] = learner_func(**learner_params)
         if learner_name == FETA_DC:
             all[n_objects].max_number_of_objects = n_objects
-
     if not (model_name in models_done and (model_name + '_gen') in models_done):
         learner_params['n_objects'], learner_params['n_object_features'] = X_train.shape[1:]
         logger.info("learner params {}".format(print_dictionary(learner_params)))
@@ -195,10 +197,9 @@ if __name__ == '__main__':
                 obj.set_tunable_parameters(**param_dict)
                 logger.info('obj: {}, current parameters {}'.format(type(obj).__name__, param_dict))
             i += len(parameters)
-
-        learner2.set_tunable_parameters(**best_learner_params)
-        learner2.fit(X_train, Y_train, **fit_params)
-
+        if learner_name != PCL:
+            learner2.set_tunable_parameters(**best_learner_params)
+            learner2.fit(X_train, Y_train, **fit_params)
         eval_results = {MODEL: model_name}
         eval_results2 = {MODEL: model_name + '_gen'}
         for n_objects in N_OBJECTS_ARRAY:
@@ -207,13 +208,12 @@ if __name__ == '__main__':
             else:
                 dataset_reader.n_objects = n_objects
             X_train, Y_train, X_test, Y_test = dataset_reader.get_single_train_test_split()
-            log_test_train_data(X_train, X_test, logger)
             # Fitting the learner
             learner = all[n_objects]
             if learner_name == FETA_DC:
                 logger.info("learner params {}".format([learner._n_objects, learner.n_objects]))
-            else:
-                logger.info("learner params {}".format(learner.n_objects))
+            logger.info("############################ For objects {} ##############################".format(n_objects))
+            log_test_train_data(X_train, X_test, logger)
             logger.info("############################## Learner 1 ####################################")
             learner.set_tunable_parameters(**best_learner_params)
             learner.fit(X_train, Y_train, **fit_params)
@@ -222,20 +222,22 @@ if __name__ == '__main__':
             metric_loss = categorical_accuracy_np(Y_test, y_pred)
             logger.info(ERROR_OUTPUT_STRING.format("CategoricalAccuracy  ", str(np.mean(metric_loss)), n_objects))
             eval_results[n_objects] = metric_loss
-            logger.info("############################## Learner 2 ####################################")
-            # Clearing memory
-            learner2.clear_memory(n_objects=n_objects)
-            # Predicting on fitted learner
-            s_pred, y_pred = get_scores(learner2, batch_size, X_test, logger)
-            metric_loss = categorical_accuracy_np(Y_test, y_pred)
-            logger.info("Learned on {} objects and predicting on others".format(dataset_params['n_objects']))
-            logger.info(ERROR_OUTPUT_STRING.format("CategoricalAccuracy  ", str(np.mean(metric_loss)), n_objects))
-            eval_results2[n_objects] = metric_loss
+            if learner_name != PCL:
+                logger.info("############################## Learner 2 ####################################")
+                # Clearing memory
+                learner2.clear_memory(n_objects=n_objects)
+                # Predicting on fitted learner
+                s_pred, y_pred = get_scores(learner2, batch_size, X_test, logger)
+                metric_loss = categorical_accuracy_np(Y_test, y_pred)
+                logger.info("Learned on {} objects and predicting on others ".format(dataset_params['n_objects']))
+                logger.info(ERROR_OUTPUT_STRING.format("CategoricalAccuracy  ", str(np.mean(metric_loss)), n_objects))
+                eval_results2[n_objects] = metric_loss
 
         rows_list.append(eval_results)
         logger.info("Saving  model {}".format(model_name))
-        rows_list.append(eval_results2)
-        logger.info("Saving  model {}".format(model_name + '_gen'))
+        if learner_name != PCL:
+            rows_list.append(eval_results2)
+            logger.info("Saving  model {}".format(model_name + '_gen'))
         save_results(rows_list, df_path)
         del learner2
     logger.info("####################################################################################################")
@@ -252,6 +254,10 @@ if __name__ == '__main__':
                 fit_params = copy.deepcopy(job_description["fit_params"])
                 hp_ranges = copy.deepcopy(job_description["hp_ranges"])
                 hp_fit_params = copy.deepcopy(job_description["hp_fit_params"])
+                if learner_name in [PCL, GEV, NLM, MNL]:
+                    fit_params['random_seed'] = seed + fold_id
+                    fit_params['vi_params']["callbacks"] = {"CheckConvergence": {"diff": "absolute", "tolerance": 0.01,
+                                                                                 "every": 50}}
                 logger.info("hp_ranges {}".format(hp_ranges))
                 if dataset == "synthetic_dc":
                     dataset_reader.kwargs['n_objects'] = n_objects

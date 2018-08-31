@@ -113,7 +113,7 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
 
     def fit(self, X, Y, sampler="vi", **kwargs):
         self.construct_model(X, Y)
-        callbacks = kwargs['vi_params']["callbacks"]
+        callbacks = kwargs['vi_params'].get('callbacks', [])
         for i, c in enumerate(callbacks):
             if isinstance(c, pm.callbacks.CheckParametersConvergence):
                 params = c.__dict__
@@ -201,7 +201,6 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
         self.Yt = None
         self.p = None
         self.model_args = dict()
-        self.logger.info(self.__dict__)
         if len(point) > 0:
             self.logger.warning('This ranking algorithm does not support tunable parameters'
                                 ' called: {}'.format(print_dictionary(point)))
