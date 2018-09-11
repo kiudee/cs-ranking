@@ -27,7 +27,7 @@ from docopt import docopt
 from sklearn.model_selection import ShuffleSplit
 from skopt.utils import load
 
-from csrank.constants import GEV, NLM, PCL, MNL, FETA_DC
+from experiments.constants import FETA_DC, MNL, NLM, GEV, PCL
 from csrank.metrics_np import categorical_accuracy_np
 from csrank.tensorflow_util import configure_numpy_keras
 from csrank.util import print_dictionary, get_duration_seconds, duration_till_now, seconds_to_time, setup_logging

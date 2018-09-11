@@ -29,7 +29,7 @@ from docopt import docopt
 from sklearn.model_selection import ShuffleSplit
 
 from csrank import *
-from csrank.constants import GEV, NLM, PCL, MNL
+from experiments.constants import MNL, NLM, GEV, PCL
 from csrank.metrics import make_ndcg_at_k_loss
 from csrank.tensorflow_util import configure_numpy_keras, get_mean_loss_for_dictionary, get_loss_for_array
 from csrank.util import create_dir_recursively, duration_till_now, seconds_to_time, \
