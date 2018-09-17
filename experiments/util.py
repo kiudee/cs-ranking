@@ -12,7 +12,7 @@ from csrank.objectranking.fate_object_ranker import FATEObjectRanker
 from experiments.constants import IMAGE_DATASET, SUSHI, SYNTHETIC_OR, SYNTHETIC_CHOICE, SYNTHETIC_DC, MNIST_CHOICE, \
     MNIST_DC, DEPTH, SENTENCE_ORDERING, LETOR_OR, LETOR_DC, RANKSVM, ERR, CMPNET, RANKNET, FETA_RANKER, FATE_RANKER, \
     LISTNET, FETA_CHOICE, FATE_CHOICE, TAG_GENOME_OR, TAG_GENOME_DC, FETA_DC, FATE_DC, RANKNET_DC, CMPNET_DC, MNL, NLM, \
-    GEV, PCL, RANKSVM_DC
+    GEV, PCL, RANKSVM_DC, MLM
 
 
 def log_test_train_data(X_train, X_test, logger):
@@ -120,7 +120,7 @@ try:
     dcm_learners = {FETA_DC: FETADiscreteChoiceFunction, FATE_DC: FATEDiscreteChoiceFunction,
                     RANKNET_DC: RankNetDiscreteChoiceFunction, CMPNET_DC: CmpNetDiscreteChoiceFunction,
                     MNL: MultinomialLogitModel, NLM: NestedLogitModel, GEV: GeneralizedExtremeValueModel,
-                    PCL: PairedCombinatorialLogit, RANKSVM_DC: RankSVMDCM}
+                    PCL: PairedCombinatorialLogit, RANKSVM_DC: RankSVMDCM, MLM: MixedLogitModel}
 
 except ImportError:
     dcm_learners = {}

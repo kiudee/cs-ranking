@@ -30,12 +30,12 @@ from docopt import docopt
 from sklearn.model_selection import ShuffleSplit
 
 from csrank import *
-from experiments.constants import MNL, NLM, GEV, PCL
 from csrank.metrics import make_ndcg_at_k_loss
 from csrank.metrics_np import topk_categorical_accuracy_np
 from csrank.tensorflow_util import configure_numpy_keras, get_mean_loss_for_dictionary, get_loss_for_array
 from csrank.util import create_dir_recursively, duration_till_now, seconds_to_time, \
     print_dictionary, get_duration_seconds, setup_logging
+from experiments.constants import MNL, NLM, GEV, PCL, MLM
 from experiments.dbconnection import DBConnector
 from experiments.util import get_dataset_reader, log_test_train_data, metrics_on_predictions, lp_metric_dict, \
     create_optimizer_parameters
@@ -81,9 +81,9 @@ if __name__ == "__main__":
         cluster_id = int(os.environ['CCS_REQID'])
     dbConnector.fetch_job_arguments(cluster_id=cluster_id)
 
-    job_description = copy.deepcopy(dict(dbConnector.job_description))
-    if job_description is not None:
+    if dbConnector.job_description is not None:
         try:
+            job_description = copy.deepcopy(dict(dbConnector.job_description))
             seed = int(job_description["seed"])
             job_id = int(job_description["job_id"])
             fold_id = int(job_description["fold_id"])
@@ -123,7 +123,7 @@ if __name__ == "__main__":
             n_objects = log_test_train_data(X_train, X_test, logger)
             del dataset_reader
             inner_cv = ShuffleSplit(n_splits=n_inner_folds, test_size=0.1, random_state=random_state)
-            if learner_name in [MNL, PCL, NLM, GEV]:
+            if learner_name in [MNL, PCL, NLM, GEV, MLM]:
                 fit_params['random_seed'] = seed + fold_id
             hash_file = os.path.join(DIR_PATH, MODEL_FOLDER, "{}.h5".format(hash_value))
             learner_params['n_objects'], learner_params['n_object_features'] = X_train.shape[1:]

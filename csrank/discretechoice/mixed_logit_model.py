@@ -65,6 +65,15 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
 
     def fit(self, X, Y, sampler='vi', **kwargs):
         self.construct_model(X, Y)
+        callbacks = kwargs['vi_params'].get('callbacks', [])
+        for i, c in enumerate(callbacks):
+            if isinstance(c, pm.callbacks.CheckParametersConvergence):
+                params = c.__dict__
+                params.pop('_diff')
+                params.pop('prev')
+                params.pop('ord')
+                params['diff'] = 'absolute'
+                callbacks[i] = pm.callbacks.CheckParametersConvergence(**params)
         if sampler == 'vi':
             random_seed = kwargs['random_seed']
             with self.model:
@@ -122,9 +131,10 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
         self.logger.info("Clearing memory")
         pass
 
-    def set_tunable_parameters(self, loss_function='', regularization="l1", **point):
+    def set_tunable_parameters(self, loss_function='', regularization="l1", n_mixtures=4, **point):
         if loss_function in likelihood_dict.keys():
             self.loss_function = likelihood_dict.get(loss_function, None)
+        self.n_mixtures = n_mixtures
         self.regularization = regularization
         self.model = None
         self.trace = None

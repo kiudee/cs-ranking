@@ -27,10 +27,10 @@ from docopt import docopt
 from sklearn.model_selection import ShuffleSplit
 from skopt.utils import load
 
-from experiments.constants import FETA_DC, MNL, NLM, GEV, PCL
 from csrank.metrics_np import categorical_accuracy_np
 from csrank.tensorflow_util import configure_numpy_keras
 from csrank.util import print_dictionary, get_duration_seconds, duration_till_now, seconds_to_time, setup_logging
+from experiments.constants import FETA_DC, MNL, NLM, GEV, PCL, MLM
 from experiments.dbconnection import DBConnector
 from experiments.util import get_dataset_reader, learners, \
     callbacks_dictionary, lp_metric_dict, ParameterOptimizer, log_test_train_data, \
@@ -139,7 +139,7 @@ if __name__ == '__main__':
     dataset_params['fold_id'] = fold_id
     dataset_reader = get_dataset_reader(dataset_name, dataset_params)
     inner_cv = ShuffleSplit(n_splits=n_inner_folds, test_size=0.1, random_state=random_state)
-    if learner_name in [MNL, PCL, NLM, GEV]:
+    if learner_name in [MNL, PCL, NLM, GEV, MLM]:
         fit_params['random_seed'] = seed + fold_id
         fit_params['vi_params']["callbacks"] = [pm.callbacks.CheckParametersConvergence(diff="absolute", tolerance=0.01
                                                                                         , every=50)]
@@ -254,7 +254,7 @@ if __name__ == '__main__':
                 fit_params = copy.deepcopy(job_description["fit_params"])
                 hp_ranges = copy.deepcopy(job_description["hp_ranges"])
                 hp_fit_params = copy.deepcopy(job_description["hp_fit_params"])
-                if learner_name in [PCL, GEV, NLM, MNL]:
+                if learner_name in [PCL, GEV, NLM, MNL, MLM]:
                     fit_params['random_seed'] = seed + fold_id
                     fit_params['vi_params']["callbacks"] = {"CheckConvergence": {"diff": "absolute", "tolerance": 0.01,
                                                                                  "every": 50}}

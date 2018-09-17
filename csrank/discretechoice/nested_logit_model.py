@@ -163,7 +163,6 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
                 params.pop('prev')
                 params.pop('ord')
                 params['diff'] = 'absolute'
-                print(params)
                 callbacks[i] = pm.callbacks.CheckParametersConvergence(**params)
         if sampler == 'vi':
             random_seed = kwargs['random_seed']

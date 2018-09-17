@@ -2,6 +2,7 @@ from .cmpnet_discrete_choice import CmpNetDiscreteChoiceFunction
 from .fate_discrete_choice import FATEDiscreteChoiceFunction
 from .feta_discrete_choice import FETADiscreteChoiceFunction
 from .generalized_extreme_value import GeneralizedExtremeValueModel
+from .mixed_logit_model import MixedLogitModel
 from .model_selector import ModelSelector
 from .multinomial_logit_model import MultinomialLogitModel
 from .nested_logit_model import NestedLogitModel

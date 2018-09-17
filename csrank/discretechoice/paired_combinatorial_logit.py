@@ -118,6 +118,15 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
 
     def fit(self, X, Y, sampler="vi", **kwargs):
         self.construct_model(X, Y)
+        callbacks = kwargs['vi_params'].get('callbacks', [])
+        for i, c in enumerate(callbacks):
+            if isinstance(c, pm.callbacks.CheckParametersConvergence):
+                params = c.__dict__
+                params.pop('_diff')
+                params.pop('prev')
+                params.pop('ord')
+                params['diff'] = 'absolute'
+                callbacks[i] = pm.callbacks.CheckParametersConvergence(**params)
         if sampler == 'vi':
             random_seed = kwargs['random_seed']
             with self.model:

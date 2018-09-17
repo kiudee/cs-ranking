@@ -31,5 +31,6 @@ NLM = 'nested_logit_model'
 GEV = 'generalized_extreme_value'
 PCL = 'paired_combinatorial_logit'
 RANKSVM_DC = 'ranksvm_dc'
+MLM = 'mixed_logit_model'
 
 DCMS = [FETA_DC, FATE_DC, RANKNET_DC, MNL, NLM, GEV, PCL, RANKSVM_DC]

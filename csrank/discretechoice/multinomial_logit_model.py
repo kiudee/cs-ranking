@@ -55,7 +55,7 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
             self.Xt = theano.shared(X)
             self.Yt = theano.shared(Y)
             shapes = {'weights': self.n_object_features}
-            #shapes = {'weights': (self.n_object_features, 3)}
+            # shapes = {'weights': (self.n_object_features, 3)}
             weights_dict = create_weight_dictionary(self.model_args, shapes)
             intercept = pm.Normal('intercept', mu=0, sd=10)
             utility = tt.dot(self.Xt, weights_dict['weights']) + intercept
@@ -66,6 +66,15 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
 
     def fit(self, X, Y, sampler='vi', **kwargs):
         self.construct_model(X, Y)
+        callbacks = kwargs['vi_params'].get('callbacks', [])
+        for i, c in enumerate(callbacks):
+            if isinstance(c, pm.callbacks.CheckParametersConvergence):
+                params = c.__dict__
+                params.pop('_diff')
+                params.pop('prev')
+                params.pop('ord')
+                params['diff'] = 'absolute'
+                callbacks[i] = pm.callbacks.CheckParametersConvergence(**params)
         if sampler == 'vi':
             random_seed = kwargs['random_seed']
             with self.model:
