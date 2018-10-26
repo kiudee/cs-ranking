@@ -290,12 +290,16 @@ class DBConnector(metaclass=ABCMeta):
         query_job_id = job_desc['job_id']
         del job_desc['job_id']
         learner, learner_params = job_desc['learner'], job_desc['learner_params']
-        dataset, dataset_type = job_desc['dataset'], job_desc['dataset_params']['dataset_type']
+        if 'dataset_type' in job_desc['dataset_params'].keys():
+            dataset, value = job_desc['dataset'], job_desc['dataset_params']['dataset_type']
+            key = "dataset_type"
+        else:
+            dataset, value = job_desc['dataset'], job_desc['dataset_params']['year']
+            key = "year"
+
         self.logger.info("learner_params {}".format(learner_params))
         select_job = "SELECT job_id, learner_params from {} where fold_id = {} AND learner = \'{}\' AND " \
-                     "dataset = \'{}\' AND dataset_params->>'dataset_type' = \'{}\'".format(avail_jobs, fold_id,
-                                                                                            learner, dataset,
-                                                                                            dataset_type)
+                     "dataset = \'{}\' AND dataset_params->>\'{}\' = \'{}\'".format(avail_jobs, fold_id, learner, dataset, key, value)
         self.logger.info("Select job for duplication {}".format(select_job))
         self.cursor_db.execute(select_job)
         new_job_id = None

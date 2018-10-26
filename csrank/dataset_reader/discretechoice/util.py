@@ -33,12 +33,15 @@ def sub_sampling_discrete_choices_from_relevance(Xt, Yt, n_objects=5):
     for x, y in zip(Xt, Yt):
         choices = np.append(np.where(y == 1)[0], np.where(y == 2)[0])
         zeros = np.delete(np.arange(0, Xt.shape[1]), choices)
-        if len(choices) > bucket_size:
-            idx = rs.choice(choices, size=bucket_size, replace=False)
-        else:
-            idx = rs.choice(choices, size=bucket_size)
-        if len(zeros) > n_objects - 1:
-            idys = np.array([rs.choice(zeros, size=(n_objects - 1), replace=False) for i in range(len(idx))])
+        if len(zeros) != 0:
+            if len(choices) > bucket_size:
+                idx = choices
+            else:
+                idx = rs.choice(choices, size=bucket_size)
+            if len(zeros) > n_objects - 1:
+                idys = np.array([rs.choice(zeros, size=(n_objects - 1), replace=False) for i in range(len(idx))])
+            else:
+                idys = np.array([rs.choice(zeros, size=(n_objects - 1), replace=True) for i in range(len(idx))])
             idx = np.append(idys, idx[:, None], axis=1)
             for i in idx:
                 np.random.shuffle(i)

@@ -116,10 +116,10 @@ class LetorRankingDatasetReader(DatasetReader, metaclass=ABCMeta):
         elif train_test == "test":
             Xt = self.X_test
             Yt = self.Y_test
-        for n in self.X_train.keys():
+        for n in Xt.keys():
             if n > self.n_objects:
                 self.logger.info("Number of objects {}".format(n))
-                x, y = self.sub_sampling_function(n)
+                x, y = self.sub_sampling_function(train_test=train_test, n=n)
                 if len(x) != 0:
                     if len(X) == 0:
                         X = np.copy(x)
@@ -191,7 +191,7 @@ class LetorRankingDatasetReader(DatasetReader, metaclass=ABCMeta):
             self.logger.info('Maximum length of ranking: {}'.format(np.max(array)))
         return dataset_dictionaries
 
-    def sub_sampling_function(self, n):
+    def sub_sampling_function(self, train_test, n):
         pass
 
     def convert_output(self, ranking_length):

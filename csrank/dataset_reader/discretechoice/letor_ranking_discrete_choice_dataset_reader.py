@@ -15,8 +15,13 @@ class LetorRankingDiscreteChoiceDatasetReader(LetorRankingDatasetReader):
         self.n_objects = n_objects
         self.__load_dataset__()
 
-    def sub_sampling_function(self, n):
-        return sub_sampling_discrete_choices_from_relevance(self.X_train[n], self.Y_train[n], n_objects=self.n_objects)
+    def sub_sampling_function(self, train_test, n):
+        if train_test == "train":
+            return sub_sampling_discrete_choices_from_relevance(self.X_train[n], self.Y_train[n],
+                                                                n_objects=self.n_objects)
+        else:
+            return sub_sampling_discrete_choices_from_relevance(self.X_test[n], self.Y_test[n],
+                                                                n_objects=self.n_objects)
 
     def convert_output(self, ranking_length):
         self.Y = self.Y.argmin(axis=1)
