@@ -105,8 +105,8 @@ def create_optimizer_parameters2(fit_params, hp_ranges, learner, learner_name, h
 datasets = {SYNTHETIC_OR: ObjectRankingDatasetGenerator, DEPTH: DepthDatasetReader,
             SUSHI: SushiObjectRankingDatasetReader, IMAGE_DATASET: ImageDatasetReader,
             TAG_GENOME_OR: TagGenomeObjectRankingDatasetReader, SENTENCE_ORDERING: SentenceOrderingDatasetReader,
-            LETOR_OR: LetorObjectRankingDatasetReader,
-            LETOR_DC: LetorDiscreteChoiceDatasetReader, SYNTHETIC_DC: DiscreteChoiceDatasetGenerator,
+            LETOR_OR: LetorListwiseObjectRankingDatasetReader,
+            LETOR_DC: LetorRankingDiscreteChoiceDatasetReader, SYNTHETIC_DC: DiscreteChoiceDatasetGenerator,
             MNIST_DC: MNISTDiscreteChoiceDatasetReader, TAG_GENOME_DC: TagGenomeDiscreteChoiceDatasetReader,
             SYNTHETIC_CHOICE: ChoiceDatasetGenerator, MNIST_CHOICE: MNISTChoiceDatasetReader}
 learners = {FETA_RANKER: FETAObjectRanker, RANKNET: RankNet, CMPNET: CmpNet, ERR: ExpectedRankRegression,

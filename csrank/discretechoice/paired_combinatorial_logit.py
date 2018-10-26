@@ -85,10 +85,10 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         n_objects = self.n_objects
         nests_indices = self.nests_indices
         n_nests = self.n_nests
-        lambdas = np.ones((n_objects, n_objects), lambda_k.dtype)
-        lambdas[nests_indices[:, 0], nests_indices[:, 1]] = lambdas.T[
+        temp_lambdas = np.ones((n_objects, n_objects), lambda_k.dtype)
+        temp_lambdas[nests_indices[:, 0], nests_indices[:, 1]] = temp_lambdas.T[
             nests_indices[:, 0], nests_indices[:, 1]] = lambda_k
-        uti_per_nest = np.transpose((utility[:, None] / lambdas), (0, 2, 1))
+        uti_per_nest = np.transpose((utility[:, None] / temp_lambdas), (0, 2, 1))
         ind = np.array([[[i1, i2], [i2, i1]] for i1, i2 in nests_indices])
         ind = ind.reshape(2 * n_nests, 2)
         x = uti_per_nest[:, ind[:, 0], ind[:, 1]].reshape(-1, 2)

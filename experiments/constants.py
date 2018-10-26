@@ -33,4 +33,4 @@ PCL = 'paired_combinatorial_logit'
 RANKSVM_DC = 'ranksvm_dc'
 MLM = 'mixed_logit_model'
 
-DCMS = [FETA_DC, FATE_DC, RANKNET_DC, MNL, NLM, GEV, PCL, RANKSVM_DC]
+DCMS = [FETA_DC, FATE_DC, RANKNET_DC, MNL, NLM, GEV, PCL, MLM, RANKSVM_DC]

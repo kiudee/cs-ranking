@@ -170,8 +170,7 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
             else:
                 Y_train = np.concatenate([Y_train, y[idx]], axis=0)
                 X_train = np.concatenate([X_train, x[idx]], axis=0)
-        self.logger.info("Sampled instances {} objects {}".format(X_train.shape[0],
-                                                                  X_train.shape[1]))
+        self.logger.info("Sampled instances {} objects {}".format(X_train.shape[0], X_train.shape[1]))
         return X_train, Y_train
 
     def _predict_scores_fixed(self, X, **kwargs):

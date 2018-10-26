@@ -1,12 +1,12 @@
 from sklearn.utils import check_random_state
 
 from csrank.constants import DYAD_RANKING
-from ..letor_dataset_reader import LetorDatasetReader
+from ..letor_listwise_dataset_reader import LetorListwiseDatasetReader
 
 
-class LetorDyadRankingDatasetReader(LetorDatasetReader):
+class LetorDyadRankingListwiseDatasetReader(LetorListwiseDatasetReader):
     def __init__(self, random_state=None, **kwargs):
-        super(LetorDyadRankingDatasetReader, self).__init__(learning_problem=DYAD_RANKING, **kwargs)
+        super(LetorDyadRankingListwiseDatasetReader, self).__init__(learning_problem=DYAD_RANKING, **kwargs)
         self.random_state = check_random_state(random_state)
 
     def splitter(self, iter):

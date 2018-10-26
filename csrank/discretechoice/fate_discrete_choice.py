@@ -5,7 +5,7 @@ from keras.regularizers import l2
 
 from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 from csrank.fate_network import FATENetwork
-
+from keras.losses import categorical_hinge
 
 class FATEDiscreteChoiceFunction(FATENetwork, DiscreteObjectChooser):
     def __init__(self, n_object_features, n_hidden_set_layers=2, n_hidden_set_units=2, loss_function='categorical_hinge'
