@@ -291,15 +291,17 @@ class DBConnector(metaclass=ABCMeta):
         del job_desc['job_id']
         learner, learner_params = job_desc['learner'], job_desc['learner_params']
         if 'dataset_type' in job_desc['dataset_params'].keys():
-            dataset, value = job_desc['dataset'], job_desc['dataset_params']['dataset_type']
-            key = "dataset_type"
+            dataset, value, value2 = job_desc['dataset'], job_desc['dataset_params']['dataset_type'], job_desc['dataset_params']['n_objects']
+            expression = "dataset_params->> \'{}\' = \'{}\'".format("dataset_type", value)
+            expression = "{} AND dataset_params->> \'{}\' = \'{}\'".format(expression, "n_objects", value2)
         else:
-            dataset, value = job_desc['dataset'], job_desc['dataset_params']['year']
-            key = "year"
+            dataset, value, value2 = job_desc['dataset'], job_desc['dataset_params']['year'], job_desc['dataset_params']['n_objects']
+            expression = "dataset_params->> \'{}\' = \'{}\'".format("year", value)
+            expression = "{} AND dataset_params->> \'{}\' = \'{}\'".format(expression, "n_objects", value2)
 
         self.logger.info("learner_params {}".format(learner_params))
         select_job = "SELECT job_id, learner_params from {} where fold_id = {} AND learner = \'{}\' AND " \
-                     "dataset = \'{}\' AND dataset_params->>\'{}\' = \'{}\'".format(avail_jobs, fold_id, learner, dataset, key, value)
+                     "dataset = \'{}\' AND {}".format(avail_jobs, fold_id, learner, dataset, expression)
         self.logger.info("Select job for duplication {}".format(select_job))
         self.cursor_db.execute(select_job)
         new_job_id = None
