@@ -15,8 +15,8 @@ class LetorListwiseDiscreteChoiceDatasetReader(LetorListwiseDatasetReader):
         self.n_objects = n_objects
         self.__load_dataset__()
 
-    def sub_sampling_function(self, n):
-        return sub_sampling_discrete_choices_from_scores(self.X_train[n], self.scores_train[n], n_objects=self.n_objects)
+    def sub_sampling_function(self, X, Y):
+        return sub_sampling_discrete_choices_from_scores(Xt=X, Yt=Y, n_objects=self.n_objects)
 
     def convert_output(self, ranking_length):
         self.Y = self.Y.argmin(axis=1)

@@ -21,7 +21,8 @@ def sub_sampling_discrete_choices_from_scores(Xt, Yt, n_objects=5):
         else:
             Y_train = np.concatenate([Y_train, Y], axis=0)
             X_train = np.concatenate([X_train, X], axis=0)
-    Y_train = convert_to_label_encoding(Y_train, n_objects)
+    if len(Y_train) != 0:
+        Y_train = convert_to_label_encoding(Y_train, n_objects)
     return X_train, Y_train
 
 

@@ -1,2 +1,1 @@
-from .letor_dyad_ranking_dataset_reader import LetorDyadRankingListwiseDatasetReader
 from .sushi_dyad_ranking_dataset_reader import SushiDyadRankingDatasetReader
