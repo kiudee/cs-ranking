@@ -91,6 +91,7 @@ class RankNetCore(Learner):
                                activation=self.activation, **self.kwargs)
 
     def _construct_layers(self, **kwargs):
+        self.logger.info("n_hidden {}, n_units {}".format(self.n_hidden, self.n_units))
         self.x1 = Input(shape=(self.n_object_features,))
         self.x2 = Input(shape=(self.n_object_features,))
         self.output_node = Dense(1, activation='sigmoid', kernel_regularizer=self.kernel_regularizer)

@@ -106,6 +106,7 @@ class FETANetwork(Learner):
         self.input_layer = Input(shape=(self.n_objects, self.n_object_features))
         # Todo: Variable sized input
         # X = Input(shape=(None, n_features))
+        self.logger.info("n_hidden {}, n_units {}".format(self.n_hidden, self.n_units))
         if self.batch_normalization:
             if self._use_zeroth_model:
                 self.hidden_layers_zeroth = [NormalizedDense(self.n_units, name="hidden_zeroth_{}".format(x), **kwargs)

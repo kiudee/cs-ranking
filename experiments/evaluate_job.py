@@ -123,7 +123,7 @@ if __name__ == "__main__":
             logger.info("Time spared for the out of sample evaluation : {} ".format(seconds_to_time(time_eout_eval)))
 
             total_duration = duration - time_taken - time_eout_eval
-            hp_fit_params['n_iter'] = hp_iters
+            hp_fit_params['n_iter'] = 0
             hp_fit_params['total_duration'] = total_duration
             hp_fit_params['cv_iter'] = inner_cv
             optimizer_model = ParameterOptimizer(**hp_params)

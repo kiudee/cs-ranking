@@ -12,7 +12,7 @@ from csrank.objectranking.fate_object_ranker import FATEObjectRanker
 from experiments.constants import IMAGE_DATASET, SUSHI, SYNTHETIC_OR, SYNTHETIC_CHOICE, SYNTHETIC_DC, MNIST_CHOICE, \
     MNIST_DC, DEPTH, SENTENCE_ORDERING, LETOR_OR, LETOR_DC, RANKSVM, ERR, CMPNET, RANKNET, FETA_RANKER, FATE_RANKER, \
     LISTNET, FETA_CHOICE, FATE_CHOICE, TAG_GENOME_OR, TAG_GENOME_DC, FETA_DC, FATE_DC, RANKNET_DC, CMPNET_DC, MNL, NLM, \
-    GEV, PCL, RANKSVM_DC, MLM
+    GEV, PCL, RANKSVM_DC, MLM, SUSHI_DC
 
 
 def log_test_train_data(X_train, X_test, logger):
@@ -108,7 +108,8 @@ datasets = {SYNTHETIC_OR: ObjectRankingDatasetGenerator, DEPTH: DepthDatasetRead
             LETOR_OR: LetorListwiseObjectRankingDatasetReader,
             LETOR_DC: LetorRankingDiscreteChoiceDatasetReader, SYNTHETIC_DC: DiscreteChoiceDatasetGenerator,
             MNIST_DC: MNISTDiscreteChoiceDatasetReader, TAG_GENOME_DC: TagGenomeDiscreteChoiceDatasetReader,
-            SYNTHETIC_CHOICE: ChoiceDatasetGenerator, MNIST_CHOICE: MNISTChoiceDatasetReader}
+            SUSHI_DC: SushiDiscreteChoiceDatasetReader, SYNTHETIC_CHOICE: ChoiceDatasetGenerator,
+            MNIST_CHOICE: MNISTChoiceDatasetReader}
 learners = {FETA_RANKER: FETAObjectRanker, RANKNET: RankNet, CMPNET: CmpNet, ERR: ExpectedRankRegression,
             RANKSVM: RankSVM, FATE_RANKER: FATEObjectRanker, LISTNET: ListNet,
             FETA_CHOICE: FETAChoiceFunction, FATE_CHOICE: FATEChoiceFunction}

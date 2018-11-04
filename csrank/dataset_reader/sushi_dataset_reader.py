@@ -1,3 +1,4 @@
+import logging
 import os
 from abc import ABCMeta
 
@@ -17,6 +18,7 @@ class SushiDatasetReader(DatasetReader, metaclass=ABCMeta):
         self.rankings_big = os.path.join(self.dirname, 'sushi_big.txt')
         self.__load_dataset__()
         self.__check_dataset_validity__()
+        self.logger = logging.getLogger(SushiDatasetReader.__name__)
 
     def __load_dataset__(self):
         # Code to concatenate the context feature to each object feature
@@ -33,31 +35,41 @@ class SushiDatasetReader(DatasetReader, metaclass=ABCMeta):
         feature_objects = objects.as_matrix()[:, 2:10]
         feature_users = users.as_matrix()[:, 1:12]
         feature_objects[:, 2] = [int("{0:b}".format(i)) for i in feature_objects[:, 2]]
-
+        feature_objects = np.array(feature_objects, dtype=float)
+        feature_users = np.array(feature_users, dtype=float)
+        for i in range(len(feature_objects)):
+            feature_objects[i][0:3] = np.log(feature_objects[i][0:3] + 2)
+        feature_users = np.log(feature_users + 2)
         X = []
         rankings = []
         Xc = []
-        for i, ranking in enumerate(rankings_a):
-            combined = feature_objects[ranking, :]
-            ranking = np.arange(len(ranking))
-            np.random.shuffle(ranking)
-            combined = combined[ranking, :]
-            X.append(combined)
-            rankings.append(ranking)
-            Xc.append(feature_users[i])
+        i = 0
+        for ranking1, ranking2 in zip(rankings_a, rankings_b):
+            user_f = np.array([feature_users[i] for _ in range(len(ranking1))])
 
-        for i, ranking in enumerate(rankings_b):
-            combined = feature_objects[ranking, :]
-            ranking = np.arange(len(ranking))
+            objects = feature_objects[ranking1, :]
+            ranking = np.arange(len(ranking1))
             np.random.shuffle(ranking)
-            combined = combined[ranking, :]
-            X.append(combined)
+            objects = objects[ranking, :]
+            #objects = np.hstack((user_f, objects))
+            X.append(objects)
             rankings.append(ranking)
+
+            objects = feature_objects[ranking2, :]
+            ranking = np.arange(len(ranking2))
+            np.random.shuffle(ranking)
+            objects = objects[ranking, :]
+            #objects = np.hstack((user_f, objects))
+            X.append(objects)
+            rankings.append(ranking)
+
             Xc.append(feature_users[i])
+            i += 1
 
         self.X = np.array(X)
         self.Y = np.array(rankings)
-        if (self.learning_problem == DYAD_RANKING):
+        if self.learning_problem == DYAD_RANKING:
             self.Xc = np.array(Xc)
+            self.logger(Xc.shape)
         else:
             self.Xc = None

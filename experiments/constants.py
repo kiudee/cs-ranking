@@ -10,6 +10,8 @@ DEPTH = 'depth'
 SENTENCE_ORDERING = "sentence_ordering"
 LETOR_OR = "letor_or"
 LETOR_DC = "letor_dc"
+SUSHI_DC = "sushi_dc"
+
 RANKSVM = 'ranksvm'
 ERR = 'err'
 CMPNET = "cmpnet"
