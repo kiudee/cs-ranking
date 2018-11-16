@@ -3,7 +3,7 @@ from itertools import combinations
 
 from keras import Input, Model
 from keras import backend as K
-from keras.layers import Dense, Lambda, concatenate, Activation
+from keras.layers import Dense, Lambda, concatenate, Activation, Conv2D
 from keras.optimizers import SGD
 from keras.regularizers import l2
 
