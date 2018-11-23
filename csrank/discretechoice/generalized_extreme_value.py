@@ -17,7 +17,7 @@ from .likelihoods import likelihood_dict, LogLikelihood, create_weight_dictionar
 
 
 class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
-    def __init__(self, n_object_features, n_objects, n_nests=None, loss_function='None', regularization='l1',
+    def __init__(self, n_object_features, n_objects, n_nests=None, loss_function='None', regularization='l2',
                  alpha=5e-2, random_state=None, model_args={}, **kwd):
         self.logger = logging.getLogger(GeneralizedExtremeValueModel.__name__)
 
@@ -183,7 +183,7 @@ class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
         self.logger.info("Clearing memory")
         pass
 
-    def set_tunable_parameters(self, alpha=None, n_nests=None, loss_function='', regularization='l1', **point):
+    def set_tunable_parameters(self, alpha=None, n_nests=None, loss_function='', regularization='l2', **point):
         if alpha is not None:
             self.alpha = alpha
         if n_nests is None:
