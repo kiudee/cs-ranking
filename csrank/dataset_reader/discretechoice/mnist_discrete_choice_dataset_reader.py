@@ -1,7 +1,7 @@
 import numpy as np
 
 from csrank.constants import DISCRETE_CHOICE
-from .util import convert_to_label_encoding
+from .util import convert_to_label_encoding, angle_between
 from ..mnist_dataset_reader import MNISTDatasetReader
 
 
@@ -9,7 +9,7 @@ class MNISTDiscreteChoiceDatasetReader(MNISTDatasetReader):
     def __init__(self, dataset_type='unique', **kwargs):
         dataset_func_dict = {"unique": self.create_dataset_unique, "largest": self.create_dataset_largest,
                              "median": self.create_dataset_median,
-                             'unique_max_occurring': self.create_dataset_maximum_occurring_number}
+                             'unique_max_occurring': self.create_dataset_mode_least_angle}
         if dataset_type not in dataset_func_dict.keys():
             dataset_type = "median"
         self.dataset_function = dataset_func_dict[dataset_type]
@@ -57,7 +57,7 @@ class MNISTDiscreteChoiceDatasetReader(MNISTDatasetReader):
         self.Y = convert_to_label_encoding(self.Y, self.n_objects)
         self.__check_dataset_validity__()
 
-    def create_dataset_maximum_occurring_number(self):
+    def create_dataset_mode_least_angle(self):
         self.logger.info("create_dataset_maximum_occurring_number")
         n_total = self.n_test_instances + self.n_train_instances
         self.X = np.empty((n_total, self.n_objects, self.n_features))
@@ -73,8 +73,8 @@ class MNISTDiscreteChoiceDatasetReader(MNISTDatasetReader):
                 if len(max_count) == 1:
                     self.X[i] = self.X_raw[indices]
                     largest_set = np.where(labels == numbers[max_count])[0]
-                    scores = np.dot(self.X_raw[largest_set], weights)
-                    self.Y[i] = largest_set[np.argmin(scores)]
+                    scores = np.array([angle_between(x, weights)for x in self.X[i][largest_set]])
+                    self.Y[i] = largest_set[np.argmax(scores)]
                     break
         self.Y = convert_to_label_encoding(self.Y, self.n_objects)
         self.__check_dataset_validity__()
