@@ -1,13 +1,13 @@
 import numpy as np
 from scipy.stats import spearmanr
-from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_score, average_precision_score
+from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_score, average_precision_score, \
+    zero_one_loss, hamming_loss
 
 from csrank.numpy_util import scores_to_rankings
 
-__all__ = ['spearman_mean_np', 'kendalls_mean_np', 'zero_one_accuracy_np',
-           'zero_one_rank_loss_for_scores_ties_np', 'zero_one_rank_loss_for_scores_np',
-           'auc_score', "instance_informedness", 'f1_measure', 'recall',
-           'average_precision', "precision", "spearman_scipy", "topk_categorical_accuracy_np",
+__all__ = ['spearman_mean_np', 'kendalls_mean_np', 'zero_one_accuracy_np', 'zero_one_rank_loss_for_scores_ties_np',
+           'zero_one_rank_loss_for_scores_np', 'auc_score', "instance_informedness", 'f1_measure', 'recall', 'hamming',
+           'average_precision', "precision", "subset_01_loss", "spearman_scipy", "topk_categorical_accuracy_np",
            "categorical_accuracy_np", "make_ndcg_at_k_loss_np"]
 
 
@@ -120,6 +120,14 @@ def precision(y_true, y_pred):
 
 def recall(y_true, y_pred):
     return recall_score(y_true, y_pred, average='samples')
+
+
+def subset_01_loss(y_true, y_pred):
+    return zero_one_loss(y_true, y_pred)
+
+
+def hamming(y_true, y_pred):
+    return hamming_loss(y_true, y_pred)
 
 
 def topk_categorical_accuracy_np(k=5):

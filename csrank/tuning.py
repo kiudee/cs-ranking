@@ -7,7 +7,6 @@ import numpy as np
 import tensorflow as tf
 from keras import backend as K
 from keras.metrics import categorical_accuracy
-from sklearn.metrics import hamming_loss
 from sklearn.model_selection import ShuffleSplit
 from sklearn.utils import check_random_state
 from skopt import Optimizer
@@ -15,12 +14,11 @@ from skopt.space import check_dimension, Categorical
 from skopt.utils import cook_estimator, normalize_dimensions, dump, load
 
 from csrank.constants import OBJECT_RANKING, LABEL_RANKING, DISCRETE_CHOICE, \
-    DYAD_RANKING, CHOICE_FUNCTIONS
+    DYAD_RANKING, CHOICE_FUNCTION
 from csrank.learner import Learner
 from csrank.metrics import *
 from csrank.metrics import zero_one_rank_loss
 from csrank.metrics_np import *
-from csrank.metrics_np import categorical_accuracy_np
 from csrank.tensorflow_util import get_mean_loss_for_dictionary, get_loss_for_array
 from csrank.tunable import Tunable
 from csrank.util import duration_till_now, create_dir_recursively, \
@@ -97,7 +95,7 @@ class ParameterOptimizer(Learner):
             self.tuning_callbacks = tuning_callbacks
         loss_funcs = {OBJECT_RANKING: zero_one_rank_loss, LABEL_RANKING: zero_one_rank_loss,
                       DISCRETE_CHOICE: categorical_accuracy, DYAD_RANKING: zero_one_rank_loss,
-                      CHOICE_FUNCTIONS: hamming_loss}
+                      CHOICE_FUNCTION: hamming}
         if validation_loss is None:
             self.validation_loss = loss_funcs[learning_problem]
             self.logger.info('Loss function is not specified, using {}'.format(loss_funcs[learning_problem].__name__))

@@ -1,9 +1,9 @@
 from abc import ABCMeta
 
 import numpy as np
-from sklearn.metrics import f1_score
 
-from csrank.constants import CHOICE_FUNCTIONS
+from csrank.constants import CHOICE_FUNCTION
+from csrank.metrics_np import f1_measure
 
 __all__ = ['ChoiceFunctions']
 
@@ -12,7 +12,7 @@ class ChoiceFunctions(metaclass=ABCMeta):
 
     @property
     def learning_problem(self):
-        return CHOICE_FUNCTIONS
+        return CHOICE_FUNCTION
 
     def predict_for_scores(self, scores, **kwargs):
         """ Predict rankings for scores for a given collection of sets of objects.
@@ -47,10 +47,10 @@ class ChoiceFunctions(metaclass=ABCMeta):
         scores = self.predict_scores(X_val)
         probabilities = np.unique(scores)[::thin_thresholds]
         threshold = 0.0
-        best = f1_score(Y_val, scores > threshold, average='samples')
+        best = f1_measure(Y_val, scores > threshold)
         for i, p in enumerate(probabilities):
             pred = scores > p
-            f1 = f1_score(Y_val, pred, average='samples')
+            f1 = f1_measure(Y_val, pred)
             if f1 > best:
                 threshold = p
                 best = f1
