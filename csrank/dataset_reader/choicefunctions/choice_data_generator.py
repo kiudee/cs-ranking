@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.utils import check_random_state
 
-from csrank.constants import CHOICE_FUNCTIONS
+from csrank.constants import CHOICE_FUNCTION
 from ..synthetic_dataset_generator import SyntheticDatasetGenerator
 
 
@@ -9,7 +9,7 @@ class ChoiceDatasetGenerator(SyntheticDatasetGenerator):
 
     def __init__(self, dataset_type='pareto', **kwargs):
         super(ChoiceDatasetGenerator, self).__init__(
-            learning_problem=CHOICE_FUNCTIONS, **kwargs)
+            learning_problem=CHOICE_FUNCTION, **kwargs)
         dataset_function_options = {'linear': self.make_latent_linear_choices,
                                     "pareto": self.make_globular_pareto_choices}
         if dataset_type not in dataset_function_options.keys():

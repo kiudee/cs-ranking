@@ -8,7 +8,7 @@ import numpy as np
 from csrank.constants import OBJECT_RANKING, DYAD_RANKING, EXCEPTION_OBJECT_ARRAY_SHAPE, \
     EXCEPTION_OUTPUT_FEATURES_INSTANCES, EXCEPTION_RANKINGS_FEATURES_NO_OF_OBJECTS, \
     EXCEPTION_UNWANTED_CONTEXT_FEATURES, LABEL_RANKING, DISCRETE_CHOICE, EXCEPTION_CONTEXT_ARRAY_SHAPE, \
-    CHOICE_FUNCTIONS, EXCEPTION_SET_INCLUSION
+    CHOICE_FUNCTION, EXCEPTION_SET_INCLUSION
 
 
 class DatasetReader(metaclass=ABCMeta):
@@ -51,7 +51,7 @@ class DatasetReader(metaclass=ABCMeta):
                     self.learning_problem, self.Y.shape[0], n_instances)
                 assert self.Xc is None, EXCEPTION_UNWANTED_CONTEXT_FEATURES.format(self.learning_problem)
 
-            if self.learning_problem in [DISCRETE_CHOICE, CHOICE_FUNCTIONS]:
+            if self.learning_problem in [DISCRETE_CHOICE, CHOICE_FUNCTION]:
                 assert len(self.X.shape) == 3, EXCEPTION_OBJECT_ARRAY_SHAPE.format(self.learning_problem, self.X.shape)
                 n_instances, n_objects, n_features = self.X.shape
                 assert (n_instances == self.Y.shape[0]), EXCEPTION_OUTPUT_FEATURES_INSTANCES.format(
