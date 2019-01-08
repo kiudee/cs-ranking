@@ -1,7 +1,6 @@
 import sys
 
 import pymc3 as pm
-from sklearn.metrics import hamming_loss, zero_one_loss
 
 from csrank import *
 from csrank.callbacks import EarlyStoppingWithWeights, LRScheduler, DebugOutput
@@ -9,10 +8,7 @@ from csrank.constants import *
 from csrank.metrics import zero_one_rank_loss, zero_one_accuracy, make_ndcg_at_k_loss
 from csrank.metrics_np import *
 from csrank.objectranking.fate_object_ranker import FATEObjectRanker
-from experiments.constants import IMAGE_DATASET, SUSHI, SYNTHETIC_OR, SYNTHETIC_CHOICE, SYNTHETIC_DC, MNIST_CHOICE, \
-    MNIST_DC, DEPTH, SENTENCE_ORDERING, LETOR_OR, LETOR_DC, RANKSVM, ERR, CMPNET, RANKNET, FETA_RANKER, FATE_RANKER, \
-    LISTNET, FETA_CHOICE, FATE_CHOICE, TAG_GENOME_OR, TAG_GENOME_DC, FETA_DC, FATE_DC, RANKNET_DC, CMPNET_DC, MNL, NLM, \
-    GEV, PCL, RANKSVM_DC, MLM, SUSHI_DC
+from experiments.constants import *
 
 
 def log_test_train_data(X_train, X_test, logger):
@@ -111,8 +107,9 @@ datasets = {SYNTHETIC_OR: ObjectRankingDatasetGenerator, DEPTH: DepthDatasetRead
             SUSHI_DC: SushiDiscreteChoiceDatasetReader, SYNTHETIC_CHOICE: ChoiceDatasetGenerator,
             MNIST_CHOICE: MNISTChoiceDatasetReader}
 learners = {FETA_RANKER: FETAObjectRanker, RANKNET: RankNet, CMPNET: CmpNet, ERR: ExpectedRankRegression,
-            RANKSVM: RankSVM, FATE_RANKER: FATEObjectRanker, LISTNET: ListNet,
-            FETA_CHOICE: FETAChoiceFunction, FATE_CHOICE: FATEChoiceFunction}
+            RANKSVM: RankSVM, FATE_RANKER: FATEObjectRanker, LISTNET: ListNet, FETA_CHOICE: FETAChoiceFunction,
+            FATE_CHOICE: FATEChoiceFunction, GLM_CHOICE: GeneralizedLinearModel, RANKNET_CHOICE: RankNetChoiceFunction,
+            CMPNET_CHOICE: CmpNetChoiceFunction, RANKSVM_CHOICE: RankSVMChoiceFunction}
 try:
     from csrank import GeneralizedExtremeValueModel, FETADiscreteChoiceFunction, FATEDiscreteChoiceFunction, \
         RankNetDiscreteChoiceFunction, MultinomialLogitModel, NestedLogitModel, PairedCombinatorialLogit, \
@@ -141,7 +138,7 @@ discrete_choice_metrics = {'CategoricalAccuracy': categorical_accuracy_np,
                            'CategoricalTopK5': topk_categorical_accuracy_np(k=5),
                            'CategoricalTopK6': topk_categorical_accuracy_np(k=6)}
 choice_metrics = {'F1Score': f1_measure, 'Precision': precision, 'Recall': recall,
-                  'Subset01loss': zero_one_loss, 'HammingLoss': hamming_loss, 'Informedness': instance_informedness,
+                  'Subset01loss': subset_01_loss, 'HammingLoss': hamming, 'Informedness': instance_informedness,
                   "AucScore": auc_score, "AveragePrecisionScore": average_precision}
 callbacks_dictionary = {'EarlyStoppingWithWeights': EarlyStoppingWithWeights, 'LRScheduler': LRScheduler,
                         'DebugOutput': DebugOutput, "CheckConvergence": pm.callbacks.CheckParametersConvergence,
@@ -151,9 +148,9 @@ lp_metric_dict = {
     LABEL_RANKING: ranking_metrics,
     DYAD_RANKING: ranking_metrics,
     DISCRETE_CHOICE: discrete_choice_metrics,
-    CHOICE_FUNCTIONS: choice_metrics
+    CHOICE_FUNCTION: choice_metrics
 }
-metrics_on_predictions = [f1_measure, precision, recall, zero_one_loss, hamming_loss, instance_informedness,
+metrics_on_predictions = [f1_measure, precision, recall, subset_01_loss, hamming, instance_informedness,
                           zero_one_rank_loss, zero_one_accuracy, make_ndcg_at_k_loss]
 
 

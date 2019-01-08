@@ -19,8 +19,14 @@ RANKNET = 'ranknet'
 FETA_RANKER = 'feta_ranker'
 FATE_RANKER = "fate_ranker"
 LISTNET = 'listnet'
+
 FETA_CHOICE = 'feta_choice'
 FATE_CHOICE = "fate_choice"
+RANKNET_CHOICE = "ranknet_choice"
+CMPNET_CHOICE = "cmpnet_choice"
+RANKSVM_CHOICE = "ranksvm_choice"
+GLM_CHOICE = "glm_choice"
+
 TAG_GENOME_OR = 'tag_genome_or'
 TAG_GENOME_DC = 'tag_genome_dc'
 
