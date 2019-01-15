@@ -17,7 +17,6 @@ from csrank.constants import OBJECT_RANKING, LABEL_RANKING, DISCRETE_CHOICE, \
     DYAD_RANKING, CHOICE_FUNCTION
 from csrank.learner import Learner
 from csrank.metrics import *
-from csrank.metrics import zero_one_rank_loss
 from csrank.metrics_np import *
 from csrank.tensorflow_util import get_mean_loss_for_dictionary, get_loss_for_array
 from csrank.tunable import Tunable
@@ -318,7 +317,7 @@ class ParameterOptimizer(Learner):
             sess = tf.Session()
             K.set_session(sess)
             self._callbacks_on_optimization_end()
-            #self._fit_params["epochs"] = np.min([self._fit_params.get("epochs", 500) * 2, 1000])
+            # self._fit_params["epochs"] = np.min([self._fit_params.get("epochs", 500) * 2, 1000])
             if "ps" in self.opt.acq_func:
                 best_point = self.opt.Xi[np.argmin(np.array(self.opt.yi)[:, 0])]
             else:

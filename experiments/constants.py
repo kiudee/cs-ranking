@@ -26,6 +26,7 @@ RANKNET_CHOICE = "ranknet_choice"
 CMPNET_CHOICE = "cmpnet_choice"
 RANKSVM_CHOICE = "ranksvm_choice"
 GLM_CHOICE = "glm_choice"
+RANDOM_CHOICE = "random_choice"
 
 TAG_GENOME_OR = 'tag_genome_or'
 TAG_GENOME_DC = 'tag_genome_dc'
@@ -42,3 +43,4 @@ RANKSVM_DC = 'ranksvm_dc'
 MLM = 'mixed_logit_model'
 
 DCMS = [FETA_DC, FATE_DC, RANKNET_DC, MNL, NLM, GEV, PCL, MLM, RANKSVM_DC]
+CHOICE_FUNCTIONS = [FETA_CHOICE, FATE_CHOICE, RANKNET_CHOICE, RANKSVM_CHOICE, GLM_CHOICE, RANDOM_CHOICE]

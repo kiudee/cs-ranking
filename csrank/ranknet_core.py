@@ -168,7 +168,8 @@ class RankNetCore(Learner):
 
             self._scoring_model = None
             self.optimizer = self.optimizer.from_config(self._optimizer_config)
-            self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
+            self._construct_layers(kernel_regularizer=self.kernel_regularizer,
+                                   kernel_initializer=self.kernel_initializer,
                                    activation=self.activation, **self.kwargs)
             output = self.construct_model()
             self.model = Model(inputs=[self.x1, self.x2], outputs=output)
@@ -176,7 +177,8 @@ class RankNetCore(Learner):
         else:
             self.logger.info("Cannot clear the memory")
 
-    def set_tunable_parameters(self, n_hidden=32, n_units=2, reg_strength=1e-4, learning_rate=1e-3, batch_size=128, **point):
+    def set_tunable_parameters(self, n_hidden=32, n_units=2, reg_strength=1e-4, learning_rate=1e-3, batch_size=128,
+                               **point):
         self.n_hidden = n_hidden
         self.n_units = n_units
         self.kernel_regularizer = l2(reg_strength)

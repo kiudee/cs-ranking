@@ -11,6 +11,7 @@ from csrank.objectranking.fate_object_ranker import FATEObjectRanker
 from experiments.constants import *
 
 
+
 def log_test_train_data(X_train, X_test, logger):
     if isinstance(X_train, dict) and isinstance(X_test, dict):
         n_instances, n_objects, n_features = X_train[list(X_train.keys())[0]].shape
@@ -109,7 +110,7 @@ datasets = {SYNTHETIC_OR: ObjectRankingDatasetGenerator, DEPTH: DepthDatasetRead
 learners = {FETA_RANKER: FETAObjectRanker, RANKNET: RankNet, CMPNET: CmpNet, ERR: ExpectedRankRegression,
             RANKSVM: RankSVM, FATE_RANKER: FATEObjectRanker, LISTNET: ListNet, FETA_CHOICE: FETAChoiceFunction,
             FATE_CHOICE: FATEChoiceFunction, GLM_CHOICE: GeneralizedLinearModel, RANKNET_CHOICE: RankNetChoiceFunction,
-            CMPNET_CHOICE: CmpNetChoiceFunction, RANKSVM_CHOICE: RankSVMChoiceFunction}
+            CMPNET_CHOICE: CmpNetChoiceFunction, RANKSVM_CHOICE: RankSVMChoiceFunction, RANDOM_CHOICE: None}
 try:
     from csrank import GeneralizedExtremeValueModel, FETADiscreteChoiceFunction, FATEDiscreteChoiceFunction, \
         RankNetDiscreteChoiceFunction, MultinomialLogitModel, NestedLogitModel, PairedCombinatorialLogit, \

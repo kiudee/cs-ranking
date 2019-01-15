@@ -29,4 +29,3 @@ class LetorListwiseObjectRankingDatasetReader(LetorListwiseDatasetReader):
         # self.X = standardize_features(self.X)
         self.__check_dataset_validity__()
         return self.X, self.Y, self.X_test, self.Y_test
-

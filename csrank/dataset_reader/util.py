@@ -122,4 +122,3 @@ def standardize_features(x_train, x_test):
     x_train = x_train.reshape(-1, n_objects, n_features)
     x_test = x_test.reshape(-1, n_objects, n_features)
     return x_train, x_test
-

@@ -35,7 +35,7 @@ from csrank.metrics_np import topk_categorical_accuracy_np
 from csrank.tensorflow_util import configure_numpy_keras, get_mean_loss_for_dictionary, get_loss_for_array
 from csrank.util import create_dir_recursively, duration_till_now, seconds_to_time, \
     print_dictionary, get_duration_seconds, setup_logging
-from experiments.constants import MNL, NLM, GEV, PCL, MLM
+from experiments.constants import MNL, NLM, GEV, PCL, MLM, RANDOM_CHOICE, GLM_CHOICE
 from experiments.dbconnection import DBConnector
 from experiments.util import get_dataset_reader, log_test_train_data, metrics_on_predictions, lp_metric_dict, \
     create_optimizer_parameters
@@ -80,7 +80,7 @@ if __name__ == "__main__":
     if 'CCS_REQID' in os.environ.keys():
         cluster_id = int(os.environ['CCS_REQID'])
     dbConnector.fetch_job_arguments(cluster_id=cluster_id)
-
+    baseline = False
     if dbConnector.job_description is not None:
         try:
             job_description = copy.deepcopy(dict(dbConnector.job_description))
@@ -122,61 +122,73 @@ if __name__ == "__main__":
             X_train, Y_train, X_test, Y_test = dataset_reader.get_single_train_test_split()
             n_objects = log_test_train_data(X_train, X_test, logger)
             del dataset_reader
-            inner_cv = ShuffleSplit(n_splits=n_inner_folds, test_size=0.1, random_state=random_state)
-            if learner_name in [MNL, PCL, NLM, GEV, MLM]:
-                fit_params['random_seed'] = seed + fold_id
-            hash_file = os.path.join(DIR_PATH, MODEL_FOLDER, "{}.h5".format(hash_value))
-            learner_params['n_objects'], learner_params['n_object_features'] = X_train.shape[1:]
-            logger.info("learner params {}".format(print_dictionary(learner_params)))
-            hp_params = create_optimizer_parameters(fit_params, hp_ranges, learner_params, learner_name, hash_file)
-            hp_params['optimizer_path'] = optimizer_path
-            hp_params['random_state'] = random_state
-            hp_params['learning_problem'] = learning_problem
-            hp_params['validation_loss'] = lp_metric_dict[learning_problem].get(validation_loss, None)
+            if learner_name == RANDOM_CHOICE:
+                baseline = True
+                optimizer_model = None
 
-            time_taken = duration_till_now(start)
-            logger.info("Time Taken till now: {}  milliseconds".format(seconds_to_time(time_taken)))
-            time_eout_eval = get_duration_seconds('10H')
-            logger.info("Time spared for the out of sample evaluation : {} ".format(seconds_to_time(time_eout_eval)))
+            if not baseline:
+                inner_cv = ShuffleSplit(n_splits=n_inner_folds, test_size=0.1, random_state=random_state)
+                if learner_name in [MNL, PCL, NLM, GEV, MLM, GLM_CHOICE]:
+                    fit_params['random_seed'] = seed + fold_id
+                hash_file = os.path.join(DIR_PATH, MODEL_FOLDER, "{}.h5".format(hash_value))
+                learner_params['n_objects'], learner_params['n_object_features'] = X_train.shape[1:]
+                logger.info("learner params {}".format(print_dictionary(learner_params)))
+                hp_params = create_optimizer_parameters(fit_params, hp_ranges, learner_params, learner_name, hash_file)
+                hp_params['optimizer_path'] = optimizer_path
+                hp_params['random_state'] = random_state
+                hp_params['learning_problem'] = learning_problem
+                hp_params['validation_loss'] = lp_metric_dict[learning_problem].get(validation_loss, None)
 
-            total_duration = duration - time_taken - time_eout_eval
-            hp_fit_params['n_iter'] = hp_iters
-            hp_fit_params['total_duration'] = total_duration
-            hp_fit_params['cv_iter'] = inner_cv
-            optimizer_model = ParameterOptimizer(**hp_params)
-            optimizer_model.fit(X_train, Y_train, **hp_fit_params)
+                time_taken = duration_till_now(start)
+                logger.info("Time Taken till now: {}  milliseconds".format(seconds_to_time(time_taken)))
+                time_eout_eval = get_duration_seconds('10H')
+                logger.info(
+                    "Time spared for the out of sample evaluation : {} ".format(seconds_to_time(time_eout_eval)))
 
-            hp_fit_params['n_iter'] = 0
+                total_duration = duration - time_taken - time_eout_eval
+                hp_fit_params['n_iter'] = hp_iters
+                hp_fit_params['total_duration'] = total_duration
+                hp_fit_params['cv_iter'] = inner_cv
+                optimizer_model = ParameterOptimizer(**hp_params)
+                optimizer_model.fit(X_train, Y_train, **hp_fit_params)
+
+                hp_fit_params['n_iter'] = 0
             for fold_id in range(5):
                 if fold_id != 0:
-                    del X_train, X_test, Y_test, Y_train, optimizer_model
+                    del X_train, X_test, Y_test, Y_train
                     random_state = np.random.RandomState(seed=seed + fold_id)
                     dataset_params['random_state'] = random_state
                     dataset_params['fold_id'] = fold_id
                     dataset_reader = get_dataset_reader(dataset_name, dataset_params)
                     X_train, Y_train, X_test, Y_test = dataset_reader.get_single_train_test_split()
                     current_job_id = dbConnector.clone_job(cluster_id=cluster_id, fold_id=fold_id)
-                    optimizer_model = ParameterOptimizer(**hp_params)
-                    optimizer_model.fit(X_train, Y_train, **hp_fit_params)
+                    if not baseline:
+                        del optimizer_model
+                        optimizer_model = ParameterOptimizer(**hp_params)
+                        optimizer_model.fit(X_train, Y_train, **hp_fit_params)
                 else:
                     current_job_id = job_id
                 logger.info('current job id {}'.format(current_job_id))
-                batch_size = X_test.shape[0]
-                s_pred, y_pred = get_scores(optimizer_model, batch_size)
-                if fold_id == 0:
-                    if isinstance(s_pred, dict):
-                        pred_file = os.path.join(DIR_PATH, PREDICTIONS_FOLDER, "{}.pkl".format(hash_value))
-                        create_dir_recursively(pred_file, True)
-                        f = open(pred_file, "wb")
-                        pk.dump(s_pred, f)
-                        f.close()
-                    else:
-                        pred_file = os.path.join(DIR_PATH, PREDICTIONS_FOLDER, "{}.h5".format(hash_value))
-                        create_dir_recursively(pred_file, True)
-                        f = h5py.File(pred_file, 'w')
-                        f.create_dataset('scores', data=s_pred)
-                        f.close()
-                    logger.info("Saved predictions at: {}".format(pred_file))
+                if not baseline:
+                    batch_size = X_test.shape[0]
+                    s_pred, y_pred = get_scores(optimizer_model, batch_size)
+                    if fold_id == 0:
+                        if isinstance(s_pred, dict):
+                            pred_file = os.path.join(DIR_PATH, PREDICTIONS_FOLDER, "{}.pkl".format(hash_value))
+                            create_dir_recursively(pred_file, True)
+                            f = open(pred_file, "wb")
+                            pk.dump(s_pred, f)
+                            f.close()
+                        else:
+                            pred_file = os.path.join(DIR_PATH, PREDICTIONS_FOLDER, "{}.h5".format(hash_value))
+                            create_dir_recursively(pred_file, True)
+                            f = h5py.File(pred_file, 'w')
+                            f.create_dataset('scores', data=s_pred)
+                            f.close()
+                        logger.info("Saved predictions at: {}".format(pred_file))
+                else:
+                    s_pred = np.zeros_like(Y_test) + Y_test.mean()
+                    y_pred = np.zeros_like(Y_test) + 1
                 results = {'job_id': str(current_job_id), 'cluster_id': str(cluster_id)}
                 for name, evaluation_metric in lp_metric_dict[learning_problem].items():
                     predictions = s_pred

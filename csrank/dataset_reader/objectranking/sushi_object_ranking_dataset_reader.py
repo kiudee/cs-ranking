@@ -29,5 +29,3 @@ class SushiObjectRankingDatasetReader(SushiDatasetReader):
         cv_iter = ShuffleSplit(n_splits=1, random_state=self.random_state, test_size=0.30)
         splits = list(cv_iter.split(self.X))
         return list(self.splitter(splits))[0]
-
-

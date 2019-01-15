@@ -73,7 +73,7 @@ class MNISTDiscreteChoiceDatasetReader(MNISTDatasetReader):
                 if len(max_count) == 1:
                     self.X[i] = self.X_raw[indices]
                     largest_set = np.where(labels == numbers[max_count])[0]
-                    scores = np.array([angle_between(x, weights)for x in self.X[i][largest_set]])
+                    scores = np.array([angle_between(x, weights) for x in self.X[i][largest_set]])
                     self.Y[i] = largest_set[np.argmax(scores)]
                     break
         self.Y = convert_to_label_encoding(self.Y, self.n_objects)

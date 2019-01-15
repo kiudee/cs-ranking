@@ -181,6 +181,16 @@ def binary_crossentropy(p, y_true):
     return -l
 
 
+def categorical_crossentropy(p, y_true):
+    return -tt.nnet.categorical_crossentropy(p, y_true)
+
+
+def categorical_hinge(p, y_true):
+    pos = tt.sum(y_true * p, axis=-1)
+    neg = tt.max((1. - y_true) * p, axis=-1)
+    return -tt.maximum(0., neg - pos + 1.)
+
+
 class BinaryCrossEntropyLikelihood(Discrete):
     R"""
     Categorical log-likelihood.
@@ -202,7 +212,7 @@ class BinaryCrossEntropyLikelihood(Discrete):
 
     def __init__(self, p, *args, **kwargs):
         super(BinaryCrossEntropyLikelihood, self).__init__(*args, **kwargs)
-        self.loss_func = binary_crossentropy
+        self.loss_func = categorical_hinge
         try:
             self.k = tt.shape(p)[-1].tag.test_value
         except AttributeError:
@@ -216,8 +226,8 @@ class BinaryCrossEntropyLikelihood(Discrete):
     def logp(self, value):
         p = self.p
         k = self.k
-        p = ttu.normalize(p)
         a = self.loss_func(p, value)
+        p = ttu.normalize(p)
         sum_to1 = theano.gradient.zero_grad(
             tt.le(abs(tt.sum(p, axis=-1) - 1), 1e-5))
 
