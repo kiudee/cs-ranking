@@ -62,6 +62,7 @@ class MNISTChoiceDatasetReader(MNISTDatasetReader):
                 if len(unique_numbers) > 1:
                     self.random_state.shuffle(indices)
                     self.X[i] = self.X_raw[indices]
+                    labels = self.y_labels[indices]
                     self.Y[i] = np.array(np.isin(labels, unique_numbers), dtype=int)
                     break
         self.__check_dataset_validity__()
