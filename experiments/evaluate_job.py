@@ -31,11 +31,11 @@ from docopt import docopt
 from sklearn.model_selection import ShuffleSplit
 
 from csrank import *
-from experiments.constants import MNL, NLM, GEV, PCL
 from csrank.metrics import make_ndcg_at_k_loss
 from csrank.tensorflow_util import configure_numpy_keras, get_mean_loss_for_dictionary, get_loss_for_array
 from csrank.util import create_dir_recursively, duration_till_now, seconds_to_time, \
     print_dictionary, get_duration_seconds, setup_logging
+from experiments.constants import MNL, NLM, GEV, PCL, MLM, GLM_CHOICE
 from experiments.dbconnection import DBConnector
 from experiments.util import get_dataset_reader, log_test_train_data, metrics_on_predictions, lp_metric_dict, \
     create_optimizer_parameters
@@ -85,6 +85,8 @@ if __name__ == "__main__":
             validation_loss = dbConnector.job_description["validation_loss"]
             hash_value = dbConnector.job_description["hash_value"]
             random_state = np.random.RandomState(seed=seed + fold_id)
+            if learner_name in [MNL, PCL, NLM, GEV, MLM, GLM_CHOICE]:
+                fit_params['random_seed'] = seed + fold_id
 
             log_path = os.path.join(DIR_PATH, LOGS_FOLDER, "{}.log".format(hash_value))
             optimizer_path = os.path.join(DIR_PATH, OPTIMIZER_FOLDER, "{}".format(hash_value))

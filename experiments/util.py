@@ -11,7 +11,6 @@ from csrank.objectranking.fate_object_ranker import FATEObjectRanker
 from experiments.constants import *
 
 
-
 def log_test_train_data(X_train, X_test, logger):
     if isinstance(X_train, dict) and isinstance(X_test, dict):
         n_instances, n_objects, n_features = X_train[list(X_train.keys())[0]].shape

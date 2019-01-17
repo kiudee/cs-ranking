@@ -83,6 +83,9 @@ if __name__ == "__main__":
             hash_value = dbConnector.job_description["hash_value"]
             random_state = np.random.RandomState(seed=seed + fold_id)
 
+            if learner_name in [MNL, PCL, NLM, GEV, MLM, GLM_CHOICE]:
+                fit_params['random_seed'] = seed + fold_id
+
             log_path = os.path.join(DIR_PATH, LOGS_FOLDER, "{}.log".format(hash_value))
             optimizer_path = os.path.join(DIR_PATH, OPTIMIZER_FOLDER, "{}".format(hash_value))
             create_dir_recursively(log_path, True)
@@ -102,8 +105,6 @@ if __name__ == "__main__":
             n_objects = log_test_train_data(X_train, X_test, logger)
             del dataset_reader
             inner_cv = ShuffleSplit(n_splits=n_inner_folds, test_size=0.1, random_state=random_state)
-            if learner_name in [MNL, PCL, NLM, GEV, MLM, GLM_CHOICE]:
-                fit_params['random_seed'] = seed + fold_id
             hash_file = os.path.join(DIR_PATH, MODEL_FOLDER, "{}.h5".format(hash_value))
             learner_params['n_objects'], learner_params['n_object_features'] = X_train.shape[1:]
             logger.info("learner params {}".format(print_dictionary(learner_params)))

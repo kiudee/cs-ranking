@@ -100,7 +100,6 @@ class DBConnector(metaclass=ABCMeta):
             except (ValueError, IndexError) as e:
                 print("Error as the all jobs are already assigned to another nodes {}".format(str(e)))
 
-
     def fetch_job_arguments(self, cluster_id):
         self.add_jobs_in_avail_which_failed()
         self.init_connection()
