@@ -7,5 +7,5 @@ from .model_selector import ModelSelector
 from .multinomial_logit_model import MultinomialLogitModel
 from .nested_logit_model import NestedLogitModel
 from .paired_combinatorial_logit import PairedCombinatorialLogit
-from .pairwise_discrete_choice import RankSVMDCM
+from .pairwise_discrete_choice import PairwiseSVMDCM
 from .ranknet_discrete_choice import RankNetDiscreteChoiceFunction

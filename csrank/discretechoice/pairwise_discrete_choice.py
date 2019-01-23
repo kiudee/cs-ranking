@@ -2,13 +2,40 @@ import logging
 
 from csrank.choicefunctions.util import generate_complete_pairwise_dataset
 from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
-from csrank.objectranking.rank_svm import RankSVM
+from csrank.pairwise_svm import PairwiseSVM
 
 
-class RankSVMDCM(RankSVM, DiscreteObjectChooser):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.logger = logging.getLogger(RankSVMDCM.__name__)
+class PairwiseSVMDCM(PairwiseSVM, DiscreteObjectChooser):
+    def __init__(self, n_object_features, C=1.0, tol=1e-4, normalize=True,
+                 fit_intercept=True, random_state=None, **kwargs):
+        """ Create an instance of the RankSVM model.
+
+        Parameters
+        ----------
+        n_object_features : int
+            Number of features of the object space
+        C : float, optional
+            Penalty parameter of the error term
+        tol : float, optional
+            Optimization tolerance
+        normalize : bool, optional
+            If True, the data will be normalized before fitting.
+        fit_intercept : bool, optional
+            If True, the linear model will also fit an intercept.
+        random_state : int, RandomState instance or None, optional
+            Seed of the pseudorandom generator or a RandomState instance
+        **kwargs
+            Keyword arguments for the algorithms
+
+        References
+        ----------
+        .. [1] Add DCM SVM
+        """
+        super().__init__(n_object_features=n_object_features, C=C, tol=tol, normalize=normalize,
+                         fit_intercept=fit_intercept,
+                         random_state=random_state, **kwargs)
+        self.logger = logging.getLogger(PairwiseSVMDCM.__name__)
+        self.logger.info("Initializing network with object features {}".format(self.n_object_features))
 
     def convert_instances(self, X, Y):
         self.logger.debug('Creating the Dataset')

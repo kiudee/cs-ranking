@@ -109,16 +109,16 @@ datasets = {SYNTHETIC_OR: ObjectRankingDatasetGenerator, DEPTH: DepthDatasetRead
 learners = {FETA_RANKER: FETAObjectRanker, RANKNET: RankNet, CMPNET: CmpNet, ERR: ExpectedRankRegression,
             RANKSVM: RankSVM, FATE_RANKER: FATEObjectRanker, LISTNET: ListNet, FETA_CHOICE: FETAChoiceFunction,
             FATE_CHOICE: FATEChoiceFunction, GLM_CHOICE: GeneralizedLinearModel, RANKNET_CHOICE: RankNetChoiceFunction,
-            CMPNET_CHOICE: CmpNetChoiceFunction, RANKSVM_CHOICE: RankSVMChoiceFunction, RANDOM_CHOICE: None}
+            CMPNET_CHOICE: CmpNetChoiceFunction, RANKSVM_CHOICE: PairwiseSVMChoiceFunction, RANDOM_CHOICE: None}
 try:
     from csrank import GeneralizedExtremeValueModel, FETADiscreteChoiceFunction, FATEDiscreteChoiceFunction, \
         RankNetDiscreteChoiceFunction, MultinomialLogitModel, NestedLogitModel, PairedCombinatorialLogit, \
-        CmpNetDiscreteChoiceFunction, RankSVMDCM
+        CmpNetDiscreteChoiceFunction, PairwiseSVMDCM
 
     dcm_learners = {FETA_DC: FETADiscreteChoiceFunction, FATE_DC: FATEDiscreteChoiceFunction,
                     RANKNET_DC: RankNetDiscreteChoiceFunction, CMPNET_DC: CmpNetDiscreteChoiceFunction,
                     MNL: MultinomialLogitModel, NLM: NestedLogitModel, GEV: GeneralizedExtremeValueModel,
-                    PCL: PairedCombinatorialLogit, RANKSVM_DC: RankSVMDCM, MLM: MixedLogitModel}
+                    PCL: PairedCombinatorialLogit, RANKSVM_DC: PairwiseSVMDCM, MLM: MixedLogitModel}
 
 except ImportError:
     dcm_learners = {}
