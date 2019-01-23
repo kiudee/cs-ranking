@@ -16,10 +16,10 @@ from .discrete_choice import DiscreteObjectChooser
 from .likelihoods import likelihood_dict, LogLikelihood, create_weight_dictionary
 
 
-class GeneralizedExtremeValueModel(DiscreteObjectChooser, Learner):
+class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
     def __init__(self, n_object_features, n_objects, n_nests=None, loss_function='None', regularization='l2',
                  alpha=5e-2, random_state=None, model_args={}, **kwd):
-        self.logger = logging.getLogger(GeneralizedExtremeValueModel.__name__)
+        self.logger = logging.getLogger(GeneralizedNestedLogitModel.__name__)
 
         self.n_object_features = n_object_features
         self.n_objects = n_objects

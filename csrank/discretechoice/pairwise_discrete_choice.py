@@ -5,7 +5,7 @@ from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 from csrank.pairwise_svm import PairwiseSVM
 
 
-class PairwiseSVMDCM(PairwiseSVM, DiscreteObjectChooser):
+class PairwiseSVMDiscreteChoiceFunction(PairwiseSVM, DiscreteObjectChooser):
     def __init__(self, n_object_features, C=1.0, tol=1e-4, normalize=True,
                  fit_intercept=True, random_state=None, **kwargs):
         """ Create an instance of the RankSVM model.
@@ -29,12 +29,15 @@ class PairwiseSVMDCM(PairwiseSVM, DiscreteObjectChooser):
 
         References
         ----------
-        .. [1] Add DCM SVM
+        .. [1] Theodoros Evgeniou, Massimiliano Pontil, and Olivier Toubia. „A convex optimization approach to modeling consumer heterogeneity in conjoint estimation“.
+               In: Marketing Science 26.6 (2007), pp. 805–818 (cit. on p. 18)
+           [2] Sebastián Maldonado, Ricardo Montoya, and Richard Weber. „Advanced conjoint analysis using feature selection via support vector machines“.
+               In: European Journal of Operational Research 241.2 (2015), pp. 564 –574 (cit. on pp. 19, 20).
         """
         super().__init__(n_object_features=n_object_features, C=C, tol=tol, normalize=normalize,
                          fit_intercept=fit_intercept,
                          random_state=random_state, **kwargs)
-        self.logger = logging.getLogger(PairwiseSVMDCM.__name__)
+        self.logger = logging.getLogger(PairwiseSVMDiscreteChoiceFunction.__name__)
         self.logger.info("Initializing network with object features {}".format(self.n_object_features))
 
     def convert_instances(self, X, Y):

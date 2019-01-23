@@ -10,11 +10,19 @@ We implement the following new object ranking architectures:
 * FATE (First aggregate then evaluate)
 * FETA (First evaluate then aggregate)   
  
-In addition we also offer these benchmark algorithms:
+In addition we also offer these benchmark algorithms for choice functions:
 
-* Expected Rank Regression
-* RankNet
-* RankSVM
+* RankNetChoiceFunction
+* GeneralizedLinearModel
+* PairwiseSVMChoiceFunction
+
+These are the state-of-the-art approaches for the discrete choice functions:
+* GeneralizedNestedLogitModel
+* MixedLogitModel
+* NestedLogitModel
+* PairedCombinatorialLogit
+* RankNetDiscreteChoiceFunction
+* PairwiseSVMDiscreteChoiceFunction
 
 Check out our `interactive notebooks`_ to quickly find out what our package can do.
 
@@ -26,9 +34,9 @@ As a simple "Hello World!"-example we will try to learn the Medoid problem:
 .. code-block:: python
 
    import csrank as cs
-   from csrank import SyntheticDatasetGenerator
-   gen = SyntheticDatasetGenerator(dataset_type='medoid',
-                                   n_objects=5,
+   from csrank import ChoiceDatasetGenerator
+   gen = ChoiceDatasetGenerator(dataset_type='pareto',
+                                   n_objects=30,
                                    n_features=2)
    X_train, Y_train, X_test, Y_test = gen.get_single_train_test_split()                     
 All our learning algorithms are implemented using the scikit-learn estimator API.
@@ -36,7 +44,7 @@ Fitting our FATE-Network algorithm is as simple as calling the ``fit`` method:
 
 .. code-block:: python
 
-   fate = cs.FATEObjectRanker(n_object_features=2)
+   fate = cs.FATEChoiceFunction(n_object_features=2)
    fate.fit(X_train, Y_train) 
 
 Predictions can then be obtained using:

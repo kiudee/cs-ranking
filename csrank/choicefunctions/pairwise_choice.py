@@ -31,7 +31,10 @@ class PairwiseSVMChoiceFunction(PairwiseSVM, ChoiceFunctions):
 
         References
         ----------
-        .. [1] Add DCM SVM
+        .. [1] Theodoros Evgeniou, Massimiliano Pontil, and Olivier Toubia. „A convex optimization approach to modeling consumer heterogeneity in conjoint estimation“.
+               In: Marketing Science 26.6 (2007), pp. 805–818 (cit. on p. 18)
+           [2] Sebastián Maldonado, Ricardo Montoya, and Richard Weber. „Advanced conjoint analysis using feature selection via support vector machines“.
+               In: European Journal of Operational Research 241.2 (2015), pp. 564 –574 (cit. on pp. 19, 20).
         """
         super().__init__(n_object_features=n_object_features, C=C, tol=tol, normalize=normalize,
                          fit_intercept=fit_intercept,
