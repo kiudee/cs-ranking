@@ -10,7 +10,7 @@ from keras.optimizers import SGD
 from keras.regularizers import l2
 
 from csrank import (
-    FETANetwork, RankNet, CmpNet, ExpectedRankRegression, RankSVM, ListNet
+    FETAObjectRanker, RankNet, CmpNet, ExpectedRankRegression, RankSVM, ListNet
 )
 from csrank.metrics_np import zero_one_rank_loss_for_scores_ties_np
 from csrank.objectranking.fate_object_ranker import FATEObjectRanker
@@ -25,7 +25,7 @@ FETA_RANKER = "feta_ranker"
 FATE_RANKER = "fate_ranker"
 
 object_rankers = {
-    FETA_RANKER: FETANetwork,
+    FETA_RANKER: FETAObjectRanker,
     RANKNET: RankNet,
     CMPNET: CmpNet,
     LISTNET: ListNet,
@@ -59,8 +59,14 @@ def test_construction_core():
 
     class MockClass(FATENetworkCore, metaclass=ABCMeta):
 
-        def set_tunable_parameters(self, point):
-            super().set_tunable_parameters(point)
+        def set_tunable_parameters(self, **point):
+            super().set_tunable_parameters(**point)
+
+        def predict_scores(self, X, **kwargs):
+            pass
+
+        def _predict_scores_fixed(self, X, **kwargs):
+            pass
 
         def predict(self, *args, **kwargs):
             pass
