@@ -72,7 +72,7 @@ def test_parameter_optimizer(trivial_ranking_problem, optimizer):
     opt, rankers, test_params = optimizer
     opt.fit(x, y, n_iter=10)
     os.remove(OPTIMIZER_PATH)
-    for point in opt.optimizer.Xi:
+    for point in opt.opt.Xi:
         i = 0
         for param_ranges in test_params.values():
             for key, bound in param_ranges.items():

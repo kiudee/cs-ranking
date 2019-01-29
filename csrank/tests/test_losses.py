@@ -70,4 +70,4 @@ def test_smooth_rank_loss():
         actual=K.eval(
             smooth_rank_loss(y_true_tensor,
                              K.constant(np.array([[.2, .1, .0, -0.1, -0.2]])))),
-        desired=np.array([0.822749841877]))
+        desired=np.array([0.82275984]))
