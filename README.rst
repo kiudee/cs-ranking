@@ -3,20 +3,21 @@
 *******
 CS-Rank
 *******
-CS-Rank is a Python package for context-sensitive ranking algorithms.
+CS-Rank is a Python package for context-sensitive ranking and choice algorithms.
 
-We implement the following new object ranking architectures:
+We implement the following new object ranking/choice architectures:
 
 * FATE (First aggregate then evaluate)
 * FETA (First evaluate then aggregate)   
  
-In addition we also offer these benchmark algorithms for choice functions:
+In addition, we also implement these algorithms for choice functions:
 
 * RankNetChoiceFunction
 * GeneralizedLinearModel
 * PairwiseSVMChoiceFunction
 
-These are the state-of-the-art approaches for the discrete choice functions:
+These are the state-of-the-art approaches implemented for the discrete choice setting:
+
 * GeneralizedNestedLogitModel
 * MixedLogitModel
 * NestedLogitModel
