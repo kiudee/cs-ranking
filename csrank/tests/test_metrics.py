@@ -73,6 +73,7 @@ def test_zero_one_accuracy(problem_for_pred):
     assert_almost_equal(actual=real_score, desired=np.array([0.]))
 
 
+@pytest.mark.skip("Current code had numeric problems and needs to be rewritten")
 def test_ndcg(problem_for_pred):
     y_true_tensor, y_pred_tensor, ties = problem_for_pred
 
