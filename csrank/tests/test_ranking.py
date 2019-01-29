@@ -10,10 +10,11 @@ from keras.optimizers import SGD
 from keras.regularizers import l2
 
 from csrank import (
-    FETANetwork, RankNet, CmpNet, ExpectedRankRegression, RankSVM, ListNet
+    FETAObjectRanker, RankNet, CmpNet, ExpectedRankRegression, RankSVM, ListNet
 )
-from ..fate_ranking import FATERankingCore, FATEObjectRanker
-from ..util import zero_one_rank_loss_for_scores_ties_np
+from csrank.metrics_np import zero_one_rank_loss_for_scores_ties_np
+from csrank.objectranking.fate_object_ranker import FATEObjectRanker
+from ..fate_network import FATENetworkCore
 
 RANKSVM = "ranksvm"
 ERR = "err"
@@ -24,7 +25,7 @@ FETA_RANKER = "feta_ranker"
 FATE_RANKER = "fate_ranker"
 
 object_rankers = {
-    FETA_RANKER: FETANetwork,
+    FETA_RANKER: FETAObjectRanker,
     RANKNET: RankNet,
     CMPNET: CmpNet,
     LISTNET: ListNet,
@@ -56,10 +57,16 @@ def test_construction_core():
 
     # Create mock class:
 
-    class MockClass(FATERankingCore, metaclass=ABCMeta):
+    class MockClass(FATENetworkCore, metaclass=ABCMeta):
 
-        def set_tunable_parameters(self, point):
-            super().set_tunable_parameters(point)
+        def set_tunable_parameters(self, **point):
+            super().set_tunable_parameters(**point)
+
+        def predict_scores(self, X, **kwargs):
+            pass
+
+        def _predict_scores_fixed(self, X, **kwargs):
+            pass
 
         def predict(self, *args, **kwargs):
             pass
@@ -112,7 +119,6 @@ def test_object_ranker_fixed(trivial_ranking_problem, ranker_name, loss):
 
 
 def test_fate_object_ranker_fixed_generator():
-
     def trivial_ranking_problem_generator():
         while True:
             rand = np.random.RandomState(123)

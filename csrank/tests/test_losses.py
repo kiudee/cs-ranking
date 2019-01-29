@@ -4,7 +4,6 @@ from numpy.testing import assert_almost_equal
 
 from csrank.losses import hinged_rank_loss, smooth_rank_loss, plackett_luce_loss
 
-
 decimal = 3
 
 
@@ -69,10 +68,6 @@ def test_smooth_rank_loss():
     # scores:
     assert_almost_equal(
         actual=K.eval(
-            smooth_rank_loss(
-                y_true_tensor, K.constant(np.array([[.2, .1, .0, -0.1, -0.2]]))
-            )
-        ),
-        desired=np.array([0.822749841877]),
-        decimal=decimal,
-    )
+            smooth_rank_loss(y_true_tensor,
+                             K.constant(np.array([[.2, .1, .0, -0.1, -0.2]])))),
+        desired=np.array([0.82275984]))

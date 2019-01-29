@@ -7,7 +7,7 @@ from scipy.stats import rankdata
 from sklearn.utils import check_random_state
 
 from csrank.constants import OBJECT_RANKING
-from csrank.dataset_reader.objectranking.util import sub_sampling
+from .util import sub_sampling_rankings
 from ..dataset_reader import DatasetReader
 
 __all__ = ['DepthDatasetReader']
@@ -17,10 +17,8 @@ class DepthDatasetReader(DatasetReader):
     def __init__(self, dataset_type='deep', random_state=None, **kwargs):
         super(DepthDatasetReader, self).__init__(learning_problem=OBJECT_RANKING, dataset_folder='depth_data', **kwargs)
         options = {'deep': ['complete_deep_train.dat', 'complete_deep_test.dat'],
-                   'basic': ['basic_deep_train.dat', 'basic_deep_test.dat'],
-                   'semantic': ['complete_deep_sem_train.dat', 'complete_deep_sem_test.dat'],
-                   'basicSaxena': ['saxena_basic61x55.dat', 'saxena_basicTest61x55.dat'],
-                   'semanticSaxena': ['saxena_semantic61x55.dat', 'saxena_semanticTest61x55.dat']
+                   'basic': ['saxena_basic61x55.dat', 'saxena_basicTest61x55.dat'],
+                   'semantic': ['saxena_semantic61x55.dat', 'saxena_semanticTest61x55.dat']
                    }
         if dataset_type not in options:
             dataset_type = 'deep'
@@ -42,11 +40,11 @@ class DepthDatasetReader(DatasetReader):
     def get_single_train_test_split(self):
         seed = self.random_state.randint(2 ** 32, dtype='uint32')
         X_train, Y_train = self.get_train_dataset_sampled_partial_rankings(seed=seed)
-        X_train, Y_train = sub_sampling("DepthDataset", X_train, Y_train, n_objects=5)
+        X_train, Y_train = sub_sampling_rankings(X_train, Y_train, n_objects=5)
         X_test, Y_test = self.get_test_dataset_ties()
         return X_train, Y_train, X_test, Y_test
 
-    def get_complete_dataset(self):
+    def get_dataset_dictionaries(self):
         pass
 
     def splitter(self, iter):
@@ -56,34 +54,34 @@ class DepthDatasetReader(DatasetReader):
         yield X_train, Y_train, X_test, Y_test
 
     def get_test_dataset_sampled_partial_rankings(self, **kwargs):
-        self.X, self.rankings = self.get_dataset_sampled_partial_rankings(datatype='test', **kwargs)
+        self.X, self.Y = self.get_dataset_sampled_partial_rankings(datatype='test', **kwargs)
         self.__check_dataset_validity__()
-        return self.X, self.rankings
+        return self.X, self.Y
 
     def get_train_dataset_sampled_partial_rankings(self, **kwargs):
-        self.X, self.rankings = self.get_dataset_sampled_partial_rankings(datatype='train', **kwargs)
+        self.X, self.Y = self.get_dataset_sampled_partial_rankings(datatype='train', **kwargs)
         self.__check_dataset_validity__()
-        return self.X, self.rankings
+        return self.X, self.Y
 
     def get_test_dataset(self):
-        self.X, self.rankings = self.get_dataset(datatype='test')
+        self.X, self.Y = self.get_dataset(datatype='test')
         self.__check_dataset_validity__()
-        return self.X, self.rankings
+        return self.X, self.Y
 
     def get_train_dataset(self):
-        self.X, self.rankings = self.get_dataset(datatype='train')
+        self.X, self.Y = self.get_dataset(datatype='train')
         self.__check_dataset_validity__()
-        return self.X, self.rankings
+        return self.X, self.Y
 
     def get_test_dataset_ties(self):
-        self.X, self.rankings = self.get_dataset_ties(datatype='test')
+        self.X, self.Y = self.get_dataset_ties(datatype='test')
         self.__check_dataset_validity__()
-        return self.X, self.rankings
+        return self.X, self.Y
 
     def get_train_dataset_ties(self):
-        self.X, self.rankings = self.get_dataset_ties(datatype='train')
+        self.X, self.Y = self.get_dataset_ties(datatype='train')
         self.__check_dataset_validity__()
-        return self.X, self.rankings
+        return self.X, self.Y
 
     def get_dataset_sampled_partial_rankings(self, datatype='train', max_number_of_rankings_per_image=10, seed=42):
         random_state = np.random.RandomState(seed=seed)

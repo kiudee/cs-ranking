@@ -89,7 +89,14 @@ class weightHistory(Callback):
         self.zero_weights.append(close.sum())
 
 
-class LRScheduler(LearningRateScheduler):
+class LRScheduler(LearningRateScheduler, Tunable):
+    """Learning rate scheduler.
+
+        # Arguments
+            epochs_drop: unsigned int
+            drop:
+            verbose: int. 0: quiet, 1: update messages.
+        """
 
     def __init__(self, epochs_drop=300, drop=0.1, **kwargs):
         super(LRScheduler, self).__init__(self.step_decay, **kwargs)

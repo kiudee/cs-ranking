@@ -1,4 +1,3 @@
-import logging
 from abc import ABCMeta, abstractmethod
 
 
@@ -19,8 +18,7 @@ class Tunable(metaclass=ABCMeta):
     @classmethod
     def __subclasshook__(cls, C):
         if cls is Tunable:
-            has_set_param = any("set_tunable_parameters" in B.__dict__ for B in C.__mro__)
-            if has_set_param:
+            has_set_tunable_param = any("set_tunable_parameters" in B.__dict__ for B in C.__mro__)
+            if has_set_tunable_param:
                 return True
         return NotImplemented
-

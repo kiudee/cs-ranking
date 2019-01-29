@@ -1,9 +1,9 @@
+import collections
 import glob
 import logging
 import os
 from itertools import combinations, product
 
-import collections
 import h5py
 import numpy as np
 import pandas as pd
@@ -11,10 +11,9 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.utils import check_random_state
 
 from csrank.constants import OBJECT_RANKING
-from csrank.util import scores_to_rankings
+from csrank.numpy_util import scores_to_rankings
 from ..dataset_reader import DatasetReader
-from ..objectranking.util import initialize_similarity_matrix, get_key_for_indices, \
-    similarity_function_for_multilabel_instances
+from ..util import get_similarity_matrix, get_key_for_indices, distance_metric_multilabel
 
 
 class ImageDatasetReader(DatasetReader):
@@ -28,10 +27,8 @@ class ImageDatasetReader(DatasetReader):
         # self.test_file = os.path.join(dirname, DATASET_FOLDER, "test.hd5")
         # self.labels_test_files = glob.glob(os.path.join(dirname, DATASET_FOLDER, TEST_LABEL, "*.txt"))
         # self.labels_test_files.sort()
+        self.logger = logging.getLogger(ImageDatasetReader.__name__)
 
-        self.logger = logging.getLogger(name='ImageDatasetReader')
-        self.type = OBJECT_RANKING
-        self.Xc = None
         self.train_file = os.path.join(self.dirname, "train.hd5")
         self.similarity_matrix_train_file = os.path.join(self.dirname, "train_similarity_matrix.csv")
         self.labels_train_files = glob.glob(os.path.join(self.dirname, TRAIN_LABEL, "*.txt"))
@@ -56,9 +53,8 @@ class ImageDatasetReader(DatasetReader):
         self.logger.info('Image Labels Test File {}'.format(self.labels_test_files))
         self.logger.info('Image Labels Names {}'.format(self.label_names))
         self.random_state = check_random_state(random_state)
-        if (
-                not (os.path.isfile(self.similarity_matrix_test_file) and os.path.isfile(
-                    self.similarity_matrix_train_file))):
+        if (not (os.path.isfile(self.similarity_matrix_test_file) and
+                 os.path.isfile(self.similarity_matrix_train_file))):
             self.__load_dataset__()
 
     def __load_dataset__(self):
@@ -67,11 +63,15 @@ class ImageDatasetReader(DatasetReader):
 
     def splitter(self, iter):
         for i in iter:
-            X_train, Y_train = self.make_similarity_based_dataset(datatype='train', seed=10 * i + 32)
-            X_test, Y_test = self.make_similarity_based_dataset(datatype='test', seed=10 * i + 32)
+            self.X, self.Y = X_train, Y_train = self.make_similarity_based_dataset(datatype='train', seed=10 * i + 32)
+            self.__check_dataset_validity__()
+
+            self.X, self.Y = X_test, Y_test = self.make_similarity_based_dataset(datatype='test', seed=10 * i + 32)
+            self.__check_dataset_validity__()
+
         yield X_train, Y_train, X_test, Y_test
 
-    def get_complete_dataset(self):
+    def get_dataset_dictionaries(self):
         pass
 
     def get_train_test_datasets(self, n_datasets=5):
@@ -80,10 +80,10 @@ class ImageDatasetReader(DatasetReader):
 
     def get_single_train_test_split(self):
         seed = self.random_state.randint(2 ** 32, dtype='uint32')
-        self.X, self.rankings = X_train, Y_train = self.make_similarity_based_dataset(datatype='train', seed=seed)
+        self.X, self.Y = X_train, Y_train = self.make_similarity_based_dataset(datatype='train', seed=seed)
         self.__check_dataset_validity__()
 
-        self.X, self.rankings = X_test, Y_test = self.make_similarity_based_dataset(datatype='test', seed=seed + 1)
+        self.X, self.Y = X_test, Y_test = self.make_similarity_based_dataset(datatype='test', seed=seed + 1)
         self.__check_dataset_validity__()
         return X_train, Y_train, X_test, Y_test
 
@@ -104,7 +104,7 @@ class ImageDatasetReader(DatasetReader):
 
         X = np.empty((n_instances, self.n_objects, self.n_features), dtype=float)
         similarity_scores = np.empty((n_instances, self.n_objects), dtype=float)
-        similarity_matrix_lin_list = initialize_similarity_matrix(similarity_matrix_file)
+        similarity_matrix_lin_list = get_similarity_matrix(similarity_matrix_file)
 
         for i in range(n_instances):
             subset = random_state.choice(image_features.shape[0], size=self.n_objects, replace=False)
@@ -113,11 +113,11 @@ class ImageDatasetReader(DatasetReader):
             one_row = [similarity_matrix_lin_list[get_key_for_indices(i, j)] for i, j in product(subset[query], subset)]
             similarity_scores[i] = np.array(one_row)
 
-        rankings = scores_to_rankings(similarity_scores)
+        Y = scores_to_rankings(similarity_scores)
         for i, x in enumerate(X):
             x = StandardScaler().fit_transform(x)
             X[i] = x
-        return X, rankings
+        return X, Y
 
     def create_multilabel_dataset(self, datatype='train'):
         if datatype == 'train':
@@ -158,7 +158,7 @@ class ImageDatasetReader(DatasetReader):
         similarity_matrix_lin_list = dict()
 
         for i, j in combinations_list:
-            similarity_matrix_lin_list[get_key_for_indices(i, j)] = similarity_function_for_multilabel_instances(
+            similarity_matrix_lin_list[get_key_for_indices(i, j)] = distance_metric_multilabel(
                 label_vectors[i], label_vectors[j], image_features[i], image_features[j])
         # self.logger.info("calculating similarity {},{},{}".format(i, j, sim))
 

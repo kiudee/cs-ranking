@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from keras.metrics import binary_accuracy
 
-from csrank.util import check_ranker_class
+from csrank.tuning import check_learner_class
 from ..tuning import ParameterOptimizer
 
 OPTIMIZER_PATH = os.path.join(os.getcwd(), 'opt')
@@ -44,7 +44,7 @@ def optimizer():
     }
 
     opt = ParameterOptimizer(
-        ranker=ranker,
+        learner=ranker,
         optimizer_path=OPTIMIZER_PATH,
         tunable_parameter_ranges=test_params,
         ranker_params=dict(),
@@ -72,7 +72,7 @@ def test_parameter_optimizer(trivial_ranking_problem, optimizer):
     opt, rankers, test_params = optimizer
     opt.fit(x, y, n_iter=10)
     os.remove(OPTIMIZER_PATH)
-    for point in opt.optimizer.Xi:
+    for point in opt.opt.Xi:
         i = 0
         for param_ranges in test_params.values():
             for key, bound in param_ranges.items():
@@ -87,7 +87,7 @@ def test_set_parameters(optimizer):
     i = 0
     for ranker in test_params.keys():
         try:
-            check_ranker_class(ranker)
+            check_learner_class(ranker)
         except AttributeError as exc:
             pytest.fail(exc, pytrace=True)
         for param in test_params[ranker]:
