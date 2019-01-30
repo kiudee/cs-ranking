@@ -73,8 +73,7 @@ For data processing and generation you will also need PyGMO, H5Py and pandas.
 
 Citing CS-Rank
 ----------------
-Our paper is currently under review for the SIGKDD 2018.
-For now you can cite our `arXiv paper`_::
+You can cite our `arXiv paper`_::
 
   @ARTICLE{csrank2018,
          author = {{Pfannschmidt}, K. and {Gupta}, P. and {H{\"u}llermeier}, E.},
