@@ -30,7 +30,7 @@ Check out our `interactive notebooks`_ to quickly find out what our package can 
 
 Getting started
 ===============
-As a simple "Hello World!"-example we will try to learn the Medoid problem:
+As a simple "Hello World!"-example we will try to learn the Pareto problem:
 
 .. code-block:: python
 
@@ -41,7 +41,7 @@ As a simple "Hello World!"-example we will try to learn the Medoid problem:
                                    n_features=2)
    X_train, Y_train, X_test, Y_test = gen.get_single_train_test_split()                     
 All our learning algorithms are implemented using the scikit-learn estimator API.
-Fitting our FATE-Network algorithm is as simple as calling the ``fit`` method:
+Fitting our FATENet architecture is as simple as calling the ``fit`` method:
 
 .. code-block:: python
 

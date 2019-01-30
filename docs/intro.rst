@@ -5,41 +5,49 @@
 ************
 Introduction
 ************
-CS-Rank is a Python package for context-sensitive ranking algorithms.
+CS-Rank is a Python package for context-sensitive ranking and choice algorithms.
 
-We implement the following new object ranking architectures:
+We implement the following new object ranking/choice architectures:
 
 * FATE (First aggregate then evaluate)
 * FETA (First evaluate then aggregate)   
  
-In addition we also offer these benchmark algorithms:
+In addition, we also implement these algorithms for choice functions:
 
-* Expected Rank Regression
-* RankNet
-* RankSVM
+* RankNetChoiceFunction
+* GeneralizedLinearModel
+* PairwiseSVMChoiceFunction
+
+These are the state-of-the-art approaches implemented for the discrete choice setting:
+
+* GeneralizedNestedLogitModel
+* MixedLogitModel
+* NestedLogitModel
+* PairedCombinatorialLogit
+* RankNetDiscreteChoiceFunction
+* PairwiseSVMDiscreteChoiceFunction
 
 Check out our `interactive notebooks`_ to quickly find out what our package can do.
 
 
 Getting started
 ===============
-As a simple "Hello World!"-example we will try to learn the Medoid problem:
+As a simple "Hello World!"-example we will try to learn the Pareto problem:
 
 .. code-block:: python
 
    import csrank as cs
-   from csrank import SyntheticDatasetGenerator
-   gen = SyntheticDatasetGenerator(dataset_type='medoid',
-                                   n_objects=5,
+   from csrank import ChoiceDatasetGenerator
+   gen = ChoiceDatasetGenerator(dataset_type='pareto',
+                                   n_objects=30,
                                    n_features=2)
-   X_train, Y_train, X_test, Y_test = gen.get_single_train_test_split()
-
+   X_train, Y_train, X_test, Y_test = gen.get_single_train_test_split()                     
 All our learning algorithms are implemented using the scikit-learn estimator API.
-Fitting our FATE-Network algorithm is as simple as calling the ``fit`` method:
+Fitting our FATENet architecture is as simple as calling the ``fit`` method:
 
 .. code-block:: python
 
-   fate = cs.FATEObjectRanker(n_object_features=2)
+   fate = cs.FATEChoiceFunction(n_object_features=2)
    fate.fit(X_train, Y_train) 
 
 Predictions can then be obtained using:
@@ -68,8 +76,7 @@ For data processing and generation you will also need PyGMO, H5Py and pandas.
 
 Citing CS-Rank
 ----------------
-Our paper is currently under review for the SIGKDD 2018.
-For now you can cite our `arXiv paper`_::
+You can cite our `arXiv paper`_::
 
   @ARTICLE{csrank2018,
          author = {{Pfannschmidt}, K. and {Gupta}, P. and {H{\"u}llermeier}, E.},
