@@ -51,7 +51,8 @@ Fitting our FATE-Network algorithm is as simple as calling the ``fit`` method:
 Predictions can then be obtained using:
 
 .. code-block:: python
-    fate.predict(X_test)
+
+   fate.predict(X_test)
 
 
 Installation
