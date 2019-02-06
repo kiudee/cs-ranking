@@ -6,7 +6,7 @@ from keras.optimizers import SGD
 from keras.regularizers import l2
 from sklearn.model_selection import train_test_split
 
-from csrank.fate_network import FATENetwork
+from csrank.core.fate_network import FATENetwork
 from .choice_functions import ChoiceFunctions
 
 

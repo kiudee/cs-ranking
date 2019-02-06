@@ -15,7 +15,7 @@ class ChoiceFunctions(metaclass=ABCMeta):
         return CHOICE_FUNCTION
 
     def predict_for_scores(self, scores, **kwargs):
-        """ Predict rankings for scores for a given collection of sets of objects.
+        """ Predict choices for scores for a given collection of sets of objects.
 
         Parameters
         ----------

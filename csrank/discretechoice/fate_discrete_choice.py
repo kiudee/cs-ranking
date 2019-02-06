@@ -5,7 +5,7 @@ from keras.optimizers import SGD
 from keras.regularizers import l2
 
 from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
-from csrank.fate_network import FATENetwork
+from csrank.core.fate_network import FATENetwork
 
 
 class FATEDiscreteChoiceFunction(FATENetwork, DiscreteObjectChooser):

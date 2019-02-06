@@ -7,7 +7,8 @@ API Reference
 .. toctree::
    :maxdepth: 2
 
-   api/fate
-   api/feta
-   api/benchmark
+   api/context
+   api/benchmarkcore
+   api/benchmarkor
+   
    

@@ -20,7 +20,7 @@ class RankNetCore(Learner):
                  batch_size=256, random_state=None, **kwargs):
         """Create an instance of the RankNet architecture.
 
-        RankNet breaks the rankings into pairwise comparisons and learns a
+        RankNet breaks the preferences in form of choices or rankings into pairwise comparisons and learns a
         latent utility model for the objects.
 
         Parameters

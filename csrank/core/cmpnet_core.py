@@ -23,8 +23,10 @@ class CmpNetCore(Learner):
         """
             Create an instance of the CmpNet architecture.
 
-            CmpNet breaks the rankings into pairwise comparisons and learns a pairwise model for the each pair of object in the ranking.
-            For prediction list of objects is converted in pair of objects and the pairwise predicate is evaluated using them.
+            CmpNet breaks the preferences in form of choices or rankings into pairwise comparisons and learns a pairwise
+            model for the each pair of object in the underlying set.
+            For prediction list of objects is converted in pair of objects and the pairwise predicate is evaluated using
+            them.
             The outputs of the network for each pair of objects :math:`U(x_1,x_2), U(x_2,x_1)` are evaluated.
             :math:`U(x_1,x_2)` is a measure of how favorable it is for :math:`x_1` than :math:`x_2`.
             Ranking for the given set of objects :math:`Q = \{ x_1 , \ldots , x_n \}`  is evaluted as follows:
@@ -111,8 +113,7 @@ class CmpNetCore(Learner):
                                   range(self.n_hidden)]
         assert len(self.hidden_layers) == self.n_hidden
 
-    def fit(self, X, Y, epochs=10, callbacks=None,
-            validation_split=0.1, verbose=0, **kwd):
+    def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
 
         x1, x2, y_double = self.convert_instances(X, Y)
 
@@ -124,9 +125,8 @@ class CmpNetCore(Learner):
 
         self.logger.debug('Finished Creating the model, now fitting started')
 
-        self.model.fit([x1, x2], y_double, batch_size=self.batch_size, epochs=epochs,
-                       callbacks=callbacks, validation_split=validation_split,
-                       verbose=verbose, **kwd)
+        self.model.fit([x1, x2], y_double, batch_size=self.batch_size, epochs=epochs, callbacks=callbacks,
+                       validation_split=validation_split, verbose=verbose, **kwd)
         self.logger.debug('Fitting Complete')
 
     def convert_instances(self, X, Y):

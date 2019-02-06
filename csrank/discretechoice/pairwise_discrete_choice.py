@@ -2,7 +2,7 @@ import logging
 
 from csrank.choicefunctions.util import generate_complete_pairwise_dataset
 from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
-from csrank.pairwise_svm import PairwiseSVM
+from csrank.core.pairwise_svm import PairwiseSVM
 
 
 class PairwiseSVMDiscreteChoiceFunction(PairwiseSVM, DiscreteObjectChooser):

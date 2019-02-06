@@ -3,7 +3,7 @@ import logging
 from keras.optimizers import SGD
 from keras.regularizers import l2
 
-from csrank.feta_network import FETANetwork
+from csrank.core.feta_network import FETANetwork
 from csrank.losses import hinged_rank_loss
 from .object_ranker import ObjectRanker
 

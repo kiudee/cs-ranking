@@ -4,7 +4,7 @@ from keras.optimizers import SGD
 from keras.regularizers import l2
 
 from csrank.choicefunctions.util import generate_complete_pairwise_dataset
-from csrank.cmpnet_core import CmpNetCore
+from csrank.core.cmpnet_core import CmpNetCore
 from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 
 

@@ -7,7 +7,7 @@ from keras.layers import Dense, Lambda, concatenate, Activation
 from keras.optimizers import SGD
 from keras.regularizers import l2
 
-from csrank.feta_network import FETANetwork
+from csrank.core.feta_network import FETANetwork
 from csrank.layers import NormalizedDense
 from .discrete_choice import DiscreteObjectChooser
 

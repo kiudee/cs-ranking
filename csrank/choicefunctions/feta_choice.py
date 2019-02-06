@@ -9,7 +9,7 @@ from keras.optimizers import SGD
 from keras.regularizers import l2
 from sklearn.model_selection import train_test_split
 
-from csrank.feta_network import FETANetwork
+from csrank.core.feta_network import FETANetwork
 from csrank.layers import NormalizedDense
 from .choice_functions import ChoiceFunctions
 

@@ -5,7 +5,7 @@ from keras.regularizers import l2
 from sklearn.model_selection import train_test_split
 
 from csrank.choicefunctions.util import generate_complete_pairwise_dataset
-from csrank.ranknet_core import RankNetCore
+from csrank.core.ranknet_core import RankNetCore
 from .choice_functions import ChoiceFunctions
 
 

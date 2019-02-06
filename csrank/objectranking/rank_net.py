@@ -5,7 +5,7 @@ from keras.regularizers import l2
 
 from csrank.dataset_reader.objectranking.util import generate_complete_pairwise_dataset
 from csrank.objectranking.object_ranker import ObjectRanker
-from csrank.ranknet_core import RankNetCore
+from csrank.core.ranknet_core import RankNetCore
 
 __all__ = ['RankNet']
 
