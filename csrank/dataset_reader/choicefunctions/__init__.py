@@ -1,3 +1,4 @@
 from .choice_data_generator import ChoiceDatasetGenerator
 from .letor_ranking_choice_dataset import LetorRankingChoiceDatasetReader
 from .mnist_choice_dataset_reader import MNISTChoiceDatasetReader
+from .letor_ranking_choice_dataset import LetorRankingChoiceDatasetReader
