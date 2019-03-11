@@ -189,9 +189,6 @@ class LetorRankingDatasetReader(DatasetReader, metaclass=ABCMeta):
     def sub_sampling_function(self, Xt, Yt):
         pass
 
-    def convert_output(self, ranking_length):
-        pass
-
     def get_dataset_dictionaries(self):
         return self.X_train, self.Y_train, self.X_test, self.Y_test
 
