@@ -15,16 +15,13 @@ __all__ = ['ExpectedRankRegression']
 
 
 class ExpectedRankRegression(ObjectRanker, Learner):
-    _tunable = None
-
-    def __init__(self, n_object_features, alpha=0.0, l1_ratio=0.5, tol=1e-4,
-                 normalize=True, fit_intercept=True, random_state=None, **kwargs):
+    def __init__(self, n_object_features, alpha=0.0, l1_ratio=0.5, tol=1e-4, normalize=True, fit_intercept=True,
+                 random_state=None, **kwargs):
         """
             Create an expected rank regression model.
 
-            This model normalizes the ranks to [0, 1] and treats them as regression
-            target. For α = 0 we employ simple linear regression. For α > 0 the
-            model becomes ridge regression (when l1_ratio = 0) or elastic net
+            This model normalizes the ranks to [0, 1] and treats them as regression target. For α = 0 we employ simple
+            linear regression. For α > 0 the model becomes ridge regression (when l1_ratio = 0) or elastic net
             (when l1_ratio > 0).
 
             Parameters

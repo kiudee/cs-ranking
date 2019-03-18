@@ -8,5 +8,7 @@ API Reference
    :maxdepth: 2
 
    api/objectranking
+   api/choicefunction
+   api/discretechoice
    
    
