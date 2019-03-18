@@ -10,7 +10,7 @@ from .choice_functions import ChoiceFunctions
 class PairwiseSVMChoiceFunction(PairwiseSVM, ChoiceFunctions):
     def __init__(self, n_object_features, C=1.0, tol=1e-4, normalize=True,
                  fit_intercept=True, random_state=None, **kwargs):
-        """ Create an instance of the PairwiseSVM model.
+        """ Create an instance of the PairwiseSVMChoiceFunction model.
 
         Parameters
         ----------

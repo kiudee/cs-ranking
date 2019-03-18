@@ -22,7 +22,7 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
                  metrics=['binary_accuracy'], batch_size=256, random_state=None,
                  **kwargs):
         """
-            Create a FETA-network architecture for object ranking.
+            Create a FETA-network architecture for learning the choice functions.
             Training and prediction complexity is quadratic in the number of objects.
 
             Parameters

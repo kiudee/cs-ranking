@@ -17,23 +17,21 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
                  optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9), batch_size=256, metrics=None, random_state=None,
                  **kwargs):
         """
-           Create a FATENetwork architecture.
-           Training and prediction complexity is linear in the number of objects.
+            Create a FATE-network architecture for learning the choice functions.
+            Training complexity is quadratic in the number of objects and prediction complexity is only linear.
 
-           Parameters
-           ----------
+            Parameters
+            ----------
             n_object_features : int
                 Dimensionality of the feature space of each object
             n_hidden_set_layers : int
                 Number of set layers.
             n_hidden_set_units : int
-               Number of hidden set units.
+                Number of hidden set units.
             n_hidden_joint_layers : int
                 Number of joint layers.
             n_hidden_joint_units : int
                 Number of joint units.
-            loss_function : function
-                Differentiable loss function for the score vector
             activation : string or function
                 Activation function to use in the hidden units
             kernel_initializer : function or string
@@ -44,12 +42,14 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
                 Stochastic gradient optimizer
             batch_size : int
                 Batch size to use for training
+            loss_function : function
+                Differentiable loss function for the score vector
             metrics : list
                 List of evaluation metrics (can be non-differentiable)
             random_state : int or object
                 Numpy random state
             **kwargs
-                Keyword arguments for the hidden set units
+                Keyword arguments for the @FATENetwork
         """
         self.loss_function = loss_function
         self.metrics = metrics

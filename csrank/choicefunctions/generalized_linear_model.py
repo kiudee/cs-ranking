@@ -18,14 +18,17 @@ from .choice_functions import ChoiceFunctions
 
 class GeneralizedLinearModel(ChoiceFunctions, Learner):
     def __init__(self, n_object_features, regularization='l2', random_state=None, **kwargs):
-        """ Create an instance of the PairwiseSVM model.
+        """
+            Create an instance of the PairwiseSVM model.
 
             Parameters
             ----------
             n_object_features : int
                 Number of features of the object space
             regularization : string, optional
-                Regularization technique to be used for estimating the weights.
+                Regularization technique to be used for estimating the weights
+            random_state : int or object
+                Numpy random state
             **kwargs
                 Keyword arguments for the algorithms
 
