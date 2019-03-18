@@ -18,7 +18,7 @@ class CmpNet(CmpNetCore, ObjectRanker):
         """
            Create an instance of the CmpNet architecture.
 
-           CmpNet breaks the preferences in form of choices or rankings into pairwise comparisons and learns a pairwise
+           CmpNet breaks the preferences in form of rankings into pairwise comparisons and learns a pairwise
            model for the each pair of object in the underlying set.
            For prediction list of objects is converted in pair of objects and the pairwise predicate is evaluated using
            them.
@@ -28,7 +28,8 @@ class CmpNet(CmpNetCore, ObjectRanker):
 
            .. math::
 
-              ρ(Q) = \operatorname{argsort}_{i \in [n]}  \; \left\{ \\frac{1}{n-1} \sum_{j \in [n] \setminus \{i\}} U_1(x_i , x_j)\\right\}
+                U(x_i) = \left\{ \\frac{1}{n-1} \sum_{j \in [n] \setminus \{i\}} U_1(x_i , x_j)\\right\} \\\\
+                ρ(Q)  = \operatorname{argsort}_{i \in [n]}  \; U(x_i)
 
 
            Parameters

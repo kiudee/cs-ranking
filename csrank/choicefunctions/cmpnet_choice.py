@@ -15,17 +15,20 @@ class CmpNetChoiceFunction(CmpNetCore, ChoiceFunctions):
                  activation='relu', optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9), metrics=['binary_accuracy'],
                  batch_size=256, random_state=None, **kwargs):
         """
-           Create an instance of the CmpNet architecture for solving the task of choice functions.
+           Create an instance of the CmpNet architecture.
 
-           CmpNet breaks the rankings into pairwise comparisons and learns a pairwise model for the each pair of object in the ranking.
-           For prediction list of objects is converted in pair of objects and the pairwise predicate is evaluated using them.
+           CmpNet breaks the preferences in form of rankings into pairwise comparisons and learns a pairwise
+           model for the each pair of object in the underlying set.
+           For prediction list of objects is converted in pair of objects and the pairwise predicate is evaluated using
+           them.
            The outputs of the network for each pair of objects :math:`U(x_1,x_2), U(x_2,x_1)` are evaluated.
            :math:`U(x_1,x_2)` is a measure of how favorable it is for :math:`x_1` than :math:`x_2`.
-           Choices for the given set of objects :math:`Q = \{ x_1 , \ldots , x_n \}`  is evaluted as follows:
+           Ranking for the given set of objects :math:`Q = \{ x_1 , \ldots , x_n \}` is evaluated as follows:
 
            .. math::
-              U(x_i) = \left\{ \\frac{1}{n-1} \sum_{j \in [n] \setminus \{i\}} U_1(x_i , x_j)\\right\}
-              c(Q) = \{ x_i \in Q \, \vert \, U (x_i) > t \}
+           
+                U(x_i) = \left\{ \\frac{1}{n-1} \sum_{j \in [n] \setminus \{i\}} U_1(x_i , x_j)\\right\} \\\\
+                c_{t}(Q) := \{x \in Q \mid U(x) > t\}
 
 
            Parameters
@@ -53,7 +56,7 @@ class CmpNetChoiceFunction(CmpNetCore, ChoiceFunctions):
            batch_size : int
                Batch size to use during training
            random_state : int, RandomState instance or None
-               Seed of the pseudo-random generator or a RandomState instance
+               Seed of the pseudorandom generator or a RandomState instance
            **kwargs
                Keyword arguments for the algorithms
 

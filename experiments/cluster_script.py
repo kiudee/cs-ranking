@@ -33,10 +33,9 @@ from csrank.metrics import make_ndcg_at_k_loss
 from csrank.tensorflow_util import configure_numpy_keras, get_mean_loss_for_dictionary, get_loss_for_array
 from csrank.util import create_dir_recursively, duration_till_now, seconds_to_time, \
     print_dictionary, get_duration_seconds, setup_logging
-from experiments.constants import MNL, NLM, GEV, PCL, MLM, GLM_CHOICE
 from experiments.dbconnection import DBConnector
 from experiments.util import get_dataset_reader, log_test_train_data, metrics_on_predictions, lp_metric_dict, \
-    create_optimizer_parameters
+    create_optimizer_parameters, get_scores
 
 DIR_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 LOGS_FOLDER = 'logs'
@@ -130,18 +129,8 @@ if __name__ == "__main__":
                 batch_size = X_test.shape[0]
                 logger.info("Test dataset size {}".format(size))
 
-            s_pred = None
-            while s_pred is None:
-                try:
-                    if batch_size == 0:
-                        break
-                    logger.info("Batch_size {}".format(batch_size))
-                    s_pred = optimizer_model.predict_scores(X_test, batch_size=batch_size)
-                except:
-                    logger.error("Unexpected Error {}".format(sys.exc_info()[0]))
-                    s_pred = None
-                    batch_size = int(batch_size / 10)
-            y_pred = optimizer_model.predict_for_scores(s_pred)
+            s_pred, y_pred = get_scores(optimizer_model, batch_size)
+
             if isinstance(s_pred, dict):
                 pred_file = os.path.join(DIR_PATH, PREDICTIONS_FOLDER, "{}.pkl".format(hash_value))
                 create_dir_recursively(pred_file, True)

@@ -1,3 +1,4 @@
+from .baseline import AllPositive
 from .cmpnet_choice import CmpNetChoiceFunction
 from .fate_choice import FATEChoiceFunction
 from .feta_choice import FETAChoiceFunction

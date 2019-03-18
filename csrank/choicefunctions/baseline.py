@@ -1,4 +1,5 @@
 import logging
+
 import numpy as np
 
 from csrank.learner import Learner
@@ -7,6 +8,12 @@ from .choice_functions import ChoiceFunctions
 
 class AllPositive(ChoiceFunctions, Learner):
     def __init__(self, **kwargs):
+        """
+            Baseline assigns the average number of chosen objects in the given choice sets and chooses all the objects.
+
+            :param kwargs: Keyword arguments for the algorithms
+        """
+
         self.logger = logging.getLogger(AllPositive.__name__)
 
     def fit(self, X, Y, **kwd):

@@ -11,4 +11,3 @@ API Reference
    api/choicefunction
    api/discretechoice
    
-   

@@ -12,9 +12,9 @@ from keras.regularizers import l2
 from csrank import (
     FETAObjectRanker, RankNet, CmpNet, ExpectedRankRegression, RankSVM, ListNet
 )
+from csrank.core.fate_network import FATENetworkCore
 from csrank.metrics_np import zero_one_rank_loss_for_scores_ties_np
 from csrank.objectranking.fate_object_ranker import FATEObjectRanker
-from csrank.core.fate_network import FATENetworkCore
 
 RANKSVM = "ranksvm"
 ERR = "err"
