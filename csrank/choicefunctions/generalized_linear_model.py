@@ -8,6 +8,7 @@ import theano.tensor as tt
 from pymc3 import Discrete
 from pymc3.distributions.dist_math import bound
 from sklearn.model_selection import train_test_split
+from sklearn.utils import check_random_state
 
 import csrank.theano_util as ttu
 from csrank.learner import Learner
@@ -16,18 +17,32 @@ from .choice_functions import ChoiceFunctions
 
 
 class GeneralizedLinearModel(ChoiceFunctions, Learner):
-    def __init__(self, n_object_features, regularization='l2', model_args={}, **kwargs):
+    def __init__(self, n_object_features, regularization='l2', random_state=None, **kwargs):
+        """ Create an instance of the PairwiseSVM model.
+
+            Parameters
+            ----------
+            n_object_features : int
+                Number of features of the object space
+            regularization : string, optional
+                Regularization technique to be used for estimating the weights.
+            **kwargs
+                Keyword arguments for the algorithms
+
+            References
+            ----------
+            .. [1] Theodoros Evgeniou, Massimiliano Pontil, and Olivier Toubia. „A convex optimization approach to modeling consumer heterogeneity in conjoint estimation“.
+                   In: Marketing Science 26.6 (2007), pp. 805–818 (cit. on p. 18)
+               [2] Sebastián Maldonado, Ricardo Montoya, and Richard Weber. „Advanced conjoint analysis using feature selection via support vector machines“.
+                   In: European Journal of Operational Research 241.2 (2015), pp. 564 –574 (cit. on pp. 19, 20).
+        """
         self.logger = logging.getLogger(GeneralizedLinearModel.__name__)
         self.n_object_features = n_object_features
         if regularization in ['l1', 'l2']:
             self.regularization = regularization
         else:
             self.regularization = 'l2'
-        if isinstance(model_args, dict):
-            self.model_args = model_args
-        else:
-            self.model_args = dict()
-
+        self.random_state = check_random_state(random_state)
         self.model = None
         self.trace = None
         self.trace_vi = None
@@ -49,10 +64,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
         return config_dict
 
     def construct_model(self, X, Y):
-        for key, value in self.default_configuration.items():
-            self.model_args[key] = self.model_args.get(key, value)
-        self.logger.info('Creating model_args config {}'.format(print_dictionary(self.model_args)))
-
+        self.logger.info('Creating model_args config {}'.format(print_dictionary(self.default_configuration)))
         with pm.Model() as self.model:
             self.Xt = theano.shared(X)
             self.Yt = theano.shared(Y)
@@ -80,6 +92,8 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
     def _fit(self, X, Y, sampler='vi', **kwargs):
         self.construct_model(X, Y)
         callbacks = kwargs['vi_params'].get('callbacks', [])
+        kwargs['random_seed'] = self.random_state.randint(2 ** 32, dtype='uint32')
+
         for i, c in enumerate(callbacks):
             if isinstance(c, pm.callbacks.CheckParametersConvergence):
                 params = c.__dict__
@@ -153,7 +167,6 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
         self.Xt = None
         self.Yt = None
         self.p = None
-        self.model_args = dict()
         if len(point) > 0:
             self.logger.warning('This ranking algorithm does not support'
                                 ' tunable parameters called: {}'.format(print_dictionary(point)))

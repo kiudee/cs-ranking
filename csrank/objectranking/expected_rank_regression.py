@@ -19,37 +19,38 @@ class ExpectedRankRegression(ObjectRanker, Learner):
 
     def __init__(self, n_object_features, alpha=0.0, l1_ratio=0.5, tol=1e-4,
                  normalize=True, fit_intercept=True, random_state=None, **kwargs):
-        """Create an expected rank regression model.
+        """
+            Create an expected rank regression model.
 
-        This model normalizes the ranks to [0, 1] and treats them as regression
-        target. For α = 0 we employ simple linear regression. For α > 0 the
-        model becomes ridge regression (when l1_ratio = 0) or elastic net
-        (when l1_ratio > 0).
+            This model normalizes the ranks to [0, 1] and treats them as regression
+            target. For α = 0 we employ simple linear regression. For α > 0 the
+            model becomes ridge regression (when l1_ratio = 0) or elastic net
+            (when l1_ratio > 0).
 
-        Parameters
-        ----------
-        n_object_features : int
-            Number of features of the object space
-        alpha : float, optional
-            Regularization strength
-        l1_ratio : float, optional
-            Ratio between pure L2 (=0) or pure L1 (=1) regularization.
-        tol : float, optional
-            Optimization tolerance
-        normalize : bool, optional
-            If True, the regressors will be normalized before fitting.
-        fit_intercept : bool, optional
-            If True, the linear model will also fit an intercept.
-        random_state : int, RandomState instance or None, optional
-            Seed of the pseudorandom generator or a RandomState instance
-        **kwargs
-            Keyword arguments for the algorithms
+            Parameters
+            ----------
+            n_object_features : int
+                Number of features of the object space
+            alpha : float, optional
+                Regularization strength
+            l1_ratio : float, optional
+                Ratio between pure L2 (=0) or pure L1 (=1) regularization.
+            tol : float, optional
+                Optimization tolerance
+            normalize : bool, optional
+                If True, the regressors will be normalized before fitting.
+            fit_intercept : bool, optional
+                If True, the linear model will also fit an intercept.
+            random_state : int, RandomState instance or None, optional
+                Seed of the pseudorandom generator or a RandomState instance
+            **kwargs
+                Keyword arguments for the algorithms
 
-        References
-        ----------
-        .. [1] Kamishima, T., Kazawa, H., & Akaho, S. (2005, November).
-               "Supervised ordering-an empirical survey.",
-               Fifth IEEE International Conference on Data Mining.
+            References
+            ----------
+            .. [1] Kamishima, T., Kazawa, H., & Akaho, S. (2005, November).
+                   "Supervised ordering-an empirical survey.",
+                   Fifth IEEE International Conference on Data Mining.
         """
         self.normalize = normalize
         self.n_object_features = n_object_features

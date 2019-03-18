@@ -1,5 +1,5 @@
 ***************************************
-State-of-the-Art Discrete Choice Models
+Discrete Choice Models
 ***************************************
 
 .. currentmodule:: csrank.discretechoice

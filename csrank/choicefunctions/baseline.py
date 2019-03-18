@@ -7,7 +7,6 @@ from .choice_functions import ChoiceFunctions
 
 class AllPositive(ChoiceFunctions, Learner):
     def __init__(self, **kwargs):
-
         self.logger = logging.getLogger(AllPositive.__name__)
 
     def fit(self, X, Y, **kwd):

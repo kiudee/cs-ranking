@@ -11,11 +11,46 @@ from .choice_functions import ChoiceFunctions
 
 
 class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
-    def __init__(self, n_object_features, n_hidden_set_layers=2, n_hidden_set_units=2,
-                 loss_function=binary_crossentropy, n_hidden_joint_layers=32, n_hidden_joint_units=32,
-                 activation='selu', kernel_initializer='lecun_normal', kernel_regularizer=l2(l=0.01),
+    def __init__(self, n_object_features, n_hidden_set_layers=2, n_hidden_set_units=2, n_hidden_joint_layers=32,
+                 n_hidden_joint_units=32, loss_function=binary_crossentropy, activation='selu',
+                 kernel_initializer='lecun_normal', kernel_regularizer=l2(l=0.01),
                  optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9), batch_size=256, metrics=None, random_state=None,
                  **kwargs):
+        """
+           Create a FATENetwork architecture.
+           Training and prediction complexity is linear in the number of objects.
+
+           Parameters
+           ----------
+            n_object_features : int
+                Dimensionality of the feature space of each object
+            n_hidden_set_layers : int
+                Number of set layers.
+            n_hidden_set_units : int
+               Number of hidden set units.
+            n_hidden_joint_layers : int
+                Number of joint layers.
+            n_hidden_joint_units : int
+                Number of joint units.
+            loss_function : function
+                Differentiable loss function for the score vector
+            activation : string or function
+                Activation function to use in the hidden units
+            kernel_initializer : function or string
+                Initialization function for the weights of each hidden layer
+            kernel_regularizer : function or string
+                Regularizer to use in the hidden units
+            optimizer : string or function
+                Stochastic gradient optimizer
+            batch_size : int
+                Batch size to use for training
+            metrics : list
+                List of evaluation metrics (can be non-differentiable)
+            random_state : int or object
+                Numpy random state
+            **kwargs
+                Keyword arguments for the hidden set units
+        """
         self.loss_function = loss_function
         self.metrics = metrics
         super().__init__(n_object_features=n_object_features, n_hidden_set_layers=n_hidden_set_layers,

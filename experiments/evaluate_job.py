@@ -85,8 +85,6 @@ if __name__ == "__main__":
             validation_loss = dbConnector.job_description["validation_loss"]
             hash_value = dbConnector.job_description["hash_value"]
             random_state = np.random.RandomState(seed=seed + fold_id)
-            if learner_name in [MNL, PCL, NLM, GEV, MLM, GLM_CHOICE]:
-                fit_params['random_seed'] = seed + fold_id
 
             log_path = os.path.join(DIR_PATH, LOGS_FOLDER, "{}.log".format(hash_value))
             optimizer_path = os.path.join(DIR_PATH, OPTIMIZER_FOLDER, "{}".format(hash_value))
@@ -112,6 +110,7 @@ if __name__ == "__main__":
                 fit_params['random_seed'] = seed + fold_id
             hash_file = os.path.join(DIR_PATH, MODEL_FOLDER, "{}.h5".format(hash_value))
             learner_params['n_objects'], learner_params['n_object_features'] = X_train.shape[1:]
+            learner_params["random_state"] = random_state
             logger.info("learner params {}".format(print_dictionary(learner_params)))
             hp_params = create_optimizer_parameters(fit_params, hp_ranges, learner_params, learner_name, hash_file)
             hp_params['optimizer_path'] = optimizer_path

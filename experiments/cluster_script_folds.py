@@ -103,9 +103,6 @@ if __name__ == "__main__":
             validation_loss = job_description["validation_loss"]
             hash_value = job_description["hash_value"]
             random_state = np.random.RandomState(seed=seed + fold_id)
-            if learner_name in [MNL, PCL, NLM, GEV, MLM, GLM_CHOICE]:
-                fit_params['random_seed'] = seed + fold_id
-
             log_path = os.path.join(DIR_PATH, LOGS_FOLDER, "{}.log".format(hash_value))
             optimizer_path = os.path.join(DIR_PATH, OPTIMIZER_FOLDER, "{}".format(hash_value))
             create_dir_recursively(log_path, True)
