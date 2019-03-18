@@ -15,41 +15,40 @@ class FATEObjectRanker(FATENetwork, ObjectRanker):
                  kernel_regularizer=l2(l=0.01), optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9), batch_size=256,
                  loss_function=hinged_rank_loss, metrics=[zero_one_rank_loss_for_scores_ties], random_state=None,
                  **kwargs):
-        """ Create a FATE-network architecture for object ranking.
+        """
+            Create a FATE-network architecture for object ranking.
+            Training complexity is quadratic in the number of objects and prediction complexity is only linear.
 
-                Training complexity is quadratic in the number of objects and
-                prediction complexity is only linear.
-
-                Parameters
-                ----------
-                n_object_features : int
-                    Dimensionality of the feature space of each object
-                n_hidden_set_layers : int
-                    Number of set layers.
-                n_hidden_set_units : int
-                    Number of hidden set units.
-                n_hidden_joint_layers : int
-                    Number of joint layers.
-                n_hidden_joint_units : int
-                    Number of joint units.
-                activation : string or function
-                    Activation function to use in the hidden units
-                kernel_initializer : function or string
-                    Initialization function for the weights of each hidden layer
-                kernel_regularizer : function or string
-                    Regularizer to use in the hidden units
-                optimizer : string or function
-                    Stochastic gradient optimizer
-                batch_size : int
-                    Batch size to use for training
-                loss_function : function
-                    Differentiable loss function for the score vector
-                metrics : list
-                    List of evaluation metrics (can be non-differentiable)
-                random_state : int or object
-                    Numpy random state
-                **kwargs
-                    Keyword arguments for the @FATENetwork
+            Parameters
+            ----------
+            n_object_features : int
+                Dimensionality of the feature space of each object
+            n_hidden_set_layers : int
+                Number of set layers.
+            n_hidden_set_units : int
+                Number of hidden set units.
+            n_hidden_joint_layers : int
+                Number of joint layers.
+            n_hidden_joint_units : int
+                Number of joint units.
+            activation : string or function
+                Activation function to use in the hidden units
+            kernel_initializer : function or string
+                Initialization function for the weights of each hidden layer
+            kernel_regularizer : function or string
+                Regularizer to use in the hidden units
+            optimizer : string or function
+                Stochastic gradient optimizer
+            batch_size : int
+                Batch size to use for training
+            loss_function : function
+                Differentiable loss function for the score vector
+            metrics : list
+                List of evaluation metrics (can be non-differentiable)
+            random_state : int or object
+                Numpy random state
+            **kwargs
+                Keyword arguments for the @FATENetwork
         """
         self.loss_function = loss_function
         self.metrics = metrics

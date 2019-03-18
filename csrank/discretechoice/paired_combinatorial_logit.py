@@ -32,11 +32,7 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
             self.regularization = regularization
         else:
             self.regularization = 'l2'
-        if isinstance(model_args, dict):
-            self.model_args = model_args
-        else:
-            self.model_args = dict()
-
+        self._config = None
         self.model = None
         self.trace = None
         self.trace_vi = None
@@ -45,17 +41,19 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         self.p = None
 
     @property
-    def default_configuration(self):
-        if self.regularization == 'l2':
-            weight = pm.Normal
-            prior = 'sd'
-        elif self.regularization == 'l1':
-            weight = pm.Laplace
-            prior = 'b'
-        config_dict = {
-            'weights': [weight, {'mu': (pm.Normal, {'mu': 0, 'sd': 5}), prior: (pm.HalfCauchy, {'beta': 1})}]}
-        self.logger.info('Creating default config {}'.format(print_dictionary(config_dict)))
-        return config_dict
+    def model_priors(self):
+        if self._config is None:
+            if self.regularization == 'l2':
+                weight = pm.Normal
+                prior = 'sd'
+            elif self.regularization == 'l1':
+                weight = pm.Laplace
+                prior = 'b'
+            self._config = {
+                'weights': [weight, {'mu': (pm.Normal, {'mu': 0, 'sd': 5}), prior: (pm.HalfCauchy, {'beta': 1})}],
+                'weights_k': [weight, {'mu': (pm.Normal, {'mu': 0, 'sd': 5}), prior: (pm.HalfCauchy, {'beta': 1})}]}
+            self.logger.info('Creating model with config {}'.format(print_dictionary(self._config)))
+        return self._config
 
     def get_probabilities(self, utility, lambda_k):
         n_objects = self.n_objects
@@ -102,9 +100,6 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         return p
 
     def construct_model(self, X, Y):
-        for key, value in self.default_configuration.items():
-            self.model_args[key] = self.model_args.get(key, value)
-        self.logger.info('Creating model_args config {}'.format(print_dictionary(self.model_args)))
         with pm.Model() as self.model:
             self.Xt = theano.shared(X)
             self.Yt = theano.shared(Y)
@@ -118,6 +113,7 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
 
     def fit(self, X, Y, sampler="vi", **kwargs):
         self.construct_model(X, Y)
+        kwargs['random_seed'] = self.random_state.randint(2 ** 32, dtype='uint32')
         callbacks = kwargs['vi_params'].get('callbacks', [])
         for i, c in enumerate(callbacks):
             if isinstance(c, pm.callbacks.CheckParametersConvergence):
@@ -195,7 +191,7 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         self.Xt = None
         self.Yt = None
         self.p = None
-        self.model_args = dict()
+        self._config = None
         if len(point) > 0:
             self.logger.warning('This ranking algorithm does not support tunable parameters'
                                 ' called: {}'.format(print_dictionary(point)))
