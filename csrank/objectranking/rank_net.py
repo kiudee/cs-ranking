@@ -15,8 +15,7 @@ class RankNet(RankNetCore, ObjectRanker):
                  batch_normalization=True, kernel_regularizer=l2(l=1e-4), kernel_initializer='lecun_normal',
                  activation='relu', optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9), metrics=['binary_accuracy'],
                  batch_size=256, random_state=None, **kwargs):
-        """
-            Create an instance of the RankNet architecture.
+        """ Create an instance of the RankNet architecture.
             RankNet breaks the preferences into pairwise comparisons and learns a latent utility model for the objects.
 
             Parameters
