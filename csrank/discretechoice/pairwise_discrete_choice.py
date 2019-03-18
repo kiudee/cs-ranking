@@ -8,7 +8,7 @@ from csrank.pairwise_svm import PairwiseSVM
 class PairwiseSVMDiscreteChoiceFunction(PairwiseSVM, DiscreteObjectChooser):
     def __init__(self, n_object_features, C=1.0, tol=1e-4, normalize=True,
                  fit_intercept=True, random_state=None, **kwargs):
-        """ Create an instance of the RankSVM model.
+        """ Create an instance of the Pairwise Discrete choice model.
 
         Parameters
         ----------
@@ -62,7 +62,3 @@ class PairwiseSVMDiscreteChoiceFunction(PairwiseSVM, DiscreteObjectChooser):
 
     def predict(self, X, **kwargs):
         return super().predict(X, **kwargs)
-
-    def clear_memory(self, **kwargs):
-        self.logger.info("Clearing memory")
-        super().clear_memory(**kwargs)

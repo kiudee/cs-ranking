@@ -7,6 +7,7 @@ from sklearn.svm import LinearSVC
 from sklearn.utils import check_random_state
 
 from csrank.learner import Learner
+from csrank.util import print_dictionary
 
 
 class PairwiseSVM(Learner):
@@ -83,9 +84,6 @@ class PairwiseSVM(Learner):
 
     def convert_instances(self, X, Y):
         raise NotImplemented
-
-    def clear_memory(self, **kwargs):
-        pass
 
     def set_tunable_parameters(self, C=1.0, tol=1e-4, **point):
         self.tol = tol
