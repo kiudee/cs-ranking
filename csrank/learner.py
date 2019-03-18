@@ -61,12 +61,6 @@ class Learner(Tunable, metaclass=ABCMeta):
 
         raise NotImplemented
 
-    def clear_memory(self, n_instances, n_objects, n_features):
-        """
-        Clear the memory, restores the currently fitted model back to prevent memory leaks.
-        """
-        raise NotImplemented
-
     @abstractmethod
     def predict_scores(self, X, **kwargs):
         """

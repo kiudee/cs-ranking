@@ -6,11 +6,9 @@ from .choice_functions import ChoiceFunctions
 
 
 class AllPositive(ChoiceFunctions, Learner):
-    def __init__(self, n_object_features, **kwargs):
-        super().__init__(n_object_features=n_object_features, **kwargs)
+    def __init__(self, **kwargs):
+
         self.logger = logging.getLogger(AllPositive.__name__)
-        self.logger.info("Initializing network with object features {}".format(self.n_object_features))
-        self.threshold = 0.5
 
     def fit(self, X, Y, **kwd):
         pass

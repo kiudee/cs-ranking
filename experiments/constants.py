@@ -6,6 +6,7 @@ SYNTHETIC_DC = 'synthetic_dc'
 HYPER_VOLUME = "hyper_volume"
 MNIST_CHOICE = "mnist_choice"
 MNIST_DC = "mnist_dc"
+LETOR_CHOICE = "letor_choice"
 DEPTH = 'depth'
 SENTENCE_ORDERING = "sentence_ordering"
 LETOR_OR = "letor_or"
