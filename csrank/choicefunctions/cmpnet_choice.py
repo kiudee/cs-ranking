@@ -53,7 +53,7 @@ class CmpNetChoiceFunction(CmpNetCore, ChoiceFunctions):
                batch_size : int
                    Batch size to use during training
                random_state : int, RandomState instance or None
-                   Seed of the pseudorandom generator or a RandomState instance
+                   Seed of the pseudo-random generator or a RandomState instance
                **kwargs
                    Keyword arguments for the algorithms
 
