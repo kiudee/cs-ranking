@@ -3,9 +3,9 @@ import logging
 from keras.optimizers import SGD
 from keras.regularizers import l2
 
+from csrank.core.ranknet_core import RankNetCore
 from csrank.dataset_reader.objectranking.util import generate_complete_pairwise_dataset
 from csrank.objectranking.object_ranker import ObjectRanker
-from csrank.core.ranknet_core import RankNetCore
 
 __all__ = ['RankNet']
 
@@ -64,7 +64,7 @@ class RankNet(RankNetCore, ObjectRanker):
         self.logger = logging.getLogger(RankNet.__name__)
         self.logger.info("Initializing network with object features {}".format(self.n_object_features))
 
-    def convert_instances(self, X, Y):
+    def _convert_instances(self, X, Y):
         self.logger.debug('Creating the Dataset')
         garbage, x1, x2, garbage, y_single = generate_complete_pairwise_dataset(X, Y)
         del garbage

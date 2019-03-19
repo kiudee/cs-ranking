@@ -28,7 +28,8 @@ class CmpNet(CmpNetCore, ObjectRanker):
 
            .. math::
 
-              ρ(Q) = \operatorname{argsort}_{i \in [n]}  \; \left\{ \\frac{1}{n-1} \sum_{j \in [n] \setminus \{i\}} U_1(x_i , x_j)\\right\}
+                U(x_i) = \left\{ \\frac{1}{n-1} \sum_{j \in [n] \setminus \{i\}} U_1(x_i , x_j)\\right\} \\\\
+                ρ(Q)  = \operatorname{argsort}_{i \in [n]}  \; U(x_i)
 
 
            Parameters

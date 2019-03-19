@@ -60,7 +60,7 @@ class RankNetCore(Learner):
 
     def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
 
-        X1, X2, Y_single = self.convert_instances(X, Y)
+        X1, X2, Y_single = self._convert_instances(X, Y)
 
         self.logger.debug("Instances created {}".format(X1.shape[0]))
         self.logger.debug('Creating the model')
@@ -90,7 +90,7 @@ class RankNetCore(Learner):
             self._scoring_model = Model(inputs=[inp], outputs=output_score)
         return self._scoring_model
 
-    def convert_instances(self, X, Y):
+    def _convert_instances(self, X, Y):
         raise NotImplemented
 
     def construct_model(self):
