@@ -19,7 +19,7 @@ from .likelihoods import likelihood_dict, LogLikelihood
 
 class NestedLogitModel(DiscreteObjectChooser, Learner):
     def __init__(self, n_object_features, n_objects, n_nests=None, loss_function='', regularization='l1', alpha=1e-2,
-                 random_state=None, model_args={}, **kwd):
+                 random_state=None, **kwd):
         self.logger = logging.getLogger(NestedLogitModel.__name__)
         self.n_object_features = n_object_features
         self.n_objects = n_objects
@@ -34,10 +34,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
             self.regularization = regularization
         else:
             self.regularization = 'l2'
-        if isinstance(model_args, dict):
-            self.model_args = model_args
-        else:
-            self.model_args = dict()
+        self._config = None
         self.cluster_model = None
         self.features_nests = None
         self.model = None
@@ -49,19 +46,19 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         self.y_nests = None
 
     @property
-    def default_configuration(self):
-        if self.regularization == 'l2':
-            weight = pm.Normal
-            prior = 'sd'
-        elif self.regularization == 'l1':
-            weight = pm.Laplace
-            prior = 'b'
-        config_dict = {
-            'weights': [weight, {'mu': (pm.Normal, {'mu': 0, 'sd': 5}), prior: (pm.HalfCauchy, {'beta': 1})}],
-            'weights_k': [weight, {'mu': (pm.Normal, {'mu': 0, 'sd': 5}), prior: (pm.HalfCauchy, {'beta': 1})}]}
-        self.logger.info('Creating default config {}'.format(print_dictionary(config_dict)))
-
-        return config_dict
+    def model_priors(self):
+        if self._config is None:
+            if self.regularization == 'l2':
+                weight = pm.Normal
+                prior = 'sd'
+            elif self.regularization == 'l1':
+                weight = pm.Laplace
+                prior = 'b'
+            self._config = {
+                'weights': [weight, {'mu': (pm.Normal, {'mu': 0, 'sd': 5}), prior: (pm.HalfCauchy, {'beta': 1})}],
+                'weights_k': [weight, {'mu': (pm.Normal, {'mu': 0, 'sd': 5}), prior: (pm.HalfCauchy, {'beta': 1})}]}
+            self.logger.info('Creating model with config {}'.format(print_dictionary(self._config)))
+        return self._config
 
     def eval_utility(self, weights):
         utility = tt.zeros(tuple(self.y_nests.shape))
@@ -133,9 +130,6 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         return y_nests
 
     def construct_model(self, X, Y):
-        for key, value in self.default_configuration.items():
-            self.model_args[key] = self.model_args.get(key, value)
-        self.logger.info('Creating model_args config {}'.format(print_dictionary(self.model_args)))
         y_nests = self.create_nests(X)
         with pm.Model() as self.model:
             self.Xt = theano.shared(X)
@@ -143,7 +137,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
             self.y_nests = theano.shared(y_nests)
             shapes = {'weights': self.n_object_features, 'weights_k': self.n_object_features}
 
-            weights_dict = create_weight_dictionary(self.model_args, shapes)
+            weights_dict = create_weight_dictionary(self.model_priors, shapes)
             lambda_k = pm.Uniform('lambda_k', self.alpha, 1.0, shape=self.n_nests)
             weights = (weights_dict['weights'] / lambda_k[:, None])
             utility = self.eval_utility(weights)
@@ -155,6 +149,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
 
     def fit(self, X, Y, sampler="vi", **kwargs):
         self.construct_model(X, Y)
+        kwargs['random_seed'] = self.random_state.randint(2 ** 32, dtype='uint32')
         callbacks = kwargs['vi_params'].get('callbacks', [])
         for i, c in enumerate(callbacks):
             if isinstance(c, pm.callbacks.CheckParametersConvergence):
@@ -243,8 +238,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         self.Yt = None
         self.p = None
         self.y_nests = None
-        self.model_args = dict()
-
+        self._config = None
         if len(point) > 0:
             self.logger.warning('This ranking algorithm does not support tunable parameters'
                                 ' called: {}'.format(print_dictionary(point)))

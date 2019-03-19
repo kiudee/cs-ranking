@@ -33,10 +33,9 @@ from csrank.metrics import make_ndcg_at_k_loss
 from csrank.tensorflow_util import configure_numpy_keras, get_mean_loss_for_dictionary, get_loss_for_array
 from csrank.util import create_dir_recursively, duration_till_now, seconds_to_time, \
     print_dictionary, get_duration_seconds, setup_logging
-from experiments.constants import MNL, NLM, GEV, PCL, MLM, GLM_CHOICE
 from experiments.dbconnection import DBConnector
 from experiments.util import get_dataset_reader, log_test_train_data, metrics_on_predictions, lp_metric_dict, \
-    create_optimizer_parameters
+    create_optimizer_parameters, get_scores
 
 DIR_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 LOGS_FOLDER = 'logs'
@@ -83,9 +82,6 @@ if __name__ == "__main__":
             hash_value = dbConnector.job_description["hash_value"]
             random_state = np.random.RandomState(seed=seed + fold_id)
 
-            if learner_name in [MNL, PCL, NLM, GEV, MLM, GLM_CHOICE]:
-                fit_params['random_seed'] = seed + fold_id
-
             log_path = os.path.join(DIR_PATH, LOGS_FOLDER, "{}.log".format(hash_value))
             optimizer_path = os.path.join(DIR_PATH, OPTIMIZER_FOLDER, "{}".format(hash_value))
             create_dir_recursively(log_path, True)
@@ -107,6 +103,7 @@ if __name__ == "__main__":
             inner_cv = ShuffleSplit(n_splits=n_inner_folds, test_size=0.1, random_state=random_state)
             hash_file = os.path.join(DIR_PATH, MODEL_FOLDER, "{}.h5".format(hash_value))
             learner_params['n_objects'], learner_params['n_object_features'] = X_train.shape[1:]
+            learner_params["random_state"] = random_state
             logger.info("learner params {}".format(print_dictionary(learner_params)))
             hp_params = create_optimizer_parameters(fit_params, hp_ranges, learner_params, learner_name, hash_file)
             hp_params['optimizer_path'] = optimizer_path
@@ -117,7 +114,8 @@ if __name__ == "__main__":
             time_taken = duration_till_now(start)
             logger.info("Time Taken till now: {}  milliseconds".format(seconds_to_time(time_taken)))
             time_eout_eval = get_duration_seconds('10H')
-            logger.info("Time spared for the out of sample evaluation : {} ".format(seconds_to_time(time_eout_eval)))
+            logger.info(
+                "Time spared for the out of sample evaluation : {} ".format(seconds_to_time(time_eout_eval)))
 
             total_duration = duration - time_taken - time_eout_eval
             hp_fit_params['n_iter'] = hp_iters
@@ -132,18 +130,8 @@ if __name__ == "__main__":
                 batch_size = X_test.shape[0]
                 logger.info("Test dataset size {}".format(size))
 
-            s_pred = None
-            while s_pred is None:
-                try:
-                    if batch_size == 0:
-                        break
-                    logger.info("Batch_size {}".format(batch_size))
-                    s_pred = optimizer_model.predict_scores(X_test, batch_size=batch_size)
-                except:
-                    logger.error("Unexpected Error {}".format(sys.exc_info()[0]))
-                    s_pred = None
-                    batch_size = int(batch_size / 10)
-            y_pred = optimizer_model.predict_for_scores(s_pred)
+            s_pred, y_pred = get_scores(optimizer_model, batch_size)
+
             if isinstance(s_pred, dict):
                 pred_file = os.path.join(DIR_PATH, PREDICTIONS_FOLDER, "{}.pkl".format(hash_value))
                 create_dir_recursively(pred_file, True)

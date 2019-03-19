@@ -13,7 +13,7 @@ class DiscreteObjectChooser(metaclass=ABCMeta):
         return DISCRETE_CHOICE
 
     def predict_for_scores(self, scores):
-        """ Predict choices for a given collection scores for the sets of objects.
+        """ Predict discrete choice for a given collection scores for the sets of objects.
 
         Parameters
         ----------

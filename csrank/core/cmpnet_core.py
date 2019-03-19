@@ -20,55 +20,6 @@ class CmpNetCore(Learner):
                  batch_normalization=True, kernel_regularizer=l2(l=1e-4), kernel_initializer='lecun_normal',
                  activation='relu', optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9), metrics=['binary_accuracy'],
                  batch_size=256, random_state=None, **kwargs):
-        """
-            Create an instance of the CmpNet architecture.
-
-            CmpNet breaks the rankings into pairwise comparisons and learns a pairwise model for the each pair of object in the ranking.
-            For prediction list of objects is converted in pair of objects and the pairwise predicate is evaluated using them.
-            The outputs of the network for each pair of objects :math:`U(x_1,x_2), U(x_2,x_1)` are evaluated.
-            :math:`U(x_1,x_2)` is a measure of how favorable it is for :math:`x_1` than :math:`x_2`.
-            Ranking for the given set of objects :math:`Q = \{ x_1 , \ldots , x_n \}`  is evaluted as follows:
-
-            .. math::
-
-               ρ(Q) = \operatorname{argsort}_{i \in [n]}  \; \left\{ \\frac{1}{n-1} \sum_{j \in [n] \setminus \{i\}} U_1(x_i , x_j)\\right\}
-
-
-            Parameters
-            ----------
-            n_object_features : int
-                Number of features of the object space
-            n_hidden : int
-                Number of hidden layers used in the scoring network
-            n_units : int
-                Number of hidden units in each layer of the scoring network
-            loss_function : function or string
-                Loss function to be used for the binary decision task of the
-                pairwise comparisons
-            batch_normalization : bool
-                Whether to use batch normalization in each hidden layer
-            kernel_regularizer : function
-                Regularizer function applied to all the hidden weight matrices.
-            activation : function or string
-                Type of activation function to use in each hidden layer
-            optimizer : function or string
-                Optimizer to use during stochastic gradient descent
-            metrics : list
-                List of metrics to evaluate during training (can be
-                non-differentiable)
-            batch_size : int
-                Batch size to use during training
-            random_state : int, RandomState instance or None
-                Seed of the pseudorandom generator or a RandomState instance
-            **kwargs
-                Keyword arguments for the algorithms
-
-            References
-            ----------
-            .. [1] Leonardo Rigutini, Tiziano Papini, Marco Maggini, and Franco Scarselli. 2011.
-               SortNet: Learning to Rank by a Neural Preference Function.
-               IEEE Trans. Neural Networks 22, 9 (2011), 1368–1380. https://doi.org/10.1109/TNN.2011.2160875
-        """
         self.logger = logging.getLogger("CmpNet")
         self.n_object_features = n_object_features
         self.batch_normalization = batch_normalization
@@ -111,10 +62,9 @@ class CmpNetCore(Learner):
                                   range(self.n_hidden)]
         assert len(self.hidden_layers) == self.n_hidden
 
-    def fit(self, X, Y, epochs=10, callbacks=None,
-            validation_split=0.1, verbose=0, **kwd):
+    def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
 
-        x1, x2, y_double = self.convert_instances(X, Y)
+        x1, x2, y_double = self._convert_instances(X, Y)
 
         self.logger.debug("Instances created {}".format(x1.shape[0]))
         merged_output = self.construct_model()
@@ -124,12 +74,11 @@ class CmpNetCore(Learner):
 
         self.logger.debug('Finished Creating the model, now fitting started')
 
-        self.model.fit([x1, x2], y_double, batch_size=self.batch_size, epochs=epochs,
-                       callbacks=callbacks, validation_split=validation_split,
-                       verbose=verbose, **kwd)
+        self.model.fit([x1, x2], y_double, batch_size=self.batch_size, epochs=epochs, callbacks=callbacks,
+                       validation_split=validation_split, verbose=verbose, **kwd)
         self.logger.debug('Fitting Complete')
 
-    def convert_instances(self, X, Y):
+    def _convert_instances(self, X, Y):
         raise NotImplemented
 
     def construct_model(self):

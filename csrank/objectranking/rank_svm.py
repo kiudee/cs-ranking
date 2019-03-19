@@ -1,7 +1,7 @@
 import logging
 
+from csrank.core.pairwise_svm import PairwiseSVM
 from csrank.objectranking.object_ranker import ObjectRanker
-from csrank.pairwise_svm import PairwiseSVM
 from ..dataset_reader.objectranking.util import \
     generate_complete_pairwise_dataset
 

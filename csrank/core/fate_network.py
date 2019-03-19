@@ -14,17 +14,40 @@ from sklearn.utils import check_random_state
 from csrank.constants import allowed_dense_kwargs
 from csrank.layers import DeepSet, create_input_lambda
 from csrank.learner import Learner
-from csrank.tunable import Tunable
 from csrank.util import print_dictionary
 
-__all__ = ['FATENetwork']
+__all__ = ['FATENetwork', 'FATENetworkCore']
 
 
-class FATENetworkCore(Learner, Tunable):
+class FATENetworkCore(Learner):
     def __init__(self, n_hidden_joint_layers=32, n_hidden_joint_units=32, activation='selu',
                  kernel_initializer='lecun_normal', kernel_regularizer=l2(l=0.01),
-                 optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
-                 batch_size=256, random_state=None, **kwargs):
+                 optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9), batch_size=256, random_state=None, **kwargs):
+        """
+            Create a FATENetworkCore architecture.
+            Training and prediction complexity is linear in the number of objects.
+
+            Parameters
+            ----------
+            n_hidden_joint_layers : int
+                Number of joint layers.
+            n_hidden_joint_units : int
+                Number of joint units.
+            activation : string or function
+                Activation function to use in the hidden units
+            kernel_initializer : function or string
+                Initialization function for the weights of each hidden layer
+            kernel_regularizer : function or string
+                Regularizer to use in the hidden units
+            optimizer : string or function
+                Stochastic gradient optimizer
+            batch_size : int
+                Batch size to use for training
+            random_state : int or object
+                Numpy random state
+            **kwargs
+                Keyword arguments for the hidden units
+        """
         self.logger = logging.getLogger(FATENetworkCore.__name__)
         self.random_state = check_random_state(random_state)
 
@@ -48,12 +71,12 @@ class FATENetworkCore(Learner, Tunable):
                                kernel_regularizer=self.kernel_regularizer, **self.kwargs)
 
     def _construct_layers(self, **kwargs):
-        """ Construct basic layers shared by all ranking algorithms:
+        """
+        Construct basic layers shared by all ranking algorithms:
          * Joint dense hidden layers
          * Output scoring layer
 
-        Connecting the layers is done in join_input_layers and will be done in
-        implementing classes.
+        Connecting the layers is done in join_input_layers and will be done in implementing classes.
         """
         self.logger.info("Construct joint layers hidden units {} and layers {} ".format(self.n_hidden_joint_units,
                                                                                         self.n_hidden_joint_layers))
@@ -122,6 +145,21 @@ class FATENetworkCore(Learner, Tunable):
 
 class FATENetwork(FATENetworkCore):
     def __init__(self, n_object_features, n_hidden_set_layers=1, n_hidden_set_units=1, **kwargs):
+        """
+            Create a FATENetwork architecture.
+            Training and prediction complexity is linear in the number of objects.
+
+            Parameters
+            ----------
+            n_object_features : int
+                Dimensionality of the feature space of each object
+            n_hidden_set_layers : int
+                Number of set layers.
+            n_hidden_set_units : int
+                Number of hidden set units.
+            **kwargs
+                Keyword arguments for the hidden set units
+        """
         FATENetworkCore.__init__(self, **kwargs)
         self.logger_gorc = logging.getLogger(FATENetwork.__name__)
 
@@ -151,20 +189,20 @@ class FATENetwork(FATENetworkCore):
     @staticmethod
     def _bucket_frequencies(X, min_bucket_size=32):
         """
-        Calculates the relative frequency of each ranking bucket.
+            Calculates the relative frequency of each ranking bucket.
 
-        Parameters
-        ----------
-        X : dict
-            map from n_objects to object queries
-        min_bucket_size : int
-            Minimum number of instances for a query size to be considered for
-            the frequency calculation
+            Parameters
+            ----------
+            X : dict
+                map from n_objects to object queries
+            min_bucket_size : int
+                Minimum number of instances for a query size to be considered for
+                the frequency calculation
 
-        Returns
-        -------
-        freq : dict
-            map from n_objects to frequency in float
+            Returns
+            -------
+            freq : dict
+                map from n_objects to frequency in float
 
         """
         freq = dict()
@@ -289,43 +327,44 @@ class FATENetwork(FATENetworkCore):
 
     def fit(self, X, Y, epochs=35, inner_epochs=1, callbacks=None, validation_split=0.1, verbose=0, global_lr=1.0,
             global_momentum=0.9, min_bucket_size=500, refit=False, **kwargs):
-        """Fit a generic object ranking model on a provided set of queries.
+        """
+            Fit a generic object ranking model on a provided set of queries.
 
-        The provided queries can be of a fixed size (numpy arrays) or of
-        varying sizes in which case dictionaries are expected as input.
+            The provided queries can be of a fixed size (numpy arrays) or of
+            varying sizes in which case dictionaries are expected as input.
 
-        For varying sizes a meta gradient descent is performed across the
-        different query sizes.
+            For varying sizes a meta gradient descent is performed across the
+            different query sizes.
 
-        Parameters
-        ----------
-        X : numpy array or dict
-            (n_instances, n_objects, n_features) if numpy array or
-            map from n_objects to numpy arrays
-        Y : numpy array or dict
-            (n_instances, n_objects) if numpy array or
-            map from n_objects to numpy arrays
-        epochs : int
-            Number of epochs to run if training for a fixed query size or
-            number of epochs of the meta gradient descent for the variadic model
-        inner_epochs : int
-            Number of epochs to train for each query size inside the variadic
-            model
-        callbacks : list
-            List of callbacks to be called during optimization
-        validation_split : float
-            Percentage of instances to split off to validate on
-        verbose : bool
-            Print verbose information
-        global_lr : float
-            Learning rate of the meta gradient descent (variadic model only)
-        global_momentum : float
-            Momentum for the meta gradient descent (variadic model only)
-        min_bucket_size : int
-            Restrict the training to queries of a minimum size
-        refit : bool
-            If True, create a new model object, otherwise continue fitting the
-            existing one if one exists.
+            Parameters
+            ----------
+            X : numpy array or dict
+                (n_instances, n_objects, n_features) if numpy array or
+                map from n_objects to numpy arrays
+            Y : numpy array or dict
+                (n_instances, n_objects) if numpy array or
+                map from n_objects to numpy arrays
+            epochs : int
+                Number of epochs to run if training for a fixed query size or
+                number of epochs of the meta gradient descent for the variadic model
+            inner_epochs : int
+                Number of epochs to train for each query size inside the variadic
+                model
+            callbacks : list
+                List of callbacks to be called during optimization
+            validation_split : float
+                Percentage of instances to split off to validate on
+            verbose : bool
+                Print verbose information
+            global_lr : float
+                Learning rate of the meta gradient descent (variadic model only)
+            global_momentum : float
+                Momentum for the meta gradient descent (variadic model only)
+            min_bucket_size : int
+                Restrict the training to queries of a minimum size
+            refit : bool
+                If True, create a new model object, otherwise continue fitting the
+                existing one if one exists.
         """
         self._fit(X=X, Y=Y, epochs=epochs, inner_epochs=inner_epochs, callbacks=callbacks,
                   validation_split=validation_split, verbose=verbose, global_lr=global_lr,
@@ -333,44 +372,45 @@ class FATENetwork(FATENetworkCore):
 
     def fit_generator(self, generator, epochs=35, steps_per_epoch=10, inner_epochs=1, callbacks=None, verbose=0,
                       global_lr=1.0, global_momentum=0.9, min_bucket_size=500, refit=False, **kwargs):
-        """Fit a generic object ranking model on a set of queries provided by
-        a generator.
+        """
+            Fit a generic object ranking model on a set of queries provided by
+            a generator.
 
-        The provided queries can be of a fixed size (numpy arrays) or of
-        varying sizes in which case dictionaries are expected as input.
+            The provided queries can be of a fixed size (numpy arrays) or of
+            varying sizes in which case dictionaries are expected as input.
 
-        For varying sizes a meta gradient descent is performed across the
-        different query sizes.
+            For varying sizes a meta gradient descent is performed across the
+            different query sizes.
 
-        Parameters
-        ----------
-        X : numpy array or dict
-            (n_instances, n_objects, n_features) if numpy array or
-            map from n_objects to numpy arrays
-        Y : numpy array or dict
-            (n_instances, n_objects) if numpy array or
-            map from n_objects to numpy arrays
-        epochs : int
-            Number of epochs to run if training for a fixed query size or
-            number of epochs of the meta gradient descent for the variadic model
-        steps_per_epoch : int
-            Number of batches to train per epoch
-        inner_epochs : int
-            Number of epochs to train for each query size inside the variadic
-            model
-        callbacks : list
-            List of callbacks to be called during optimization
-        verbose : bool
-            Print verbose information
-        global_lr : float
-            Learning rate of the meta gradient descent (variadic model only)
-        global_momentum : float
-            Momentum for the meta gradient descent (variadic model only)
-        min_bucket_size : int
-            Restrict the training to queries of a minimum size
-        refit : bool
-            If True, create a new model object, otherwise continue fitting the
-            existing one if one exists.
+            Parameters
+            ----------
+            X : numpy array or dict
+                (n_instances, n_objects, n_features) if numpy array or
+                map from n_objects to numpy arrays
+            Y : numpy array or dict
+                (n_instances, n_objects) if numpy array or
+                map from n_objects to numpy arrays
+            epochs : int
+                Number of epochs to run if training for a fixed query size or
+                number of epochs of the meta gradient descent for the variadic model
+            steps_per_epoch : int
+                Number of batches to train per epoch
+            inner_epochs : int
+                Number of epochs to train for each query size inside the variadic
+                model
+            callbacks : list
+                List of callbacks to be called during optimization
+            verbose : bool
+                Print verbose information
+            global_lr : float
+                Learning rate of the meta gradient descent (variadic model only)
+            global_momentum : float
+                Momentum for the meta gradient descent (variadic model only)
+            min_bucket_size : int
+                Restrict the training to queries of a minimum size
+            refit : bool
+                If True, create a new model object, otherwise continue fitting the
+                existing one if one exists.
         """
         self._fit(generator=generator, epochs=epochs, steps_per_epoch=steps_per_epoch, inner_epochs=inner_epochs,
                   callbacks=callbacks, verbose=verbose, global_lr=global_lr, global_momentum=global_momentum,
@@ -394,17 +434,17 @@ class FATENetwork(FATENetworkCore):
 
     def _predict_scores_fixed(self, X, **kwargs):
         """
-        Predict the scores for a fixed ranking size.
+            Predict the scores for a fixed ranking size.
 
-        Parameters
-        ----------
-        X : numpy array
-            float (n_instances, n_objects, n_features)
+            Parameters
+            ----------
+            X : numpy array
+                float (n_instances, n_objects, n_features)
 
-        Returns
-        -------
-        scores : numpy array
-            float (n_instances, n_objects)
+            Returns
+            -------
+            scores : numpy array
+                float (n_instances, n_objects)
 
         """
         # model = self._construct_scoring_model(n_objects)

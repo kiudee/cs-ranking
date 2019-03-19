@@ -18,51 +18,6 @@ class RankNetCore(Learner):
                  batch_normalization=True, kernel_regularizer=l2(l=1e-4), kernel_initializer='lecun_normal',
                  activation='relu', optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9), metrics=['binary_accuracy'],
                  batch_size=256, random_state=None, **kwargs):
-        """Create an instance of the RankNet architecture.
-
-        RankNet breaks the rankings into pairwise comparisons and learns a
-        latent utility model for the objects.
-
-        Parameters
-        ----------
-        n_object_features : int
-            Number of features of the object space
-        n_hidden : int
-            Number of hidden layers used in the scoring network
-        n_units : int
-            Number of hidden units in each layer of the scoring network
-        loss_function : function or string
-            Loss function to be used for the binary decision task of the
-            pairwise comparisons
-        batch_normalization : bool
-            Whether to use batch normalization in each hidden layer
-        kernel_regularizer : function
-            Regularizer function applied to all the hidden weight matrices.
-        kernel_initializer : function or string
-                Initialization function for the weights of each hidden layer
-        activation : function or string
-            Type of activation function to use in each hidden layer
-        optimizer : function or string
-            Optimizer to use during stochastic gradient descent
-        metrics : list
-            List of metrics to evaluate during training (can be non-differentiable)
-        batch_size : int
-            Batch size to use during training
-        random_state : int, RandomState instance or None
-            Seed of the pseudo-random generator or a RandomState instance
-        **kwargs
-            Keyword arguments for the algorithms
-
-        References
-        ----------
-        .. [1] Burges, C. et al. (2005, August).
-               "Learning to rank using gradient descent.",
-               In Proceedings of the 22nd international conference on Machine
-               learning (pp. 89-96). ACM.
-        .. [2] Burges, C. J. (2010).
-               "From ranknet to lambdarank to lambdamart: An overview.",
-               Learning, 11(23-581), 81.
-        """
         self.logger = logging.getLogger(RankNetCore.__name__)
         self.n_object_features = n_object_features
         self.batch_normalization = batch_normalization
@@ -105,7 +60,7 @@ class RankNetCore(Learner):
 
     def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
 
-        X1, X2, Y_single = self.convert_instances(X, Y)
+        X1, X2, Y_single = self._convert_instances(X, Y)
 
         self.logger.debug("Instances created {}".format(X1.shape[0]))
         self.logger.debug('Creating the model')
@@ -135,7 +90,7 @@ class RankNetCore(Learner):
             self._scoring_model = Model(inputs=[inp], outputs=output_score)
         return self._scoring_model
 
-    def convert_instances(self, X, Y):
+    def _convert_instances(self, X, Y):
         raise NotImplemented
 
     def construct_model(self):

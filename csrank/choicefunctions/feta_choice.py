@@ -9,7 +9,7 @@ from keras.optimizers import SGD
 from keras.regularizers import l2
 from sklearn.model_selection import train_test_split
 
-from csrank.feta_network import FETANetwork
+from csrank.core.feta_network import FETANetwork
 from csrank.layers import NormalizedDense
 from .choice_functions import ChoiceFunctions
 
@@ -21,6 +21,47 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
                  activation='selu', optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
                  metrics=['binary_accuracy'], batch_size=256, random_state=None,
                  **kwargs):
+        """
+            Create a FETA-network architecture for learning the choice functions.
+            Training and prediction complexity is quadratic in the number of objects.
+
+            Parameters
+            ----------
+            n_objects : int
+                Number of objects to be ranked
+            n_object_features : int
+                Dimensionality of the feature space of each object
+            n_hidden : int
+                Number of hidden layers
+            n_units : int
+                Number of hidden units in each layer
+            add_zeroth_order_model : bool
+                True if the model should include a latent utility function
+            max_number_of_objects : int
+                The maximum number of objects to train from
+            num_subsample : int
+                Number of objects to subsample to
+            loss_function : function
+                Differentiable loss function for the score vector
+            batch_normalization : bool
+                Whether to use batch normalization in the hidden layers
+            kernel_regularizer : function
+                Regularizer to use in the hidden units
+            kernel_initializer : function or string
+                Initialization function for the weights of each hidden layer
+            activation : string or function
+                Activation function to use in the hidden units
+            optimizer : string or function
+                Stochastic gradient optimizer
+            metrics : list
+                List of evaluation metrics (can be non-differentiable)
+            batch_size : int
+                Batch size to use for training
+            random_state : int or object
+                Numpy random state
+            **kwargs
+                Keyword arguments for the hidden units
+        """
         super().__init__(n_objects=n_objects, n_object_features=n_object_features, n_hidden=n_hidden, n_units=n_units,
                          add_zeroth_order_model=add_zeroth_order_model, max_number_of_objects=max_number_of_objects,
                          num_subsample=num_subsample, loss_function=loss_function,

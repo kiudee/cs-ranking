@@ -26,7 +26,7 @@ class Learner(Tunable, metaclass=ABCMeta):
 
     @abstractmethod
     def _predict_scores_fixed(self, X, **kwargs):
-        """ Predict borda scores for a given collection of sets of objects.
+        """ Predict the scores for a given collection of sets of objects of same size.
 
         Parameters
         ----------
@@ -36,12 +36,12 @@ class Learner(Tunable, metaclass=ABCMeta):
         Returns
         -------
         Y : array-like, shape (n_samples, n_objects)
-            Returns the borda scores of each of the objects for each of the samples.
+            Returns the scores of each of the objects for each of the samples.
         """
         raise NotImplementedError
 
     def predict_for_scores(self, scores, **kwargs):
-        """ Predict outputs for scores for a given collection of sets of objects.
+        """ Predict preferences for the scores for a given collection of sets of objects in form of choices or rankings.
 
         Parameters
         ----------
@@ -61,16 +61,10 @@ class Learner(Tunable, metaclass=ABCMeta):
 
         raise NotImplemented
 
-    def clear_memory(self, n_instances, n_objects, n_features):
-        """
-        Clear the memory, restores the currently fitted model back to prevent memory leaks.
-        """
-        raise NotImplemented
-
     @abstractmethod
     def predict_scores(self, X, **kwargs):
         """
-        Predict the latent utility scores for each object in X.
+        Predict the utility scores for each object in the collection of set of objects.
 
          Parameters
          ----------
@@ -102,7 +96,7 @@ class Learner(Tunable, metaclass=ABCMeta):
 
     @abstractmethod
     def predict(self, X, **kwargs):
-        """ Predict rankings for a given collection of sets of objects.
+        """ Predict preferences in the form of rankings or choices for a given collection of sets of objects.
 
         Parameters
         ----------
@@ -128,7 +122,7 @@ class Learner(Tunable, metaclass=ABCMeta):
 
     def __call__(self, X, *args, **kwargs):
         """
-        Predicts rankings for a new set of points X.
+        Predict preferences in the form of rankings or choices for a given collection of sets of objects.
 
         Parameters
         ----------
