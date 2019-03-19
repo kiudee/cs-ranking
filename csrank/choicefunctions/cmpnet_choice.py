@@ -23,7 +23,7 @@ class CmpNetChoiceFunction(CmpNetCore, ChoiceFunctions):
            them.
            The outputs of the network for each pair of objects :math:`U(x_1,x_2), U(x_2,x_1)` are evaluated.
            :math:`U(x_1,x_2)` is a measure of how favorable it is for :math:`x_1` than :math:`x_2`.
-           Ranking for the given set of objects :math:`Q = \{ x_1 , \ldots , x_n \}`  is evaluated as follows:
+           Ranking for the given set of objects :math:`Q = \{ x_1 , \ldots , x_n \}` is evaluated as follows:
 
            .. math::
            
