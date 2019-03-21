@@ -18,6 +18,13 @@ class FATEObjectRanker(FATENetwork, ObjectRanker):
         """
             Create a FATE-network architecture for object ranking.
             Training complexity is quadratic in the number of objects and prediction complexity is only linear.
+            The first-aggregate-then-evaluate approach learns an embedding of each object and then aggregates that into
+            a context :math:`\\mu_{C(x)}` and then scores each object :math:`x` using a generalized utility function
+            :math:`U (x, \\mu_{C(x)})`.
+
+            .. math::
+
+                \\mu_{C(x)} = \\frac{1}{|C(x)|} \\sum_{y \\in C(x)} \\phi(y)
 
             Parameters
             ----------
