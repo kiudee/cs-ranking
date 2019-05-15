@@ -2,11 +2,22 @@ import inspect
 import logging
 import os
 import re
+import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
 __all__ = ['create_dir_recursively', 'duration_till_now', 'print_dictionary', 'rename_file_if_exist', 'seconds_to_time',
-           'time_from_now', 'get_duration_seconds', 'setup_logging']
+           'time_from_now', 'get_duration_seconds', 'setup_logging', 'progress_bar']
+
+
+def progress_bar(count, total, status=''):
+    bar_len = 60
+    filled_len = int(round(bar_len * count / float(total)))
+
+    bar = '=' * filled_len + '-' * (bar_len - filled_len)
+
+    sys.stdout.write('[%s] %s/%s ...%s\r' % (bar, count, total, status))
+    sys.stdout.flush()
 
 
 def print_dictionary(dictionary):

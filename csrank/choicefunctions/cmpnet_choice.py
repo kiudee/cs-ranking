@@ -84,8 +84,8 @@ class CmpNetChoiceFunction(CmpNetCore, ChoiceFunctions):
             y_double = y_double[indices, :]
         return x1, x2, y_double
 
-    def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, tune_size=0.1, thin_thresholds=1, verbose=0,
-            **kwd):
+    def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, tune_size=0.1,
+            thin_thresholds=1, verbose=0, **kwd):
         if tune_size > 0:
             X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=tune_size)
             try:

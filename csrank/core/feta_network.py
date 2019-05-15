@@ -51,7 +51,7 @@ class FETANetwork(Learner):
                                activation=self.activation, **self.kwargs)
         self._pairwise_model = None
         self.model = None
-        self.zero_order_model = None
+        self._zero_order_model = None
 
     @property
     def n_objects(self):
@@ -81,15 +81,20 @@ class FETANetwork(Learner):
         if self._use_zeroth_model:
             self.output_node_zeroth = Dense(1, activation="sigmoid", kernel_regularizer=self.kernel_regularizer)
 
-    def _create_zeroth_order_model(self):
-        inp = Input(shape=(self.n_object_features,))
+    @property
+    def zero_order_model(self):
+        if self._zero_order_model is None and self._use_zeroth_model:
+            self.logger.info('Creating zeroth model')
+            inp = Input(shape=(self.n_object_features,))
 
-        x = inp
-        for hidden in self.hidden_layers_zeroth:
-            x = hidden(x)
-        zeroth_output = self.output_node_zeroth(x)
+            x = inp
+            for hidden in self.hidden_layers_zeroth:
+                x = hidden(x)
+            zeroth_output = self.output_node_zeroth(x)
 
-        return Model(inputs=[inp], outputs=zeroth_output)
+            self._zero_order_model = Model(inputs=[inp], outputs=zeroth_output)
+            self.logger.info('Done creating zeroth model')
+        return self._zero_order_model
 
     @property
     def pairwise_model(self):
@@ -203,9 +208,6 @@ class FETANetwork(Learner):
         scores = self.construct_model()
         self.model = Model(inputs=self.input_layer, outputs=scores)
 
-        if self._use_zeroth_model:
-            self.zero_order_model = self._create_zeroth_order_model()
-
         self.logger.debug('Compiling complete model...')
         self.model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
         self.logger.debug('Starting gradient descent...')
@@ -263,6 +265,7 @@ class FETANetwork(Learner):
             K.set_session(sess)
 
             self._pairwise_model = None
+            self._zero_order_model = None
             self.optimizer = self.optimizer.from_config(self._optimizer_config)
             self._construct_layers(kernel_regularizer=self.kernel_regularizer,
                                    kernel_initializer=self.kernel_initializer,

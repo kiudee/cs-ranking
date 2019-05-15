@@ -187,7 +187,6 @@ class ParameterOptimizer(Learner):
                 yield X[train_idx], Y[train_idx], X[test_idx], Y[test_idx]
 
         def splitter_dict(itr_dict):
-
             n_splits = len(list(itr_dict.values())[0])
             for i in range(n_splits):
                 X_train = dict()
@@ -204,14 +203,12 @@ class ParameterOptimizer(Learner):
                 yield X_train, Y_train, X_test, Y_test
 
         if cv_iter is None:
-            cv_iter = ShuffleSplit(n_splits=3, test_size=0.1,
-                                   random_state=self.random_state)
+            cv_iter = ShuffleSplit(n_splits=3, test_size=0.1, random_state=self.random_state)
         if isinstance(X, dict):
             splits = dict()
             for n_obj, arr in X.items():
                 if arr.shape[0] == 1:
-                    splits[n_obj] = [([0], [0]) for i in
-                                     range(cv_iter.n_splits)]
+                    splits[n_obj] = [([0], [0]) for i in range(cv_iter.n_splits)]
                 else:
                     splits[n_obj] = list(cv_iter.split(arr))
         else:
@@ -254,8 +251,7 @@ class ParameterOptimizer(Learner):
                 results = []
                 running_times = []
                 if isinstance(X, dict):
-                    for X_train, Y_train, X_test, Y_test in splitter_dict(
-                            splits):
+                    for X_train, Y_train, X_test, Y_test in splitter_dict(splits):
                         result, time_taken = self._fit_ranker(
                             X_train, Y_train,
                             X_test, Y_test, next_point)
