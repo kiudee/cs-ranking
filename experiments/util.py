@@ -105,7 +105,8 @@ datasets = {SYNTHETIC_OR: ObjectRankingDatasetGenerator, DEPTH: DepthDatasetRead
             LETOR_DC: LetorRankingDiscreteChoiceDatasetReader, SYNTHETIC_DC: DiscreteChoiceDatasetGenerator,
             MNIST_DC: MNISTDiscreteChoiceDatasetReader, TAG_GENOME_DC: TagGenomeDiscreteChoiceDatasetReader,
             SUSHI_DC: SushiDiscreteChoiceDatasetReader, SYNTHETIC_CHOICE: ChoiceDatasetGenerator,
-            MNIST_CHOICE: MNISTChoiceDatasetReader, LETOR_CHOICE: LetorRankingChoiceDatasetReader}
+            MNIST_CHOICE: MNISTChoiceDatasetReader, LETOR_CHOICE: LetorRankingChoiceDatasetReader,
+            EXP_CHOICE: ExpediaChoiceDatasetReader, EXP_DC : ExpediaDiscreteChoiceDatasetReader}
 learners = {FETA_RANKER: FETAObjectRanker, RANKNET: RankNet, CMPNET: CmpNet, ERR: ExpectedRankRegression,
             RANKSVM: RankSVM, FATE_RANKER: FATEObjectRanker, LISTNET: ListNet, FETA_CHOICE: FETAChoiceFunction,
             FATE_CHOICE: FATEChoiceFunction, GLM_CHOICE: GeneralizedLinearModel, RANKNET_CHOICE: RankNetChoiceFunction,
@@ -154,14 +155,17 @@ metrics_on_predictions = [f1_measure, precision, recall, subset_01_loss, hamming
                           zero_one_rank_loss, zero_one_accuracy, make_ndcg_at_k_loss]
 
 
-def get_scores(object, batch_size, X_test, logger):
+def get_scores(object, batch_size, X_test, Y_test, logger):
     s_pred = None
     while s_pred is None:
         try:
             if batch_size == 0:
                 break
             logger.info("Batch_size {}".format(batch_size))
-            s_pred = object.predict_scores(X_test, batch_size=batch_size)
+            if isinstance(object, AllPositive):
+                s_pred = object.predict_scores(X_test, Y_test)
+            else:
+                s_pred = object.predict_scores(X_test, batch_size=batch_size)
         except:
             logger.error("Unexpected Error {}".format(sys.exc_info()[0]))
             s_pred = None

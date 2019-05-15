@@ -7,11 +7,14 @@ HYPER_VOLUME = "hyper_volume"
 MNIST_CHOICE = "mnist_choice"
 MNIST_DC = "mnist_dc"
 LETOR_CHOICE = "letor_choice"
+EXP_CHOICE = "exp_choice"
+
 DEPTH = 'depth'
 SENTENCE_ORDERING = "sentence_ordering"
 LETOR_OR = "letor_or"
 LETOR_DC = "letor_dc"
 SUSHI_DC = "sushi_dc"
+EXP_DC = "exp_dc"
 
 RANKSVM = 'ranksvm'
 ERR = 'err'
