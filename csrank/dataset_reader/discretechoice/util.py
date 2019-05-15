@@ -42,7 +42,7 @@ def sub_sampling_discrete_choices_from_relevance(Xt, Yt, n_objects=5):
             if len(zeros) > n_objects - 1:
                 idys = np.array([rs.choice(zeros, size=(n_objects - 1), replace=False) for i in range(len(idx))])
             else:
-                idys = np.array([rs.choice(zeros, size=(n_objects - 1), replace=True) for i in range(len(idx))])
+                idys = rs.choice(zeros, size=(len(idx), (n_objects - 1)), replace=True)
             idx = np.append(idys, idx[:, None], axis=1)
             for i in idx:
                 np.random.shuffle(i)
