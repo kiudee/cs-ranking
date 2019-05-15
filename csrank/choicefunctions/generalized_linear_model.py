@@ -73,7 +73,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
             self.Yt = theano.shared(Y)
             shapes = {'weights': self.n_object_features}
             # shapes = {'weights': (self.n_object_features, 3)}
-            weights_dict = create_weight_dictionary(self.model_args, shapes)
+            weights_dict = create_weight_dictionary(self.default_configuration, shapes)
             intercept = pm.Normal('intercept', mu=0, sd=10)
             utility = tt.dot(self.Xt, weights_dict['weights']) + intercept
             self.p = ttu.sigmoid(utility)
@@ -156,10 +156,6 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
 
     def predict_for_scores(self, scores, **kwargs):
         return ChoiceFunctions.predict_for_scores(self, scores, **kwargs)
-
-    def clear_memory(self, **kwargs):
-        self.logger.info("Clearing memory")
-        pass
 
     def set_tunable_parameters(self, regularization="l1", **point):
 

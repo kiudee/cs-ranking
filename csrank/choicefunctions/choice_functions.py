@@ -4,6 +4,7 @@ import numpy as np
 
 from csrank.constants import CHOICE_FUNCTION
 from csrank.metrics_np import f1_measure
+from csrank.util import progress_bar
 
 __all__ = ['ChoiceFunctions']
 
@@ -48,12 +49,16 @@ class ChoiceFunctions(metaclass=ABCMeta):
         probabilities = np.unique(scores)[::thin_thresholds]
         threshold = 0.0
         best = f1_measure(Y_val, scores > threshold)
-        for i, p in enumerate(probabilities):
-            pred = scores > p
-            f1 = f1_measure(Y_val, pred)
-            if f1 > best:
-                threshold = p
-                best = f1
+        try:
+            for i, p in enumerate(probabilities):
+                pred = scores > p
+                f1 = f1_measure(Y_val, pred)
+                if f1 > best:
+                    threshold = p
+                    best = f1
+                progress_bar(i, len(probabilities), status='Tuning threshold')
+        except KeyboardInterrupt:
+            self.logger.info("Keyboard interrupted")
         self.logger.info('Tuned threshold, obtained {:.2f} which achieved'
                          ' a micro F1-measure of {:.2f}'.format(threshold, best))
         return threshold
