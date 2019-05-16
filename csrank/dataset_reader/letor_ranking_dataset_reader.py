@@ -90,6 +90,7 @@ class LetorRankingDatasetReader(DatasetReader, metaclass=ABCMeta):
             if self.exclude_qf:
                 self.X = self.X[:, :, self.query_document_feature_indices]
             self.Y = np.array(file["score_{}".format(ranking_length)])
+            self.Y[self.Y == 2] = 1
             self.__check_dataset_validity__()
             X[ranking_length], Y[ranking_length] = self.X, self.Y
         file.close()
@@ -194,6 +195,4 @@ class LetorRankingDatasetReader(DatasetReader, metaclass=ABCMeta):
 
     def get_single_train_test_split(self):
         X_train, Y_train = self.sub_sampling_from_dictionary(train_test="train")
-        X_test, Y_test = self.sub_sampling_from_dictionary(train_test="test")
-        # X_train, X_test = standardize_features(X_train, X_test)
-        return X_train, Y_train, X_test, Y_test
+        return X_train, Y_train, self.X_test, self.Y_test

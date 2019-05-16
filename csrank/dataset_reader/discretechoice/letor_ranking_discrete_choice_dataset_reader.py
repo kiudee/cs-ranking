@@ -3,6 +3,7 @@ import logging
 from sklearn.utils import check_random_state
 
 from csrank.constants import DISCRETE_CHOICE
+from csrank.dataset_reader.util import standardize_features
 from .util import sub_sampling_discrete_choices_from_relevance
 from ..letor_ranking_dataset_reader import LetorRankingDatasetReader
 
@@ -23,3 +24,9 @@ class LetorRankingDiscreteChoiceDatasetReader(LetorRankingDatasetReader):
 
     def get_train_test_datasets(self, n_datasets):
         pass
+
+    def get_single_train_test_split(self):
+        X_train, Y_train = self.sub_sampling_from_dictionary(train_test="train")
+        X_test, Y_test = self.sub_sampling_from_dictionary(train_test="test")
+        X_train, X_test = standardize_features(X_train, X_test)
+        return X_train, Y_train, X_test, Y_test

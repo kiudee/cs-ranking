@@ -74,6 +74,7 @@ class RankNetDiscreteChoiceFunction(RankNetCore, DiscreteObjectChooser):
             x1 = x1[indices, :]
             x2 = x2[indices, :]
             y_single = y_single[indices]
+            self.logger.debug('Finished the Dataset instances {}'.format(x1.shape[0]))
         self.logger.debug('Finished the Dataset instances {}'.format(x1.shape[0]))
         return x1, x2, y_single
 
