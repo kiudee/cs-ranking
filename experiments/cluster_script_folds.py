@@ -141,7 +141,12 @@ if __name__ == "__main__":
                 else:
                     current_job_id = job_id
                 logger.info('current job id {}'.format(current_job_id))
-                batch_size = X_test.shape[0]
+                if isinstance(X_test, dict):
+                    batch_size = 10000
+                else:
+                    size = sys.getsizeof(X_test)
+                    batch_size = X_test.shape[0]
+                    logger.info("Test dataset size {}".format(size))
                 s_pred, y_pred = get_scores(optimizer_model.model, batch_size, X_test, Y_test, logger)
                 if fold_id == 0:
                     if isinstance(s_pred, dict):
