@@ -82,7 +82,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
 
     def fit(self, X, Y, sampler='vi', tune_size=0.1, thin_thresholds=1, **kwargs):
         if tune_size > 0:
-            X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=tune_size)
+            X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=tune_size, random_state=self.random_state)
             try:
                 self._fit(X_train, Y_train, sampler=sampler, **kwargs)
             finally:
@@ -107,10 +107,10 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
                 callbacks[i] = pm.callbacks.CheckParametersConvergence(**params)
         if sampler == 'vi':
             random_seed = kwargs['random_seed']
+            print(kwargs['random_seed'])
             with self.model:
                 sample_params = kwargs['sample_params']
                 vi_params = kwargs['vi_params']
-                vi_params['random_seed'] = sample_params['random_seed'] = random_seed
                 draws_ = kwargs['draws']
                 try:
                     self.trace = pm.sample(**sample_params)

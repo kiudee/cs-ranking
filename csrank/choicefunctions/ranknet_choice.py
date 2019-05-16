@@ -4,7 +4,7 @@ from keras.optimizers import SGD
 from keras.regularizers import l2
 from sklearn.model_selection import train_test_split
 
-from csrank.choicefunctions.util import generate_complete_pairwise_dataset
+from .util import generate_complete_pairwise_dataset
 from csrank.core.ranknet_core import RankNetCore
 from .choice_functions import ChoiceFunctions
 
@@ -79,13 +79,14 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
             x1 = x1[indices, :]
             x2 = x2[indices, :]
             y_single = y_single[indices]
+            self.logger.debug("Sampling instances")
         self.logger.debug('Finished the Dataset instances {}'.format(x1.shape[0]))
         return x1, x2, y_single
 
     def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, tune_size=0.1, thin_thresholds=1, verbose=0,
             **kwd):
         if tune_size > 0:
-            X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=tune_size)
+            X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=tune_size, random_state=self.random_state)
             try:
                 super().fit(X_train, Y_train, epochs, callbacks,
                             validation_split, verbose, **kwd)

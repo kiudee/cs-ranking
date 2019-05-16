@@ -124,7 +124,7 @@ if __name__ == "__main__":
             optimizer_model = ParameterOptimizer(**hp_params)
             optimizer_model.fit(X_train, Y_train, **hp_fit_params)
             if isinstance(X_test, dict):
-                batch_size = 1000
+                batch_size = 10000
             else:
                 size = sys.getsizeof(X_test)
                 batch_size = X_test.shape[0]

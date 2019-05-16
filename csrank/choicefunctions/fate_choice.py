@@ -94,7 +94,7 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
 
     def fit(self, X, Y, tune_size=0.1, thin_thresholds=1, **kwargs):
         if tune_size > 0:
-            X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=tune_size)
+            X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=tune_size, random_state=self.random_state)
             try:
                 super().fit(X_train, Y_train, **kwargs)
             finally:
