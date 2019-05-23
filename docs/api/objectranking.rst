@@ -1,6 +1,6 @@
-**************************
+**************
 Object Ranking
-**************************
+**************
 
 .. currentmodule:: csrank.objectranking
 .. autosummary::
