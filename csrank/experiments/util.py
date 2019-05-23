@@ -3,8 +3,8 @@ import sys
 import pymc3 as pm
 
 from csrank.dataset_reader import *
-from csrank.objectranking import*
-from csrank.choicefunctions import*
+from csrank.objectranking import *
+from csrank.choicefunctions import *
 from csrank.callbacks import EarlyStoppingWithWeights, LRScheduler, DebugOutput
 from csrank.constants import *
 from csrank.experiments.constants import *
@@ -30,7 +30,8 @@ learners = {FETA_RANKER: FETAObjectRanker, RANKNET: RankNet, CMPNET: CmpNet, ERR
             FATE_CHOICE: FATEChoiceFunction, GLM_CHOICE: GeneralizedLinearModel, RANKNET_CHOICE: RankNetChoiceFunction,
             CMPNET_CHOICE: CmpNetChoiceFunction, RANKSVM_CHOICE: PairwiseSVMChoiceFunction, RANDOM_CHOICE: AllPositive}
 try:
-    from csrank.discretechoice import*
+    from csrank.discretechoice import *
+
     dcm_learners = {FETA_DC: FETADiscreteChoiceFunction, FATE_DC: FATEDiscreteChoiceFunction,
                     RANKNET_DC: RankNetDiscreteChoiceFunction, CMPNET_DC: CmpNetDiscreteChoiceFunction,
                     MNL: MultinomialLogitModel, NLM: NestedLogitModel, GEV: GeneralizedNestedLogitModel,

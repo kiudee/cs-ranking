@@ -54,7 +54,7 @@ class ExpectedRankRegression(ObjectRanker, Learner):
         self.alpha = alpha
         self.l1_ratio = l1_ratio
         self.tol = tol
-        self.logger = logging.getLogger('ERR')
+        self.logger = logging.getLogger(ExpectedRankRegression.__name__)
         self.fit_intercept = fit_intercept
         self.random_state = check_random_state(random_state)
         self.weights = None
@@ -103,9 +103,6 @@ class ExpectedRankRegression(ObjectRanker, Learner):
 
     def predict(self, X, **kwargs):
         return super().predict(X, **kwargs)
-
-    def clear_memory(self, **kwargs):
-        pass
 
     def set_tunable_parameters(self, alpha=0.0, l1_ratio=0.5, tol=1e-4, **point):
         self.tol = tol

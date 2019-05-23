@@ -2,9 +2,9 @@ import logging
 
 from sklearn.model_selection import train_test_split
 
-from .util import generate_complete_pairwise_dataset
 from csrank.core.pairwise_svm import PairwiseSVM
 from .choice_functions import ChoiceFunctions
+from .util import generate_complete_pairwise_dataset
 
 
 class PairwiseSVMChoiceFunction(PairwiseSVM, ChoiceFunctions):

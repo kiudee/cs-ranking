@@ -17,9 +17,10 @@ from csrank.util import print_dictionary
 class ExpediaDatasetReader(DatasetReader, metaclass=ABCMeta):
     def __init__(self, fold_id=0, **kwargs):
         super(ExpediaDatasetReader, self).__init__(dataset_folder='expedia', **kwargs)
-        self.DATASET_FOLDER = os.path.join(self.dirname, 'train.csv')
+        self.RAW_DATASET_FILE = os.path.join(self.dirname, 'train.csv')
         self.logger = logging.getLogger(ExpediaDatasetReader.__name__)
         self.fold_id = fold_id
+        self.X_train = self.Y_train = self.X_test = self.Y_test = dict()
 
     def __load_dataset__(self):
         if not os.path.isfile(self.hdf5file_path):
@@ -79,7 +80,7 @@ class ExpediaDatasetReader(DatasetReader, metaclass=ABCMeta):
         return result, frequencies
 
     def _filter_dataset(self):
-        train = pd.read_csv(self.DATASET_FOLDER)
+        train = pd.read_csv(self.RAW_DATASET_FILE)
         for col in train.columns.values:
             if "id" in col and col != "srch_id":
                 del train[col]
