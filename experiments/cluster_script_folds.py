@@ -35,9 +35,6 @@ from csrank.metrics_np import topk_categorical_accuracy_np
 from csrank.tensorflow_util import configure_numpy_keras, get_mean_loss_for_dictionary
 from csrank.util import create_dir_recursively, duration_till_now, seconds_to_time, \
     print_dictionary, get_duration_seconds, setup_logging
-from experiments.dbconnection import DBConnector
-from experiments.util import get_dataset_reader, log_test_train_data, metrics_on_predictions, lp_metric_dict, \
-    create_optimizer_parameters, get_scores
 
 DIR_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 LOGS_FOLDER = 'logs'
@@ -116,8 +113,7 @@ if __name__ == "__main__":
             time_taken = duration_till_now(start)
             logger.info("Time Taken till now: {}  milliseconds".format(seconds_to_time(time_taken)))
             time_eout_eval = get_duration_seconds('10H')
-            logger.info(
-                "Time spared for the out of sample evaluation : {} ".format(seconds_to_time(time_eout_eval)))
+            logger.info("Time spared for the out of sample evaluation : {} ".format(seconds_to_time(time_eout_eval)))
 
             total_duration = duration - time_taken - time_eout_eval
             hp_fit_params['n_iter'] = hp_iters
