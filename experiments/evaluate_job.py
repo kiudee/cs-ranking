@@ -31,14 +31,11 @@ from docopt import docopt
 from sklearn.model_selection import ShuffleSplit
 
 from csrank import *
+from csrank.experiments.constants import *
 from csrank.metrics import make_ndcg_at_k_loss
 from csrank.tensorflow_util import configure_numpy_keras, get_mean_loss_for_dictionary, get_loss_for_array
 from csrank.util import create_dir_recursively, duration_till_now, seconds_to_time, \
-    print_dictionary, get_duration_seconds, setup_logging
-from experiments.constants import *
-from experiments.dbconnection import DBConnector
-from experiments.util import get_dataset_reader, log_test_train_data, metrics_on_predictions, lp_metric_dict, \
-    create_optimizer_parameters, get_scores
+    print_dictionary, get_duration_seconds, setup_logging, rename_file_if_exist
 
 DIR_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 LOGS_FOLDER = 'logs'
@@ -87,6 +84,7 @@ if __name__ == "__main__":
             random_state = np.random.RandomState(seed=seed + fold_id)
 
             log_path = os.path.join(DIR_PATH, LOGS_FOLDER, "{}.log".format(hash_value))
+            log_path = rename_file_if_exist(log_path)
             optimizer_path = os.path.join(DIR_PATH, OPTIMIZER_FOLDER, "{}".format(hash_value))
             create_dir_recursively(log_path, True)
             create_dir_recursively(optimizer_path, True)
@@ -137,7 +135,7 @@ if __name__ == "__main__":
                 batch_size = X_test.shape[0]
                 logger.info("Test dataset size {}".format(size))
 
-            s_pred, y_pred = get_scores(optimizer_model, batch_size)
+            s_pred, y_pred = get_scores(optimizer_model.model, batch_size, X_test, Y_test, logger)
             if isinstance(s_pred, dict):
                 pred_file = os.path.join(DIR_PATH, PREDICTIONS_FOLDER, "{}.pkl".format(hash_value))
                 create_dir_recursively(pred_file, True)

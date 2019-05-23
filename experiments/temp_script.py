@@ -1,8 +1,8 @@
 import inspect
 import os
 
+from csrank.experiments.dbconnection import DBConnector
 from csrank.util import setup_logging
-from experiments.dbconnection import DBConnector
 
 if __name__ == '__main__':
     LOGS_FOLDER = 'logs'
