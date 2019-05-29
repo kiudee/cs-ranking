@@ -19,7 +19,7 @@ from .choice_functions import ChoiceFunctions
 class GeneralizedLinearModel(ChoiceFunctions, Learner):
     def __init__(self, n_object_features, regularization='l2', random_state=None, **kwargs):
         """
-            Create an instance of the PairwiseSVM model.
+            Create an instance of the GeneralizedLinearModel model.
 
             Parameters
             ----------
@@ -34,10 +34,8 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
 
             References
             ----------
-            .. [1] Theodoros Evgeniou, Massimiliano Pontil, and Olivier Toubia. „A convex optimization approach to modeling consumer heterogeneity in conjoint estimation“.
-                   In: Marketing Science 26.6 (2007), pp. 805–818 (cit. on p. 18)
-               [2] Sebastián Maldonado, Ricardo Montoya, and Richard Weber. „Advanced conjoint analysis using feature selection via support vector machines“.
-                   In: European Journal of Operational Research 241.2 (2015), pp. 564 –574 (cit. on pp. 19, 20).
+            .. [1] Kenneth E Train. „Discrete choice methods with simulation“.
+               In: Cambridge university press, 2009. Chap.Logit, pp. 41–86.
         """
         self.logger = logging.getLogger(GeneralizedLinearModel.__name__)
         self.n_object_features = n_object_features
@@ -106,8 +104,6 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
                 params['diff'] = 'absolute'
                 callbacks[i] = pm.callbacks.CheckParametersConvergence(**params)
         if sampler == 'vi':
-            random_seed = kwargs['random_seed']
-            print(kwargs['random_seed'])
             with self.model:
                 sample_params = kwargs['sample_params']
                 vi_params = kwargs['vi_params']
@@ -158,7 +154,6 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
         return ChoiceFunctions.predict_for_scores(self, scores, **kwargs)
 
     def set_tunable_parameters(self, regularization="l1", **point):
-
         self.regularization = regularization
         self.model = None
         self.trace = None

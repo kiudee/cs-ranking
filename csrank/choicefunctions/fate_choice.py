@@ -28,6 +28,11 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
                 \\mu_{C(x)} = \\frac{1}{|C(x)|} \\sum_{y \\in C(x)} \\phi(y)
 
 
+            The choice set is defined as:
+
+            .. math::
+
+                c(Q) = \{ x_i \in Q \lvert \, U (x, \\mu_{C(x)}) > t \}
 
 
             Parameters

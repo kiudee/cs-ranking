@@ -22,7 +22,8 @@ then
 fi
 
 
-conda install --yes numpy scipy joblib pytest pytest-cov coverage tensorflow scikit-learn pandas h5py seaborn
+conda install --yes numpy scipy joblib pytest pytest-cov coverage tensorflow scikit-learn pandas h5py seaborn mkl-service
+pip install sphinx sphinx-autobuild nbsphinx pandoc ipykernel bottleneck sphinx_rtd_theme notebook sphinxcontrib-bibtex
 pip install -r requirements.txt
 
 python setup.py build_ext --inplace
