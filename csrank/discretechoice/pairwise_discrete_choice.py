@@ -27,12 +27,11 @@ class PairwiseSVMDiscreteChoiceFunction(PairwiseSVM, DiscreteObjectChooser):
         **kwargs
             Keyword arguments for the algorithms
 
-        References
-        ----------
-        .. [1] Theodoros Evgeniou, Massimiliano Pontil, and Olivier Toubia. „A convex optimization approach to modeling consumer heterogeneity in conjoint estimation“.
-               In: Marketing Science 26.6 (2007), pp. 805–818 (cit. on p. 18)
-           [2] Sebastián Maldonado, Ricardo Montoya, and Richard Weber. „Advanced conjoint analysis using feature selection via support vector machines“.
-               In: European Journal of Operational Research 241.2 (2015), pp. 564 –574 (cit. on pp. 19, 20).
+         References
+            ----------
+            .. [1] Theodoros Evgeniou, Massimiliano Pontil, and Olivier Toubia. „A convex optimization approach to modeling consumer heterogeneity in conjoint estimation“. In: Marketing Science 26.6 (2007), pp. 805–818.
+
+            .. [2] Sebastián Maldonado, Ricardo Montoya, and Richard Weber. „Advanced conjoint analysis using feature selection via support vector machines“. In: European Journal of Operational Research 241.2 (2015), pp. 564 –574.
         """
         super().__init__(n_object_features=n_object_features, C=C, tol=tol, normalize=normalize,
                          fit_intercept=fit_intercept,
@@ -40,7 +39,7 @@ class PairwiseSVMDiscreteChoiceFunction(PairwiseSVM, DiscreteObjectChooser):
         self.logger = logging.getLogger(PairwiseSVMDiscreteChoiceFunction.__name__)
         self.logger.info("Initializing network with object features {}".format(self.n_object_features))
 
-    def convert_instances(self, X, Y):
+    def _convert_instances(self, X, Y):
         self.logger.debug('Creating the Dataset')
         garbage, garbage, x_train, garbage, y_single = generate_complete_pairwise_dataset(X, Y)
         del garbage

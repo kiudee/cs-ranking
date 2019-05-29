@@ -12,9 +12,6 @@ tqdm>=4.11.2
 keras>=2.1.5
 pymc3>=3.3
 theano>=1.0
-sphinx>=1.4
-ipykernel
-nbsphinx
 # Pick either CPU or GPU version of tensorflow:
 tensorflow>=1.5
 # tensorflow-gpu>=1.0.1

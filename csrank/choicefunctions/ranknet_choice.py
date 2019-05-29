@@ -15,13 +15,15 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
                  activation='relu', optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9), metrics=['binary_accuracy'],
                  batch_size=256, random_state=None, **kwargs):
         """
-            Create an instance of the RankNet architecture.
+            Create an instance of the RankNetChoiceFunction architecture.
             RankNet breaks the preferences into pairwise comparisons and learns a latent utility model for the objects.
-            This network learns a latent utility score for each object in the given choice set :math:`Q = \{\vec{x}_1, \ldots , \vec{x}_n\}`
-            :math:`U(\vec{x}_i) = F(\vec{x}_i, \vec{\beta}) \enspace,'
-            where the weight vector `\vec{\beta}` is estimated using pairwise preferences generated from the choices.
-            For Example, the decision maker is faced with choice set :math:`Q = \{ \vec{x_1}, \ldots ,\vec{x_5} \}$ and chooses the object $\vec{x_4}'
-            Then one can extract the following _pairwise preferences_, :math:`\vec{x_4} \succ \vec{x_1}, \vec{x_4} \succ \vec{x_2}, \ldots'.
+            This network learns a latent utility score for each object in the given choice set
+            :math:`Q = \{x_1, \ldots ,x_n\}` using the equation
+            :math:`U(x_i) = F(x_i, w)` where the weight vector :math:`w` is estimated using
+            *pairwise preferences* generated from the choices. For Example, the decision maker is faced with choice set
+            :math:`Q = \{x_1, \ldots ,x_5 \}` and chooses the object :math:`x_4`. Then one can extract the following
+            *pairwise preferences* :math:`x_4 \succ x_1, x_4 \succ x_2, \ldots`.
+
             Parameters
             ----------
             n_object_features : int

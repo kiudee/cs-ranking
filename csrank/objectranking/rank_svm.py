@@ -32,8 +32,7 @@ class RankSVM(ObjectRanker, PairwiseSVM):
 
         References
         ----------
-        .. [1] Joachims, T. (2002, July).
-               "Optimizing search engines using clickthrough data.",
+        .. [1] Joachims, T. (2002, July). "Optimizing search engines using clickthrough data.",
                Proceedings of the eighth ACM SIGKDD international conference on
                Knowledge discovery and data mining (pp. 133-142). ACM.
         """
@@ -46,7 +45,7 @@ class RankSVM(ObjectRanker, PairwiseSVM):
     def fit(self, X, Y, **kwargs):
         super().fit(X, Y, **kwargs)
 
-    def convert_instances(self, X, Y):
+    def _convert_instances(self, X, Y):
         self.logger.debug('Creating the Dataset')
         x_train, garbage, garbage, garbage, y_single = generate_complete_pairwise_dataset(X, Y)
         del garbage
