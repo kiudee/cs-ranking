@@ -61,6 +61,7 @@ class CmpNetChoiceFunction(CmpNetCore, ChoiceFunctions):
             References
             ----------
                 [1] Leonardo Rigutini, Tiziano Papini, Marco Maggini, and Franco Scarselli. 2011. SortNet: Learning to Rank by a Neural Preference Function. IEEE Trans. Neural Networks 22, 9 (2011), 1368–1380. https://doi.org/10.1109/TNN.2011.2160875
+
         """
         super().__init__(n_object_features=n_object_features, n_hidden=n_hidden, n_units=n_units,
                          loss_function=loss_function, batch_normalization=batch_normalization,

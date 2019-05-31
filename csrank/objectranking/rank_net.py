@@ -51,7 +51,9 @@ class RankNet(RankNetCore, ObjectRanker):
             References
             ----------
                 [1] Burges, C. et al. (2005, August). "Learning to rank using gradient descent.", In Proceedings of the 22nd international conference on Machine learning (pp. 89-96). ACM.
+                
                 [2] Burges, C. J. (2010). "From ranknet to lambdarank to lambdamart: An overview.", Learning, 11(23-581).
+
         """
         super().__init__(n_object_features=n_object_features, n_hidden=n_hidden, n_units=n_units,
                          loss_function=loss_function, batch_normalization=batch_normalization,

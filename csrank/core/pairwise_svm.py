@@ -60,6 +60,7 @@ class PairwiseSVM(Learner):
                 Preferences in form of Orderings or Choices for given n_objects
             **kwargs
                 Keyword arguments for the fit function
+
         """
         x_train, y_single = self._convert_instances(X, Y)
         if x_train.shape[0] > self.threshold_instances:
