@@ -38,6 +38,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.githubpages',
               'sphinx.ext.autosummary',
               'nbsphinx',
+              'sphinxcontrib.bibtex',
               'IPython.sphinxext.ipython_console_highlighting']
 
 # Add any paths that contain templates here, relative to this directory.
@@ -136,7 +137,12 @@ latex_elements = {
     #
     # 'figure_align': 'htbp',
 }
-
+latex_preamble =[
+    ('\\usepackage{amssymb}',
+     '\\usepackage{amsmath}',
+     '\\usepackage{amsxtra}',
+     '\\usepackage{bm}'),
+]
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).

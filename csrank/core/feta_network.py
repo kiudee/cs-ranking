@@ -51,7 +51,7 @@ class FETANetwork(Learner):
                                activation=self.activation, **self.kwargs)
         self._pairwise_model = None
         self.model = None
-        self.zero_order_model = None
+        self._zero_order_model = None
 
     @property
     def n_objects(self):
@@ -81,15 +81,20 @@ class FETANetwork(Learner):
         if self._use_zeroth_model:
             self.output_node_zeroth = Dense(1, activation="sigmoid", kernel_regularizer=self.kernel_regularizer)
 
-    def _create_zeroth_order_model(self):
-        inp = Input(shape=(self.n_object_features,))
+    @property
+    def zero_order_model(self):
+        if self._zero_order_model is None and self._use_zeroth_model:
+            self.logger.info('Creating zeroth model')
+            inp = Input(shape=(self.n_object_features,))
 
-        x = inp
-        for hidden in self.hidden_layers_zeroth:
-            x = hidden(x)
-        zeroth_output = self.output_node_zeroth(x)
+            x = inp
+            for hidden in self.hidden_layers_zeroth:
+                x = hidden(x)
+            zeroth_output = self.output_node_zeroth(x)
 
-        return Model(inputs=[inp], outputs=zeroth_output)
+            self._zero_order_model = Model(inputs=[inp], outputs=zeroth_output)
+            self.logger.info('Done creating zeroth model')
+        return self._zero_order_model
 
     @property
     def pairwise_model(self):
@@ -140,8 +145,6 @@ class FETANetwork(Learner):
             scores[n] += result.reshape(n_objects, n_objects - 1).mean(axis=1)
             scores[n] = 1. / (1. + np.exp(-scores[n]))
             del result
-            if n % int(n_instances / 2) == 0 and n != 0:
-                self.logger.info("Predict using pairs instances done: {}".format(n))
         del pairs
         return scores
 
@@ -197,14 +200,35 @@ class FETANetwork(Learner):
         return scores
 
     def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
+        """
+            Fit a generic preference learning model on a provided set of queries.
+            The provided queries can be of a fixed size (numpy arrays).
+
+            Parameters
+            ----------
+            X : numpy array
+                (n_instances, n_objects, n_features)
+                Feature vectors of the objects
+            Y : numpy array
+                (n_instances, n_objects)
+                Preferences in form of Orderings or Choices for given n_objects
+
+            epochs : int
+                Number of epochs to run if training for a fixed query size
+            callbacks : list
+                List of callbacks to be called during optimization
+            validation_split : float
+                Percentage of instances to split off to validate on
+            verbose : bool
+                Print verbose information
+            **kwd
+                Keyword arguments for the fit function
+        """
         self.logger.debug('Enter fit function...')
 
         X, Y = self.sub_sampling(X, Y)
         scores = self.construct_model()
         self.model = Model(inputs=self.input_layer, outputs=scores)
-
-        if self._use_zeroth_model:
-            self.zero_order_model = self._create_zeroth_order_model()
 
         self.logger.debug('Compiling complete model...')
         self.model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
@@ -263,6 +287,7 @@ class FETANetwork(Learner):
             K.set_session(sess)
 
             self._pairwise_model = None
+            self._zero_order_model = None
             self.optimizer = self.optimizer.from_config(self._optimizer_config)
             self._construct_layers(kernel_regularizer=self.kernel_regularizer,
                                    kernel_initializer=self.kernel_initializer,

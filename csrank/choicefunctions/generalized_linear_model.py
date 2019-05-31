@@ -19,7 +19,7 @@ from .choice_functions import ChoiceFunctions
 class GeneralizedLinearModel(ChoiceFunctions, Learner):
     def __init__(self, n_object_features, regularization='l2', random_state=None, **kwargs):
         """
-            Create an instance of the PairwiseSVM model.
+            Create an instance of the GeneralizedLinearModel model.
 
             Parameters
             ----------
@@ -34,10 +34,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
 
             References
             ----------
-            .. [1] Theodoros Evgeniou, Massimiliano Pontil, and Olivier Toubia. „A convex optimization approach to modeling consumer heterogeneity in conjoint estimation“.
-                   In: Marketing Science 26.6 (2007), pp. 805–818 (cit. on p. 18)
-               [2] Sebastián Maldonado, Ricardo Montoya, and Richard Weber. „Advanced conjoint analysis using feature selection via support vector machines“.
-                   In: European Journal of Operational Research 241.2 (2015), pp. 564 –574 (cit. on pp. 19, 20).
+                [1] Kenneth E Train. „Discrete choice methods with simulation“. In: Cambridge university press, 2009. Chap Logit, pp. 41–86.
         """
         self.logger = logging.getLogger(GeneralizedLinearModel.__name__)
         self.n_object_features = n_object_features
@@ -73,7 +70,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
             self.Yt = theano.shared(Y)
             shapes = {'weights': self.n_object_features}
             # shapes = {'weights': (self.n_object_features, 3)}
-            weights_dict = create_weight_dictionary(self.model_args, shapes)
+            weights_dict = create_weight_dictionary(self.default_configuration, shapes)
             intercept = pm.Normal('intercept', mu=0, sd=10)
             utility = tt.dot(self.Xt, weights_dict['weights']) + intercept
             self.p = ttu.sigmoid(utility)
@@ -82,7 +79,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
 
     def fit(self, X, Y, sampler='vi', tune_size=0.1, thin_thresholds=1, **kwargs):
         if tune_size > 0:
-            X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=tune_size)
+            X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=tune_size, random_state=self.random_state)
             try:
                 self._fit(X_train, Y_train, sampler=sampler, **kwargs)
             finally:
@@ -106,11 +103,9 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
                 params['diff'] = 'absolute'
                 callbacks[i] = pm.callbacks.CheckParametersConvergence(**params)
         if sampler == 'vi':
-            random_seed = kwargs['random_seed']
             with self.model:
                 sample_params = kwargs['sample_params']
                 vi_params = kwargs['vi_params']
-                vi_params['random_seed'] = sample_params['random_seed'] = random_seed
                 draws_ = kwargs['draws']
                 try:
                     self.trace = pm.sample(**sample_params)
@@ -157,12 +152,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
     def predict_for_scores(self, scores, **kwargs):
         return ChoiceFunctions.predict_for_scores(self, scores, **kwargs)
 
-    def clear_memory(self, **kwargs):
-        self.logger.info("Clearing memory")
-        pass
-
     def set_tunable_parameters(self, regularization="l1", **point):
-
         self.regularization = regularization
         self.model = None
         self.trace = None

@@ -28,6 +28,11 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
                 \\mu_{C(x)} = \\frac{1}{|C(x)|} \\sum_{y \\in C(x)} \\phi(y)
 
 
+            The choice set is defined as:
+
+            .. math::
+
+                c(Q) = \{ x_i \in Q \lvert \, U (x, \\mu_{C(x)}) > t \}
 
 
             Parameters
@@ -94,7 +99,7 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
 
     def fit(self, X, Y, tune_size=0.1, thin_thresholds=1, **kwargs):
         if tune_size > 0:
-            X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=tune_size)
+            X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=tune_size, random_state=self.random_state)
             try:
                 super().fit(X_train, Y_train, **kwargs)
             finally:

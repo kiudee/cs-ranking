@@ -146,7 +146,7 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
     def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, tune_size=0.1, thin_thresholds=1, verbose=0,
             **kwd):
         if tune_size > 0:
-            X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=tune_size)
+            X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=tune_size, random_state=self.random_state)
             try:
                 super().fit(X_train, Y_train, epochs, callbacks,
                             validation_split, verbose, **kwd)

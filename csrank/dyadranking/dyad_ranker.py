@@ -2,10 +2,10 @@ from abc import ABCMeta, abstractmethod
 
 from csrank.constants import DYAD_RANKING
 
-__all__ = ["ContextualRanker"]
+__all__ = ["DyadRanker"]
 
 
-class ContextualRanker(metaclass=ABCMeta):
+class DyadRanker(metaclass=ABCMeta):
     @property
     def learning_problem(self):
         return DYAD_RANKING
@@ -82,7 +82,7 @@ class ContextualRanker(metaclass=ABCMeta):
 
     @classmethod
     def __subclasshook__(cls, C):
-        if cls is ContextualRanker:
+        if cls is DyadRanker:
             has_fit = any("fit" in B.__dict__ for B in C.__mro__)
             has_predict = any("predict" in B.__dict__ for B in C.__mro__)
             has_scores = any("predict_scores" in B.__dict__ for B in C.__mro__)

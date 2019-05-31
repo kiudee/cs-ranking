@@ -59,7 +59,28 @@ class RankNetCore(Learner):
         assert len(self.hidden_layers) == self.n_hidden
 
     def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
+        """
+            Fit a generic preference learning model on a provided set of queries.
+            The provided queries can be of a fixed size (numpy arrays).
 
+            Parameters
+            ----------
+            X : numpy array
+                (n_instances, n_objects, n_features)
+                Feature vectors of the objects
+            Y : numpy array
+                (n_instances, n_objects)
+                Preferences in form of Orderings or Choices for given n_objects
+
+            epochs : int
+                Number of epochs to run if training for a fixed query size
+            callbacks : list
+                List of callbacks to be called during optimization
+            validation_split : float
+                Percentage of instances to split off to validate on
+            verbose : bool
+                Print verbose information
+        """
         X1, X2, Y_single = self._convert_instances(X, Y)
 
         self.logger.debug("Instances created {}".format(X1.shape[0]))

@@ -9,11 +9,10 @@ from csrank.labelranking.label_ranker import LabelRanker
 from csrank.labelranking.placketluce_model import get_pl_parameters_for_rankings
 from csrank.learner import Learner
 from csrank.numpy_util import scores_to_rankings, ranking_ordering_conversion
-from csrank.tunable import Tunable
 from csrank.util import print_dictionary
 
 
-class InstanceBasedLabelRanker(LabelRanker, Learner, Tunable):
+class InstanceBasedLabelRanker(LabelRanker, Learner):
     def __init__(self, n_features, neighbours=20, algorithm="ball_tree", normalize=True, random_state=None, **kwargs):
         self.normalize = normalize
         self.n_features = n_features

@@ -1,6 +1,6 @@
-*****************************
+****************
 Choice Functions
-*****************************
+****************
 
 .. currentmodule:: csrank.choicefunctions
 .. autosummary::

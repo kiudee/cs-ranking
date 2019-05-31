@@ -4,8 +4,8 @@ import os
 
 import pandas as pd
 
+from csrank.experiments.dbconnection import DBConnector
 from csrank.util import setup_logging
-from experiments.dbconnection import DBConnector
 
 if __name__ == '__main__':
     DIR_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))

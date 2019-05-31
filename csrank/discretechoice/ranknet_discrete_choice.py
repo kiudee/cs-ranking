@@ -14,9 +14,14 @@ class RankNetDiscreteChoiceFunction(RankNetCore, DiscreteObjectChooser):
                  activation='relu', optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9), metrics=['binary_accuracy'],
                  batch_size=256, random_state=None, **kwargs):
         """
-            Create an instance of the RankNet architecture.
-            RankNet breaks the preferences into pairwise comparisons using the discrete choice
-            and learns a latent utility model for the objects.
+            Create an instance of the :class:`csrank.core.cmpnet_core.RankNetCore` architecture for learning a discrete choice function.
+            It breaks the preferences into pairwise comparisons and learns a latent utility model for the objects.
+            This network learns a latent utility score for each object in the given choice set
+            :math:`Q = \{x_1, \ldots ,x_n\}` using the equation
+            :math:`U(x_i) = F(x_i, w)` where the weight vector :math:`w` is estimated using
+            *pairwise preferences* generated from the choices. For Example, the decision maker is faced with choice set
+            :math:`Q = \{x_1, \ldots ,x_5 \}` and chooses the object :math:`x_4`. Then one can extract the following
+            *pairwise preferences* :math:`x_4 \succ x_1, x_4 \succ x_2, \ldots`.
 
             Parameters
             ----------
@@ -49,13 +54,9 @@ class RankNetDiscreteChoiceFunction(RankNetCore, DiscreteObjectChooser):
 
             References
             ----------
+                [1] Burges, C. et al. (2005, August). "Learning to rank using gradient descent.", In Proceedings of the 22nd international conference on Machine learning (pp. 89-96). ACM.
 
-           .. [1] Burges, C. et al. (2005, August).
-                  "Learning to rank using gradient descent.",
-                  In Proceedings of the 22nd international conference on Machine learning (pp. 89-96). ACM.
-           .. [2] Burges, C. J. (2010).
-                  "From ranknet to lambdarank to lambdamart: An overview.",
-                  Learning, 11(23-581), 81.
+                [2] Burges, C. J. (2010). "From ranknet to lambdarank to lambdamart: An overview.", Learning, 11(23-581).
         """
         super().__init__(n_object_features=n_object_features, n_hidden=n_hidden, n_units=n_units,
                          loss_function=loss_function, batch_normalization=batch_normalization,
@@ -74,6 +75,7 @@ class RankNetDiscreteChoiceFunction(RankNetCore, DiscreteObjectChooser):
             x1 = x1[indices, :]
             x2 = x2[indices, :]
             y_single = y_single[indices]
+            self.logger.debug('Finished the Dataset instances {}'.format(x1.shape[0]))
         self.logger.debug('Finished the Dataset instances {}'.format(x1.shape[0]))
         return x1, x2, y_single
 

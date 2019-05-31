@@ -34,10 +34,7 @@ class PairwiseSVM(Learner):
 
         References
         ----------
-        .. [1] Joachims, T. (2002, July).
-               "Optimizing search engines using clickthrough data.",
-               Proceedings of the eighth ACM SIGKDD international conference on
-               Knowledge discovery and data mining (pp. 133-142). ACM.
+            [1] Joachims, T. (2002, July). "Optimizing search engines using clickthrough data.", Proceedings of the eighth ACM SIGKDD international conference on Knowledge discovery and data mining (pp. 133-142). ACM.
         """
         self.normalize = normalize
         self.n_object_features = n_object_features
@@ -51,7 +48,21 @@ class PairwiseSVM(Learner):
         self.model = None
 
     def fit(self, X, Y, **kwargs):
-        x_train, y_single = self.convert_instances(X, Y)
+        """
+            Fit a generic preference learning model on a provided set of queries.
+            The provided queries can be of a fixed size (numpy arrays).
+
+            Parameters
+            ----------
+            X : numpy array, shape (n_samples, n_objects, n_features)
+                Feature vectors of the objects
+            Y : numpy array, shape (n_samples, n_objects, n_features)
+                Preferences in form of Orderings or Choices for given n_objects
+            **kwargs
+                Keyword arguments for the fit function
+
+        """
+        x_train, y_single = self._convert_instances(X, Y)
         if x_train.shape[0] > self.threshold_instances:
             self.model = LogisticRegression(C=self.C, tol=self.tol, fit_intercept=self.fit_intercept,
                                             random_state=self.random_state)
@@ -82,7 +93,7 @@ class PairwiseSVM(Learner):
         self.logger.info("Done predicting scores")
         return np.array(scores)
 
-    def convert_instances(self, X, Y):
+    def _convert_instances(self, X, Y):
         raise NotImplemented
 
     def set_tunable_parameters(self, C=1.0, tol=1e-4, **point):

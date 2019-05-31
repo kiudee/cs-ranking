@@ -1,6 +1,6 @@
-***************************************
+**********************
 Discrete Choice Models
-***************************************
+**********************
 
 .. currentmodule:: csrank.discretechoice
 .. autosummary::

@@ -59,17 +59,20 @@ def configure_numpy_keras(seed=42):
 
 
 def get_mean_loss_for_dictionary(metric, y_true, y_pred):
-    losses = []
-    total_instances = 0
-    for n in y_pred.keys():
-        loss = get_loss_for_array(metric, y_true[n], y_pred[n])
-        if loss is not np.nan:
-            loss = loss * y_pred[n].shape[0]
-            total_instances += y_pred[n].shape[0]
-            losses.append(loss)
-    losses = np.array(losses)
-    weighted_mean = np.sum(losses) / total_instances
-    return weighted_mean
+    if isinstance(y_pred, dict) and isinstance(y_true, dict):
+        losses = []
+        total_instances = 0
+        for n in y_pred.keys():
+            loss = get_loss_for_array(metric, y_true[n], y_pred[n])
+            if loss is not np.nan:
+                loss = loss * y_pred[n].shape[0]
+                total_instances += y_pred[n].shape[0]
+                losses.append(loss)
+        losses = np.array(losses)
+        mean_loss = np.sum(losses) / total_instances
+    else:
+        mean_loss = get_loss_for_array(metric, y_true, y_pred)
+    return mean_loss
 
 
 def get_loss_for_array(metric, y_true, y_pred):

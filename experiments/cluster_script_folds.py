@@ -32,12 +32,9 @@ from sklearn.model_selection import ShuffleSplit
 from csrank import *
 from csrank.metrics import make_ndcg_at_k_loss
 from csrank.metrics_np import topk_categorical_accuracy_np
-from csrank.tensorflow_util import configure_numpy_keras, get_mean_loss_for_dictionary, get_loss_for_array
+from csrank.tensorflow_util import configure_numpy_keras, get_mean_loss_for_dictionary
 from csrank.util import create_dir_recursively, duration_till_now, seconds_to_time, \
     print_dictionary, get_duration_seconds, setup_logging
-from experiments.dbconnection import DBConnector
-from experiments.util import get_dataset_reader, log_test_train_data, metrics_on_predictions, lp_metric_dict, \
-    create_optimizer_parameters
 
 DIR_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 LOGS_FOLDER = 'logs'
@@ -45,24 +42,6 @@ OPTIMIZER_FOLDER = 'optimizers'
 PREDICTIONS_FOLDER = 'predictions'
 MODEL_FOLDER = 'models'
 ERROR_OUTPUT_STRING = 'Out of sample error %s : %0.4f'
-
-
-def get_scores(object, batch_size):
-    s_pred = None
-    while s_pred is None:
-        try:
-            if batch_size == 0:
-                break
-            logger.info("Batch_size {}".format(batch_size))
-            s_pred = object.predict_scores(X_test, batch_size=batch_size)
-        except:
-            logger.error("Unexpected Error {}".format(sys.exc_info()[0]))
-            s_pred = None
-            batch_size = int(batch_size / 10)
-    y_pred = object.predict_for_scores(s_pred)
-
-    return s_pred, y_pred
-
 
 if __name__ == "__main__":
     start = datetime.now()
@@ -134,8 +113,7 @@ if __name__ == "__main__":
             time_taken = duration_till_now(start)
             logger.info("Time Taken till now: {}  milliseconds".format(seconds_to_time(time_taken)))
             time_eout_eval = get_duration_seconds('10H')
-            logger.info(
-                "Time spared for the out of sample evaluation : {} ".format(seconds_to_time(time_eout_eval)))
+            logger.info("Time spared for the out of sample evaluation : {} ".format(seconds_to_time(time_eout_eval)))
 
             total_duration = duration - time_taken - time_eout_eval
             hp_fit_params['n_iter'] = hp_iters
@@ -159,8 +137,13 @@ if __name__ == "__main__":
                 else:
                     current_job_id = job_id
                 logger.info('current job id {}'.format(current_job_id))
-                batch_size = X_test.shape[0]
-                s_pred, y_pred = get_scores(optimizer_model, batch_size)
+                if isinstance(X_test, dict):
+                    batch_size = 10000
+                else:
+                    size = sys.getsizeof(X_test)
+                    batch_size = X_test.shape[0]
+                    logger.info("Test dataset size {}".format(size))
+                s_pred, y_pred = get_scores(optimizer_model.model, batch_size, X_test, Y_test, logger)
                 if fold_id == 0:
                     if isinstance(s_pred, dict):
                         pred_file = os.path.join(DIR_PATH, PREDICTIONS_FOLDER, "{}.pkl".format(hash_value))
@@ -189,11 +172,7 @@ if __name__ == "__main__":
                         k = int(n_objects / 2) + 1
                         evaluation_metric = topk_categorical_accuracy_np(k=k)
                         name = name.format(k)
-
-                    if isinstance(Y_test, dict):
-                        metric_loss = get_mean_loss_for_dictionary(evaluation_metric, Y_test, predictions)
-                    else:
-                        metric_loss = get_loss_for_array(evaluation_metric, Y_test, predictions)
+                    metric_loss = get_mean_loss_for_dictionary(evaluation_metric, Y_test, predictions)
                     logger.info(ERROR_OUTPUT_STRING % (name, metric_loss))
                     if np.isnan(metric_loss):
                         results[name] = "\'Infinity\'"
