@@ -26,11 +26,8 @@ class ListNet(Learner, ObjectRanker):
                  kernel_initializer='lecun_normal', optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
                  metrics=[zero_one_rank_loss_for_scores_ties], batch_size=256, random_state=None, **kwargs):
         """ Create an instance of the ListNet architecture.
-
-            ListNet trains a latent utility model based on top-k-subrankings
-            of the objects. A listwise loss function like the negative
-            Plackett-Luce likelihood is used for training.
-
+            ListNet trains a latent utility model based on top-k-subrankings of the objects.
+            A listwise loss function like the negative Plackett-Luce likelihood is used for training.
             Note: For k=2 we obtain RankNet as a special case.
 
             Parameters
@@ -66,8 +63,10 @@ class ListNet(Learner, ObjectRanker):
                 Seed of the pseudorandom generator or a RandomState instance
             **kwargs
                 Keyword arguments for the algorithms
+
             References
             ----------
+                [1] Z. Cao, T. Qin, T. Liu, M. Tsai and H. Li. "Learning to Rank: From Pairwise Approach to Listwise Approach." ICML, 2007.
         """
         self.logger = logging.getLogger(ListNet.__name__)
         self.n_object_features = n_object_features

@@ -34,9 +34,7 @@ class PairwiseSVM(Learner):
 
         References
         ----------
-        .. [1] Joachims, T. (2002, July). "Optimizing search engines using clickthrough data.",
-               Proceedings of the eighth ACM SIGKDD international conference on
-               Knowledge discovery and data mining (pp. 133-142). ACM.
+            [1] Joachims, T. (2002, July). "Optimizing search engines using clickthrough data.", Proceedings of the eighth ACM SIGKDD international conference on Knowledge discovery and data mining (pp. 133-142). ACM.
         """
         self.normalize = normalize
         self.n_object_features = n_object_features
@@ -60,6 +58,9 @@ class PairwiseSVM(Learner):
                 Feature vectors of the objects
             Y : numpy array, shape (n_samples, n_objects, n_features)
                 Preferences in form of Orderings or Choices for given n_objects
+            **kwargs
+                Keyword arguments for the fit function
+
         """
         x_train, y_single = self._convert_instances(X, Y)
         if x_train.shape[0] > self.threshold_instances:

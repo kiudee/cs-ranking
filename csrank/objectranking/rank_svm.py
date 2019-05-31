@@ -32,9 +32,7 @@ class RankSVM(ObjectRanker, PairwiseSVM):
 
         References
         ----------
-        .. [1] Joachims, T. (2002, July). "Optimizing search engines using clickthrough data.",
-               Proceedings of the eighth ACM SIGKDD international conference on
-               Knowledge discovery and data mining (pp. 133-142). ACM.
+            [1] Joachims, T. (2002, July). "Optimizing search engines using clickthrough data.", Proceedings of the eighth ACM SIGKDD international conference on Knowledge discovery and data mining (pp. 133-142). ACM.
         """
         super().__init__(n_object_features=n_object_features, C=C, tol=tol, normalize=normalize,
                          fit_intercept=fit_intercept,

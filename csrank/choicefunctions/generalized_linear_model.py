@@ -34,8 +34,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
 
             References
             ----------
-            .. [1] Kenneth E Train. „Discrete choice methods with simulation“.
-               In: Cambridge university press, 2009. Chap.Logit, pp. 41–86.
+                [1] Kenneth E Train. „Discrete choice methods with simulation“. In: Cambridge university press, 2009. Chap Logit, pp. 41–86.
         """
         self.logger = logging.getLogger(GeneralizedLinearModel.__name__)
         self.n_object_features = n_object_features

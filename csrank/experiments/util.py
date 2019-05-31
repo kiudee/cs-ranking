@@ -2,15 +2,14 @@ import sys
 
 import pymc3 as pm
 
-from csrank.dataset_reader import *
-from csrank.objectranking import *
-from csrank.choicefunctions import *
 from csrank.callbacks import EarlyStoppingWithWeights, LRScheduler, DebugOutput
+from csrank.choicefunctions import *
 from csrank.constants import *
+from csrank.dataset_reader import *
 from csrank.experiments.constants import *
 from csrank.metrics import zero_one_rank_loss, zero_one_accuracy, make_ndcg_at_k_loss
 from csrank.metrics_np import *
-from csrank.objectranking.fate_object_ranker import FATEObjectRanker
+from csrank.objectranking import *
 
 __all__ = ['log_test_train_data', 'get_dataset_reader', 'create_optimizer_parameters', 'create_optimizer_parameters2',
            'get_scores', 'datasets', 'learners', 'ranking_metrics', 'discrete_choice_metrics', 'choice_metrics',

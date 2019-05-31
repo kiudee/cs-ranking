@@ -10,7 +10,8 @@ from .util import generate_complete_pairwise_dataset
 class PairwiseSVMChoiceFunction(PairwiseSVM, ChoiceFunctions):
     def __init__(self, n_object_features, C=1.0, tol=1e-4, normalize=True,
                  fit_intercept=True, random_state=None, **kwargs):
-        """ Create an instance of the PairwiseSVM model which learns a linear deterministic utility function of the
+        """ Create an instance of the PairwiseSVM model for learning a choice function.
+            It learns a linear deterministic utility function of the
             form :math:`U(x_i) = w \cdot x`, where :math:`x`, where the weight vector :math:`w` is estimated using
             *pairwise preferences* generated from the choices. For Example, the decision maker is faced with choice set
             :math:`Q = \{x_1, \ldots ,x_5 \}` and chooses the object :math:`x_4`. Then one can extract the following
@@ -33,12 +34,12 @@ class PairwiseSVMChoiceFunction(PairwiseSVM, ChoiceFunctions):
             **kwargs
                 Keyword arguments for the algorithms
 
+
             References
             ----------
-            .. [1] Theodoros Evgeniou, Massimiliano Pontil, and Olivier Toubia. „A convex optimization approach to modeling consumer heterogeneity in conjoint estimation“.
-               In: Marketing Science 26.6 (2007), pp. 805–818 (cit. on p. 18)
-               [2] Sebastián Maldonado, Ricardo Montoya, and Richard Weber. „Advanced conjoint analysis using feature selection via support vector machines“.
-               In: European Journal of Operational Research 241.2 (2015), pp. 564 –574 (cit. on pp. 19, 20).
+                [1] Theodoros Evgeniou, Massimiliano Pontil, and Olivier Toubia.„A convex optimization approach to modeling consumer heterogeneity in conjoint estimation“. In: Marketing Science 26.6 (2007), pp. 805–818.
+
+                [2] Sebastián Maldonado, Ricardo Montoya, and Richard Weber. „Advanced conjoint analysis using feature selection via support vector machines“. In: European Journal of Operational Research 241.2 (2015), pp. 564 –574.
 
         """
         super().__init__(n_object_features=n_object_features, C=C, tol=tol, normalize=normalize,

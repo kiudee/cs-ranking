@@ -13,6 +13,23 @@ from csrank.constants import OBJECT_RANKING, DYAD_RANKING, EXCEPTION_OBJECT_ARRA
 
 class DatasetReader(metaclass=ABCMeta):
     def __init__(self, dataset_folder="", learning_problem=OBJECT_RANKING, **kwargs):
+        """
+            The generic dataset parser for parsing datasets for solving different learning problems.
+
+            Parameters
+            ----------
+            dataset_folder: string
+                Folder name in the csank/datasets folder in which
+            learning_problem: {'object_ranking', 'dyad_ranking', 'label_ranking', 'discrete_choice', 'choice_function'}
+               The learning problem for which the dataset is used.
+                    - 'object_ranking' learner which will extend :class:`csrank.objectranking.object_ranker.ObjectRanker`
+                    - 'dyad_ranking' learner which will extend :class:`csrank.dyadranking.dyad_ranker.DyadRanker `
+                    - 'label_ranking' learner which will extend :class:`csrank.labelranking.label_ranking.LabelRanking`
+                    - 'discrete_choice' learner which will extend :class:`csrank.discretechoice.discrete_choice.DiscreteObjectChooser`
+                    - 'choice_function' learner which will extend :class:`csrank.choicefunctions.choice_functions.ChoiceFunctions`
+            kwargs:
+                Keyword arguments for the dataset parser
+        """
         self.dr_logger = logging.getLogger("DatasetReader")
         self.dr_logger.info("Learning Problem: {}".format(learning_problem))
         self.X = None
