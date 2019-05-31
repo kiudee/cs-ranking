@@ -221,6 +221,8 @@ class FETANetwork(Learner):
                 Percentage of instances to split off to validate on
             verbose : bool
                 Print verbose information
+            **kwd
+                Keyword arguments for the fit function
         """
         self.logger.debug('Enter fit function...')
 
