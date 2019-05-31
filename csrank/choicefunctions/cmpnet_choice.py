@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 
 from csrank.choicefunctions.util import generate_complete_pairwise_dataset
 from csrank.core.cmpnet_core import CmpNetCore
-from .choice_functions import ChoiceFunctions
+from csrank.choicefunctions.choice_functions import ChoiceFunctions
 
 
 class CmpNetChoiceFunction(CmpNetCore, ChoiceFunctions):

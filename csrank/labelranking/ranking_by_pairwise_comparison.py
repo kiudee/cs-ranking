@@ -9,11 +9,10 @@ from sklearn.utils import check_random_state
 from csrank.labelranking.label_ranker import LabelRanker
 from csrank.learner import Learner
 from csrank.numpy_util import scores_to_rankings
-from csrank.tunable import Tunable
 from csrank.util import print_dictionary
 
 
-class RankingbyPairwiseComparisonLabelRanker(LabelRanker, Learner, Tunable):
+class RankingbyPairwiseComparisonLabelRanker(LabelRanker, Learner):
 
     def __init__(self, n_features, C=1, tol=1e-4, normalize=True, fit_intercept=True, random_state=None, **kwargs):
         self.normalize = normalize
