@@ -97,6 +97,18 @@ class PairwiseSVM(Learner):
         raise NotImplemented
 
     def set_tunable_parameters(self, C=1.0, tol=1e-4, **point):
+        """
+            Set tunable parameters of the PairwiseSVM model to the values provided.
+
+            Parameters
+            ----------
+            C : float
+               Penalty parameter of the error term of the SVM classifier
+            tol : float
+                Optimization tolerance of the SVM classifier
+            point: dict
+                Dictionary containing parameter values which are not tuned for the network
+        """
         self.tol = tol
         self.C = C
         if len(point) > 0:

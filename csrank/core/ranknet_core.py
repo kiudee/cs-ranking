@@ -71,7 +71,6 @@ class RankNetCore(Learner):
             Y : numpy array
                 (n_instances, n_objects)
                 Preferences in form of Orderings or Choices for given n_objects
-
             epochs : int
                 Number of epochs to run if training for a fixed query size
             callbacks : list
@@ -101,6 +100,10 @@ class RankNetCore(Learner):
 
     @property
     def scoring_model(self):
+        """
+            Creates a scoring model for the trained ListNet, which predicts the utility scores for given set of objects.
+            :return: scoring model used to predict score
+        """
         if self._scoring_model is None:
             self.logger.info('creating scoring model')
             inp = Input(shape=(self.n_object_features,))
@@ -136,6 +139,14 @@ class RankNetCore(Learner):
         return scores
 
     def clear_memory(self, **kwargs):
+        """
+            Clear the memory, restores the currently fitted model back to prevent memory leaks.
+
+            Parameters
+            ----------
+            **kwargs :
+                Keyword arguments for the function
+        """
         if self.hash_file is not None:
             self.model.save_weights(self.hash_file)
             K.clear_session()
@@ -155,6 +166,24 @@ class RankNetCore(Learner):
 
     def set_tunable_parameters(self, n_hidden=32, n_units=2, reg_strength=1e-4, learning_rate=1e-3, batch_size=128,
                                **point):
+        """
+            Set tunable parameters of the RankNet network to the values provided.
+
+            Parameters
+            ----------
+            n_hidden: int
+                Number of hidden layers used in the scoring network
+            n_units: int
+                Number of hidden units in each layer of the scoring network
+            reg_strength: float
+                Regularization strength of the regularizer function applied to the `kernel` weights matrix
+            learning_rate: float
+                Learning rate of the stochastic gradient descent algorithm used by the network
+            batch_size: int
+                Batch size to use during training
+            point: dict
+                Dictionary containing parameter values which are not tuned for the network
+        """
         self.n_hidden = n_hidden
         self.n_units = n_units
         self.kernel_regularizer = l2(reg_strength)

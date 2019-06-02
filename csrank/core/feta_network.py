@@ -46,7 +46,6 @@ class FETANetwork(Learner):
             if key not in allowed_dense_kwargs:
                 del kwargs[key]
         self.kwargs = kwargs
-
         self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
                                activation=self.activation, **self.kwargs)
         self._pairwise_model = None
@@ -211,8 +210,7 @@ class FETANetwork(Learner):
                 Feature vectors of the objects
             Y : numpy array
                 (n_instances, n_objects)
-                Preferences in form of Orderings or Choices for given n_objects
-
+                Preferences in form of rankings or choices for given objects
             epochs : int
                 Number of epochs to run if training for a fixed query size
             callbacks : list
@@ -221,7 +219,7 @@ class FETANetwork(Learner):
                 Percentage of instances to split off to validate on
             verbose : bool
                 Print verbose information
-            **kwd
+            **kwd :
                 Keyword arguments for the fit function
         """
         self.logger.debug('Enter fit function...')
@@ -266,6 +264,24 @@ class FETANetwork(Learner):
 
     def set_tunable_parameters(self, n_hidden=32, n_units=2, reg_strength=1e-4, learning_rate=1e-3,
                                batch_size=128, **point):
+        """
+            Set tunable parameters of the FETA-network to the values provided.
+
+            Parameters
+            ----------
+            n_hidden: int
+                Number of hidden layers used in the scoring network
+            n_units: int
+                Number of hidden units in each layer of the scoring network
+            reg_strength: float
+                Regularization strength of the regularizer function applied to the `kernel` weights matrix
+            learning_rate: float
+                Learning rate of the stochastic gradient descent algorithm used by the network
+            batch_size: int
+                Batch size to use during training
+            point: dict
+                Dictionary containing parameter values which are not tuned for the network
+        """
         self.n_hidden = n_hidden
         self.n_units = n_units
         self.kernel_regularizer = l2(reg_strength)
@@ -280,6 +296,14 @@ class FETANetwork(Learner):
                                 ' called: {}'.format(print_dictionary(point)))
 
     def clear_memory(self, **kwargs):
+        """
+            Clear the memory, restores the currently fitted model back to prevent memory leaks.
+
+            Parameters
+            ----------
+            **kwargs :
+                Keyword arguments for the function
+        """
         if self.hash_file is not None:
             self.model.save_weights(self.hash_file)
             K.clear_session()

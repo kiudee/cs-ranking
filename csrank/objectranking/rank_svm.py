@@ -12,10 +12,9 @@ class RankSVM(ObjectRanker, PairwiseSVM):
     def __init__(self, n_object_features, C=1.0, tol=1e-4, normalize=True,
                  fit_intercept=True, random_state=None, **kwargs):
         """
-            Create an instance of the PairwiseSVM model for learning a discrete choice function.
-            It learns a linear deterministic utility function of the
-            form :math:`U(x_i) = w \cdot x`, where :math:`x`, where :math:`w` is the weight vector.
-            It is estimated using *pairwise preferences* generated from the rankings.
+            Create an instance of the :class:`PairwiseSVM` model for learning a object ranking function.
+            It learns a linear deterministic utility function of the form :math:`U(x) = w \cdot x`, where :math:`w` is
+            the weight vector. It is estimated using *pairwise preferences* generated from the rankings.
             The ranking for the given query set :math:`Q` is defined as:
 
             .. math::

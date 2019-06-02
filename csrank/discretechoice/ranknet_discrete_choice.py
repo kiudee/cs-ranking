@@ -14,14 +14,17 @@ class RankNetDiscreteChoiceFunction(RankNetCore, DiscreteObjectChooser):
                  activation='relu', optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9), metrics=['binary_accuracy'],
                  batch_size=256, random_state=None, **kwargs):
         """
-            Create an instance of the :class:`csrank.core.cmpnet_core.RankNetCore` architecture for learning a discrete choice function.
+            Create an instance of the :class:`RankNetCore` architecture for learning a choice function.
             It breaks the preferences into pairwise comparisons and learns a latent utility model for the objects.
-            This network learns a latent utility score for each object in the given choice set
-            :math:`Q = \{x_1, \ldots ,x_n\}` using the equation
-            :math:`U(x_i) = F(x_i, w)` where the weight vector :math:`w` is estimated using
-            *pairwise preferences* generated from the choices. For Example, the decision maker is faced with choice set
-            :math:`Q = \{x_1, \ldots ,x_5 \}` and chooses the object :math:`x_4`. Then one can extract the following
-            *pairwise preferences* :math:`x_4 \succ x_1, x_4 \succ x_2, \ldots`.
+            This network learns a latent utility score for each object in the given query set
+            :math:`Q = \{x_1, \ldots ,x_n\}` using the equation :math:`U(x) = F(x, w)` where :math:`w` is the weight
+            vector. It is estimated using *pairwise preferences* generated from the discrete choices.
+
+            The discrete choice for the given query set :math:`Q` is defined as:
+
+            .. math::
+
+                ρ(Q)  = \operatorname{argsort}_{x \in Q}  \; U(x)
 
             Parameters
             ----------
@@ -97,3 +100,8 @@ class RankNetDiscreteChoiceFunction(RankNetCore, DiscreteObjectChooser):
     def clear_memory(self, **kwargs):
         self.logger.info("Clearing memory")
         super().clear_memory(**kwargs)
+
+    def set_tunable_parameters(self, n_hidden=32, n_units=2, reg_strength=1e-4, learning_rate=1e-3, batch_size=128,
+                               **point):
+        super().set_tunable_parameters(n_hidden=n_hidden, n_units=n_units, reg_strength=reg_strength,
+                                       learning_rate=learning_rate, batch_size=batch_size, **point)

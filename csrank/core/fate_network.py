@@ -24,7 +24,7 @@ class FATENetworkCore(Learner):
                  kernel_initializer='lecun_normal', kernel_regularizer=l2(l=0.01),
                  optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9), batch_size=256, random_state=None, **kwargs):
         """
-            Create a FATENetworkCore architecture.
+            Create a FATE-network architecture.
             Training and prediction complexity is linear in the number of objects.
 
             Parameters
@@ -146,7 +146,7 @@ class FATENetworkCore(Learner):
 class FATENetwork(FATENetworkCore):
     def __init__(self, n_object_features, n_hidden_set_layers=1, n_hidden_set_units=1, **kwargs):
         """
-            Create a FATENetwork architecture.
+            Create a FATE-network architecture.
             Training and prediction complexity is linear in the number of objects.
 
             Parameters
@@ -154,7 +154,7 @@ class FATENetwork(FATENetworkCore):
             n_object_features : int
                 Dimensionality of the feature space of each object
             n_hidden_set_layers : int
-                Number of set layers.
+                Number of hidden set layers.
             n_hidden_set_units : int
                 Number of hidden set units.
             **kwargs
@@ -328,7 +328,7 @@ class FATENetwork(FATENetworkCore):
     def fit(self, X, Y, epochs=35, inner_epochs=1, callbacks=None, validation_split=0.1, verbose=0, global_lr=1.0,
             global_momentum=0.9, min_bucket_size=500, refit=False, **kwargs):
         """
-            Fit a generic object ranking model on a provided set of queries.
+            Fit a generic preference learning FATE-network model on a provided set of queries.
 
             The provided queries can be of a fixed size (numpy arrays) or of
             varying sizes in which case dictionaries are expected as input.
@@ -373,7 +373,7 @@ class FATENetwork(FATENetworkCore):
     def fit_generator(self, generator, epochs=35, steps_per_epoch=10, inner_epochs=1, callbacks=None, verbose=0,
                       global_lr=1.0, global_momentum=0.9, min_bucket_size=500, refit=False, **kwargs):
         """
-            Fit a generic object ranking model on a set of queries provided by
+            Fit a generic object ranking FATE-network on a set of queries provided by
             a generator.
 
             The provided queries can be of a fixed size (numpy arrays) or of
@@ -416,7 +416,7 @@ class FATENetwork(FATENetworkCore):
                   callbacks=callbacks, verbose=verbose, global_lr=global_lr, global_momentum=global_momentum,
                   min_bucket_size=min_bucket_size, refit=refit, **kwargs)
 
-    def get_set_representation(self, X, kwargs):
+    def _get_set_representation(self, X, kwargs):
         n_objects = X.shape[-2]
         self.logger.info("Test Set instances {} objects {} features {}".format(*X.shape))
         input_layer_scorer = Input(shape=(n_objects, self.n_object_features), name="input_node")
@@ -448,7 +448,7 @@ class FATENetwork(FATENetworkCore):
 
         """
         # model = self._construct_scoring_model(n_objects)
-        X = self.get_set_representation(X, kwargs)
+        X = self._get_set_representation(X, kwargs)
         n_instances, n_objects, n_features = X.shape
         self.logger.info("After applying the set representations features {}".format(n_features))
         input_layer_joint = Input(shape=(n_objects, n_features), name="input_joint_model")
@@ -469,6 +469,16 @@ class FATENetwork(FATENetworkCore):
         return predicted_scores
 
     def clear_memory(self, n_objects=5, **kwargs):
+        """
+            Clear the memory, restores the currently fitted model back to prevent memory leaks.
+
+            Parameters
+            ----------
+            n_objects : int
+                float (n_instances, n_objects, n_features)
+            **kwargs :
+                Keyword arguments for the function
+        """
         if self.hash_file is not None:
             self.model.save_weights(self.hash_file)
             K.clear_session()
@@ -491,6 +501,28 @@ class FATENetwork(FATENetworkCore):
 
     def set_tunable_parameters(self, n_hidden_set_units=32, n_hidden_set_layers=2, n_hidden_joint_units=32,
                                n_hidden_joint_layers=2, reg_strength=1e-4, learning_rate=1e-3, batch_size=128, **point):
+        """
+            Set tunable parameters of the FATE-network to the values provided.
+
+            Parameters
+            ----------
+            n_hidden_set_layers : int
+                Number of hidden set layers
+            n_hidden_set_units : int
+                Number of hidden set units in each set layer
+            n_hidden_joint_units: int
+                Number of hidden joint layers
+            n_hidden_joint_layers: int
+                Number of hidden units in each joint layer
+            reg_strength: float
+                Regularization strength of the regularizer function applied to the `kernel` weights matrix
+            learning_rate: float
+                Learning rate of the stochastic gradient descent algorithm used by the network
+            batch_size: int
+                Batch size to use during training
+            point: dict
+                Dictionary containing parameter values which are not tuned for the network
+        """
         FATENetworkCore.set_tunable_parameters(self, n_hidden_joint_units=n_hidden_joint_units,
                                                n_hidden_joint_layers=n_hidden_joint_layers, reg_strength=reg_strength,
                                                learning_rate=learning_rate, batch_size=batch_size, **point)
