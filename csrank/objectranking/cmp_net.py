@@ -16,20 +16,24 @@ class CmpNet(CmpNetCore, ObjectRanker):
                  activation='relu', optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9), metrics=['binary_accuracy'],
                  batch_size=256, random_state=None, **kwargs):
         """
-           Create an instance of the CmpNet architecture.
+            Create an instance of the :class:`CmpNetCore` architecture for learning a object ranking function.
+            CmpNet breaks the preferences in form of rankings into pairwise comparisons and learns a pairwise model for
+            the each pair of object in the underlying set. For prediction list of objects is converted in pair of
+            objects and the pairwise predicate is evaluated using them. The outputs of the network for each pair of
+            objects :math:`U(x_1,x_2), U(x_2,x_1)` are evaluated.
+            :math:`U(x_1,x_2)` is a measure of how favorable it is for :math:`x_1` than :math:`x_2`.
+            The utility score of object :math:`x_i` in query set :math:`Q = \{ x_1 , \ldots , x_n \}` is evaluated as:
 
-           CmpNet breaks the preferences in form of rankings into pairwise comparisons and learns a pairwise
-           model for the each pair of object in the underlying set.
-           For prediction list of objects is converted in pair of objects and the pairwise predicate is evaluated using
-           them.
-           The outputs of the network for each pair of objects :math:`U(x_1,x_2), U(x_2,x_1)` are evaluated.
-           :math:`U(x_1,x_2)` is a measure of how favorable it is for :math:`x_1` than :math:`x_2`.
-           Ranking for the given set of objects :math:`Q = \{ x_1 , \ldots , x_n \}`  is evaluted as follows:
+            .. math::
 
-           .. math::
+                U(x_i) = \left\{ \\frac{1}{n-1} \sum_{j \in [n] \setminus \{i\}} U_1(x_i , x_j)\\right\}
 
-                U(x_i) = \left\{ \\frac{1}{n-1} \sum_{j \in [n] \setminus \{i\}} U_1(x_i , x_j)\\right\} \\\\
-                ρ(Q)  = \operatorname{argsort}_{i \in [n]}  \; U(x_i)
+
+            The ranking for the given query set :math:`Q` is defined as:
+
+            .. math::
+
+                ρ(Q)  = \operatorname{argsort}_{x \in Q}  \; U(x)
 
 
            Parameters
@@ -61,11 +65,10 @@ class CmpNet(CmpNetCore, ObjectRanker):
            **kwargs
                Keyword arguments for the algorithms
 
+
            References
            ----------
-           .. [1] Leonardo Rigutini, Tiziano Papini, Marco Maggini, and Franco Scarselli. 2011.
-              SortNet: Learning to Rank by a Neural Preference Function.
-              IEEE Trans. Neural Networks 22, 9 (2011), 1368–1380. https://doi.org/10.1109/TNN.2011.2160875
+                [1] Leonardo Rigutini, Tiziano Papini, Marco Maggini, and Franco Scarselli. 2011. SortNet: Learning to Rank by a Neural Preference Function. IEEE Trans. Neural Networks 22, 9 (2011), 1368–1380. https://doi.org/10.1109/TNN.2011.2160875
         """
         super().__init__(n_object_features=n_object_features, n_hidden=n_hidden, n_units=n_units,
                          loss_function=loss_function, batch_normalization=batch_normalization,
@@ -104,3 +107,8 @@ class CmpNet(CmpNetCore, ObjectRanker):
 
     def clear_memory(self, **kwargs):
         super().clear_memory(**kwargs)
+
+    def set_tunable_parameters(self, n_hidden=32, n_units=2, reg_strength=1e-4, learning_rate=1e-3, batch_size=128,
+                               **point):
+        super().set_tunable_parameters(n_hidden=n_hidden, n_units=n_units, reg_strength=reg_strength,
+                                       learning_rate=learning_rate, batch_size=batch_size, **point)

@@ -19,10 +19,20 @@ class ExpectedRankRegression(ObjectRanker, Learner):
                  random_state=None, **kwargs):
         """
             Create an expected rank regression model.
+            This model normalizes the ranks to [0, 1] and treats them as regression target. For ``α = 0`` we employ
+            simple linear regression. For α > 0 the model becomes ridge regression (when ``l1_ratio = 0``) or
+            elastic net (when ``l1_ratio > 0``). The target for an object :math:`x_k \in Q` is:
 
-            This model normalizes the ranks to [0, 1] and treats them as regression target. For α = 0 we employ simple
-            linear regression. For α > 0 the model becomes ridge regression (when l1_ratio = 0) or elastic net
-            (when l1_ratio > 0).
+
+            .. math::
+                r(x_k) = \\frac{\pi(k)}{n} \quad ,
+
+            where :math:`\pi(k)` is the rank of the :math:`x_k`. The regression model learns a function
+            :math:`F \colon \mathcal{X} \\to \mathbb{R}`. The ranking for the given query set :math:`Q` defined as:
+
+            .. math::
+                ρ(Q)  = \operatorname{argsort}_{x \in Q}  \; -1*F(x)
+
 
             Parameters
             ----------
@@ -45,9 +55,7 @@ class ExpectedRankRegression(ObjectRanker, Learner):
 
             References
             ----------
-            .. [1] Kamishima, T., Kazawa, H., & Akaho, S. (2005, November).
-                   "Supervised ordering-an empirical survey.",
-                   Fifth IEEE International Conference on Data Mining.
+                [1] Kamishima, T., Kazawa, H., & Akaho, S. (2005, November). "Supervised ordering-an empirical survey.", Fifth IEEE International Conference on Data Mining.
         """
         self.normalize = normalize
         self.n_object_features = n_object_features
@@ -60,6 +68,21 @@ class ExpectedRankRegression(ObjectRanker, Learner):
         self.weights = None
 
     def fit(self, X, Y, **kwargs):
+        """
+            Fit an ExpectedRankRegression on the provided set of queries X and preferences Y of those objects.
+            The provided queries and corresponding preferences are of a fixed size (numpy arrays).
+
+            Parameters
+            ----------
+            X : numpy array
+                (n_instances, n_objects, n_features)
+                Feature vectors of the objects
+            Y : numpy array
+                (n_instances, n_objects)
+                Rankings of the given objects
+            **kwargs
+                Keyword arguments for the fit function
+        """
         self.logger.debug('Creating the Dataset')
         x_train, y_train = complete_linear_regression_dataset(X, Y)
         assert x_train.shape[1] == self.n_object_features
@@ -105,6 +128,20 @@ class ExpectedRankRegression(ObjectRanker, Learner):
         return super().predict(X, **kwargs)
 
     def set_tunable_parameters(self, alpha=0.0, l1_ratio=0.5, tol=1e-4, **point):
+        """
+            Set tunable parameters of the PairwiseSVM model to the values provided.
+
+            Parameters
+            ----------
+            alpha : float
+               Regularization strength
+            l1_ratio : float in [0,1]
+                Ratio between pure L2 (=0) or pure L1 (=1) regularization
+            tol : float
+                 Optimization tolerance for regression model
+            point: dict
+                Dictionary containing parameter values which are not tuned for the network
+        """
         self.tol = tol
         self.alpha = alpha
         self.l1_ratio = l1_ratio
