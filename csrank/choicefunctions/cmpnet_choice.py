@@ -86,6 +86,9 @@ class CmpNetChoiceFunction(CmpNetCore, ChoiceFunctions):
             y_double = y_double[indices, :]
         return x1, x2, y_double
 
+    def construct_model(self):
+        return super().construct_model()
+
     def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, tune_size=0.1,
             thin_thresholds=1, verbose=0, **kwd):
         if tune_size > 0:

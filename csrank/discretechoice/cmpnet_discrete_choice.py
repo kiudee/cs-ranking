@@ -83,6 +83,9 @@ class CmpNetDiscreteChoiceFunction(CmpNetCore, DiscreteObjectChooser):
             y_double = y_double[indices, :]
         return x1, x2, y_double
 
+    def construct_model(self):
+        return super().construct_model()
+
     def fit(self, X, Y, **kwd):
         super().fit(X, Y, **kwd)
 

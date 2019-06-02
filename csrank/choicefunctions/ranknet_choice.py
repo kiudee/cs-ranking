@@ -70,6 +70,9 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
         self.logger.info("Initializing network with object features {}".format(self.n_object_features))
         self.threshold = 0.5
 
+    def construct_model(self):
+        return super().construct_model()
+
     def _convert_instances(self, X, Y):
         self.logger.debug('Creating the Dataset')
         x1, x2, garbage, garbage, y_single = generate_complete_pairwise_dataset(X, Y)

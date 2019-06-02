@@ -19,8 +19,8 @@ class CmpNet(CmpNetCore, ObjectRanker):
             Create an instance of the :class:`CmpNetCore` architecture for learning a object ranking function.
             CmpNet breaks the preferences in form of rankings into pairwise comparisons and learns a pairwise model for
             the each pair of object in the underlying set. For prediction list of objects is converted in pair of
-            objects and the pairwise predicate is evaluated using them. The outputs of the network for each pair of
-            objects :math:`U(x_1,x_2), U(x_2,x_1)` are evaluated.
+            objects and the pairwise predicate is evaluated using them. The outputs of the network, i.e.,
+            :math:`U(x_1,x_2), U(x_2,x_1)`for each pair of objects are evaluated.
             :math:`U(x_1,x_2)` is a measure of how favorable it is to choose :math:`x_1` over :math:`x_2`.
             The utility score of object :math:`x_i` in query set :math:`Q = \{ x_1 , \ldots , x_n \}` is evaluated as:
 
@@ -89,6 +89,9 @@ class CmpNet(CmpNetCore, ObjectRanker):
             x2 = x2[indices, :]
             y_double = y_double[indices, :]
         return x1, x2, y_double
+
+    def construct_model(self):
+        return super().construct_model()
 
     def fit(self, X, Y, **kwd):
         super().fit(X, Y, **kwd)
