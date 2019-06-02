@@ -65,6 +65,9 @@ class FETAObjectRanker(FETANetwork, ObjectRanker):
                          metrics=metrics, batch_size=batch_size, random_state=random_state, **kwargs)
         self.logger = logging.getLogger(FETAObjectRanker.__name__)
 
+    def construct_model(self):
+        return super().construct_model()
+
     def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
         """
             Fit an object ranking learning model on a provided set of queries.

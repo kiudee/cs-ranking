@@ -148,6 +148,22 @@ class FETANetwork(Learner):
         return scores
 
     def construct_model(self):
+        """
+            Construct the :math:`1`-st order and :math:`0`-th order models, which are used to approximate the
+            :math:`U_1(x, C(x))` and the :math:`U_0(x)` utilities respectively. For each pair of objects in
+            :math:`x_i, x_j \in Q` :math:`U_1(x, C(x))` we construct :class:`CmpNetCore` with weight sharing to
+            approximate a pairwise-matrix. A pairwise matrix with index (i,j) corresponds to the :math:`U_1(x_i,x_j)`
+            is a measure of how favorable it is to choose :math:`x_i` over :math:`x_j`. Using this matrix we calculate
+            the borda score for each object to calculate :math:`U_1(x, C(x))`. For `0`-th order model we construct
+            :math:`\lvert Q \lvert` sequential networks whose weights are shared to evaluate the :math:`U_0(x)` for
+            each object in the query set :math:`Q`. The output mode is using linear activation.
+
+            Returns
+            -------
+            model: keras :class:`Model`
+                Neural network to learn the FETA utility score
+        """
+
         def create_input_lambda(i):
             return Lambda(lambda x: x[:, i])
 
@@ -196,7 +212,10 @@ class FETANetwork(Learner):
         self.logger.debug('1st order model finished')
         if self._use_zeroth_model:
             scores = add([scores, zeroth_order_scores])
-        return scores
+        model = Model(inputs=self.input_layer, outputs=scores)
+        self.logger.debug('Compiling complete model...')
+        model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
+        return model
 
     def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
         """
@@ -225,11 +244,7 @@ class FETANetwork(Learner):
         self.logger.debug('Enter fit function...')
 
         X, Y = self.sub_sampling(X, Y)
-        scores = self.construct_model()
-        self.model = Model(inputs=self.input_layer, outputs=scores)
-
-        self.logger.debug('Compiling complete model...')
-        self.model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
+        self.model = self.construct_model()
         self.logger.debug('Starting gradient descent...')
 
         self.model.fit(x=X, y=Y, batch_size=self.batch_size, epochs=epochs, callbacks=callbacks,
@@ -316,8 +331,7 @@ class FETANetwork(Learner):
             self._construct_layers(kernel_regularizer=self.kernel_regularizer,
                                    kernel_initializer=self.kernel_initializer,
                                    activation=self.activation, **self.kwargs)
-            scores = self.construct_model()
-            self.model = Model(inputs=self.input_layer, outputs=scores)
+            self.model = self.construct_model()
             self.model.load_weights(self.hash_file)
         else:
             self.logger.info("Cannot clear the memory")
