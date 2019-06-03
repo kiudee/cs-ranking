@@ -22,8 +22,21 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
                  metrics=['binary_accuracy'], batch_size=256, random_state=None,
                  **kwargs):
         """
-            Create a FETA-network architecture for learning the choice functions.
+            Create a FETA-network architecture for learning choice functions.
+            The first-evaluate-then-aggregate approach approximates the context-dependent utility function using the
+            first-order utility function :math:`U_1 \colon \mathcal{X} \\times \mathcal{X} \\rightarrow [0,1]`
+            and zeroth-order utility function  :math:`U_0 \colon \mathcal{X} \\rightarrow [0,1]`.
+            The scores each object :math:`x` using a context-dependent utility function :math:`U (x, C_i)`:
+
+            .. math::
+                 U(x_i, C_i) = U_0(x_i) + \\frac{1}{n-1} \sum_{x_j \in Q \\setminus \{x_i\}} U_1(x_i , x_j) \, .
+
             Training and prediction complexity is quadratic in the number of objects.
+            The choice set is defined as:
+
+            .. math::
+
+                c(Q) = \{ x_i \in Q \lvert \, U (x_i, C_i) > t \}
 
             Parameters
             ----------

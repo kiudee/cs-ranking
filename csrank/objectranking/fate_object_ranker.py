@@ -16,11 +16,11 @@ class FATEObjectRanker(FATENetwork, ObjectRanker):
                  loss_function=hinged_rank_loss, metrics=[zero_one_rank_loss_for_scores_ties], random_state=None,
                  **kwargs):
         """
-            Create a FATE-network architecture for leaning discrete choice function. Training complexity is quadratic in
-            the number of objects and prediction complexity is only linear. The first-aggregate-then-evaluate approach
-            learns an embedding of each object and then aggregates that into a context representation
-            :math:`\\mu_{C(x)}`, where :math`C(x) = Q \setminus \{x\}` and then scores each object :math:`x` using a
-            generalized utility function :math:`U (x, \\mu_{C(x)})`.
+            Create a FATE-network architecture for leaning object ranking function. The first-aggregate-then-evaluate
+            approach learns an embedding of each object and then aggregates that into a context representation
+            :math:`\\mu_{C(x)}` and then scores each object :math:`x` using a context-dependent utility function
+            :math:`U (x, \\mu_{C(x)})`.
+            To make it computationally efficient we take the the context :math:`C(x)` as query set :math:`Q`.
             The context-representation is evaluated as:
 
             .. math::
@@ -28,7 +28,7 @@ class FATEObjectRanker(FATENetwork, ObjectRanker):
 
             where :math:`\phi \colon \mathcal{X} \\to \mathcal{Z}` maps each object :math:`y` to an
             :math:`m`-dimensional embedding space :math:`\mathcal{Z} \subseteq \mathbb{R}^m`.
-            To make it computationally efficient we take the the context as query set :math:`Q`.
+            Training complexity is quadratic in the number of objects and prediction complexity is only linear.
             The ranking for the given query set :math:`Q` is defined as:
 
             .. math::

@@ -67,7 +67,7 @@ class CmpNetCore(Learner):
 
     def construct_model(self):
         """
-            Construct the CmpNEt which is used to approximate the :math:`U_1(x_i,x_j)`. For each pair of objects in
+            Construct the CmpNet which is used to approximate the :math:`U_1(x_i,x_j)`. For each pair of objects in
             :math:`x_i, x_j \in Q` we construct two sub-networks with weight sharing in all hidden layers.
             The output of these networks are connected to two sigmoid units that produces the outputs of the network,
             i.e., :math:`U(x_1,x_2), U(x_2,x_1)` for each pair of objects are evaluated.

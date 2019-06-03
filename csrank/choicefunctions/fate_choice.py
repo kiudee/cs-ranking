@@ -17,11 +17,11 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
                  optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9), batch_size=256, metrics=None, random_state=None,
                  **kwargs):
         """
-            Create a FATE-network architecture for leaning discrete choice function. Training complexity is quadratic in
-            the number of objects and prediction complexity is only linear. The first-aggregate-then-evaluate approach
-            learns an embedding of each object and then aggregates that into a context representation
-            :math:`\\mu_{C(x)}`, where :math`C(x) = Q \setminus \{x\}` and then scores each object :math:`x` using a
-            generalized utility function :math:`U (x, \\mu_{C(x)})`.
+            Create a FATE-network architecture for leaning discrete choice function. The first-aggregate-then-evaluate
+            approach learns an embedding of each object and then aggregates that into a context representation
+            :math:`\\mu_{C(x)}` and then scores each object :math:`x` using a generalized utility function
+            :math:`U (x, \\mu_{C(x)})`.
+            To make it computationally efficient we take the the context :math:`C(x)` as query set :math:`Q`.
             The context-representation is evaluated as:
 
             .. math::
@@ -29,12 +29,11 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
 
             where :math:`\phi \colon \mathcal{X} \\to \mathcal{Z}` maps each object :math:`y` to an
             :math:`m`-dimensional embedding space :math:`\mathcal{Z} \subseteq \mathbb{R}^m`.
-            To make it computationally efficient we take the the context as query set :math:`Q`.
             The choice set is defined as:
 
             .. math::
 
-                c(Q) = \{ x_i \in Q \lvert \, U (x, \\mu_{C(x)}) > t \}
+                c(Q) = \{ x \in Q \lvert \, U (x, \\mu_{C(x)}) > t \}
 
 
             Parameters
