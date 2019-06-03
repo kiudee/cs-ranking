@@ -112,6 +112,32 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         self.logger.info("Model construction completed")
 
     def fit(self, X, Y, sampler="vi", **kwargs):
+        """
+            Fit a paired combinatorial logit model on the provided set of queries X and choices Y of those objects. The
+            provided queries and corresponding preferences are of a fixed size (numpy arrays). For learning this network
+            the categorical cross entropy loss function for each object :math:`x_i \in Q` is defined as:
+
+            .. math::
+
+                C_{i} =  -y(i)\log(P_i) \enspace,
+
+            where :math:`y` is ground-truth discrete choice vector of the objects in the given query set :math:`Q`.
+            The value :math:`y(i) = 1` if object :math:`x_i` is chosen else :math:`y(i) = 0`.
+
+            Parameters
+            ----------
+            X : numpy array (n_instances, n_objects, n_features)
+                Feature vectors of the objects
+            Y : numpy array (n_instances, n_objects)
+                Choices for given objects in the query
+            sampler : {‘vi’, ‘metropolis’, ‘nuts’}, string
+                The sampler used to estimate the posterior mean and mass matrix from the trace.
+                * **vi** : Run ADVI to estimate posterior mean and diagonal mass matrix
+                * **metropolis** : Use the MAP as starting point and Metropolis-Hastings sampler
+                * **nuts** : Use the No-U-Turn sampler
+            **kwargs :
+                Keyword arguments for the fit function
+        """
         self.construct_model(X, Y)
         kwargs['random_seed'] = self.random_state.randint(2 ** 32, dtype='uint32')
         callbacks = kwargs['vi_params'].get('callbacks', [])
@@ -174,10 +200,6 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
 
     def predict_for_scores(self, scores, **kwargs):
         return DiscreteObjectChooser.predict_for_scores(self, scores, **kwargs)
-
-    def clear_memory(self, **kwargs):
-        self.logger.info("Clearing memory")
-        pass
 
     def set_tunable_parameters(self, alpha=5e-2, loss_function='', regularization='l2', **point):
         if alpha is not None:

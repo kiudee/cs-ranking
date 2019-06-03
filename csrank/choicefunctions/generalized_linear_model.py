@@ -19,9 +19,10 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
     def __init__(self, n_object_features, regularization='l2', random_state=None, **kwargs):
         """
             Create an instance of the GeneralizedLinearModel model for learning the choice function. This model is
-            adapted from the multinomial logit model :class:`MultinomialLogitModel`. The utility score for each object
-            in query set :math:`Q` is defined as :math:`U(x) = w \cdot x`, where :math:`w` is the weight vector.
-            The probability of choosing an object :math:`x_i` is defined by taking sigmoid over the utility scores:
+            adapted from the multinomial logit model :class:`csrank.discretechoice.multinomial_logit_model.MultinomialLogitModel`.
+            The utility score for each object in query set :math:`Q` is defined as :math:`U(x) = w \cdot x`,
+            where :math:`w` is the weight vector. The probability of choosing an object :math:`x_i` is defined by taking
+            sigmoid over the utility scores:
 
             .. math::
 
@@ -65,8 +66,9 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
     @property
     def model_configuration(self):
         """
-            Constructs the dictionary containing the priors for the parameters for the model according to the
+            Constructs the dictionary containing the priors for the weight vector for the model according to the
             regularization function.
+
             Returns
             -------
                 configuration : dict
@@ -121,13 +123,13 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
 
     def fit(self, X, Y, sampler='vi', tune_size=0.1, thin_thresholds=1, **kwargs):
         """
-            Fit a generalized logit model on the provided set of queries X and preferences Y of those objects. The
+            Fit a generalized logit model on the provided set of queries X and choices Y of those objects. The
             provided queries and corresponding preferences are of a fixed size (numpy arrays). For learning this network
             the binary cross entropy loss function for each object :math:`x_i \in Q` is defined as:
 
             .. math::
 
-                C_{ij} =  -y(i)\log(P_i) - (1 - y(i))\log(1 - P_i) \enspace,
+                C_{i} =  -y(i)\log(P_i) - (1 - y(i))\log(1 - P_i) \enspace,
 
             where :math:`y` is ground-truth choice vector of the objects in the given query set :math:`Q`.
             The value :math:`y(i) = 1` if object :math:`x_i` is chosen else :math:`y(i) = 0`.
