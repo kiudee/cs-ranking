@@ -41,7 +41,7 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
             Parameters
             ----------
             n_objects : int
-                Number of objects to be ranked
+                Number of objects in each query set
             n_object_features : int
                 Dimensionality of the feature space of each object
             n_hidden : int

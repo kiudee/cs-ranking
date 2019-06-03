@@ -20,6 +20,38 @@ from .likelihoods import likelihood_dict, LogLikelihood
 class NestedLogitModel(DiscreteObjectChooser, Learner):
     def __init__(self, n_object_features, n_objects, n_nests=None, loss_function='', regularization='l1', alpha=1e-2,
                  random_state=None, **kwd):
+        """
+            Create an instance of the NestedLogitModel model for learning the discrete choice function.
+
+            .. math::
+
+                P(x_i \\lvert Q) = \\frac{exp(U(x_i))}{\sum_{x_j \in Q} exp(U(x_j))}
+
+            The discrete choice for the given query set :math:`Q` is defined as:
+
+            .. math::
+
+                dc(Q) := \operatorname{argmax}_{x_i \in Q }  \; P(x_i \\lvert Q)
+
+            Parameters
+            ----------
+            n_object_features : int
+                Number of features of the object space
+            n_objects: int
+                Number of objects in each query set
+            loss_function : string , {‘categorical_crossentropy’, ‘binary_crossentropy’, ’categorical_hinge’}
+                Loss function to be used for the discrete choice decision from the query set
+            regularization : string, {‘l1’, ‘l2’}, string
+               Regularizer function (L1 or L2) applied to the `kernel` weights matrix
+            random_state : int or object
+                Numpy random state
+            **kwargs
+                Keyword arguments for the algorithms
+
+            References
+            ----------
+                [1] Kenneth E Train. „Discrete choice methods with simulation“. In: Cambridge university press, 2009. Chap Logit, pp. 41–86.
+        """
         self.logger = logging.getLogger(NestedLogitModel.__name__)
         self.n_object_features = n_object_features
         self.n_objects = n_objects
@@ -46,7 +78,18 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         self.y_nests = None
 
     @property
-    def model_priors(self):
+    def model_configuration(self):
+        """
+            Constructs the dictionary containing the priors for the weight vectors for the model according to the
+            regularization function. The parameters are:
+                * weights :
+                * weights_k :
+
+            Returns
+            -------
+                configuration : dict
+                    Dictionary containing the priors applies on the weights
+        """
         if self._config is None:
             if self.regularization == 'l2':
                 weight = pm.Normal
@@ -60,7 +103,23 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
             self.logger.info('Creating model with config {}'.format(print_dictionary(self._config)))
         return self._config
 
-    def eval_utility(self, weights):
+    def create_nests(self, X):
+        n, n_obj, n_dim = X.shape
+        objects = X.reshape(n * n_obj, n_dim)
+        if self.cluster_model is None:
+            self.cluster_model = MiniBatchKMeans(n_clusters=self.n_nests, random_state=self.random_state).fit(objects)
+            self.features_nests = self.cluster_model.cluster_centers_
+            prediction = self.cluster_model.labels_
+        else:
+            prediction = self.cluster_model.predict(objects)
+        y_nests = []
+        for i in np.arange(0, n * n_obj, step=n_obj):
+            nest_ids = prediction[i:i + n_obj]
+            y_nests.append(nest_ids)
+        y_nests = np.array(y_nests)
+        return y_nests
+
+    def _eval_utility(self, weights):
         utility = tt.zeros(tuple(self.y_nests.shape))
         for i in range(self.n_nests):
             rows, cols = tt.eq(self.y_nests, i).nonzero()
@@ -87,14 +146,14 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         p = pni_k * pn_k
         return p
 
-    def eval_utility_np(self, x_t, y_nests, weights):
+    def _eval_utility_np(self, x_t, y_nests, weights):
         utility = np.zeros(tuple(y_nests.shape))
         for i in range(self.n_nests):
             rows, cols = np.where(y_nests == i)
             utility[rows, cols] = np.dot(x_t[rows, cols], weights[i])
         return utility
 
-    def get_probability_np(self, y_nests, utility, lambda_k, utility_k):
+    def _get_probability_np(self, y_nests, utility, lambda_k, utility_k):
         n_instances, n_objects = y_nests.shape
         pni_k = np.zeros((n_instances, n_objects))
         ivm = np.zeros((n_instances, self.n_nests))
@@ -113,23 +172,27 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         p = pni_k * pn_k
         return p
 
-    def create_nests(self, X):
-        n, n_obj, n_dim = X.shape
-        objects = X.reshape(n * n_obj, n_dim)
-        if self.cluster_model is None:
-            self.cluster_model = MiniBatchKMeans(n_clusters=self.n_nests, random_state=self.random_state).fit(objects)
-            self.features_nests = self.cluster_model.cluster_centers_
-            prediction = self.cluster_model.labels_
-        else:
-            prediction = self.cluster_model.predict(objects)
-        y_nests = []
-        for i in np.arange(0, n * n_obj, step=n_obj):
-            nest_ids = prediction[i:i + n_obj]
-            y_nests.append(nest_ids)
-        y_nests = np.array(y_nests)
-        return y_nests
-
     def construct_model(self, X, Y):
+        """
+            Constructs the nested logit model.
+
+            .. math::
+
+                P_i = P(x_i \\lvert Q) = \\frac{exp(U(x_i))}{\sum_{x_j \in Q} exp(U(x_j))}
+
+            Parameters
+            ----------
+            X : numpy array
+                (n_instances, n_objects, n_features)
+                Feature vectors of the objects
+            Y : numpy array
+                (n_instances, n_objects)
+                Preferences in the form of discrete choices for given objects
+
+            Returns
+            -------
+             model : pymc3 Model :class:`pm.Model`
+        """
         y_nests = self.create_nests(X)
         with pm.Model() as self.model:
             self.Xt = theano.shared(X)
@@ -137,10 +200,10 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
             self.y_nests = theano.shared(y_nests)
             shapes = {'weights': self.n_object_features, 'weights_k': self.n_object_features}
 
-            weights_dict = create_weight_dictionary(self.model_priors, shapes)
+            weights_dict = create_weight_dictionary(self.model_configuration, shapes)
             lambda_k = pm.Uniform('lambda_k', self.alpha, 1.0, shape=self.n_nests)
             weights = (weights_dict['weights'] / lambda_k[:, None])
-            utility = self.eval_utility(weights)
+            utility = self._eval_utility(weights)
             utility_k = tt.dot(self.features_nests, weights_dict['weights_k'])
             self.p = self.get_probability(utility, lambda_k, utility_k)
 
@@ -148,6 +211,32 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         self.logger.info("Model construction completed")
 
     def fit(self, X, Y, sampler="vi", **kwargs):
+        """
+            Fit a nested logit model on the provided set of queries X and choices Y of those objects. The
+            provided queries and corresponding preferences are of a fixed size (numpy arrays). For learning this network
+            the categorical cross entropy loss function for each object :math:`x_i \in Q` is defined as:
+
+            .. math::
+
+                C_{i} =  -y(i)\log(P_i) \enspace,
+
+            where :math:`y` is ground-truth discrete choice vector of the objects in the given query set :math:`Q`.
+            The value :math:`y(i) = 1` if object :math:`x_i` is chosen else :math:`y(i) = 0`.
+
+            Parameters
+            ----------
+            X : numpy array (n_instances, n_objects, n_features)
+                Feature vectors of the objects
+            Y : numpy array (n_instances, n_objects)
+                Choices for given objects in the query
+            sampler : {‘vi’, ‘metropolis’, ‘nuts’}, string
+                The sampler used to estimate the posterior mean and mass matrix from the trace.
+                * **vi** : Run ADVI to estimate posterior mean and diagonal mass matrix
+                * **metropolis** : Use the MAP as starting point and Metropolis-Hastings sampler
+                * **nuts** : Use the No-U-Turn sampler
+            **kwargs :
+                Keyword arguments for the fit function
+        """
         self.construct_model(X, Y)
         kwargs['random_seed'] = self.random_state.randint(2 ** 32, dtype='uint32')
         callbacks = kwargs['vi_params'].get('callbacks', [])
@@ -202,8 +291,8 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         lambda_k = np.array([mean_trace['lambda_k__{}'.format(i)] for i in range(self.n_nests)])
         weights = (weights / lambda_k[:, None])
         utility_k = np.dot(self.features_nests, weights_k)
-        utility = self.eval_utility_np(X, y_nests, weights)
-        scores = self.get_probability_np(y_nests, utility, lambda_k, utility_k)
+        utility = self._eval_utility_np(X, y_nests, weights)
+        scores = self._get_probability_np(y_nests, utility, lambda_k, utility_k)
         return scores
 
     def predict(self, X, **kwargs):
@@ -215,11 +304,23 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
     def predict_for_scores(self, scores, **kwargs):
         return DiscreteObjectChooser.predict_for_scores(self, scores, **kwargs)
 
-    def clear_memory(self, **kwargs):
-        self.logger.info("Clearing memory")
-        pass
-
     def set_tunable_parameters(self, alpha=None, n_nests=None, loss_function='', regularization="l1", **point):
+        """
+            Set tunable parameters of the Multinomial Logit model to the values provided.
+
+            Parameters
+            ----------
+            alpha: float (range : [0,1])
+                The lower bound of the correlations between the objects in a nest
+            n_nests: int (range : [2,n_objects])
+                The number of nests in which the objects are divided
+            loss_function : string , {‘categorical_crossentropy’, ‘binary_crossentropy’, ’categorical_hinge’}
+                Loss function to be used for the discrete choice decision from the query set
+            regularization : string, {‘l1’, ‘l2’}, string
+               Regularizer function (L1 or L2) applied to the `kernel` weights matrix
+            point: dict
+                Dictionary containing parameter values which are not tuned for the network
+        """
         if alpha is not None:
             self.alpha = alpha
         if n_nests is None:
