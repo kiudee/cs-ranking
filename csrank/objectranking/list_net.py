@@ -25,16 +25,15 @@ class ListNet(Learner, ObjectRanker):
                  batch_normalization=False, kernel_regularizer=l2(l=1e-4), activation="selu",
                  kernel_initializer='lecun_normal', optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
                  metrics=[zero_one_rank_loss_for_scores_ties], batch_size=256, random_state=None, **kwargs):
-        """ Create an instance of the ListNet architecture.
-            ListNet trains a latent utility model based on top-k-subrankings of the objects.
-            A listwise loss function like the negative Plackett-Luce likelihood is used for training.
-            For example for query set :math:`Q = \{x_1,x_2,x_3\}`, the scores are :math:`Q = (s_1,s_2,s_3)`
-            and the ranking is :math:`\pi = (3,1,2)`. The  Plackett-Luce likelihood is defined as:
+        """ Create an instance of the ListNet architecture. ListNet trains a latent utility model based on
+            top-k-subrankings of the objects. This network learns a latent utility score for each object in the given
+            query set :math:`Q = \{x_1, \ldots ,x_n\}` using the equation :math:`U(x) = F(x, w)` where :math:`w` is the
+            weight vector. A listwise loss function like the negative Plackett-Luce likelihood is used for training.
+            The ranking for the given query set :math:`Q` is defined as:
 
             .. math::
-                P_l(\pi) = \\frac{s_2}{s_1+s_2+s_3} \cdot \\frac{s_3}{s_1+s_3} \cdot \\frac{s_1}{s_1}
 
-            Note: For k=2 we obtain :class:`RankNet` as a special case.
+                ρ(Q)  = \operatorname{argsort}_{x \in Q}  \; U(x)
 
             Parameters
             ----------
@@ -125,8 +124,15 @@ class ListNet(Learner, ObjectRanker):
 
     def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
         """
-            Fit an object ranking learning model on a provided set of queries.
-            The provided queries can be of a fixed size (numpy arrays).
+            Fit an object ranking learning ListNet on the top-k-subrankings in the provided set of queries. The provided
+            queries can be of a fixed size (numpy arrays). For fitting the model we maximize the Plackett-Luce
+            likelihood. For example for query set :math:`Q = \{x_1,x_2,x_3\}`, the scores are :math:`Q = (s_1,s_2,s_3)`
+            and the ranking is :math:`\pi = (3,1,2)`. The  Plackett-Luce likelihood is defined as:
+
+            .. math::
+                P_l(\pi) = \\frac{s_2}{s_1+s_2+s_3} \cdot \\frac{s_3}{s_1+s_3} \cdot \\frac{s_1}{s_1}
+
+            Note: For k=2 we obtain :class:`RankNet` as a special case.
 
             Parameters
             ----------
@@ -153,9 +159,7 @@ class ListNet(Learner, ObjectRanker):
         self.logger.debug("Finished creating the dataset")
 
         self.logger.debug("Creating the model")
-        output = self.construct_model()
-        self.model = Model(inputs=self.input_layer, outputs=output)
-        self.model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
+        self.model = self.construct_model()
         self.logger.debug("Finished creating the model, now fitting...")
         self.model.fit(X, Y, batch_size=self.batch_size, epochs=epochs, callbacks=callbacks,
                        validation_split=validation_split, verbose=verbose, **kwd)
@@ -163,20 +167,30 @@ class ListNet(Learner, ObjectRanker):
 
     def construct_model(self):
         """
-            Construct the ListNet architecture.
-            Weight sharing guarantees that we have a latent utility model for any given object.
+            Construct the ListNet architecture which takes topk-subrankings from the given queries and minimize a
+            listwise loss on the utility scores of top objects. Weight sharing guarantees that we learn the shared
+            weights :math:`w` of the latent utility function :math:`U(x) = F(x, w)`.
+
+            Returns
+            -------
+            model: keras model :class:`Model`
+                ListNet model used to learn the utiliy function using the top-k-subrankings in the provided set of queries.
         """
         hid = [create_input_lambda(i)(self.input_layer) for i in range(self.n_top)]
         for hidden_layer in self.hidden_layers:
             hid = [hidden_layer(x) for x in hid]
         outputs = [self.output_node(x) for x in hid]
         merged = concatenate(outputs)
-        return merged
+        model = Model(inputs=self.input_layer, outputs=merged)
+        model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
+        return model
 
     @property
     def scoring_model(self):
         """
-            Creates a scoring model for the trained ListNet, which predicts the utility scores for given set of objects.
+            Creates a scoring model from the trained ListNet, which predicts the utility scores for given set of objects.
+            This network consist of a sequential network which predicts the utility score for each object :math:`x \in Q`
+            using the latent utility function :math:`U(x) = F(x, w)` where :math:`w` is the weights of the model.
 
             Returns
             -------
@@ -230,8 +244,7 @@ class ListNet(Learner, ObjectRanker):
             self._construct_layers(kernel_regularizer=self.kernel_regularizer,
                                    kernel_initializer=self.kernel_initializer,
                                    activation=self.activation, **self.kwargs)
-            output = self.construct_model()
-            self.model = Model(inputs=self.input_layer, outputs=output)
+            self.model = self.construct_model()
             self.model.load_weights(self.hash_file)
         else:
             self.logger.info("Cannot clear the memory")
