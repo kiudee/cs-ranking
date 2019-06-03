@@ -10,12 +10,15 @@ from .util import generate_complete_pairwise_dataset
 class PairwiseSVMChoiceFunction(PairwiseSVM, ChoiceFunctions):
     def __init__(self, n_object_features, C=1.0, tol=1e-4, normalize=True,
                  fit_intercept=True, random_state=None, **kwargs):
-        """ Create an instance of the PairwiseSVM model for learning a choice function.
-            It learns a linear deterministic utility function of the
-            form :math:`U(x_i) = w \cdot x`, where :math:`x`, where the weight vector :math:`w` is estimated using
-            *pairwise preferences* generated from the choices. For Example, the decision maker is faced with choice set
-            :math:`Q = \{x_1, \ldots ,x_5 \}` and chooses the object :math:`x_4`. Then one can extract the following
-            *pairwise preferences* :math:`x_4 \succ x_1, x_4 \succ x_2, \ldots`.
+        """
+            Create an instance of the :class:`PairwiseSVM` model for learning a choice function.
+            It learns a linear deterministic utility function of the form :math:`U(x) = w \cdot x`, where :math:`w` is
+            the weight vector. It is estimated using *pairwise preferences* generated from the choices.
+            The choice set is defined as:
+
+            .. math::
+
+                c(Q) = \{ x_i \in Q \lvert \, U(x_i) > t \}
 
             Parameters
             ----------
@@ -80,3 +83,6 @@ class PairwiseSVMChoiceFunction(PairwiseSVM, ChoiceFunctions):
 
     def predict(self, X, **kwargs):
         return super().predict(X, **kwargs)
+
+    def set_tunable_parameters(self, C=1.0, tol=1e-4, **point):
+        super().set_tunable_parameters(C=C, tol=tol, **point)

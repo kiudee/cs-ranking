@@ -17,17 +17,19 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
                  optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9), batch_size=256, metrics=None, random_state=None,
                  **kwargs):
         """
-            Create a FATE-network architecture for learning the choice functions.
-            Training complexity is quadratic in the number of objects and prediction complexity is only linear.
-            The first-aggregate-then-evaluate approach learns an embedding of each object and then aggregates that into
-            a context :math:`\\mu_{C(x)}` and then scores each object :math:`x` using a generalized utility function
-            :math:`U (x, \\mu_{C(x)})`.
+            Create a FATE-network architecture for leaning discrete choice function. Training complexity is quadratic in
+            the number of objects and prediction complexity is only linear. The first-aggregate-then-evaluate approach
+            learns an embedding of each object and then aggregates that into a context representation
+            :math:`\\mu_{C(x)}`, where :math`C(x) = Q \setminus \{x\}` and then scores each object :math:`x` using a
+            generalized utility function :math:`U (x, \\mu_{C(x)})`.
+            The context-representation is evaluated as:
 
             .. math::
+                \\mu_{C(x)} = \\frac{1}{\\lvert C(x) \\lvert} \\sum_{y \\in C(x)} \\phi(y)
 
-                \\mu_{C(x)} = \\frac{1}{|C(x)|} \\sum_{y \\in C(x)} \\phi(y)
-
-
+            where :math:`\phi \colon \mathcal{X} \\to \mathcal{Z}` maps each object :math:`y` to an
+            :math:`m`-dimensional embedding space :math:`\mathcal{Z} \subseteq \mathbb{R}^m`.
+            To make it computationally efficient we take the the context as query set :math:`Q`.
             The choice set is defined as:
 
             .. math::
@@ -77,25 +79,29 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
         self.threshold = 0.5
 
     def _construct_layers(self, **kwargs):
-        """ Construct joint layers and [0,1] output nodes
-
-        Connecting the layers is done in join_input_layers.
-
-        Parameters
-        ----------
-        **kwargs
-            Keyword arguments passed into the joint layers
         """
-        self.logger.info(
-            "Construct joint layers hidden units {} and layers {} ".format(
-                self.n_hidden_joint_units,
-                self.n_hidden_joint_layers))
+            Construct basic layers shared by all the objects:
+                * Joint dense hidden layers
+                * Output scoring layer is sigmoid output for choice model
+
+            Connecting the layers is done in join_input_layers and will be done in implementing classes.
+
+            Parameters
+            ----------
+            **kwargs
+                Keyword arguments passed into the joint layers
+        """
+        self.logger.info("Construct joint layers hidden units {} and layers {} ".format(self.n_hidden_joint_units,
+                                                                                        self.n_hidden_joint_layers))
         # Create joint hidden layers:
         self.joint_layers = []
         for i in range(self.n_hidden_joint_layers):
             self.joint_layers.append(Dense(self.n_hidden_joint_units, name="joint_layer_{}".format(i), **kwargs))
         self.logger.info('Construct output score node')
         self.scorer = Dense(1, name="output_node", activation='sigmoid', kernel_regularizer=self.kernel_regularizer)
+
+    def construct_model(self, n_features, n_objects):
+        return super().construct_model(n_features, n_objects)
 
     def fit(self, X, Y, tune_size=0.1, thin_thresholds=1, **kwargs):
         if tune_size > 0:
@@ -124,3 +130,10 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
     def clear_memory(self, **kwargs):
         self.logger.info("Clearing memory")
         super().clear_memory(**kwargs)
+
+    def set_tunable_parameters(self, n_hidden_set_units=32, n_hidden_set_layers=2, n_hidden_joint_units=32,
+                               n_hidden_joint_layers=2, reg_strength=1e-4, learning_rate=1e-3, batch_size=128, **point):
+        super().set_tunable_parameters(n_hidden_set_units=n_hidden_set_units, n_hidden_set_layers=n_hidden_set_layers,
+                                       n_hidden_joint_units=n_hidden_joint_units,
+                                       n_hidden_joint_layers=n_hidden_joint_layers, reg_strength=reg_strength,
+                                       learning_rate=learning_rate, batch_size=batch_size, **point)

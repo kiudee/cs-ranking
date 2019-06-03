@@ -2,8 +2,8 @@ import logging
 
 import tensorflow as tf
 from keras import Input, backend as K, optimizers
-from keras.engine import Model
 from keras.layers import Dense, concatenate
+from keras.models import Model
 from keras.optimizers import SGD
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
@@ -28,7 +28,13 @@ class ListNet(Learner, ObjectRanker):
         """ Create an instance of the ListNet architecture.
             ListNet trains a latent utility model based on top-k-subrankings of the objects.
             A listwise loss function like the negative Plackett-Luce likelihood is used for training.
-            Note: For k=2 we obtain RankNet as a special case.
+            For example for query set :math:`Q = \{x_1,x_2,x_3\}`, the scores are :math:`Q = (s_1,s_2,s_3)`
+            and the ranking is :math:`\pi = (3,1,2)`. The  Plackett-Luce likelihood is defined as:
+
+            .. math::
+                P_l(\pi) = \\frac{s_2}{s_1+s_2+s_3} \cdot \\frac{s_3}{s_1+s_3} \cdot \\frac{s_1}{s_1}
+
+            Note: For k=2 we obtain :class:`RankNet` as a special case.
 
             Parameters
             ----------
@@ -118,6 +124,29 @@ class ListNet(Learner, ObjectRanker):
         return X_topk, Y_topk
 
     def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
+        """
+            Fit an object ranking learning model on a provided set of queries.
+            The provided queries can be of a fixed size (numpy arrays).
+
+            Parameters
+            ----------
+            X : numpy array
+                (n_instances, n_objects, n_features)
+                Feature vectors of the objects
+            Y : numpy array
+                (n_instances, n_objects)
+                Rankings of the given objects
+            epochs : int
+                Number of epochs to run if training for a fixed query size
+            callbacks : list
+                List of callbacks to be called during optimization
+            validation_split : float
+                Percentage of instances to split off to validate on
+            verbose : bool
+                Print verbose information
+            **kwd
+                Keyword arguments for the fit function
+        """
         self.n_objects = X.shape[1]
         self.logger.debug("Creating top-k dataset")
         X, Y = self._create_topk(X, Y)
@@ -133,10 +162,9 @@ class ListNet(Learner, ObjectRanker):
         self.logger.debug("Fitting Complete")
 
     def construct_model(self):
-        """ Construct the ListNet architecture.
-
-        Weight sharing guarantees that we have a latent utility model for any
-        given object.
+        """
+            Construct the ListNet architecture.
+            Weight sharing guarantees that we have a latent utility model for any given object.
         """
         hid = [create_input_lambda(i)(self.input_layer) for i in range(self.n_top)]
         for hidden_layer in self.hidden_layers:
@@ -147,6 +175,14 @@ class ListNet(Learner, ObjectRanker):
 
     @property
     def scoring_model(self):
+        """
+            Creates a scoring model for the trained ListNet, which predicts the utility scores for given set of objects.
+
+            Returns
+            -------
+            scoring_model: keras model :class:`Model`
+                scoring model used to predict utility score for each object
+        """
         if self._scoring_model is None:
             self.logger.info('Creating scoring model')
             inp = Input(shape=(self.n_object_features,))
@@ -176,6 +212,14 @@ class ListNet(Learner, ObjectRanker):
         return super().predict(X, **kwargs)
 
     def clear_memory(self, **kwargs):
+        """
+            Clear the memory, restores the currently fitted model back to prevent memory leaks.
+
+            Parameters
+            ----------
+            **kwargs :
+                Keyword arguments for the function
+        """
         if self.hash_file is not None:
             self.model.save_weights(self.hash_file)
             K.clear_session()
@@ -194,7 +238,24 @@ class ListNet(Learner, ObjectRanker):
 
     def set_tunable_parameters(self, n_hidden=32, n_units=2, reg_strength=1e-4, learning_rate=1e-3, batch_size=128,
                                **point):
+        """
+            Set tunable parameters of the ListNet network to the values provided.
 
+            Parameters
+            ----------
+            n_hidden: int
+                Number of hidden layers used in the scoring network
+            n_units: int
+                Number of hidden units in each layer of the scoring network
+            reg_strength: float
+                Regularization strength of the regularizer function applied to the `kernel` weights matrix
+            learning_rate: float
+                Learning rate of the stochastic gradient descent algorithm used by the network
+            batch_size: int
+                Batch size to use during training
+            point: dict
+                Dictionary containing parameter values which are not tuned for the network
+        """
         self.n_hidden = n_hidden
         self.n_units = n_units
         self.kernel_regularizer = l2(reg_strength)

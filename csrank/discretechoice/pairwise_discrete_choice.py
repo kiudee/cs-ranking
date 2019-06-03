@@ -8,12 +8,15 @@ from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 class PairwiseSVMDiscreteChoiceFunction(PairwiseSVM, DiscreteObjectChooser):
     def __init__(self, n_object_features, C=1.0, tol=1e-4, normalize=True,
                  fit_intercept=True, random_state=None, **kwargs):
-        """ Create an instance of the PairwiseSVM model for learning a discrete choice function.
-            It learns a linear deterministic utility function of the
-            form :math:`U(x_i) = w \cdot x`, where :math:`x`, where the weight vector :math:`w` is estimated using
-            *pairwise preferences* generated from the choices. For Example, the decision maker is faced with choice set
-            :math:`Q = \{x_1, \ldots ,x_5 \}` and chooses the object :math:`x_4`. Then one can extract the following
-            *pairwise preferences* :math:`x_4 \succ x_1, x_4 \succ x_2, \ldots`.
+        """
+            Create an instance of the :class:`PairwiseSVM` model for learning a discrete choice function.
+            It learns a linear deterministic utility function of the form :math:`U(x) = w \cdot x`, where :math:`w` is
+            the weight vector. It is estimated using *pairwise preferences* generated from the discrete choices.
+            The discrete choice for the given query set :math:`Q` is defined as:
+
+            .. math::
+
+                ρ(Q)  = \operatorname{argmax}_{x \in Q}  \; U(x)
 
             Parameters
             ----------
@@ -67,3 +70,6 @@ class PairwiseSVMDiscreteChoiceFunction(PairwiseSVM, DiscreteObjectChooser):
 
     def predict(self, X, **kwargs):
         return super().predict(X, **kwargs)
+
+    def set_tunable_parameters(self, C=1.0, tol=1e-4, **point):
+        super().set_tunable_parameters(C=C, tol=tol, **point)

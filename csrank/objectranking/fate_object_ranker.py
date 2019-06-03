@@ -16,15 +16,23 @@ class FATEObjectRanker(FATENetwork, ObjectRanker):
                  loss_function=hinged_rank_loss, metrics=[zero_one_rank_loss_for_scores_ties], random_state=None,
                  **kwargs):
         """
-            Create a FATE-network architecture for object ranking.
-            Training complexity is quadratic in the number of objects and prediction complexity is only linear.
-            The first-aggregate-then-evaluate approach learns an embedding of each object and then aggregates that into
-            a context :math:`\\mu_{C(x)}` and then scores each object :math:`x` using a generalized utility function
-            :math:`U (x, \\mu_{C(x)})`.
+            Create a FATE-network architecture for leaning discrete choice function. Training complexity is quadratic in
+            the number of objects and prediction complexity is only linear. The first-aggregate-then-evaluate approach
+            learns an embedding of each object and then aggregates that into a context representation
+            :math:`\\mu_{C(x)}`, where :math`C(x) = Q \setminus \{x\}` and then scores each object :math:`x` using a
+            generalized utility function :math:`U (x, \\mu_{C(x)})`.
+            The context-representation is evaluated as:
 
             .. math::
+                \\mu_{C(x)} = \\frac{1}{\\lvert C(x) \\lvert} \\sum_{y \\in C(x)} \\phi(y)
 
-                \\mu_{C(x)} = \\frac{1}{|C(x)|} \\sum_{y \\in C(x)} \\phi(y)
+            where :math:`\phi \colon \mathcal{X} \\to \mathcal{Z}` maps each object :math:`y` to an
+            :math:`m`-dimensional embedding space :math:`\mathcal{Z} \subseteq \mathbb{R}^m`.
+            To make it computationally efficient we take the the context as query set :math:`Q`.
+            The ranking for the given query set :math:`Q` is defined as:
+
+            .. math::
+                ρ(Q)  = \operatorname{argsort}_{x \in Q}  \; U (x, \\mu_{C(x)})
 
             Parameters
             ----------
@@ -66,6 +74,9 @@ class FATEObjectRanker(FATENetwork, ObjectRanker):
                          optimizer=optimizer, batch_size=batch_size, random_state=random_state, **kwargs)
         self.logger = logging.getLogger(FATEObjectRanker.__name__)
 
+    def construct_model(self, n_features, n_objects):
+        return super().construct_model(n_features, n_objects)
+
     def fit(self, X, Y, **kwd):
         super().fit(X, Y, **kwd)
 
@@ -84,3 +95,10 @@ class FATEObjectRanker(FATENetwork, ObjectRanker):
     def clear_memory(self, **kwargs):
         self.logger.info("Clearing memory")
         super().clear_memory(**kwargs)
+
+    def set_tunable_parameters(self, n_hidden_set_units=32, n_hidden_set_layers=2, n_hidden_joint_units=32,
+                               n_hidden_joint_layers=2, reg_strength=1e-4, learning_rate=1e-3, batch_size=128, **point):
+        super().set_tunable_parameters(n_hidden_set_units=n_hidden_set_units, n_hidden_set_layers=n_hidden_set_layers,
+                                       n_hidden_joint_units=n_hidden_joint_units,
+                                       n_hidden_joint_layers=n_hidden_joint_layers, reg_strength=reg_strength,
+                                       learning_rate=learning_rate, batch_size=batch_size, **point)

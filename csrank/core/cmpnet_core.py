@@ -62,10 +62,50 @@ class CmpNetCore(Learner):
                                   range(self.n_hidden)]
         assert len(self.hidden_layers) == self.n_hidden
 
+    def _convert_instances(self, X, Y):
+        raise NotImplemented
+
+    def construct_model(self):
+        """
+            Construct the CmpNEt which is used to approximate the :math:`U_1(x_i,x_j)`. For each pair of objects in
+            :math:`x_i, x_j \in Q` we construct two sub-networks with weight sharing in all hidden layers.
+            The output of these networks are connected to two sigmoid units that produces the outputs of the network,
+            i.e., :math:`U(x_1,x_2), U(x_2,x_1)` for each pair of objects are evaluated.
+            :math:`U(x_1,x_2)` is a measure of how favorable it is to choose :math:`x_1` over :math:`x_2`.
+            For learning this network the binary cross entropy loss function for a pair of example :math:`x_i, x_j \in Q`
+            is defined as:
+
+            .. math::
+
+                C_{ij} =  -\\tilde{P_{ij}}\log(U(x_i,x_j)) - (1 - \\tilde{P_{ij}})\log(U(x_j,x_i)) \enspace,
+
+            where :math:`\\tilde{P_{ij}}` is ground truth probability of the preference of :math:`x_i` over :math:`x_j`.
+            :math:`\\tilde{P_{ij}} = 1` if :math:`x_i \succ x_j` else 0.
+
+            Returns
+            -------
+            model: keras :class:`Model`
+                Neural network to learn the CmpNet utility score
+        """
+        x1x2 = concatenate([self.x1, self.x2])
+        x2x1 = concatenate([self.x2, self.x1])
+        self.logger.debug('Creating the model')
+        for hidden in self.hidden_layers:
+            x1x2 = hidden(x1x2)
+            x2x1 = hidden(x2x1)
+        merged_left = concatenate([x1x2, x2x1])
+        merged_right = concatenate([x2x1, x1x2])
+        N_g = self.output_node(merged_left)
+        N_l = self.output_node(merged_right)
+        merged_output = concatenate([N_g, N_l])
+        model = Model(inputs=[self.x1, self.x2], outputs=merged_output)
+        model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
+        return model
+
     def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
         """
-            Fit a generic preference learning model on a provided set of queries.
-            The provided queries can be of a fixed size (numpy arrays).
+            Fit a generic preference learning CmptNet on the provided set of queries X and preferences Y of those
+            objects. The provided queries and corresponding preferences are of a fixed size (numpy arrays).
 
             Parameters
             ----------
@@ -88,33 +128,12 @@ class CmpNetCore(Learner):
         x1, x2, y_double = self._convert_instances(X, Y)
 
         self.logger.debug("Instances created {}".format(x1.shape[0]))
-        merged_output = self.construct_model()
-
-        self.model = Model(inputs=[self.x1, self.x2], outputs=merged_output)
-        self.model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
+        self.model = self.construct_model()
 
         self.logger.debug('Finished Creating the model, now fitting started')
-
         self.model.fit([x1, x2], y_double, batch_size=self.batch_size, epochs=epochs, callbacks=callbacks,
                        validation_split=validation_split, verbose=verbose, **kwd)
         self.logger.debug('Fitting Complete')
-
-    def _convert_instances(self, X, Y):
-        raise NotImplemented
-
-    def construct_model(self):
-        x1x2 = concatenate([self.x1, self.x2])
-        x2x1 = concatenate([self.x2, self.x1])
-        self.logger.debug('Creating the model')
-        for hidden in self.hidden_layers:
-            x1x2 = hidden(x1x2)
-            x2x1 = hidden(x2x1)
-        merged_left = concatenate([x1x2, x2x1])
-        merged_right = concatenate([x2x1, x1x2])
-        N_g = self.output_node(merged_left)
-        N_l = self.output_node(merged_right)
-        merged_output = concatenate([N_g, N_l])
-        return merged_output
 
     def predict_pair(self, a, b, **kwargs):
         return self.model.predict([a, b], **kwargs)
@@ -137,6 +156,14 @@ class CmpNetCore(Learner):
         return scores
 
     def clear_memory(self, **kwargs):
+        """
+            Clear the memory, restores the currently fitted model back to prevent memory leaks.
+
+            Parameters
+            ----------
+            **kwargs :
+                Keyword arguments for the function
+        """
         if self.hash_file is not None:
             self.model.save_weights(self.hash_file)
             K.clear_session()
@@ -147,17 +174,31 @@ class CmpNetCore(Learner):
             self._construct_layers(kernel_regularizer=self.kernel_regularizer,
                                    kernel_initializer=self.kernel_initializer,
                                    activation=self.activation, **self.kwargs)
-            output = self.construct_model()
-            self.model = Model(inputs=[self.x1, self.x2], outputs=output)
+            self.model = self.construct_model()
             self.model.load_weights(self.hash_file)
         else:
             self.logger.info("Cannot clear the memory")
 
-    def set_tunable_parameters(self, n_hidden=32,
-                               n_units=2,
-                               reg_strength=1e-4,
-                               learning_rate=1e-3,
-                               batch_size=128, **point):
+    def set_tunable_parameters(self, n_hidden=32, n_units=2, reg_strength=1e-4, learning_rate=1e-3, batch_size=128,
+                               **point):
+        """
+            Set tunable parameters of the CmpNet network to the values provided.
+
+            Parameters
+            ----------
+            n_hidden: int
+                Number of hidden layers used in the scoring network
+            n_units: int
+                Number of hidden units in each layer of the scoring network
+            reg_strength: float
+                Regularization strength of the regularizer function applied to the `kernel` weights matrix
+            learning_rate: float
+                Learning rate of the stochastic gradient descent algorithm used by the network
+            batch_size: int
+                Batch size to use during training
+            point: dict
+                Dictionary containing parameter values which are not tuned for the network
+        """
         self.n_hidden = n_hidden
         self.n_units = n_units
         self.kernel_regularizer = l2(reg_strength)

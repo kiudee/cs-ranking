@@ -65,8 +65,34 @@ class FETAObjectRanker(FETANetwork, ObjectRanker):
                          metrics=metrics, batch_size=batch_size, random_state=random_state, **kwargs)
         self.logger = logging.getLogger(FETAObjectRanker.__name__)
 
-    def fit(self, X, Y, **kwd):
-        super().fit(X, Y, **kwd)
+    def construct_model(self):
+        return super().construct_model()
+
+    def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
+        """
+            Fit an object ranking learning model on a provided set of queries.
+            The provided queries are of a fixed size (numpy arrays).
+
+            Parameters
+            ----------
+            X : numpy array
+                (n_instances, n_objects, n_features)
+                Feature vectors of the objects
+            Y : numpy array
+                (n_instances, n_objects)
+                Rankings of the given objects
+            epochs : int
+                Number of epochs to run if training for a fixed query size
+            callbacks : list
+                List of callbacks to be called during optimization
+            validation_split : float
+                Percentage of instances to split off to validate on
+            verbose : bool
+                Print verbose information
+            **kwd
+                Keyword arguments for the fit function
+        """
+        super().fit(X, Y, epochs=epochs, callbacks=callbacks, validation_split=validation_split, verbose=verbose, **kwd)
 
     def _predict_scores_fixed(self, X, **kwargs):
         return super()._predict_scores_fixed(X, **kwargs)
@@ -83,3 +109,8 @@ class FETAObjectRanker(FETANetwork, ObjectRanker):
     def clear_memory(self, **kwargs):
         self.logger.info("Clearing memory")
         super().clear_memory(**kwargs)
+
+    def set_tunable_parameters(self, n_hidden=32, n_units=2, reg_strength=1e-4, learning_rate=1e-3, batch_size=128,
+                               **point):
+        super().set_tunable_parameters(n_hidden=n_hidden, n_units=n_units, reg_strength=reg_strength,
+                                       learning_rate=learning_rate, batch_size=batch_size, **point)

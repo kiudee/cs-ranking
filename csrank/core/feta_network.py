@@ -46,7 +46,6 @@ class FETANetwork(Learner):
             if key not in allowed_dense_kwargs:
                 del kwargs[key]
         self.kwargs = kwargs
-
         self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
                                activation=self.activation, **self.kwargs)
         self._pairwise_model = None
@@ -149,6 +148,22 @@ class FETANetwork(Learner):
         return scores
 
     def construct_model(self):
+        """
+            Construct the :math:`1`-st order and :math:`0`-th order models, which are used to approximate the
+            :math:`U_1(x, C(x))` and the :math:`U_0(x)` utilities respectively. For each pair of objects in
+            :math:`x_i, x_j \in Q` :math:`U_1(x, C(x))` we construct :class:`CmpNetCore` with weight sharing to
+            approximate a pairwise-matrix. A pairwise matrix with index (i,j) corresponds to the :math:`U_1(x_i,x_j)`
+            is a measure of how favorable it is to choose :math:`x_i` over :math:`x_j`. Using this matrix we calculate
+            the borda score for each object to calculate :math:`U_1(x, C(x))`. For `0`-th order model we construct
+            :math:`\lvert Q \lvert` sequential networks whose weights are shared to evaluate the :math:`U_0(x)` for
+            each object in the query set :math:`Q`. The output mode is using linear activation.
+
+            Returns
+            -------
+            model: keras :class:`Model`
+                Neural network to learn the FETA utility score
+        """
+
         def create_input_lambda(i):
             return Lambda(lambda x: x[:, i])
 
@@ -197,7 +212,10 @@ class FETANetwork(Learner):
         self.logger.debug('1st order model finished')
         if self._use_zeroth_model:
             scores = add([scores, zeroth_order_scores])
-        return scores
+        model = Model(inputs=self.input_layer, outputs=scores)
+        self.logger.debug('Compiling complete model...')
+        model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
+        return model
 
     def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
         """
@@ -211,8 +229,7 @@ class FETANetwork(Learner):
                 Feature vectors of the objects
             Y : numpy array
                 (n_instances, n_objects)
-                Preferences in form of Orderings or Choices for given n_objects
-
+                Preferences in form of rankings or choices for given objects
             epochs : int
                 Number of epochs to run if training for a fixed query size
             callbacks : list
@@ -221,17 +238,13 @@ class FETANetwork(Learner):
                 Percentage of instances to split off to validate on
             verbose : bool
                 Print verbose information
-            **kwd
+            **kwd :
                 Keyword arguments for the fit function
         """
         self.logger.debug('Enter fit function...')
 
         X, Y = self.sub_sampling(X, Y)
-        scores = self.construct_model()
-        self.model = Model(inputs=self.input_layer, outputs=scores)
-
-        self.logger.debug('Compiling complete model...')
-        self.model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
+        self.model = self.construct_model()
         self.logger.debug('Starting gradient descent...')
 
         self.model.fit(x=X, y=Y, batch_size=self.batch_size, epochs=epochs, callbacks=callbacks,
@@ -266,6 +279,24 @@ class FETANetwork(Learner):
 
     def set_tunable_parameters(self, n_hidden=32, n_units=2, reg_strength=1e-4, learning_rate=1e-3,
                                batch_size=128, **point):
+        """
+            Set tunable parameters of the FETA-network to the values provided.
+
+            Parameters
+            ----------
+            n_hidden: int
+                Number of hidden layers used in the scoring network
+            n_units: int
+                Number of hidden units in each layer of the scoring network
+            reg_strength: float
+                Regularization strength of the regularizer function applied to the `kernel` weights matrix
+            learning_rate: float
+                Learning rate of the stochastic gradient descent algorithm used by the network
+            batch_size: int
+                Batch size to use during training
+            point: dict
+                Dictionary containing parameter values which are not tuned for the network
+        """
         self.n_hidden = n_hidden
         self.n_units = n_units
         self.kernel_regularizer = l2(reg_strength)
@@ -280,6 +311,14 @@ class FETANetwork(Learner):
                                 ' called: {}'.format(print_dictionary(point)))
 
     def clear_memory(self, **kwargs):
+        """
+            Clear the memory, restores the currently fitted model back to prevent memory leaks.
+
+            Parameters
+            ----------
+            **kwargs :
+                Keyword arguments for the function
+        """
         if self.hash_file is not None:
             self.model.save_weights(self.hash_file)
             K.clear_session()
@@ -292,8 +331,7 @@ class FETANetwork(Learner):
             self._construct_layers(kernel_regularizer=self.kernel_regularizer,
                                    kernel_initializer=self.kernel_initializer,
                                    activation=self.activation, **self.kwargs)
-            scores = self.construct_model()
-            self.model = Model(inputs=self.input_layer, outputs=scores)
+            self.model = self.construct_model()
             self.model.load_weights(self.hash_file)
         else:
             self.logger.info("Cannot clear the memory")

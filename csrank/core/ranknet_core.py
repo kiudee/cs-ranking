@@ -58,6 +58,44 @@ class RankNetCore(Learner):
                                   range(self.n_hidden)]
         assert len(self.hidden_layers) == self.n_hidden
 
+    def construct_model(self):
+        """
+            Construct the RankNet which is used to approximate the :math:`U(x)` utility. For each pair of objects in
+            :math:`x_i, x_j \in Q` we construct two sub-networks with weight sharing in all hidden layer apart form the
+            last layer for which weights are mirrored version of each other. The output of these networks are connected
+            to a sigmoid unit that produces the output :math:`P_{ij}` which is the probability of preferring object
+            :math:`x_i` over :math:`x_j`,  to approximate the :math:`U(x)`.
+            For learning this network the binary cross entropy loss function for a pair of example :math:`x_i, x_j \in Q`
+            is defined as:
+
+            .. math::
+
+                C_{ij} =  -\\tilde{P_{ij}}\log(P_{ij}) - (1 - \\tilde{P_{ij}})\log(1 - P{ij}) \enspace,
+
+            where :math:`\\tilde{P_{ij}}` is ground truth probability of the preference of :math:`x_i` over :math:`x_j`.
+            :math:`\\tilde{P_{ij}} = 1` if :math:`x_i \succ x_j` else 0.
+
+            Returns
+            -------
+            model: keras :class:`Model`
+                Neural network to learn the RankNet utility score
+        """
+        # weight sharing using same hidden layer for two objects
+        enc_x1 = self.hidden_layers[0](self.x1)
+        enc_x2 = self.hidden_layers[0](self.x2)
+        neg_x2 = Lambda(lambda x: -x)(enc_x2)
+        for hidden_layer in self.hidden_layers[1:]:
+            enc_x1 = hidden_layer(enc_x1)
+            neg_x2 = hidden_layer(neg_x2)
+        merged_inputs = add([enc_x1, neg_x2])
+        output = self.output_node(merged_inputs)
+        model = Model(inputs=[self.x1, self.x2], outputs=output)
+        model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
+        return model
+
+    def _convert_instances(self, X, Y):
+        raise NotImplemented
+
     def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
         """
             Fit a generic preference learning model on a provided set of queries.
@@ -71,7 +109,6 @@ class RankNetCore(Learner):
             Y : numpy array
                 (n_instances, n_objects)
                 Preferences in form of Orderings or Choices for given n_objects
-
             epochs : int
                 Number of epochs to run if training for a fixed query size
             callbacks : list
@@ -86,12 +123,8 @@ class RankNetCore(Learner):
         self.logger.debug("Instances created {}".format(X1.shape[0]))
         self.logger.debug('Creating the model')
 
-        output = self.construct_model()
-
         # Model with input as two objects and output as probability of x1>x2
-        self.model = Model(inputs=[self.x1, self.x2], outputs=output)
-
-        self.model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
+        self.model = self.construct_model()
         self.logger.debug('Finished Creating the model, now fitting started')
 
         self.model.fit([X1, X2], Y_single, batch_size=self.batch_size, epochs=epochs, callbacks=callbacks,
@@ -101,6 +134,13 @@ class RankNetCore(Learner):
 
     @property
     def scoring_model(self):
+        """
+            Creates a scoring model for the trained ListNet, which predicts the utility scores for given set of objects.
+            Returns
+            -------
+             model: keras :class:`Model`
+                Neural network to learn the non-linear utility score
+        """
         if self._scoring_model is None:
             self.logger.info('creating scoring model')
             inp = Input(shape=(self.n_object_features,))
@@ -110,21 +150,6 @@ class RankNetCore(Learner):
             output_score = self.output_node(x)
             self._scoring_model = Model(inputs=[inp], outputs=output_score)
         return self._scoring_model
-
-    def _convert_instances(self, X, Y):
-        raise NotImplemented
-
-    def construct_model(self):
-        # weight sharing using same hidden layer for two objects
-        enc_x1 = self.hidden_layers[0](self.x1)
-        enc_x2 = self.hidden_layers[0](self.x2)
-        neg_x2 = Lambda(lambda x: -x)(enc_x2)
-        for hidden_layer in self.hidden_layers[1:]:
-            enc_x1 = hidden_layer(enc_x1)
-            neg_x2 = hidden_layer(neg_x2)
-        merged_inputs = add([enc_x1, neg_x2])
-        output = self.output_node(merged_inputs)
-        return output
 
     def _predict_scores_fixed(self, X, **kwargs):
         n_instances, n_objects, n_features = X.shape
@@ -136,6 +161,14 @@ class RankNetCore(Learner):
         return scores
 
     def clear_memory(self, **kwargs):
+        """
+            Clear the memory, restores the currently fitted model back to prevent memory leaks.
+
+            Parameters
+            ----------
+            **kwargs :
+                Keyword arguments for the function
+        """
         if self.hash_file is not None:
             self.model.save_weights(self.hash_file)
             K.clear_session()
@@ -147,14 +180,31 @@ class RankNetCore(Learner):
             self._construct_layers(kernel_regularizer=self.kernel_regularizer,
                                    kernel_initializer=self.kernel_initializer,
                                    activation=self.activation, **self.kwargs)
-            output = self.construct_model()
-            self.model = Model(inputs=[self.x1, self.x2], outputs=output)
+            self.model = self.construct_model()
             self.model.load_weights(self.hash_file)
         else:
             self.logger.info("Cannot clear the memory")
 
     def set_tunable_parameters(self, n_hidden=32, n_units=2, reg_strength=1e-4, learning_rate=1e-3, batch_size=128,
                                **point):
+        """
+            Set tunable parameters of the RankNet network to the values provided.
+
+            Parameters
+            ----------
+            n_hidden: int
+                Number of hidden layers used in the scoring network
+            n_units: int
+                Number of hidden units in each layer of the scoring network
+            reg_strength: float
+                Regularization strength of the regularizer function applied to the `kernel` weights matrix
+            learning_rate: float
+                Learning rate of the stochastic gradient descent algorithm used by the network
+            batch_size: int
+                Batch size to use during training
+            point: dict
+                Dictionary containing parameter values which are not tuned for the network
+        """
         self.n_hidden = n_hidden
         self.n_units = n_units
         self.kernel_regularizer = l2(reg_strength)
