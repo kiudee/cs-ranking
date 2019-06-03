@@ -75,7 +75,7 @@ class Learner(Tunable, metaclass=ABCMeta):
     def predict(self, X, **kwargs):
         """
             Predict preferences in the form of rankings or choices for a given collection of sets of objects called
-            a query set.
+            a query set using the function :meth:`.predict_for_scores`.
 
             Parameters
             ----------

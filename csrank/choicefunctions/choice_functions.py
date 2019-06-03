@@ -16,22 +16,25 @@ class ChoiceFunctions(metaclass=ABCMeta):
         return CHOICE_FUNCTION
 
     def predict_for_scores(self, scores, **kwargs):
-        """ Predict choices for scores for a given collection of sets of objects.
+        """
+            Binary choice vector :math:`y` represents the choices amongst the objects in :math:`Q`, such that
+            :math:`y(k) = 1` represents that the object :math:`x_k` is chosen and :math:`y(k) = 0` represents it is not
+            chosen. Predict choices for the scores for a given collection of sets of objects (query sets).
 
-        Parameters
-        ----------
-        scores : dict or numpy array
-            Dictionary with a mapping from ranking size to numpy arrays
-            or a single numpy array of size containing scores of each object of size:
-            (n_instances, n_objects)
+            Parameters
+            ----------
+            scores : dict or numpy array
+                Dictionary with a mapping from query set size to numpy arrays
+                or a single numpy array of size containing scores of each object of size:
+                (n_instances, n_objects)
 
 
-        Returns
-        -------
-        Y : dict or numpy array
-            Dictionary with a mapping from ranking size to numpy arrays
-            or a single numpy array containing predicted ranking of size:
-            (n_instances, n_objects)
+            Returns
+            -------
+            Y : dict or numpy array
+                Dictionary with a mapping from query set size to numpy arrays
+                or a single numpy array containing predicted choice vectors of size:
+                (n_instances, n_objects)
         """
 
         if isinstance(scores, dict):

@@ -358,11 +358,11 @@ class FATENetwork(FATENetworkCore):
             Parameters
             ----------
             X : numpy array or dict
-                (n_instances, n_objects, n_features) if numpy array or
-                map from n_objects to numpy arrays
+                Feature vectors of the objects
+                (n_instances, n_objects, n_features) if numpy array or map from n_objects to numpy arrays
             Y : numpy array or dict
-                (n_instances, n_objects) if numpy array or
-                map from n_objects to numpy arrays
+                Preferences in form of rankings or choices for given objects
+                (n_instances, n_objects) if numpy array or map from n_objects to numpy arrays
             epochs : int
                 Number of epochs to run if training for a fixed query size or
                 number of epochs of the meta gradient descent for the variadic model
@@ -371,7 +371,7 @@ class FATENetwork(FATENetworkCore):
                 model
             callbacks : list
                 List of callbacks to be called during optimization
-            validation_split : float
+            validation_split : float (range : [0,1])
                 Percentage of instances to split off to validate on
             verbose : bool
                 Print verbose information

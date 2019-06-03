@@ -14,9 +14,10 @@ class ObjectRanker(metaclass=ABCMeta):
 
     def predict_for_scores(self, scores, **kwargs):
         """
-            :math:`\pi` represents the ranking amongst the objects in :math:`Q`, such that :math:`\pi(k)` is the
-            position of the :math:`k`-th object :math:`x_k`, and :math:`\pi^{-1}(k)` is the index of the object on
-            position :math:`k`. Predict rankings for the scores for a given collection of sets of objects (query set).
+            The permutation vector :math:`\pi` represents the ranking amongst the objects in :math:`Q`, such that
+            :math:`\pi(k)` is the position of the :math:`k`-th object :math:`x_k`, and :math:`\pi^{-1}(k)` is the index
+            of the object on position :math:`k`. Predict rankings for the scores for a given collection of sets of
+            objects (query sets).
 
             Parameters
             ----------

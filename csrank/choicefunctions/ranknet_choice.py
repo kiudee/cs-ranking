@@ -88,17 +88,48 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
 
     def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, tune_size=0.1, thin_thresholds=1, verbose=0,
             **kwd):
+        """
+            Fit RankNet model for learning choice function on a provided set of queries. The provided queries can be of 
+            a fixed size (numpy arrays). For learning this network the binary cross entropy loss function for a pair of
+            objects :math:`x_i, x_j \in Q` is defined as:
+
+            .. math::
+
+                C_{ij} =  -\\tilde{P_{ij}}\log(P_{ij}) - (1 - \\tilde{P_{ij}})\log(1 - P{ij}) \enspace,
+
+            where :math:`\\tilde{P_{ij}}` is ground truth probability of the preference of :math:`x_i` over :math:`x_j`.
+            :math:`\\tilde{P_{ij}} = 1` if :math:`x_i \succ x_j` else :math:`\\tilde{P_{ij}} = 0`.
+
+            Parameters
+            ----------
+            X : numpy array (n_instances, n_objects, n_features)
+                Feature vectors of the objects
+            Y : numpy array (n_instances, n_objects)
+                Preferences in form of Orderings or Choices for given n_objects
+            epochs : int
+                Number of epochs to run if training for a fixed query size
+            callbacks : list
+                List of callbacks to be called during optimization
+            validation_split : float (range : [0,1])
+                Percentage of instances to split off to validate on
+            tune_size: float (range : [0,1])
+                Percentage of instances to split off to tune the threshold for the choice function
+            thin_thresholds: int
+                The number of instances of scores to skip while tuning the threshold
+            verbose : bool
+                Print verbose information
+            **kwd :
+                Keyword arguments for the fit function
+        """
         if tune_size > 0:
             X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=tune_size, random_state=self.random_state)
             try:
-                super().fit(X_train, Y_train, epochs, callbacks,
-                            validation_split, verbose, **kwd)
+                super().fit(X_train, Y_train, epochs, callbacks, validation_split, verbose, **kwd)
             finally:
                 self.logger.info('Fitting utility function finished. Start tuning threshold.')
                 self.threshold = self._tune_threshold(X_val, Y_val, thin_thresholds=thin_thresholds)
         else:
-            super().fit(X, Y, epochs, callbacks, validation_split, verbose,
-                        **kwd)
+            super().fit(X, Y, epochs, callbacks, validation_split, verbose, **kwd)
             self.threshold = 0.5
 
     def _predict_scores_fixed(self, X, **kwargs):

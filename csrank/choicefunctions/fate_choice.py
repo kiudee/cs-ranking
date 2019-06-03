@@ -102,7 +102,51 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
     def construct_model(self, n_features, n_objects):
         return super().construct_model(n_features, n_objects)
 
-    def fit(self, X, Y, tune_size=0.1, thin_thresholds=1, **kwargs):
+    def fit(self, X, Y, epochs=35, inner_epochs=1, callbacks=None, validation_split=0.1, verbose=0, global_lr=1.0,
+            global_momentum=0.9, min_bucket_size=500, refit=False, tune_size=0.1, thin_thresholds=1, **kwargs):
+        """
+            Fit a generic FATE-network model for learning a choice function on a provided set of queries.
+
+            The provided queries can be of a fixed size (numpy arrays) or of varying sizes in which case dictionaries
+            are expected as input. For varying sizes a meta gradient descent is performed across the
+            different query sizes.
+
+            Parameters
+            ----------
+            X : numpy array or dict
+                Feature vectors of the objects
+                (n_instances, n_objects, n_features) if numpy array or map from n_objects to numpy arrays
+            Y : numpy array or dict
+                Choices for given objects in the query
+                (n_instances, n_objects) if numpy array or map from n_objects to numpy arrays
+            epochs : int
+                Number of epochs to run if training for a fixed query size or
+                number of epochs of the meta gradient descent for the variadic model
+            inner_epochs : int
+                Number of epochs to train for each query size inside the variadic
+                model
+            callbacks : list
+                List of callbacks to be called during optimization
+            validation_split : float (range : [0,1])
+                Percentage of instances to split off to validate on
+            verbose : bool
+                Print verbose information
+            global_lr : float
+                Learning rate of the meta gradient descent (variadic model only)
+            global_momentum : float
+                Momentum for the meta gradient descent (variadic model only)
+            min_bucket_size : int
+                Restrict the training to queries of a minimum size
+            refit : bool
+                If True, create a new model object, otherwise continue fitting the
+                existing one if one exists.
+            tune_size: float (range : [0,1])
+                Percentage of instances to split off to tune the threshold for the choice function
+            thin_thresholds: int
+                The number of instances of scores to skip while tuning the threshold
+            **kwargs :
+                Keyword arguments for the fit function
+        """
         if tune_size > 0:
             X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=tune_size, random_state=self.random_state)
             try:

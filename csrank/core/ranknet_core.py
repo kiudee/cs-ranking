@@ -64,16 +64,7 @@ class RankNetCore(Learner):
             :math:`x_i, x_j \in Q` we construct two sub-networks with weight sharing in all hidden layer apart form the
             last layer for which weights are mirrored version of each other. The output of these networks are connected
             to a sigmoid unit that produces the output :math:`P_{ij}` which is the probability of preferring object
-            :math:`x_i` over :math:`x_j`,  to approximate the :math:`U(x)`.
-            For learning this network the binary cross entropy loss function for a pair of example :math:`x_i, x_j \in Q`
-            is defined as:
-
-            .. math::
-
-                C_{ij} =  -\\tilde{P_{ij}}\log(P_{ij}) - (1 - \\tilde{P_{ij}})\log(1 - P{ij}) \enspace,
-
-            where :math:`\\tilde{P_{ij}}` is ground truth probability of the preference of :math:`x_i` over :math:`x_j`.
-            :math:`\\tilde{P_{ij}} = 1` if :math:`x_i \succ x_j` else 0.
+            :math:`x_i` over :math:`x_j`, to approximate the :math:`U(x)`.
 
             Returns
             -------
@@ -98,25 +89,33 @@ class RankNetCore(Learner):
 
     def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
         """
-            Fit a generic preference learning model on a provided set of queries.
-            The provided queries can be of a fixed size (numpy arrays).
+            Fit a generic preference learning RankNet model on a provided set of queries. The provided queries can be of
+            a fixed size (numpy arrays). For learning this network the binary cross entropy loss function for a pair of
+            objects :math:`x_i, x_j \in Q` is defined as:
+
+            .. math::
+
+                C_{ij} =  -\\tilde{P_{ij}}\log(P_{ij}) - (1 - \\tilde{P_{ij}})\log(1 - P{ij}) \enspace,
+
+            where :math:`\\tilde{P_{ij}}` is ground truth probability of the preference of :math:`x_i` over :math:`x_j`.
+            :math:`\\tilde{P_{ij}} = 1` if :math:`x_i \succ x_j` else :math:`\\tilde{P_{ij}} = 0`.
 
             Parameters
             ----------
-            X : numpy array
-                (n_instances, n_objects, n_features)
+            X : numpy array (n_instances, n_objects, n_features)
                 Feature vectors of the objects
-            Y : numpy array
-                (n_instances, n_objects)
+            Y : numpy array (n_instances, n_objects)
                 Preferences in form of Orderings or Choices for given n_objects
             epochs : int
                 Number of epochs to run if training for a fixed query size
             callbacks : list
                 List of callbacks to be called during optimization
-            validation_split : float
+            validation_split : float (range : [0,1])
                 Percentage of instances to split off to validate on
             verbose : bool
                 Print verbose information
+            **kwd :
+                Keyword arguments for the fit function
         """
         X1, X2, Y_single = self._convert_instances(X, Y)
 
