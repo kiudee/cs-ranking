@@ -178,6 +178,31 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
 
     def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, tune_size=0.1, thin_thresholds=1, verbose=0,
             **kwd):
+        """
+            Fit a FETA-Network for learning a choice function on the provided set of queries X and preferences Y of
+            those objects. The provided queries and corresponding preferences are of a fixed size (numpy arrays).
+
+            Parameters
+            ----------
+            X : numpy array (n_instances, n_objects, n_features)
+                Feature vectors of the objects
+            Y : numpy array (n_instances, n_objects)
+                Choices for given objects in the query
+            epochs : int
+                Number of epochs to run if training for a fixed query size
+            callbacks : list
+                List of callbacks to be called during optimization
+            validation_split : float (range : [0,1])
+                Percentage of instances to split off to validate on
+            verbose : bool
+                Print verbose information
+            tune_size: float (range : [0,1])
+                Percentage of instances to split off to tune the threshold for the choice function
+            thin_thresholds: int
+                The number of instances of scores to skip while tuning the threshold
+            **kwd :
+                Keyword arguments for the fit function
+        """
         if tune_size > 0:
             X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=tune_size, random_state=self.random_state)
             try:

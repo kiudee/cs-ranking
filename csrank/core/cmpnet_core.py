@@ -70,17 +70,8 @@ class CmpNetCore(Learner):
             Construct the CmpNet which is used to approximate the :math:`U_1(x_i,x_j)`. For each pair of objects in
             :math:`x_i, x_j \in Q` we construct two sub-networks with weight sharing in all hidden layers.
             The output of these networks are connected to two sigmoid units that produces the outputs of the network,
-            i.e., :math:`U(x_1,x_2), U(x_2,x_1)` for each pair of objects are evaluated.
-            :math:`U(x_1,x_2)` is a measure of how favorable it is to choose :math:`x_1` over :math:`x_2`.
-            For learning this network the binary cross entropy loss function for a pair of example :math:`x_i, x_j \in Q`
-            is defined as:
-
-            .. math::
-
-                C_{ij} =  -\\tilde{P_{ij}}\log(U(x_i,x_j)) - (1 - \\tilde{P_{ij}})\log(U(x_j,x_i)) \enspace,
-
-            where :math:`\\tilde{P_{ij}}` is ground truth probability of the preference of :math:`x_i` over :math:`x_j`.
-            :math:`\\tilde{P_{ij}} = 1` if :math:`x_i \succ x_j` else 0.
+            i.e., :math:`U(x_1,x_2), U(x_2,x_1)` for each pair of objects are evaluated. :math:`U(x_1,x_2)` is a measure
+            of how favorable it is to choose :math:`x_1` over :math:`x_2`.
 
             Returns
             -------
@@ -106,6 +97,15 @@ class CmpNetCore(Learner):
         """
             Fit a generic preference learning CmptNet on the provided set of queries X and preferences Y of those
             objects. The provided queries and corresponding preferences are of a fixed size (numpy arrays).
+            For learning this network the binary cross entropy loss function for a pair of objects
+            :math:`x_i, x_j \in Q` is defined as:
+
+            .. math::
+
+                C_{ij} =  -\\tilde{P_{ij}}(0)\\cdot \log(U(x_i,x_j)) - \\tilde{P_{ij}}(1) \\cdot \log(U(x_j,x_i)) \ ,
+
+            where :math:`\\tilde{P_{ij}}` is ground truth probability of the preference of :math:`x_i` over :math:`x_j`.
+            :math:`\\tilde{P_{ij}} = (1,0)` if :math:`x_i \succ x_j` else :math:`\\tilde{P_{ij}} = (0,1)`.
 
             Parameters
             ----------
@@ -115,15 +115,16 @@ class CmpNetCore(Learner):
             Y : numpy array
                 (n_instances, n_objects)
                 Preferences in form of Orderings or Choices for given n_objects
-
             epochs : int
                 Number of epochs to run if training for a fixed query size
             callbacks : list
                 List of callbacks to be called during optimization
-            validation_split : float
+            validation_split : float (range : [0,1])
                 Percentage of instances to split off to validate on
             verbose : bool
                 Print verbose information
+            **kwd :
+                Keyword arguments for the fit function
         """
         x1, x2, y_double = self._convert_instances(X, Y)
 

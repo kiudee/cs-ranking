@@ -234,7 +234,7 @@ class FETANetwork(Learner):
                 Number of epochs to run if training for a fixed query size
             callbacks : list
                 List of callbacks to be called during optimization
-            validation_split : float
+            validation_split : float (range : [0,1])
                 Percentage of instances to split off to validate on
             verbose : bool
                 Print verbose information

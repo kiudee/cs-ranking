@@ -89,8 +89,44 @@ class CmpNetChoiceFunction(CmpNetCore, ChoiceFunctions):
     def construct_model(self):
         return super().construct_model()
 
-    def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, tune_size=0.1,
-            thin_thresholds=1, verbose=0, **kwd):
+    def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, tune_size=0.1, thin_thresholds=1, verbose=0,
+            **kwd):
+        """
+            Fit a CmptNet model for learning a choice fucntion on the provided set of queries X and preferences Y of
+            those objects. The provided queries and corresponding preferences are of a fixed size (numpy arrays). For
+            learning this network the binary cross entropy loss function for a pair of objects :math:`x_i, x_j \in Q`
+            is defined as:
+
+            .. math::
+
+                C_{ij} =  -\\tilde{P_{ij}}(0)\\cdot \log(U(x_i,x_j)) - \\tilde{P_{ij}}(1) \\cdot \log(U(x_j,x_i)) \ ,
+
+            where :math:`\\tilde{P_{ij}}` is ground truth probability of the preference of :math:`x_i` over :math:`x_j`.
+            :math:`\\tilde{P_{ij}} = (1,0)` if :math:`x_i \succ x_j` else :math:`\\tilde{P_{ij}} = (0,1)`.
+
+            Parameters
+            ----------
+            X : numpy array
+                (n_instances, n_objects, n_features)
+                Feature vectors of the objects
+            Y : numpy array
+                (n_instances, n_objects)
+                Preferences in form of Orderings or Choices for given n_objects
+            epochs : int
+                Number of epochs to run if training for a fixed query size
+            callbacks : list
+                List of callbacks to be called during optimization
+            validation_split : float (range : [0,1])
+                Percentage of instances to split off to validate on
+            tune_size: float (range : [0,1])
+                Percentage of instances to split off to tune the threshold for the choice function
+            thin_thresholds: int
+                The number of instances of scores to skip while tuning the threshold
+            verbose : bool
+                Print verbose information
+            **kwd :
+                Keyword arguments for the fit function
+        """
         if tune_size > 0:
             X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=tune_size, random_state=self.random_state)
             try:

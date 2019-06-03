@@ -61,6 +61,24 @@ class PairwiseSVMChoiceFunction(PairwiseSVM, ChoiceFunctions):
         return x_train, y_single
 
     def fit(self, X, Y, tune_size=0.1, thin_thresholds=1, **kwd):
+        """
+            Fit a generic preference learning model on a provided set of queries.
+            The provided queries can be of a fixed size (numpy arrays).
+
+            Parameters
+            ----------
+            X : numpy array (n_instances, n_objects, n_features)
+                Feature vectors of the objects
+            Y : numpy array (n_instances, n_objects)
+                Choices for given objects in the query
+            tune_size: float (range : [0,1])
+                Percentage of instances to split off to tune the threshold for the choice function
+            thin_thresholds: int
+                The number of instances of scores to skip while tuning the threshold
+            **kwd :
+                Keyword arguments for the fit function
+
+        """
         if tune_size > 0:
             X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=tune_size, random_state=self.random_state)
             try:
