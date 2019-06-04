@@ -18,7 +18,54 @@ from .likelihoods import likelihood_dict, LogLikelihood, create_weight_dictionar
 
 class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
     def __init__(self, n_object_features, n_objects, n_nests=None, loss_function='None', regularization='l2',
-                 alpha=5e-2, random_state=None, model_args={}, **kwd):
+                 alpha=5e-2, random_state=None, **kwd):
+        """
+            Create an instance of the Generalized Nested Logit model for learning the discrete choice function. This
+            model divides objects into subsets called nests, such that the each object is associtated to each nest to some degree.
+            This model structure is 1-layer of hierarchy and the :math:`\lambda` for each nest :math:`B_k` signifies the degree of independence
+            and  :math:`1-\lambda` signifies the correlations between the object in it. We learn two weight vectors and the  :math:`\lambda s`.
+            The probability of choosing an object :math:`x_i` from the given query set :math:`Q` is defined by product
+            of choosing the nest in which :math:`x_i` exists and then choosing the the object from the nest.
+
+            .. math::
+
+                P(x_i \\lvert Q) = P_i = \sum_{\substack{B_k \in \mathcal{B} \\ i \in B_k}}P_{i \\lvert B_k} P_{B_k} \enspace ,
+
+
+            The discrete choice for the given query set :math:`Q` is defined as:
+
+            .. math::
+
+                dc(Q) := \operatorname{argmax}_{x_i \in Q }  \; P(x_i \\lvert Q)
+
+            Parameters
+            ----------
+            n_object_features : int
+                Number of features of the object space
+            n_objects: int
+                Number of objects in each query set
+            n_nests : int range : [2,n_objects/2]
+                The number of nests/subsets in which the objects are divided
+            loss_function : string , {‘categorical_crossentropy’, ‘binary_crossentropy’, ’categorical_hinge’}
+                Loss function to be used for the discrete choice decision from the query set
+            regularization : string, {‘l1’, ‘l2’}, string
+               Regularizer function (L1 or L2) applied to the `kernel` weights matrix
+            alpha: float (range : [0,1])
+                The lower bound of the correlations between the objects in a nest
+            random_state : int or object
+                Numpy random state
+            **kwargs
+                Keyword arguments for the algorithms
+
+            References
+            ----------
+                [1] Kenneth E Train. „Discrete choice methods with simulation“. In: Cambridge university press, 2009. Chap GEV, pp. 87–111.
+
+                [2] Kenneth Train. Qualitative choice analysis. Cambridge, MA: MIT Press, 1986
+
+                [3] Chieh-Hua Wen and Frank S Koppelman. „The generalized nested logit model“. In: Transportation Research Part B: Methodological 35.7 (2001), pp. 627–641
+
+        """
         self.logger = logging.getLogger(GeneralizedNestedLogitModel.__name__)
 
         self.n_object_features = n_object_features
@@ -45,7 +92,34 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
         self._config = None
 
     @property
-    def model_priors(self):
+    def model_configuration(self):
+        """
+            Constructs the dictionary containing the priors for the weight vectors for the model according to the
+            regularization function. The parameters are:
+                * **weights** : Weights to evaluates the utility of the objects
+                * **weights_k** : Weights to evaluates the fractional allocation of each object in :math:'Q' to each nest
+
+            For ``l1`` regularization the priors are:
+
+            .. math::
+
+                \\text{mu}_w \sim \\text{Normal}(\\text{mu}=0, \\text{sd}=5.0) \\\\
+                \\text{b}_w \sim \\text{HalfCauchy}(\\beta=1.0) \\\\
+                \\text{weights} \sim \\text{Laplace}(\\text{mu}=\\text{mu}_w, \\text{b}=\\text{b}_w)
+
+            For ``l2`` regularization the priors are:
+
+            .. math::
+
+                \\text{mu}_w \sim \\text{Normal}(\\text{mu}=0, \\text{sd}=5.0) \\\\
+                \\text{sd}_w \sim \\text{HalfCauchy}(\\beta=1.0) \\\\
+                \\text{weights} \sim \\text{Normal}(\\text{mu}=\\text{mu}_w, \\text{sd}=\\text{sd}_w)
+
+            Returns
+            -------
+                configuration : dict
+                    Dictionary containing the priors applies on the weights
+        """
         if self._config is None:
             if self.regularization == 'l2':
                 weight = pm.Normal
@@ -60,6 +134,40 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
         return self._config
 
     def get_probabilities(self, utility, lambda_k, alpha_ik):
+        """
+            This method calculates the probability of choosing an object from the query set using the following parameters of the model which are used:
+
+                * **weights** (:math:`w`): Weights to get the utility of the object :math:`Y_i = U(x_i) = w \cdot x_i`
+                * **weights_k** (:math:`w_k`): Weights to get fractional allocation of each object :math:'x_j'  in :math:'Q' to each nest math:`B_k` as :math:`\alpha_{ik} = w_k \cdot x_i`.
+                * **lambda_k** (:math:`\lambda_k`): Lambda for nest :math:`B_k` for correlations between the obejcts.
+
+            The probability of choosing the object :math:`x_i` from the query set :math:`Q`:
+
+            .. math::
+                P_i = \sum_{\substack{B_k \in \mathcal{B} \\ i \in B_k}} P_{i \\lvert {B_k}} P_{B_k} \enspace where, \\\\
+                P_{B_k} = \\frac{{\\left(\sum_{j \in B_k} {\\left(\\alpha_{jk} \\boldsymbol{e}^{V_j} \\right)}^ {^{1}/{\lambda_k}} \\right)}^{\lambda_k}}{\sum_{\ell = 1}^{K} {\\left( \sum_{j \in B_{\ell}} {\\left( \\alpha_{j\ell} \\boldsymbol{e}^{V_j} \\right)}^{^{1}/{\lambda_\ell}} \\right)^{\lambda_{\ell}}}} \\\\
+                P_{{i} \\lvert {B_k}} = \\frac{{\\left(\\alpha_{ik} \\boldsymbol{e}^{V_i} \\right)}^{^{1}/{\lambda_k}}}{\sum_{j \in B_k} {\\left(\\alpha_{jk} \\boldsymbol{e}^{V_j} \\right)}^{^{1}/{\lambda_k}}} \enspace ,
+
+
+            Parameters
+            ----------
+            utility : theano tensor
+                (n_instances, n_objects)
+                Utility :math:`Y_i` of the objects :math:`x_i \in Q` in the query sets
+            lambda_k : theano tensor (range : [alpha, 1.0])
+                (n_nests)
+                Measure of independence amongst the obejcts in each nests
+            alpha_ik : theano tensor
+                (n_instances, n_objects, n_nests)
+                Fractional allocation of each object :math:`x_i` in each nest math:`B_k`
+
+            Returns
+            -------
+            p : theano tensor
+                (n_instances, n_objects)
+                Choice probabilities :math:`P_i` of the objects :math:`x_i \in Q` in the query sets
+
+        """
         n_nests = self.n_nests
         n_instances, n_objects = utility.shape
         pik = tt.zeros((n_instances, n_objects, n_nests))
@@ -75,7 +183,7 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
         p = p.sum(axis=2)
         return p
 
-    def get_probabilities_np(self, utility, lambda_k, alpha_ik):
+    def _get_probabilities_np(self, utility, lambda_k, alpha_ik):
         n_nests = self.n_nests
         n_instances, n_objects = utility.shape
         pik = np.zeros((n_instances, n_objects, n_nests))
@@ -92,11 +200,30 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
         return p
 
     def construct_model(self, X, Y):
+        """
+            Constructs the nested logit model by applying priors on weight vectors **weights** and **weights_k** as per
+            :meth:`model_configuration`. Then we apply a uniform prior to the :math:`\lambda s`, i.e.
+            :math:`\lambda s \sim Uniform(\\text{alpha}, 1.0)`.The probability of choosing the object :math:`x_i` from the
+            query set :math:`Q = \{x_1, \ldots ,x_n\}` is evaluated in :meth:`get_probabilities`.
+
+            Parameters
+            ----------
+            X : numpy array
+                (n_instances, n_objects, n_features)
+                Feature vectors of the objects
+            Y : numpy array
+                (n_instances, n_objects)
+                Preferences in the form of discrete choices for given objects
+
+            Returns
+            -------
+             model : pymc3 Model :class:`pm.Model`
+        """
         with pm.Model() as self.model:
             self.Xt = theano.shared(X)
             self.Yt = theano.shared(Y)
             shapes = {'weights': self.n_object_features, 'weights_ik': (self.n_object_features, self.n_nests)}
-            weights_dict = create_weight_dictionary(self.model_priors, shapes)
+            weights_dict = create_weight_dictionary(self.model_configuration, shapes)
 
             alpha_ik = tt.dot(self.Xt, weights_dict['weights_ik'])
             alpha_ik = ttu.softmax(alpha_ik, axis=2)
@@ -125,11 +252,12 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
                 Feature vectors of the objects
             Y : numpy array (n_instances, n_objects)
                 Choices for given objects in the query
-            sampler : {‘vi’, ‘metropolis’, ‘nuts’}, string
-                The sampler used to estimate the posterior mean and mass matrix from the trace.
-                * **vi** : Run ADVI to estimate posterior mean and diagonal mass matrix
-                * **metropolis** : Use the MAP as starting point and Metropolis-Hastings sampler
-                * **nuts** : Use the No-U-Turn sampler
+           sampler : {‘vi’, ‘metropolis’, ‘nuts’}, string
+                The sampler used to estimate the posterior mean and mass matrix from the trace
+
+                    * **vi** : Run ADVI to estimate posterior mean and diagonal mass matrix
+                    * **metropolis** : Use the MAP as starting point and Metropolis-Hastings sampler
+                    * **nuts** : Use the No-U-Turn sampler
             **kwargs :
                 Keyword arguments for the fit function
         """
@@ -189,7 +317,7 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
         alpha_ik = np.dot(X, weights_ik)
         alpha_ik = npu.softmax(alpha_ik, axis=2)
         utility = np.dot(X, weights)
-        p = self.get_probabilities_np(utility, lambda_k, alpha_ik)
+        p = self._get_probabilities_np(utility, lambda_k, alpha_ik)
         return p
 
     def predict(self, X, **kwargs):
@@ -202,6 +330,22 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
         return DiscreteObjectChooser.predict_for_scores(self, scores, **kwargs)
 
     def set_tunable_parameters(self, alpha=None, n_nests=None, loss_function='', regularization='l2', **point):
+        """
+            Set tunable parameters of the Nested Logit model to the values provided.
+
+            Parameters
+            ----------
+            alpha: float (range : [0,1])
+                The lower bound of the correlations between the objects in a nest
+            n_nests: int (range : [2,n_objects])
+                The number of nests in which the objects are divided
+            loss_function : string , {‘categorical_crossentropy’, ‘binary_crossentropy’, ’categorical_hinge’}
+                Loss function to be used for the discrete choice decision from the query set
+            regularization : string, {‘l1’, ‘l2’}, string
+               Regularizer function (L1 or L2) applied to the `kernel` weights matrix
+            point: dict
+                Dictionary containing parameter values which are not tuned for the network
+        """
         if alpha is not None:
             self.alpha = alpha
         if n_nests is None:
