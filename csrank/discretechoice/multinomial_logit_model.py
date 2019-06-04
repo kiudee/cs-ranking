@@ -16,7 +16,7 @@ from .likelihoods import likelihood_dict, LogLikelihood, create_weight_dictionar
 class MultinomialLogitModel(DiscreteObjectChooser, Learner):
     def __init__(self, n_object_features, loss_function='', regularization='l2', **kwargs):
         """
-            Create an instance of the MultinomialLogitModel model for learning the discrete choice function. The utility
+            Create an instance of the Multinomial Logit model for learning the discrete choice function. The utility
             score for each object in query set :math:`Q` is defined as :math:`U(x) = w \cdot x`, where :math:`w` is
             the weight vector. The probability of choosing an object :math:`x_i` is defined by taking softmax over the
             utility scores of the objects:
@@ -47,6 +47,8 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
             References
             ----------
                 [1] Kenneth E Train. „Discrete choice methods with simulation“. In: Cambridge university press, 2009. Chap Logit, pp. 41–86.
+
+                [2] Kenneth Train. Qualitative choice analysis. Cambridge, MA: MIT Press, 1986
         """
         self.logger = logging.getLogger(MultinomialLogitModel.__name__)
         self.n_object_features = n_object_features
@@ -66,13 +68,25 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
     @property
     def model_configuration(self):
         """
-            Constructs the dictionary containing the priors for the weight vector for the model according to the
-            regularization function.
+            Constructs the dictionary containing the priors for the weight vectors for the model according to the
+            regularization function. The parameters are:
+                * **weights** : Weights to evaluates the utility of the objects
 
-            Returns
-            -------
-                configuration : dict
-                    Dictionary containing the priors applies on the weights
+            For ``l1`` regularization the priors are:
+
+            .. math::
+
+                \\text{mu}_w \sim \\text{Normal}(\\text{mu}=0, \\text{sd}=5.0) \\\\
+                \\text{b}_w \sim \\text{HalfCauchy}(\\beta=1.0) \\\\
+                \\text{weights} \sim \\text{Laplace}(\\text{mu}=\\text{mu}_w, \\text{b}=\\text{b}_w)
+
+            For ``l2`` regularization the priors are:
+
+            .. math::
+
+                \\text{mu}_w \sim \\text{Normal}(\\text{mu}=0, \\text{sd}=5.0) \\\\
+                \\text{sd}_w \sim \\text{HalfCauchy}(\\beta=1.0) \\\\
+                \\text{weights} \sim \\text{Normal}(\\text{mu}=\\text{mu}_w, \\text{sd}=\\text{sd}_w)
         """
         if self._config is None:
             if self.regularization == 'l2':
@@ -143,10 +157,11 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
             Y : numpy array (n_instances, n_objects)
                 Choices for given objects in the query
             sampler : {‘vi’, ‘metropolis’, ‘nuts’}, string
-                The sampler used to estimate the posterior mean and mass matrix from the trace.
-                * **vi** : Run ADVI to estimate posterior mean and diagonal mass matrix
-                * **metropolis** : Use the MAP as starting point and Metropolis-Hastings sampler
-                * **nuts** : Use the No-U-Turn sampler
+                The sampler used to estimate the posterior mean and mass matrix from the trace
+
+                    * **vi** : Run ADVI to estimate posterior mean and diagonal mass matrix
+                    * **metropolis** : Use the MAP as starting point and Metropolis-Hastings sampler
+                    * **nuts** : Use the No-U-Turn sampler
             **kwargs :
                 Keyword arguments for the fit function
         """
