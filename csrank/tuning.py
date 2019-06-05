@@ -27,7 +27,7 @@ from csrank.util import duration_till_now, create_dir_recursively, \
 PARAMETER_OPTIMIZER = "ParameterOptimizer"
 
 accuracy_scores = [f1_measure, precision, recall, instance_informedness, zero_one_accuracy, zero_one_accuracy_np,
-                   zero_one_accuracy_for_scores, kendalls_mean_np, spearman_scipy, kendalls_tau_for_scores,
+                   zero_one_accuracy_for_scores, kendalls_tau_for_scores_np, spearman_correlation_for_scores_scipy, kendalls_tau_for_scores,
                    spearman_correlation_for_scores, make_ndcg_at_k_loss, categorical_accuracy_np,
                    topk_categorical_accuracy_np, topk_categorical_accuracy, categorical_accuracy]
 
