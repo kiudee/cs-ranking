@@ -5,13 +5,13 @@ from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_sco
 
 from csrank.numpy_util import scores_to_rankings
 
-__all__ = ['spearman_mean_np', 'kendalls_mean_np', 'zero_one_accuracy_np', 'zero_one_rank_loss_for_scores_ties_np',
+__all__ = ['spearman_correlation_for_scores_np', 'kendalls_tau_for_scores_np', 'zero_one_accuracy_np', 'zero_one_rank_loss_for_scores_ties_np',
            'zero_one_rank_loss_for_scores_np', 'auc_score', "instance_informedness", 'f1_measure', 'recall', 'hamming',
-           'average_precision', "precision", "subset_01_loss", "spearman_scipy", "topk_categorical_accuracy_np",
+           'average_precision', "precision", "subset_01_loss", "spearman_correlation_for_scores_scipy", "topk_categorical_accuracy_np",
            "categorical_accuracy_np", "make_ndcg_at_k_loss_np"]
 
 
-def spearman_mean_np(y_true, s_pred):
+def spearman_correlation_for_scores_np(y_true, s_pred):
     y_pred = scores_to_rankings(s_pred)
     rho = []
     n_objects = y_true.shape[1]
@@ -26,7 +26,7 @@ def spearman_mean_np(y_true, s_pred):
     return np.nanmean(np.array(rho))
 
 
-def spearman_scipy(y_true, s_pred):
+def spearman_correlation_for_scores_scipy(y_true, s_pred):
     y_pred = scores_to_rankings(s_pred)
     rho = []
     for r1, r2 in zip(y_true, y_pred):
@@ -35,7 +35,7 @@ def spearman_scipy(y_true, s_pred):
     return np.nanmean(np.array(rho))
 
 
-def kendalls_mean_np(y_true, s_pred):
+def kendalls_tau_for_scores_np(y_true, s_pred):
     return 1. - 2. * zero_one_rank_loss_for_scores_ties_np(y_true, s_pred)
 
 

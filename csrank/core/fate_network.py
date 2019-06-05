@@ -405,12 +405,18 @@ class FATENetwork(FATENetworkCore):
 
             Parameters
             ----------
-            X : numpy array or dict
-                (n_instances, n_objects, n_features) if numpy array or
-                map from n_objects to numpy arrays
-            Y : numpy array or dict
-                (n_instances, n_objects) if numpy array or
-                map from n_objects to numpy arrays
+            generator :
+                A generator or an instance of `Sequence` (:class:`keras.utils.Sequence`) object in order to avoid
+                duplicate data when using multiprocessing.
+                The output of the generator must be either
+                    - a tuple `(inputs, targets)`
+                    - a tuple `(inputs, targets, sample_weights)`.
+                This tuple (a single output of the generator) makes a single batch.
+                Therefore, all arrays in this tuple must have the same length (equal to the size of this batch).
+                Different batches may have different sizes.
+                For example, the last batch of the epoch is commonly smaller than the others, if the size of the dataset
+                is not divisible by the batch size. The generator is expected to loop over its data indefinitely. An
+                epoch finishes when `steps_per_epoch` batches have been seen by the model.
             epochs : int
                 Number of epochs to run if training for a fixed query size or
                 number of epochs of the meta gradient descent for the variadic model

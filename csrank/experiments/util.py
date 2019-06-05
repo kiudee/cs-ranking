@@ -41,7 +41,7 @@ except ImportError:
 
 learners = {**learners, **dcm_learners}
 
-ranking_metrics = {'KendallsTau': kendalls_mean_np, 'SpearmanCorrelation': spearman_scipy,
+ranking_metrics = {'KendallsTau': kendalls_tau_for_scores_np, 'SpearmanCorrelation': spearman_correlation_for_scores_scipy,
                    'ZeroOneRankLoss': zero_one_rank_loss_for_scores_np,
                    'ZeroOneRankLossTies': zero_one_rank_loss_for_scores_ties_np,
                    "ZeroOneAccuracy": zero_one_accuracy_np,
