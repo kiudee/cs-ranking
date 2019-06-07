@@ -8,7 +8,7 @@ from keras.optimizers import SGD
 from csrank import (ListNet,
                     FETAObjectRanker, RankNet, CmpNet, ExpectedRankRegression, RankSVM, FETA_RANKER, RANKNET, CMPNET,
                     LISTNET, ERR,
-                    RANKSVM, FATE_RANKER)
+                    RANKSVM, FATE_RANKER, PairedCombinatorialLogit)
 from csrank.metrics_np import zero_one_rank_loss_for_scores_ties_np, zero_one_accuracy_np
 from csrank.objectranking.fate_object_ranker import FATEObjectRanker
 
@@ -38,7 +38,13 @@ def check_leaner(ranker, params, rtol=1e-2, atol=1e-4):
     for key, value in params.items():
         if key in ranker.__dict__.keys():
             expected = ranker.__dict__[key]
-            assert np.isclose(expected, value, rtol=rtol, atol=atol, equal_nan=False)
+            if isinstance(value, int) or isinstance(value, float):
+                if isinstance(ranker, PairedCombinatorialLogit) and key == "n_nests":
+                    ranker.n_nests == ranker.n_objects * (ranker.n_objects - 1) / 2
+                else:
+                    assert np.isclose(expected, value, rtol=rtol, atol=atol, equal_nan=False)
+            else:
+                assert value == expected
         elif key == "learning_rate" and "optimizer" in ranker.__dict__.keys():
             assert np.isclose(ranker.optimizer.get_config()['lr'], value, rtol=rtol, atol=atol, equal_nan=False)
         elif key == "reg_strength" and "kernel_regularizer" in ranker.__dict__.keys():
@@ -73,6 +79,7 @@ def test_object_ranker_fixed(trivial_ranking_problem, ranker_name):
     assert np.isclose(1.0, pred_acc, rtol=rtol, atol=atol, equal_nan=False)
     params = {"n_hidden": 20, "n_units": 20, "n_hidden_set_units": 2, "n_hidden_set_layers": 10,
               "n_hidden_joint_units": 2, "n_hidden_joint_layers": 10, "reg_strength": 1e-3, "learning_rate": 1e-1,
-              "batch_size": 32, "alpha": 0.5, "l1_ratio": 0.7, "tol": 1e-2, "C": 10}
+              "batch_size": 32, "alpha": 0.5, "l1_ratio": 0.7, "tol": 1e-2, "C": 10, "n_mixtures": 10, "n_nests": 5,
+              "regularization": "l2"}
     ranker.set_tunable_parameters(**params)
     check_leaner(ranker, params, rtol, atol)

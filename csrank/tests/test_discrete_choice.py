@@ -10,6 +10,7 @@ from csrank.discretechoice import *
 from csrank.experiments.constants import *
 from csrank.experiments.util import metrics_on_predictions
 from csrank.metrics_np import categorical_accuracy_np, topk_categorical_accuracy_np, subset_01_loss
+from csrank.tests.test_ranking import check_leaner
 
 metrics = {'CategoricalAccuracy': categorical_accuracy_np, 'CategoricalTopK2': topk_categorical_accuracy_np(k=2)}
 optimizer = SGD(lr=1e-3, momentum=0.9, nesterov=True)
@@ -20,8 +21,8 @@ def get_vals(values=[1.0, 1.0]):
 
 
 discrete_choice_functions = {
-    FETA_DC: (FETADiscreteChoiceFunction, {"optimizer": optimizer}, get_vals([0.882, 0.988])),
-    RANKNET_DC: (RankNetDiscreteChoiceFunction, {"optimizer": optimizer}, get_vals([0.956, 0.996])),
+    FETA_DC: (FETADiscreteChoiceFunction, {"n_hidden": 1, "optimizer": optimizer}, get_vals([0.978, 1.0])),
+    RANKNET_DC: (RankNetDiscreteChoiceFunction, {"optimizer": optimizer}, get_vals([0.97, 0.996])),
     CMPNET_DC: (CmpNetDiscreteChoiceFunction, {"optimizer": optimizer}, get_vals([0.994, 1.0])),
     FATE_DC: (FATEDiscreteChoiceFunction, {"n_hidden_joint_layers": 1, "n_hidden_set_layers": 1,
                                            "n_hidden_joint_units": 5, "n_hidden_set_units": 5, "optimizer": optimizer},
@@ -30,7 +31,7 @@ discrete_choice_functions = {
     NLM: (NestedLogitModel, {}, get_vals()),
     PCL: (PairedCombinatorialLogit, {}, get_vals()),
     GEV: (GeneralizedNestedLogitModel, {}, get_vals()),
-    RANKSVM_DC: (PairwiseSVMDiscreteChoiceFunction, {}, get_vals([0.982, 998]))
+    RANKSVM_DC: (PairwiseSVMDiscreteChoiceFunction, {}, get_vals([0.982, 0.982]))
 }
 
 
@@ -45,7 +46,7 @@ def trivial_discrete_choice_problem():
 
 
 @pytest.mark.parametrize("name", list(discrete_choice_functions.keys()))
-def test_choice_function_fixed(trivial_discrete_choice_problem, name):
+def test_discrete_choice_function_fixed(trivial_discrete_choice_problem, name):
     tf.set_random_seed(0)
     os.environ["KERAS_BACKEND"] = "tensorflow"
     np.random.seed(123)
@@ -59,7 +60,7 @@ def test_choice_function_fixed(trivial_discrete_choice_problem, name):
     y_pred = learner.predict_for_scores(s_pred)
     y_pred_2 = learner.predict(x)
     rtol = 1e-2
-    atol = 1e-4
+    atol = 5e-2
     assert np.isclose(0.0, subset_01_loss(y_pred, y_pred_2), rtol=rtol, atol=atol, equal_nan=False)
     for key, value in accuracies.items():
         metric = metrics[key]
@@ -68,3 +69,10 @@ def test_choice_function_fixed(trivial_discrete_choice_problem, name):
         else:
             pred_loss = metric(y, s_pred)
         assert np.isclose(value, pred_loss, rtol=rtol, atol=atol, equal_nan=False)
+
+    params = {"n_hidden": 20, "n_units": 20, "n_hidden_set_units": 2, "n_hidden_set_layers": 10,
+              "n_hidden_joint_units": 2, "n_hidden_joint_layers": 10, "reg_strength": 1e-3, "learning_rate": 1e-1,
+              "batch_size": 32, "alpha": 0.5, "l1_ratio": 0.7, "tol": 1e-2, "C": 10, "n_mixtures": 10, "n_nests": 5,
+              "regularization": "l2"}
+    learner.set_tunable_parameters(**params)
+    check_leaner(learner, params, rtol, atol)
