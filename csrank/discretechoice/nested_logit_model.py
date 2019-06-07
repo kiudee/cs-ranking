@@ -1,16 +1,16 @@
-import copy
 import logging
 
 import numpy as np
 import pymc3 as pm
 import theano
 import theano.tensor as tt
+from pymc3.variational.callbacks import CheckParametersConvergence
 from sklearn.cluster import MiniBatchKMeans
 from sklearn.utils import check_random_state
 
 import csrank.numpy_util as npu
 import csrank.theano_util as ttu
-from csrank.discretechoice.likelihoods import create_weight_dictionary
+from csrank.discretechoice.likelihoods import create_weight_dictionary, fit_pymc3_model
 from csrank.learner import Learner
 from csrank.util import print_dictionary
 from .discrete_choice import DiscreteObjectChooser
@@ -291,11 +291,12 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
             yl = LogLikelihood('yl', loss_func=self.loss_function, p=self.p, observed=self.Yt)
         self.logger.info("Model construction completed")
 
-    def fit(self, X, Y, sampler="vi", **kwargs):
+    def fit(self, X, Y, sampler='variational', tune=500, draws=500,
+            vi_params={"n": 20000, "method": "advi", "callbacks": [CheckParametersConvergence()]}, **kwargs):
         """
-            Fit a nested logit model on the provided set of queries X and choices Y of those objects. The
-            provided queries and corresponding preferences are of a fixed size (numpy arrays). For learning this network
-            the categorical cross entropy loss function for each object :math:`x_i \in Q` is defined as:
+            Fit a nested logit model on the provided set of queries X and choices Y of those objects. The provided
+            queries and corresponding preferences are of a fixed size (numpy arrays). For learning this network the
+            categorical cross entropy loss function for each object :math:`x_i \in Q` is defined as:
 
             .. math::
 
@@ -310,60 +311,26 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
                 Feature vectors of the objects
             Y : numpy array (n_instances, n_objects)
                 Choices for given objects in the query
-            sampler : {‘vi’, ‘metropolis’, ‘nuts’}, string
+            sampler : {‘variational’, ‘metropolis’, ‘nuts’}, string
                 The sampler used to estimate the posterior mean and mass matrix from the trace
 
-                    * **vi** : Run ADVI to estimate posterior mean and diagonal mass matrix
+                    * **variational** : Run inference methods to estimate posterior mean and diagonal mass matrix
                     * **metropolis** : Use the MAP as starting point and Metropolis-Hastings sampler
                     * **nuts** : Use the No-U-Turn sampler
+            vi_params : dict
+                The parameters for the **variational** inference method
+            draws : int
+                The number of samples to draw. Defaults to 500. The number of tuned samples are discarded by default
+            tune : int
+                Number of iterations to tune, defaults to 500. Ignored when using 'SMC'. Samplers adjust
+                the step sizes, scalings or similar during tuning. Tuning samples will be drawn in addition
+                to the number specified in the `draws` argument, and will be discarded unless
+                `discard_tuned_samples` is set to False.
             **kwargs :
-                Keyword arguments for the fit function
+                Keyword arguments for the fit function of :meth:`pymc3.fit`or :meth:`pymc3.sample`
         """
         self.construct_model(X, Y)
-        kwargs['random_seed'] = self.random_state.randint(2 ** 32, dtype='uint32')
-        callbacks = kwargs['vi_params'].get('callbacks', [])
-        for i, c in enumerate(callbacks):
-            if isinstance(c, pm.callbacks.CheckParametersConvergence):
-                params = c.__dict__
-                params.pop('_diff')
-                params.pop('prev')
-                params.pop('ord')
-                params['diff'] = 'absolute'
-                callbacks[i] = pm.callbacks.CheckParametersConvergence(**params)
-        if sampler == 'vi':
-            random_seed = kwargs['random_seed']
-            with self.model:
-                sample_params = kwargs['sample_params']
-                vi_params = kwargs['vi_params']
-                vi_params['random_seed'] = sample_params['random_seed'] = random_seed
-                draws_ = kwargs['draws']
-                try:
-                    self.trace = pm.sample(**sample_params)
-                    vi_params['start'] = self.trace[-1]
-                    self.trace_vi = pm.fit(**vi_params)
-                    self.trace = self.trace_vi.sample(draws=draws_)
-                except Exception as e:
-                    if hasattr(e, 'message'):
-                        message = e.message
-                    else:
-                        message = e
-                    self.logger.error(message)
-                    self.trace_vi = None
-                    self.trace = None
-            if self.trace_vi is None and self.trace is None:
-                with self.model:
-                    self.logger.info("Error in vi ADVI sampler using nuts sampler with draws {}".format(draws_))
-                    nuts_params = copy.deepcopy(sample_params)
-                    nuts_params['tune'] = nuts_params['draws'] = 50
-                    self.logger.info("Params {}".format(nuts_params))
-                    self.trace = pm.sample(**nuts_params)
-        elif sampler == 'metropolis':
-            with self.model:
-                start = pm.find_MAP()
-                self.trace = pm.sample(**kwargs, step=pm.Metropolis(), start=start)
-        else:
-            with self.model:
-                self.trace = pm.sample(**kwargs, step=pm.NUTS())
+        fit_pymc3_model(self, sampler, draws, tune, vi_params, **kwargs)
 
     def _predict_scores_fixed(self, X, **kwargs):
         y_nests = self.create_nests(X)

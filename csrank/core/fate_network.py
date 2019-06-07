@@ -230,15 +230,22 @@ class FATENetwork(FATENetworkCore):
             models[n_objects] = model
         return models
 
-    def get_weights(self):
+    def get_weights(self, n_objects=None):
         if self.is_variadic:
-            return self.models_[self.curr_bucket_id].get_weights()
+            if n_objects is not None:
+                weights = self.models_[n_objects].get_weights()
+            else:
+                weights = self.models_[n_objects].get_weights()
         else:
-            return self.model.get_weights()
+            weights = self.model.get_weights()
+        return weights
 
-    def set_weights(self, weights):
+    def set_weights(self, weights, n_objects=None):
         if self.is_variadic:
-            self.models_[self.curr_bucket_id].set_weights(weights)
+            if n_objects is not None:
+                self.models_[n_objects].set_weights(weights)
+            else:
+                self.models_[0].set_weights(weights)
         else:
             self.model.set_weights(weights)
 
