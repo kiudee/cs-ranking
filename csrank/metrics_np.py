@@ -5,9 +5,11 @@ from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_sco
 
 from csrank.numpy_util import scores_to_rankings
 
-__all__ = ['spearman_correlation_for_scores_np', 'kendalls_tau_for_scores_np', 'zero_one_accuracy_np', 'zero_one_rank_loss_for_scores_ties_np',
+__all__ = ['spearman_correlation_for_scores_np', 'kendalls_tau_for_scores_np', 'zero_one_accuracy_for_scores_np',
+           'zero_one_rank_loss_for_scores_ties_np', 'zero_one_accuracy_np',
            'zero_one_rank_loss_for_scores_np', 'auc_score', "instance_informedness", 'f1_measure', 'recall', 'hamming',
-           'average_precision', "precision", "subset_01_loss", "spearman_correlation_for_scores_scipy", "topk_categorical_accuracy_np",
+           'average_precision', "precision", "subset_01_loss", "spearman_correlation_for_scores_scipy",
+           "topk_categorical_accuracy_np",
            "categorical_accuracy_np", "make_ndcg_at_k_loss_np"]
 
 
@@ -39,8 +41,13 @@ def kendalls_tau_for_scores_np(y_true, s_pred):
     return 1. - 2. * zero_one_rank_loss_for_scores_ties_np(y_true, s_pred)
 
 
-def zero_one_accuracy_np(y_true, s_pred):
+def zero_one_accuracy_for_scores_np(y_true, s_pred):
     y_pred = scores_to_rankings(s_pred)
+    acc = np.sum(np.all(np.equal(y_true, y_pred), axis=1)) / y_pred.shape[0]
+    return acc
+
+
+def zero_one_accuracy_np(y_true, y_pred):
     acc = np.sum(np.all(np.equal(y_true, y_pred), axis=1)) / y_pred.shape[0]
     return acc
 
@@ -90,11 +97,11 @@ def zero_one_rank_loss_for_scores_np(y_true, s_pred):
 
 
 def auc_score(y_true, s_pred):
-    try:
-        auc = roc_auc_score(y_true, s_pred, average='samples')
-    except ValueError:
-        idx = np.where((y_true.sum(axis=1) != y_true.shape[-1]) & (y_true.sum(axis=1) != 1))
+    idx = np.where((y_true.sum(axis=1) != y_true.shape[-1]) & (y_true.sum(axis=1) != 1))
+    if len(idx) > 1:
         auc = roc_auc_score(y_true[idx], s_pred[idx], average='samples')
+    else:
+        auc = roc_auc_score(y_true[idx], s_pred[idx])
     return auc
 
 

@@ -1,9 +1,11 @@
 import copy
 
+import pymc3 as pm
 import theano
 import theano.tensor as tt
 from pymc3 import Discrete
 from pymc3.distributions.dist_math import bound
+from pymc3.variational.callbacks import CheckParametersConvergence
 
 from csrank.theano_util import normalize
 
@@ -88,3 +90,46 @@ def create_weight_dictionary(model_args, shapes):
         params['shape'] = shapes[key]
         weights_dict[key] = prior(**params)
     return weights_dict
+
+
+def fit_pymc3_model(self, sampler, draws, tune, vi_params, **kwargs):
+    callbacks = vi_params.get('callbacks', [])
+    for i, c in enumerate(callbacks):
+        if isinstance(c, CheckParametersConvergence):
+            params = c.__dict__
+            params.pop('_diff')
+            params.pop('prev')
+            params.pop('ord')
+            params['diff'] = 'absolute'
+            callbacks[i] = CheckParametersConvergence(**params)
+    if sampler == 'variational':
+        with self.model:
+            try:
+                sample_params = {"tune": 5, "draws": 5}
+                self.trace = pm.sample(**sample_params, chains=2, cores=8)
+                vi_params['start'] = self.trace[-1]
+                self.trace_vi = pm.fit(**vi_params)
+                self.trace = self.trace_vi.sample(draws=draws)
+            except Exception as e:
+                if hasattr(e, 'message'):
+                    message = e.message
+                else:
+                    message = e
+                self.logger.error(message)
+                self.trace_vi = None
+                self.trace = None
+        if self.trace_vi is None and self.trace is None:
+            with self.model:
+                self.logger.info("Error in vi ADVI sampler using nuts sampler with draws {}".format(draws))
+                nuts_params = copy.deepcopy(sample_params)
+                nuts_params['tune'] = nuts_params['draws'] = 50
+                self.logger.info("Params {}".format(nuts_params))
+                self.trace = pm.sample(**nuts_params, chains=2, cores=4)
+    elif sampler == 'metropolis':
+        with self.model:
+            start = pm.find_MAP()
+            self.trace = pm.sample(chains=2, cores=8, tune=tune, draws=draws, **kwargs, step=pm.Metropolis(),
+                                   start=start)
+    else:
+        with self.model:
+            self.trace = pm.sample(chains=2, cores=8, tune=tune, draws=draws, **kwargs, step=pm.NUTS())

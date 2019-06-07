@@ -137,7 +137,7 @@ latex_elements = {
     #
     # 'figure_align': 'htbp',
 }
-latex_preamble =[
+latex_preamble = [
     ('\\usepackage{amssymb}',
      '\\usepackage{amsmath}',
      '\\usepackage{amsxtra}',

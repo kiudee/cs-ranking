@@ -8,7 +8,7 @@ from csrank.metrics import zero_one_rank_loss, zero_one_rank_loss_for_scores, ze
     spearman_correlation_for_scores, zero_one_accuracy_for_scores
 from csrank.metrics_np import zero_one_rank_loss_for_scores_np, zero_one_rank_loss_for_scores_ties_np, \
     spearman_correlation_for_scores_np, spearman_correlation_for_scores_scipy, kendalls_tau_for_scores_np, \
-    zero_one_accuracy_np
+    zero_one_accuracy_for_scores_np
 
 
 @pytest.fixture(scope="module",
@@ -88,7 +88,7 @@ def test_zero_one_accuracy(problem_for_pred):
 
     y_true, y_pred, ties = problem_for_pred
 
-    real_score = zero_one_accuracy_np(y_true, y_pred)
+    real_score = zero_one_accuracy_for_scores_np(y_true, y_pred)
     assert_almost_equal(actual=real_score, desired=np.array([0.]))
 
 
