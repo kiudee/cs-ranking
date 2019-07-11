@@ -8,7 +8,6 @@ from csrank.util import progress_bar
 
 __all__ = ['ChoiceFunctions']
 
-
 class ChoiceFunctions(metaclass=ABCMeta):
 
     @property
@@ -65,3 +64,4 @@ class ChoiceFunctions(metaclass=ABCMeta):
         self.logger.info('Tuned threshold, obtained {:.2f} which achieved'
                          ' a micro F1-measure of {:.2f}'.format(threshold, best))
         return threshold
+

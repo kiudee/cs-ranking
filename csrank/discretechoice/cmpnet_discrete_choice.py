@@ -71,7 +71,7 @@ class CmpNetDiscreteChoiceFunction(CmpNetCore, DiscreteObjectChooser):
         self.logger = logging.getLogger(CmpNetDiscreteChoiceFunction.__name__)
         self.logger.info("Initializing network with object features {}".format(self.n_object_features))
 
-    def _convert_instances(self, X, Y):
+    def _convert_instances_(self, X, Y):
         self.logger.debug('Creating the Dataset')
         x1, x2, garbage, y_double, garbage = generate_complete_pairwise_dataset(X, Y)
         del garbage

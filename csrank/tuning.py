@@ -18,7 +18,7 @@ from csrank.constants import OBJECT_RANKING, LABEL_RANKING, DISCRETE_CHOICE, \
 from csrank.learner import Learner
 from csrank.metrics import *
 from csrank.metrics_np import *
-from csrank.tensorflow_util import get_mean_loss_for_dictionary, get_loss_for_array
+from csrank.tensorflow_util import get_mean_loss
 from csrank.tunable import Tunable
 from csrank.util import duration_till_now, create_dir_recursively, \
     seconds_to_time, \
@@ -169,10 +169,7 @@ class ParameterOptimizer(Learner):
         try:
             self.learner.fit(xtrain, ytrain, **self._fit_params)
             ypred = self.learner(xtest)
-            if isinstance(xtest, dict):
-                loss = get_mean_loss_for_dictionary(self.validation_loss, ytest, ypred)
-            else:
-                loss = get_loss_for_array(self.validation_loss, ytest, ypred)
+            loss = get_mean_loss(self.validation_loss, ytest, ypred)
             time_taken = duration_till_now(start)
         except:
             self.logger.error(traceback.format_exc())

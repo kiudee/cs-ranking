@@ -32,7 +32,7 @@ from sklearn.model_selection import ShuffleSplit
 from csrank import *
 from csrank.metrics import make_ndcg_at_k_loss
 from csrank.metrics_np import topk_categorical_accuracy_np
-from csrank.tensorflow_util import configure_numpy_keras, get_mean_loss_for_dictionary
+from csrank.tensorflow_util import configure_numpy_keras, get_mean_loss
 from csrank.util import create_dir_recursively, duration_till_now, seconds_to_time, \
     print_dictionary, get_duration_seconds, setup_logging
 
@@ -172,7 +172,7 @@ if __name__ == "__main__":
                         k = int(n_objects / 2) + 1
                         evaluation_metric = topk_categorical_accuracy_np(k=k)
                         name = name.format(k)
-                    metric_loss = get_mean_loss_for_dictionary(evaluation_metric, Y_test, predictions)
+                    metric_loss = get_mean_loss(evaluation_metric, Y_test, predictions)
                     logger.info(ERROR_OUTPUT_STRING % (name, metric_loss))
                     if np.isnan(metric_loss):
                         results[name] = "\'Infinity\'"

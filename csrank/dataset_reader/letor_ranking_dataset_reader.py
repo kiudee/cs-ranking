@@ -7,7 +7,7 @@ from abc import ABCMeta
 import h5py
 import numpy as np
 
-from csrank.util import print_dictionary
+from csrank.util import print_dictionary, create_dir_recursively
 from .dataset_reader import DatasetReader
 
 
@@ -30,6 +30,7 @@ class LetorRankingDatasetReader(DatasetReader, metaclass=ABCMeta):
         self.dataset_indices = np.arange(5)
         self.condition = np.zeros(5, dtype=bool)
         self.file_format = os.path.join(self.dirname, str(self.year), "S{}.h5")
+        create_dir_recursively(self.file_format, is_file_path=True)
 
         for i in self.dataset_indices:
             h5py_file_pth = self.file_format.format(i + 1)

@@ -13,7 +13,6 @@ class LetorListwiseObjectRankingDatasetReader(LetorListwiseDatasetReader):
         self.logger = logging.getLogger(LetorListwiseObjectRankingDatasetReader.__name__)
         self.random_state = check_random_state(random_state)
         self.n_objects = n_objects
-        self.__load_dataset__()
 
     def sub_sampling_function(self, X, Y):
         return sub_sampling_rankings(Xt=X, Yt=Y, n_objects=self.n_objects)
