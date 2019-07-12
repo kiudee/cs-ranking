@@ -1,10 +1,10 @@
 import logging
 
+from csrank.core.ranknet_core import RankNetCore
 from keras.optimizers import SGD
 from keras.regularizers import l2
 from sklearn.model_selection import train_test_split
 
-from csrank.core.ranknet_core import RankNetCore
 from .choice_functions import ChoiceFunctions
 from .util import generate_complete_pairwise_dataset
 
@@ -73,7 +73,7 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
     def construct_model(self):
         return super().construct_model()
 
-    def _convert_instances(self, X, Y):
+    def _convert_instances_(self, X, Y):
         self.logger.debug('Creating the Dataset')
         x1, x2, garbage, garbage, y_single = generate_complete_pairwise_dataset(X, Y)
         del garbage

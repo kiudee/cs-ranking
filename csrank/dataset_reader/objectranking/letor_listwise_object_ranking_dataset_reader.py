@@ -1,8 +1,8 @@
 import logging
 
+from csrank.constants import OBJECT_RANKING
 from sklearn.utils import check_random_state
 
-from csrank.constants import OBJECT_RANKING
 from .util import sub_sampling_rankings
 from ..letor_listwise_dataset_reader import LetorListwiseDatasetReader
 
@@ -22,9 +22,3 @@ class LetorListwiseObjectRankingDatasetReader(LetorListwiseDatasetReader):
 
     def get_train_test_datasets(self, n_datasets):
         pass
-
-    def get_single_train_test_split(self):
-        self.X, self.Y = self.sub_sampling_from_dictionary()
-        # self.X = standardize_features(self.X)
-        self.__check_dataset_validity__()
-        return self.X, self.Y, self.X_test, self.Y_test

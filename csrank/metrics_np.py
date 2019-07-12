@@ -1,9 +1,8 @@
 import numpy as np
+from csrank.numpy_util import scores_to_rankings
 from scipy.stats import spearmanr
 from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_score, average_precision_score, \
     zero_one_loss, hamming_loss
-
-from csrank.numpy_util import scores_to_rankings
 
 __all__ = ['spearman_correlation_for_scores_np', 'kendalls_tau_for_scores_np', 'zero_one_accuracy_for_scores_np',
            'zero_one_rank_loss_for_scores_ties_np', 'zero_one_accuracy_np',

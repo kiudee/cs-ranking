@@ -5,14 +5,6 @@ from datetime import datetime
 
 import numpy as np
 import tensorflow as tf
-from keras import backend as K
-from keras.metrics import categorical_accuracy
-from sklearn.model_selection import ShuffleSplit
-from sklearn.utils import check_random_state
-from skopt import Optimizer
-from skopt.space import check_dimension, Categorical
-from skopt.utils import cook_estimator, normalize_dimensions, dump, load
-
 from csrank.constants import OBJECT_RANKING, LABEL_RANKING, DISCRETE_CHOICE, \
     DYAD_RANKING, CHOICE_FUNCTION
 from csrank.learner import Learner
@@ -23,6 +15,13 @@ from csrank.tunable import Tunable
 from csrank.util import duration_till_now, create_dir_recursively, \
     seconds_to_time, \
     convert_to_loss
+from keras import backend as K
+from keras.metrics import categorical_accuracy
+from sklearn.model_selection import ShuffleSplit
+from sklearn.utils import check_random_state
+from skopt import Optimizer
+from skopt.space import check_dimension, Categorical
+from skopt.utils import cook_estimator, normalize_dimensions, dump, load
 
 PARAMETER_OPTIMIZER = "ParameterOptimizer"
 

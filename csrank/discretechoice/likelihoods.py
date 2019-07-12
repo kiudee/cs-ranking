@@ -3,11 +3,10 @@ import copy
 import pymc3 as pm
 import theano
 import theano.tensor as tt
+from csrank.theano_util import normalize
 from pymc3 import Discrete
 from pymc3.distributions.dist_math import bound
 from pymc3.variational.callbacks import CheckParametersConvergence
-
-from csrank.theano_util import normalize
 
 
 def categorical_crossentropy(p, y_true):
@@ -124,7 +123,7 @@ def fit_pymc3_model(self, sampler, draws, tune, vi_params, **kwargs):
                 nuts_params = copy.deepcopy(sample_params)
                 nuts_params['tune'] = nuts_params['draws'] = 50
                 self.logger.info("Params {}".format(nuts_params))
-                self.trace = pm.sample(**nuts_params, chains=2, cores=4)
+                self.trace = pm.sample(**nuts_params, chains=2, cores=4, **kwargs, step=pm.NUTS())
     elif sampler == 'metropolis':
         with self.model:
             start = pm.find_MAP()

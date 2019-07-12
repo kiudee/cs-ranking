@@ -6,9 +6,8 @@ from abc import ABCMeta
 from datetime import timedelta, datetime
 
 import psycopg2
-from psycopg2.extras import DictCursor
-
 from csrank.util import get_duration_seconds, print_dictionary
+from psycopg2.extras import DictCursor
 
 
 class DBConnector(metaclass=ABCMeta):
@@ -387,7 +386,7 @@ class DBConnector(metaclass=ABCMeta):
 
 def get_hash_value_for_job(job):
     keys = ['fold_id', 'learner', 'dataset_params', 'fit_params', 'learner_params', 'hp_ranges', 'hp_fit_params',
-            'inner_folds', 'validation_loss']
+            'inner_folds', 'validation_loss', 'dataset']
     hash_string = ""
     for k in keys:
         hash_string = hash_string + str(k) + ':' + str(job[k])

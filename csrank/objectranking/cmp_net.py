@@ -1,11 +1,10 @@
 import logging
 
-from keras.optimizers import SGD
-from keras.regularizers import l2
-
 from csrank.core.cmpnet_core import CmpNetCore
 from csrank.dataset_reader.objectranking.util import generate_complete_pairwise_dataset
 from csrank.objectranking.object_ranker import ObjectRanker
+from keras.optimizers import SGD
+from keras.regularizers import l2
 
 __all__ = ['CmpNet']
 
@@ -78,16 +77,16 @@ class CmpNet(CmpNetCore, ObjectRanker):
         self.logger = logging.getLogger(CmpNet.__name__)
         self.logger.info("Initializing network with object features {}".format(self.n_object_features))
 
-    def _convert_instances(self, X, Y):
+    def _convert_instances_(self, X, Y):
         self.logger.debug('Creating the Dataset')
         garbage, x1, x2, y_double, garbage = generate_complete_pairwise_dataset(X, Y)
         del garbage
-        self.logger.debug('Finished the Dataset')
         if x1.shape[0] > self.threshold_instances:
             indices = self.random_state.choice(x1.shape[0], self.threshold_instances, replace=False)
             x1 = x1[indices, :]
             x2 = x2[indices, :]
             y_double = y_double[indices, :]
+        self.logger.debug('Finished the Dataset instances {}'.format(x1.shape[0]))
         return x1, x2, y_double
 
     def construct_model(self):

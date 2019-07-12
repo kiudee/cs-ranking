@@ -3,14 +3,13 @@ import os
 import numpy as np
 import pytest
 import tensorflow as tf
-from keras.optimizers import SGD
-
 from csrank.dataset_reader.discretechoice.util import convert_to_label_encoding
 from csrank.discretechoice import *
 from csrank.experiments.constants import *
 from csrank.experiments.util import metrics_on_predictions
 from csrank.metrics_np import categorical_accuracy_np, topk_categorical_accuracy_np, subset_01_loss
 from csrank.tests.test_ranking import check_leaner
+from keras.optimizers import SGD
 
 metrics = {'CategoricalAccuracy': categorical_accuracy_np, 'CategoricalTopK2': topk_categorical_accuracy_np(k=2)}
 optimizer = SGD(lr=1e-3, momentum=0.9, nesterov=True)

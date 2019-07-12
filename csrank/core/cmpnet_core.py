@@ -3,16 +3,15 @@ from itertools import permutations
 
 import numpy as np
 import tensorflow as tf
+from csrank.constants import allowed_dense_kwargs
+from csrank.layers import NormalizedDense
+from csrank.learner import Learner
+from csrank.util import print_dictionary
 from keras import optimizers, Input, Model, backend as K
 from keras.layers import Dense, concatenate
 from keras.optimizers import SGD
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
-
-from csrank.constants import allowed_dense_kwargs
-from csrank.layers import NormalizedDense
-from csrank.learner import Learner
-from csrank.util import print_dictionary
 
 
 class CmpNetCore(Learner):
@@ -62,7 +61,7 @@ class CmpNetCore(Learner):
                                   range(self.n_hidden)]
         assert len(self.hidden_layers) == self.n_hidden
 
-    def _convert_instances(self, X, Y):
+    def _convert_instances_(self, X, Y):
         raise NotImplemented
 
     def construct_model(self):
@@ -126,7 +125,7 @@ class CmpNetCore(Learner):
             **kwd :
                 Keyword arguments for the fit function
         """
-        x1, x2, y_double = self._convert_instances(X, Y)
+        x1, x2, y_double = self._convert_instances_(X, Y)
 
         self.logger.debug("Instances created {}".format(x1.shape[0]))
         self.model = self.construct_model()

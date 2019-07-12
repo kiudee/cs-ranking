@@ -2,6 +2,7 @@ import logging
 
 from csrank.core.pairwise_svm import PairwiseSVM
 from csrank.objectranking.object_ranker import ObjectRanker
+
 from ..dataset_reader.objectranking.util import \
     generate_complete_pairwise_dataset
 
@@ -51,7 +52,7 @@ class RankSVM(ObjectRanker, PairwiseSVM):
     def fit(self, X, Y, **kwargs):
         super().fit(X, Y, **kwargs)
 
-    def _convert_instances(self, X, Y):
+    def _convert_instances_(self, X, Y):
         self.logger.debug('Creating the Dataset')
         x_train, garbage, garbage, garbage, y_single = generate_complete_pairwise_dataset(X, Y)
         del garbage

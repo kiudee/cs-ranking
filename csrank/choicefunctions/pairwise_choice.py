@@ -1,8 +1,8 @@
 import logging
 
+from csrank.core.pairwise_svm import PairwiseSVM
 from sklearn.model_selection import train_test_split
 
-from csrank.core.pairwise_svm import PairwiseSVM
 from .choice_functions import ChoiceFunctions
 from .util import generate_complete_pairwise_dataset
 
@@ -52,7 +52,7 @@ class PairwiseSVMChoiceFunction(PairwiseSVM, ChoiceFunctions):
         self.logger.info("Initializing network with object features {}".format(self.n_object_features))
         self.threshold = 0.5
 
-    def _convert_instances(self, X, Y):
+    def _convert_instances_(self, X, Y):
         self.logger.debug('Creating the Dataset')
         garbage, garbage, x_train, garbage, y_single = generate_complete_pairwise_dataset(X, Y)
         del garbage
