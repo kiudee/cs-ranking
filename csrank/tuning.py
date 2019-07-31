@@ -20,7 +20,7 @@ from keras.metrics import categorical_accuracy
 from sklearn.model_selection import ShuffleSplit
 from sklearn.utils import check_random_state
 from skopt import Optimizer
-from skopt.space import check_dimension, Categorical
+from skopt.space import check_dimension, Categorical, Integer
 from skopt.utils import cook_estimator, normalize_dimensions, dump, load
 
 PARAMETER_OPTIMIZER = "ParameterOptimizer"
@@ -369,7 +369,7 @@ class ParameterOptimizer(Learner):
             self.logger.info("Parameter Space: {}".format(transformed))
             norm_space = normalize_dimensions(transformed)
             self.logger.info("Parameter Space after transformation: {}".format(norm_space))
-            categorical_space = np.array([isinstance(s, Categorical) for s in norm_space])
+            categorical_space = np.array([isinstance(s, Categorical) or isinstance(s, Integer)for s in norm_space])
             self.logger.info("categorical_space: {}".format(categorical_space))
             if np.all(categorical_space):
                 base_estimator = cook_estimator("RF", space=norm_space, random_state=gp_seed)

@@ -26,15 +26,15 @@ from datetime import datetime
 
 import h5py
 import numpy as np
-from docopt import docopt
-from sklearn.model_selection import ShuffleSplit
-
-from csrank import *
+from csrank.experiments import *
 from csrank.metrics import make_ndcg_at_k_loss
 from csrank.metrics_np import topk_categorical_accuracy_np
 from csrank.tensorflow_util import configure_numpy_keras, get_mean_loss
+from csrank.tuning import ParameterOptimizer
 from csrank.util import create_dir_recursively, duration_till_now, seconds_to_time, \
     print_dictionary, get_duration_seconds, setup_logging
+from docopt import docopt
+from sklearn.model_selection import ShuffleSplit
 
 DIR_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 LOGS_FOLDER = 'logs'

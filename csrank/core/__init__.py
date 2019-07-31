@@ -3,3 +3,4 @@ from .fate_network import FATENetwork, FATENetworkCore
 from .feta_network import FETANetwork
 from .pairwise_svm import PairwiseSVM
 from .ranknet_core import RankNetCore
+from .fate_linear import FATELinearCore
