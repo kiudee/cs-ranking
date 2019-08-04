@@ -30,7 +30,8 @@ import numpy as np
 from docopt import docopt
 from sklearn.model_selection import ShuffleSplit
 
-from csrank.experiments.constants import *
+from csrank.experiments import *
+from csrank.tuning import ParameterOptimizer
 from csrank.metrics import make_ndcg_at_k_loss
 from csrank.tensorflow_util import configure_numpy_keras, get_mean_loss, eval_loss
 from csrank.util import create_dir_recursively, duration_till_now, seconds_to_time, \

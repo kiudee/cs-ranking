@@ -1,6 +1,7 @@
 import sys
 
 import pymc3 as pm
+
 from csrank.callbacks import EarlyStoppingWithWeights, LRScheduler, DebugOutput
 from csrank.choicefunctions import *
 from csrank.constants import *
@@ -27,14 +28,15 @@ datasets = {SYNTHETIC_OR: ObjectRankingDatasetGenerator, DEPTH: DepthDatasetRead
 
 cfs = {FETA_CHOICE: FETAChoiceFunction, FATE_CHOICE: FATEChoiceFunction, GLM_CHOICE: GeneralizedLinearModel,
        RANKNET_CHOICE: RankNetChoiceFunction, CMPNET_CHOICE: CmpNetChoiceFunction,
-       FATELINEAR_CHOICE: FATELinearChoiceFunction, RANKSVM_CHOICE: PairwiseSVMChoiceFunction, RANDOM_CHOICE: AllPositive}
+       FETALINEAR_CHOICE: FETALinearChoiceFunction, FATELINEAR_CHOICE: FATELinearChoiceFunction,
+       RANKSVM_CHOICE: PairwiseSVMChoiceFunction, RANDOM_CHOICE: AllPositive}
 ors = {FETA_RANKER: FETAObjectRanker, RANKNET: RankNet, CMPNET: CmpNet, ERR: ExpectedRankRegression,
        RANKSVM: RankSVM, FATE_RANKER: FATEObjectRanker, LISTNET: ListNet}
 dcms = {FETA_DC: FETADiscreteChoiceFunction, FATE_DC: FATEDiscreteChoiceFunction,
         RANKNET_DC: RankNetDiscreteChoiceFunction, CMPNET_DC: CmpNetDiscreteChoiceFunction,
         MNL: MultinomialLogitModel, NLM: NestedLogitModel, GEV: GeneralizedNestedLogitModel,
         PCL: PairedCombinatorialLogit, RANKSVM_DC: PairwiseSVMDiscreteChoiceFunction, MLM: MixedLogitModel,
-        FATELINEAR_DC: FATELinearDiscreteChoiceFunction}
+        FATELINEAR_DC: FATELinearDiscreteChoiceFunction, FETALINEAR_DC: FETALinearDiscreteChoiceFunction}
 
 learners = {**cfs, **dcms, **ors}
 

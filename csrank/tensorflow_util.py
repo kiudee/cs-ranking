@@ -64,7 +64,7 @@ def get_mean_loss(metric, y_true, y_pred):
         total_instances = 0
         for n in y_pred.keys():
             loss = eval_loss(metric, y_true[n], y_pred[n])
-            if loss is not np.nan:
+            if not np.isnan(loss) and not np.isinf(loss):
                 loss = loss * y_pred[n].shape[0]
                 total_instances += y_pred[n].shape[0]
                 losses.append(loss)

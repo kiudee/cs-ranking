@@ -1,8 +1,9 @@
 import numpy as np
-from csrank.numpy_util import scores_to_rankings
 from scipy.stats import spearmanr
 from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_score, average_precision_score, \
     zero_one_loss, hamming_loss
+
+from csrank.numpy_util import scores_to_rankings
 
 __all__ = ['spearman_correlation_for_scores_np', 'kendalls_tau_for_scores_np', 'zero_one_accuracy_for_scores_np',
            'zero_one_rank_loss_for_scores_ties_np', 'zero_one_accuracy_np',
@@ -96,11 +97,14 @@ def zero_one_rank_loss_for_scores_np(y_true, s_pred):
 
 
 def auc_score(y_true, s_pred):
-    idx = np.where((y_true.sum(axis=1) != y_true.shape[-1]) & (y_true.sum(axis=1) != 1))
+    idx = np.where((y_true.sum(axis=1) != y_true.shape[-1] - 1) & (y_true.sum(axis=1) != y_true.shape[-1]) & (
+            y_true.sum(axis=1) != 1) & (y_true.sum(axis=1) != 0))[0]
     if len(idx) > 1:
         auc = roc_auc_score(y_true[idx], s_pred[idx], average='samples')
+    elif len(idx) == 1:
+        auc = roc_auc_score(y_true[idx][0], s_pred[idx][0])
     else:
-        auc = roc_auc_score(y_true[idx], s_pred[idx])
+        auc = np.nan
     return auc
 
 
