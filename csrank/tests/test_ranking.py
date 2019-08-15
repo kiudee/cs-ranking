@@ -3,25 +3,26 @@ import os
 import numpy as np
 import pytest
 import tensorflow as tf
-from csrank import (ListNet,
-                    FETAObjectRanker, RankNet, CmpNet, ExpectedRankRegression, RankSVM, FETA_RANKER, RANKNET, CMPNET,
-                    LISTNET, ERR,
-                    RANKSVM, FATE_RANKER, PairedCombinatorialLogit)
+from csrank import PairedCombinatorialLogit
+from csrank.experiments.constants import *
 from csrank.metrics_np import zero_one_rank_loss_for_scores_ties_np, zero_one_accuracy_np
+from csrank.objectranking import *
 from csrank.objectranking.fate_object_ranker import FATEObjectRanker
 from keras.optimizers import SGD
 
 optimizer = SGD(lr=1e-3, momentum=0.9, nesterov=True)
 
 object_rankers = {
-    FETA_RANKER: (FETAObjectRanker, {"add_zeroth_order_model": True, "optimizer": optimizer}, 0.0),
-    RANKNET: (RankNet, {"optimizer": optimizer}, 0.0),
-    CMPNET: (CmpNet, {"optimizer": optimizer}, 0.0),
-    LISTNET: (ListNet, {"n_top": 3, "optimizer": optimizer}, 0.0),
-    ERR: (ExpectedRankRegression, {}, 0.0),
-    RANKSVM: (RankSVM, {}, 0.0),
+    FATELINEAR_RANKER: (FATELinearObjectRanker, {"n_hidden_set_units": 128, "batch_size": 32}, (1.0, 0.0)),
+    FETALINEAR_RANKER: (FETALinearObjectRanker, {}, (0.9112, 0.0)),
+    FETA_RANKER: (FETAObjectRanker, {"add_zeroth_order_model": True, "optimizer": optimizer}, (0.0, 1.0)),
+    RANKNET: (RankNet, {"optimizer": optimizer}, (0.0, 1.0)),
+    CMPNET: (CmpNet, {"optimizer": optimizer}, (0.0, 1.0)),
+    LISTNET: (ListNet, {"n_top": 3, "optimizer": optimizer}, (0.0, 1.0)),
+    ERR: (ExpectedRankRegression, {}, (0.0, 1.0)),
+    RANKSVM: (RankSVM, {}, (0.0, 1.0)),
     FATE_RANKER: (FATEObjectRanker, {"n_hidden_joint_layers": 1, "n_hidden_set_layers": 1, "n_hidden_joint_units": 5,
-                                     "n_hidden_set_units": 5, "optimizer": optimizer}, 0.0)
+                                     "n_hidden_set_units": 5, "optimizer": optimizer}, (0.0, 1.0))
 }
 
 
@@ -61,10 +62,13 @@ def test_object_ranker_fixed(trivial_ranking_problem, ranker_name):
     os.environ["KERAS_BACKEND"] = "tensorflow"
     np.random.seed(123)
     x, y = trivial_ranking_problem
-    ranker, params, loss = object_rankers[ranker_name]
+    ranker, params, (loss, acc) = object_rankers[ranker_name]
     params["n_objects"], params["n_object_features"] = tuple(x.shape[1:])
     ranker = ranker(**params)
-    ranker.fit(x, y, epochs=100, validation_split=0, verbose=False)
+    if "linear" in ranker_name:
+        ranker.fit(x, y, epochs=10, validation_split=0, verbose=False)
+    else:
+        ranker.fit(x, y, epochs=100, validation_split=0, verbose=False)
     pred_scores = ranker.predict_scores(x)
     pred_loss = zero_one_rank_loss_for_scores_ties_np(y, pred_scores)
     rtol = 1e-2
@@ -75,7 +79,7 @@ def test_object_ranker_fixed(trivial_ranking_problem, ranker_name):
     pred_acc = zero_one_accuracy_np(pred, pred_2)
     assert np.isclose(1.0, pred_acc, rtol=rtol, atol=atol, equal_nan=False)
     pred_acc = zero_one_accuracy_np(pred, y)
-    assert np.isclose(1.0, pred_acc, rtol=rtol, atol=atol, equal_nan=False)
+    assert np.isclose(acc, pred_acc, rtol=rtol, atol=atol, equal_nan=False)
     params = {"n_hidden": 20, "n_units": 20, "n_hidden_set_units": 2, "n_hidden_set_layers": 10,
               "n_hidden_joint_units": 2, "n_hidden_joint_layers": 10, "reg_strength": 1e-3, "learning_rate": 1e-1,
               "batch_size": 32, "alpha": 0.5, "l1_ratio": 0.7, "tol": 1e-2, "C": 10, "n_mixtures": 10, "n_nests": 5,

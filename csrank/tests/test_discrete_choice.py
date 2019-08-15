@@ -24,8 +24,10 @@ discrete_choice_functions = {
     RANKNET_DC: (RankNetDiscreteChoiceFunction, {"optimizer": optimizer}, get_vals([0.97, 0.996])),
     CMPNET_DC: (CmpNetDiscreteChoiceFunction, {"optimizer": optimizer}, get_vals([0.994, 1.0])),
     FATE_DC: (FATEDiscreteChoiceFunction, {"n_hidden_joint_layers": 1, "n_hidden_set_layers": 1,
-                                           "n_hidden_joint_units": 5, "n_hidden_set_units": 5, "optimizer": optimizer},
-              get_vals([0.95, 0.998])),
+              "n_hidden_joint_units": 5, "n_hidden_set_units": 5, "optimizer": optimizer}, get_vals([0.95, 0.998])),
+    FATELINEAR_DC: (FATELinearDiscreteChoiceFunction, {"n_hidden_set_units": 10, "learning_rate": 5e-3,
+                    "batch_size": 32}, get_vals([0.022, 0.086])),
+    FETALINEAR_DC: (FETALinearDiscreteChoiceFunction, {}, get_vals([0.976, 0.9998])),
     MNL: (MultinomialLogitModel, {}, get_vals([0.998, 1.0])),
     NLM: (NestedLogitModel, {}, get_vals()),
     PCL: (PairedCombinatorialLogit, {}, get_vals()),
@@ -54,7 +56,10 @@ def test_discrete_choice_function_fixed(trivial_discrete_choice_problem, name):
     params, accuracies = discrete_choice_functions[name][1], discrete_choice_functions[name][2]
     params["n_objects"], params["n_object_features"] = tuple(x.shape[1:])
     learner = choice_function(**params)
-    learner.fit(x, y, epochs=100, validation_split=0, verbose=False)
+    if "linear" in name:
+        learner.fit(x, y, epochs=10, validation_split=0, verbose=False)
+    else:
+        learner.fit(x, y, epochs=100, validation_split=0, verbose=False)
     s_pred = learner.predict_scores(x)
     y_pred = learner.predict_for_scores(s_pred)
     y_pred_2 = learner.predict(x)

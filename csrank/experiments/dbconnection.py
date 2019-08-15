@@ -291,12 +291,15 @@ class DBConnector(metaclass=ABCMeta):
                                      job_desc['dataset_params']['n_objects']
             expression = "dataset_params->> \'{}\' = \'{}\'".format("year", value)
             expression = "{} AND dataset_params->> \'{}\' = \'{}\'".format(expression, "n_objects", value2)
+        elif "exp" in job_desc['dataset']:
+            dataset, value = job_desc['dataset'], job_desc['dataset_params']['n_objects']
+            expression = "dataset_params->> \'{}\' = \'{}\'".format("n_objects", value)
         else:
             dataset = job_desc['dataset']
             expression = True
-        self.logger.info("learner_params {}".format(learner_params))
-        select_job = "SELECT * from {} where fold_id = {} AND learner = \'{}\' AND " \
-                     "dataset = \'{}\' AND {}".format(avail_jobs, fold_id, learner, dataset, expression)
+        self.logger.info("learner_params {} expression {}".format(learner_params, expression))
+        select_job = "SELECT * from {} where fold_id = {} AND learner = \'{}\' AND  dataset = \'{}\' AND {}".format(
+            avail_jobs, fold_id, learner, dataset, expression)
         self.logger.info("Select job for duplication {}".format(select_job))
         self.cursor_db.execute(select_job)
         new_job_id = None

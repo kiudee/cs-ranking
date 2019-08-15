@@ -95,7 +95,7 @@ class ParameterOptimizer(Learner):
             self.tuning_callbacks = tuning_callbacks
         loss_funcs = {OBJECT_RANKING: zero_one_rank_loss, LABEL_RANKING: zero_one_rank_loss,
                       DISCRETE_CHOICE: categorical_accuracy, DYAD_RANKING: zero_one_rank_loss,
-                      CHOICE_FUNCTION: hamming}
+                      CHOICE_FUNCTION: f1_measure}
         if validation_loss is None:
             self.validation_loss = loss_funcs[learning_problem]
             self.logger.info('Loss function is not specified, using {}'.format(loss_funcs[learning_problem].__name__))
