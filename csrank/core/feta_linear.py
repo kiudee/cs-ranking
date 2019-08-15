@@ -3,12 +3,11 @@ from itertools import combinations
 
 import numpy as np
 import tensorflow as tf
-from keras.losses import binary_crossentropy
-from sklearn.utils import check_random_state
-
 from csrank.learner import Learner
 from csrank.numpy_util import sigmoid
 from csrank.util import progress_bar, print_dictionary
+from keras.losses import binary_crossentropy
+from sklearn.utils import check_random_state
 
 
 class FETALinearCore(Learner):
@@ -22,6 +21,7 @@ class FETALinearCore(Learner):
         self.n_objects = n_objects
         self.epochs_drop = epochs_drop
         self.drop = drop
+        self.current_lr = None
         self.weight1 = None
         self.bias1 = None
         self.weight2 = None
@@ -62,8 +62,8 @@ class FETALinearCore(Learner):
 
     def step_decay(self, epoch):
         step = math.floor((1 + epoch) / self.epochs_drop)
-        self.learning_rate = self.learning_rate * math.pow(self.drop, step)
-        self.optimizer = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(self.loss)
+        self.current_lr = self.learning_rate * math.pow(self.drop, step)
+        self.optimizer = tf.train.GradientDescentOptimizer(self.current_lr).minimize(self.loss)
 
     def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
         # Global Variables Initializer
