@@ -1,6 +1,6 @@
 import numpy as np
-from csrank.constants import DISCRETE_CHOICE
 
+from csrank.constants import DISCRETE_CHOICE
 from .util import convert_to_label_encoding, angle_between
 from ..mnist_dataset_reader import MNISTDatasetReader
 

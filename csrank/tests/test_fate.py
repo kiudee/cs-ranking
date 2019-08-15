@@ -1,10 +1,11 @@
 from abc import ABCMeta
 
 import numpy as np
-from csrank import FATENetworkCore, FATEObjectRanker
-from csrank.tests.test_ranking import optimizer
 from keras import Input, Model
 from keras.regularizers import l2
+
+from csrank import FATENetworkCore, FATEObjectRanker
+from csrank.tests.test_ranking import optimizer
 
 
 def test_construction_core():

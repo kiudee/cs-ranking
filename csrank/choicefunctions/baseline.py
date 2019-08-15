@@ -1,8 +1,8 @@
 import logging
 
 import numpy as np
-from csrank.learner import Learner
 
+from csrank.learner import Learner
 from .choice_functions import ChoiceFunctions
 
 

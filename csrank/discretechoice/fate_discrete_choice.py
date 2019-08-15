@@ -1,10 +1,11 @@
 import logging
 
-from csrank.core.fate_network import FATENetwork
-from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 from keras.layers import Dense
 from keras.optimizers import SGD
 from keras.regularizers import l2
+
+from csrank.core.fate_network import FATENetwork
+from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 
 
 class FATEDiscreteChoiceFunction(FATENetwork, DiscreteObjectChooser):

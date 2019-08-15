@@ -1,6 +1,13 @@
 import logging
 
 import tensorflow as tf
+from keras import Input, backend as K, optimizers
+from keras.layers import Dense, concatenate
+from keras.models import Model
+from keras.optimizers import SGD
+from keras.regularizers import l2
+from sklearn.utils import check_random_state
+
 from csrank.constants import allowed_dense_kwargs
 from csrank.layers import NormalizedDense, create_input_lambda
 from csrank.learner import Learner
@@ -8,12 +15,6 @@ from csrank.losses import plackett_luce_loss
 from csrank.metrics import zero_one_rank_loss_for_scores_ties
 from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.util import print_dictionary
-from keras import Input, backend as K, optimizers
-from keras.layers import Dense, concatenate
-from keras.models import Model
-from keras.optimizers import SGD
-from keras.regularizers import l2
-from sklearn.utils import check_random_state
 
 __all__ = ["ListNet"]
 

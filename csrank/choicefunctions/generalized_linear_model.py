@@ -1,18 +1,18 @@
 import logging
 
-import csrank.theano_util as ttu
 import numpy as np
 import pymc3 as pm
 import theano
 import theano.tensor as tt
-from csrank.choicefunctions.util import create_weight_dictionary, BinaryCrossEntropyLikelihood
-from csrank.discretechoice.likelihoods import fit_pymc3_model
-from csrank.learner import Learner
-from csrank.util import print_dictionary
 from pymc3.variational.callbacks import CheckParametersConvergence
 from sklearn.model_selection import train_test_split
 from sklearn.utils import check_random_state
 
+import csrank.theano_util as ttu
+from csrank.choicefunctions.util import create_weight_dictionary, BinaryCrossEntropyLikelihood
+from csrank.discretechoice.likelihoods import fit_pymc3_model
+from csrank.learner import Learner
+from csrank.util import print_dictionary
 from .choice_functions import ChoiceFunctions
 
 

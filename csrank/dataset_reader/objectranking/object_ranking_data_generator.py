@@ -1,6 +1,4 @@
 import numpy as np
-from csrank.constants import OBJECT_RANKING
-from csrank.numpy_util import scores_to_rankings
 from pygmo import hypervolume
 from scipy.spatial.distance import pdist, squareform
 from sklearn.datasets import make_regression
@@ -8,6 +6,8 @@ from sklearn.datasets.samples_generator import make_blobs
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.utils import check_random_state
 
+from csrank.constants import OBJECT_RANKING
+from csrank.numpy_util import scores_to_rankings
 from ..synthetic_dataset_generator import SyntheticDatasetGenerator
 from ..util import create_pairwise_prob_matrix, quicksort
 

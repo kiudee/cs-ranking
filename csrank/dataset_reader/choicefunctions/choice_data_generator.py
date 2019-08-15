@@ -1,7 +1,7 @@
 import numpy as np
-from csrank.constants import CHOICE_FUNCTION
 from sklearn.utils import check_random_state
 
+from csrank.constants import CHOICE_FUNCTION
 from ..synthetic_dataset_generator import SyntheticDatasetGenerator
 
 

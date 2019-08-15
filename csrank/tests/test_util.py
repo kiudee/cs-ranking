@@ -1,10 +1,11 @@
 import numpy as np
 import pytest
 import tensorflow as tf
+from keras import backend as K
+
 from csrank import SyntheticIterator
 from csrank.tensorflow_util import tensorify
 from csrank.tuning import check_learner_class
-from keras import backend as K
 
 
 def test_tensorify():

@@ -6,11 +6,12 @@ from abc import ABCMeta
 import h5py
 import numpy as np
 import pandas as pd
+from pandas.api.types import is_numeric_dtype
+from sklearn.model_selection import ShuffleSplit
+
 from csrank.dataset_reader.dataset_reader import DatasetReader
 from csrank.dataset_reader.util import standardize_features, standardize_features_dict
 from csrank.util import print_dictionary
-from pandas.api.types import is_numeric_dtype
-from sklearn.model_selection import ShuffleSplit
 
 
 class ExpediaDatasetReader(DatasetReader, metaclass=ABCMeta):

@@ -1,8 +1,8 @@
 import logging
 
-from csrank.core.pairwise_svm import PairwiseSVM
 from sklearn.model_selection import train_test_split
 
+from csrank.core.pairwise_svm import PairwiseSVM
 from .choice_functions import ChoiceFunctions
 from .util import generate_complete_pairwise_dataset
 

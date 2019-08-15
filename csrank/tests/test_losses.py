@@ -1,7 +1,8 @@
 import numpy as np
-from csrank.losses import hinged_rank_loss, smooth_rank_loss, plackett_luce_loss
 from keras import backend as K
 from numpy.testing import assert_almost_equal
+
+from csrank.losses import hinged_rank_loss, smooth_rank_loss, plackett_luce_loss
 
 decimal = 3
 

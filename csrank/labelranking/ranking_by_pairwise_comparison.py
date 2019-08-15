@@ -2,13 +2,14 @@ import logging
 from itertools import combinations
 
 import numpy as np
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.utils import check_random_state
+
 from csrank.labelranking.label_ranker import LabelRanker
 from csrank.learner import Learner
 from csrank.numpy_util import scores_to_rankings
 from csrank.util import print_dictionary
-from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import StandardScaler
-from sklearn.utils import check_random_state
 
 
 class RankingbyPairwiseComparisonLabelRanker(LabelRanker, Learner):

@@ -7,11 +7,11 @@ from itertools import combinations, product
 import h5py
 import numpy as np
 import pandas as pd
-from csrank.constants import OBJECT_RANKING
-from csrank.numpy_util import scores_to_rankings
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import check_random_state
 
+from csrank.constants import OBJECT_RANKING
+from csrank.numpy_util import scores_to_rankings
 from ..dataset_reader import DatasetReader
 from ..util import get_similarity_matrix, get_key_for_indices, distance_metric_multilabel
 

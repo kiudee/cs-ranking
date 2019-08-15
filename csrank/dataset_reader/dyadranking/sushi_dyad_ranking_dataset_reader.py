@@ -1,7 +1,7 @@
-from csrank.constants import DYAD_RANKING
 from sklearn.model_selection import StratifiedKFold, ShuffleSplit
 from sklearn.utils import check_random_state
 
+from csrank.constants import DYAD_RANKING
 from ..sushi_dataset_reader import SushiDatasetReader
 
 

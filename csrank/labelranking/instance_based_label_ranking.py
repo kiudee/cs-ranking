@@ -1,14 +1,15 @@
 import logging
 
 import numpy as np
+from sklearn.neighbors import NearestNeighbors
+from sklearn.preprocessing import StandardScaler
+from sklearn.utils import check_random_state
+
 from csrank.labelranking.label_ranker import LabelRanker
 from csrank.labelranking.placketluce_model import get_pl_parameters_for_rankings
 from csrank.learner import Learner
 from csrank.numpy_util import scores_to_rankings, ranking_ordering_conversion
 from csrank.util import print_dictionary
-from sklearn.neighbors import NearestNeighbors
-from sklearn.preprocessing import StandardScaler
-from sklearn.utils import check_random_state
 
 
 class InstanceBasedLabelRanker(LabelRanker, Learner):

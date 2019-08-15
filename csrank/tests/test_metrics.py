@@ -1,13 +1,14 @@
 import numpy as np
 import pytest
+from keras import backend as K
+from numpy.testing import assert_almost_equal
+
 from csrank.metrics import zero_one_rank_loss, zero_one_rank_loss_for_scores, zero_one_rank_loss_for_scores_ties, \
     zero_one_accuracy, make_ndcg_at_k_loss, kendalls_tau_for_scores, \
     spearman_correlation_for_scores, zero_one_accuracy_for_scores
 from csrank.metrics_np import zero_one_rank_loss_for_scores_np, zero_one_rank_loss_for_scores_ties_np, \
     spearman_correlation_for_scores_np, spearman_correlation_for_scores_scipy, kendalls_tau_for_scores_np, \
     zero_one_accuracy_for_scores_np
-from keras import backend as K
-from numpy.testing import assert_almost_equal
 
 
 @pytest.fixture(scope="module",

@@ -2,9 +2,9 @@ import logging
 import os
 
 import numpy as np
-from csrank.constants import DISCRETE_CHOICE
 from sklearn.utils import check_random_state
 
+from csrank.constants import DISCRETE_CHOICE
 from .util import sub_sampling_discrete_choices_from_relevance
 from ..expedia_dataset_reader import ExpediaDatasetReader
 

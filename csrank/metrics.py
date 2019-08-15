@@ -1,7 +1,8 @@
 import numpy as np
 import tensorflow as tf
-from csrank.tensorflow_util import scores_to_rankings, get_instances_objects, tensorify
 from keras import backend as K
+
+from csrank.tensorflow_util import scores_to_rankings, get_instances_objects, tensorify
 
 __all__ = ['zero_one_rank_loss', 'zero_one_rank_loss_for_scores',
            'zero_one_rank_loss_for_scores_ties',

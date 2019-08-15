@@ -1,8 +1,8 @@
-from csrank.constants import OBJECT_RANKING
-from csrank.dataset_reader.util import standardize_features
 from sklearn.model_selection import StratifiedKFold, ShuffleSplit
 from sklearn.utils import check_random_state
 
+from csrank.constants import OBJECT_RANKING
+from csrank.dataset_reader.util import standardize_features
 from ..sushi_dataset_reader import SushiDatasetReader
 
 

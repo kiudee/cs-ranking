@@ -2,7 +2,6 @@ import logging
 
 from csrank.core.fate_linear import FATELinearCore
 from csrank.losses import hinged_rank_loss
-
 from .object_ranker import ObjectRanker
 
 

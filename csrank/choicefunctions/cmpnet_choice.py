@@ -1,11 +1,12 @@
 import logging
 
-from csrank.choicefunctions.choice_functions import ChoiceFunctions
-from csrank.choicefunctions.util import generate_complete_pairwise_dataset
-from csrank.core.cmpnet_core import CmpNetCore
 from keras.optimizers import SGD
 from keras.regularizers import l2
 from sklearn.model_selection import train_test_split
+
+from csrank.choicefunctions.choice_functions import ChoiceFunctions
+from csrank.choicefunctions.util import generate_complete_pairwise_dataset
+from csrank.core.cmpnet_core import CmpNetCore
 
 
 class CmpNetChoiceFunction(CmpNetCore, ChoiceFunctions):

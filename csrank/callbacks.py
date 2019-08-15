@@ -3,9 +3,10 @@ import math
 import warnings
 
 import numpy as np
+from keras.callbacks import Callback, LearningRateScheduler, EarlyStopping
+
 from csrank.tunable import Tunable
 from csrank.util import print_dictionary
-from keras.callbacks import Callback, LearningRateScheduler, EarlyStopping
 
 
 class EarlyStoppingWithWeights(EarlyStopping, Tunable):

@@ -1,9 +1,9 @@
 import logging
 
-from csrank.dataset_reader.util import standardize_features
 from sklearn.model_selection import train_test_split
 from sklearn.utils import check_random_state
 
+from csrank.dataset_reader.util import standardize_features
 from .dataset_reader import DatasetReader
 
 

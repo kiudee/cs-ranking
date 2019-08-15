@@ -1,6 +1,7 @@
 from abc import ABCMeta
 
 import numpy as np
+
 from csrank.constants import CHOICE_FUNCTION
 from csrank.metrics_np import f1_measure
 from csrank.util import progress_bar

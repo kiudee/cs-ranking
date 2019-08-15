@@ -1,9 +1,9 @@
 import logging
 
-from csrank.constants import DISCRETE_CHOICE
-from csrank.dataset_reader.util import standardize_features
 from sklearn.utils import check_random_state
 
+from csrank.constants import DISCRETE_CHOICE
+from csrank.dataset_reader.util import standardize_features
 from .util import sub_sampling_discrete_choices_from_relevance
 from ..letor_ranking_dataset_reader import LetorRankingDatasetReader
 

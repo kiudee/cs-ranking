@@ -2,8 +2,6 @@ import logging
 from itertools import combinations
 
 import numpy as np
-from csrank.core.feta_network import FETANetwork
-from csrank.layers import NormalizedDense
 from keras import Input, backend as K, Model
 from keras.layers import Dense, concatenate, Lambda, add, Activation
 from keras.losses import binary_crossentropy
@@ -11,6 +9,8 @@ from keras.optimizers import SGD
 from keras.regularizers import l2
 from sklearn.model_selection import train_test_split
 
+from csrank.core.feta_network import FETANetwork
+from csrank.layers import NormalizedDense
 from .choice_functions import ChoiceFunctions
 
 

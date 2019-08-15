@@ -4,8 +4,8 @@ from abc import ABCMeta
 
 import numpy as np
 import pandas as pd
-from csrank.constants import DYAD_RANKING
 
+from csrank.constants import DYAD_RANKING
 from .dataset_reader import DatasetReader
 
 

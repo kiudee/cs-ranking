@@ -1,12 +1,12 @@
 import logging
 
-from csrank.core.fate_network import FATENetwork
 from keras.layers import Dense
 from keras.losses import binary_crossentropy
 from keras.optimizers import SGD
 from keras.regularizers import l2
 from sklearn.model_selection import train_test_split
 
+from csrank.core.fate_network import FATENetwork
 from .choice_functions import ChoiceFunctions
 
 

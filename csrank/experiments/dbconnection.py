@@ -6,8 +6,9 @@ from abc import ABCMeta
 from datetime import timedelta, datetime
 
 import psycopg2
-from csrank.util import get_duration_seconds, print_dictionary
 from psycopg2.extras import DictCursor
+
+from csrank.util import get_duration_seconds, print_dictionary
 
 
 class DBConnector(metaclass=ABCMeta):

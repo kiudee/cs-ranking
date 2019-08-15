@@ -2,10 +2,11 @@ import logging
 import os
 
 import numpy as np
-from csrank.dataset_reader.dataset_reader import DatasetReader
-from csrank.dataset_reader.util import standardize_features
 from sklearn.model_selection import train_test_split
 from sklearn.utils import check_random_state
+
+from csrank.dataset_reader.dataset_reader import DatasetReader
+from csrank.dataset_reader.util import standardize_features
 
 
 class MNISTDatasetReader(DatasetReader):

@@ -1,8 +1,9 @@
 import logging
 
+from keras.losses import categorical_hinge
+
 from csrank.core.fate_linear import FATELinearCore
 from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
-from keras.losses import categorical_hinge
 
 
 class FATELinearDiscreteChoiceFunction(FATELinearCore, DiscreteObjectChooser):

@@ -1,6 +1,6 @@
 import numpy as np
-from csrank.constants import CHOICE_FUNCTION
 
+from csrank.constants import CHOICE_FUNCTION
 from ..mnist_dataset_reader import MNISTDatasetReader
 
 

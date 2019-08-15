@@ -1,11 +1,12 @@
 import logging
 
+from keras.optimizers import SGD
+from keras.regularizers import l2
+
 from csrank.core.fate_network import FATENetwork
 from csrank.losses import hinged_rank_loss
 from csrank.metrics import zero_one_rank_loss_for_scores_ties
 from csrank.objectranking.object_ranker import ObjectRanker
-from keras.optimizers import SGD
-from keras.regularizers import l2
 
 
 class FATEObjectRanker(FATENetwork, ObjectRanker):

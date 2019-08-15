@@ -1,8 +1,8 @@
 import logging
 
-from csrank.constants import OBJECT_RANKING
 from sklearn.utils import check_random_state
 
+from csrank.constants import OBJECT_RANKING
 from .util import sub_sampling_rankings
 from ..letor_listwise_dataset_reader import LetorListwiseDatasetReader
 

@@ -1,15 +1,16 @@
 import logging
 
 import tensorflow as tf
-from csrank.constants import allowed_dense_kwargs
-from csrank.layers import NormalizedDense
-from csrank.learner import Learner
-from csrank.util import print_dictionary
 from keras import optimizers, Input, Model, backend as K
 from keras.layers import Dense, Lambda, add
 from keras.optimizers import SGD
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
+
+from csrank.constants import allowed_dense_kwargs
+from csrank.layers import NormalizedDense
+from csrank.learner import Learner
+from csrank.util import print_dictionary
 
 
 class RankNetCore(Learner):

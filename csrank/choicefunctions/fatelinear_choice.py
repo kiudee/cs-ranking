@@ -1,9 +1,9 @@
 import logging
 
-from csrank.core.fate_linear import FATELinearCore
 from keras.losses import binary_crossentropy
 from sklearn.model_selection import train_test_split
 
+from csrank.core.fate_linear import FATELinearCore
 from .choice_functions import ChoiceFunctions
 
 

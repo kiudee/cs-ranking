@@ -1,8 +1,8 @@
 import logging
 
-from csrank.constants import DISCRETE_CHOICE
 from sklearn.utils import check_random_state
 
+from csrank.constants import DISCRETE_CHOICE
 from .util import sub_sampling_discrete_choices_from_scores, convert_to_label_encoding
 from ..letor_listwise_dataset_reader import LetorListwiseDatasetReader
 

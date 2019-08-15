@@ -2,12 +2,12 @@ import os
 
 import numpy as np
 import pandas as pd
-from csrank.constants import LABEL_RANKING
-from csrank.numpy_util import ranking_ordering_conversion
 from sklearn.model_selection import ShuffleSplit
 from sklearn.preprocessing import Imputer, StandardScaler
 from sklearn.utils import check_random_state
 
+from csrank.constants import LABEL_RANKING
+from csrank.numpy_util import ranking_ordering_conversion
 from ..dataset_reader import DatasetReader
 
 

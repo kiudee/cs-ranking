@@ -1,14 +1,14 @@
 import logging
 from itertools import combinations
 
-from csrank.core.feta_network import FETANetwork
-from csrank.layers import NormalizedDense
 from keras import Input, Model
 from keras import backend as K
 from keras.layers import Dense, Lambda, concatenate, Activation
 from keras.optimizers import SGD
 from keras.regularizers import l2
 
+from csrank.core.feta_network import FETANetwork
+from csrank.layers import NormalizedDense
 from .discrete_choice import DiscreteObjectChooser
 
 

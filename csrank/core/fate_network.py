@@ -3,10 +3,6 @@ import logging
 import keras.backend as K
 import numpy as np
 import tensorflow as tf
-from csrank.constants import allowed_dense_kwargs
-from csrank.layers import DeepSet, create_input_lambda
-from csrank.learner import Learner
-from csrank.util import print_dictionary
 from keras import optimizers
 from keras.layers import Input, Dense
 from keras.layers.merge import concatenate
@@ -14,6 +10,11 @@ from keras.models import Model
 from keras.optimizers import SGD
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
+
+from csrank.constants import allowed_dense_kwargs
+from csrank.layers import DeepSet, create_input_lambda
+from csrank.learner import Learner
+from csrank.util import print_dictionary
 
 __all__ = ['FATENetwork', 'FATENetworkCore']
 

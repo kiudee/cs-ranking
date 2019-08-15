@@ -3,16 +3,17 @@ from itertools import permutations, combinations
 
 import numpy as np
 import tensorflow as tf
-from csrank.constants import allowed_dense_kwargs
-from csrank.layers import NormalizedDense
-from csrank.learner import Learner
-from csrank.losses import hinged_rank_loss
-from csrank.util import print_dictionary
 from keras import optimizers, Input, Model, backend as K
 from keras.layers import Dense, concatenate, Lambda, add
 from keras.optimizers import SGD
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
+
+from csrank.constants import allowed_dense_kwargs
+from csrank.layers import NormalizedDense
+from csrank.learner import Learner
+from csrank.losses import hinged_rank_loss
+from csrank.util import print_dictionary
 
 
 class FETANetwork(Learner):

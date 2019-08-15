@@ -1,12 +1,13 @@
 import logging
 
 import numpy as np
-from csrank.learner import Learner
-from csrank.util import print_dictionary
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import LinearSVC
 from sklearn.utils import check_random_state
+
+from csrank.learner import Learner
+from csrank.util import print_dictionary
 
 
 class PairwiseSVM(Learner):

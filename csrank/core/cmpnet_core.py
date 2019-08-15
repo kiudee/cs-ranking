@@ -3,15 +3,16 @@ from itertools import permutations
 
 import numpy as np
 import tensorflow as tf
-from csrank.constants import allowed_dense_kwargs
-from csrank.layers import NormalizedDense
-from csrank.learner import Learner
-from csrank.util import print_dictionary
 from keras import optimizers, Input, Model, backend as K
 from keras.layers import Dense, concatenate
 from keras.optimizers import SGD
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
+
+from csrank.constants import allowed_dense_kwargs
+from csrank.layers import NormalizedDense
+from csrank.learner import Learner
+from csrank.util import print_dictionary
 
 
 class CmpNetCore(Learner):

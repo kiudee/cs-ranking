@@ -3,13 +3,14 @@ import os
 import numpy as np
 import pytest
 import tensorflow as tf
+from keras.optimizers import SGD
+
 from csrank.dataset_reader.discretechoice.util import convert_to_label_encoding
 from csrank.discretechoice import *
 from csrank.experiments.constants import *
 from csrank.experiments.util import metrics_on_predictions
 from csrank.metrics_np import categorical_accuracy_np, topk_categorical_accuracy_np, subset_01_loss
 from csrank.tests.test_ranking import check_leaner
-from keras.optimizers import SGD
 
 metrics = {'CategoricalAccuracy': categorical_accuracy_np, 'CategoricalTopK2': topk_categorical_accuracy_np(k=2)}
 optimizer = SGD(lr=1e-3, momentum=0.9, nesterov=True)
@@ -24,9 +25,10 @@ discrete_choice_functions = {
     RANKNET_DC: (RankNetDiscreteChoiceFunction, {"optimizer": optimizer}, get_vals([0.97, 0.996])),
     CMPNET_DC: (CmpNetDiscreteChoiceFunction, {"optimizer": optimizer}, get_vals([0.994, 1.0])),
     FATE_DC: (FATEDiscreteChoiceFunction, {"n_hidden_joint_layers": 1, "n_hidden_set_layers": 1,
-              "n_hidden_joint_units": 5, "n_hidden_set_units": 5, "optimizer": optimizer}, get_vals([0.95, 0.998])),
+                                           "n_hidden_joint_units": 5, "n_hidden_set_units": 5, "optimizer": optimizer},
+              get_vals([0.95, 0.998])),
     FATELINEAR_DC: (FATELinearDiscreteChoiceFunction, {"n_hidden_set_units": 10, "learning_rate": 5e-3,
-                    "batch_size": 32}, get_vals([0.022, 0.086])),
+                                                       "batch_size": 32}, get_vals([0.022, 0.086])),
     FETALINEAR_DC: (FETALinearDiscreteChoiceFunction, {}, get_vals([0.976, 0.9998])),
     MNL: (MultinomialLogitModel, {}, get_vals([0.998, 1.0])),
     NLM: (NestedLogitModel, {}, get_vals()),

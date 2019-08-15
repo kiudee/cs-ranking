@@ -1,12 +1,13 @@
 import logging
 
 import numpy as np
+from sklearn.preprocessing import LabelBinarizer
+
 from csrank.core.fate_network import FATENetwork
 from csrank.labelranking.label_ranker import LabelRanker
 from csrank.losses import hinged_rank_loss
 from csrank.metrics import zero_one_rank_loss_for_scores_ties
 from csrank.tensorflow_util import tensorify
-from sklearn.preprocessing import LabelBinarizer
 
 
 class FATELabelRanker(FATENetwork, LabelRanker):

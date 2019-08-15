@@ -1,8 +1,8 @@
 import logging
 
-from csrank.core.feta_linear import FETALinearCore
 from keras.losses import binary_crossentropy
 
+from csrank.core.feta_linear import FETALinearCore
 from .object_ranker import ObjectRanker
 
 

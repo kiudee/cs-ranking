@@ -3,12 +3,13 @@ import os
 import numpy as np
 import pytest
 import tensorflow as tf
+from keras.optimizers import SGD
+
 from csrank import PairedCombinatorialLogit
 from csrank.experiments.constants import *
 from csrank.metrics_np import zero_one_rank_loss_for_scores_ties_np, zero_one_accuracy_np
 from csrank.objectranking import *
 from csrank.objectranking.fate_object_ranker import FATEObjectRanker
-from keras.optimizers import SGD
 
 optimizer = SGD(lr=1e-3, momentum=0.9, nesterov=True)
 

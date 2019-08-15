@@ -3,10 +3,11 @@ from itertools import product
 
 import numpy as np
 import theano
-from csrank import theano_util as ttu
 from pymc3 import Discrete
 from pymc3.distributions.dist_math import bound
 from theano import tensor as tt
+
+from csrank import theano_util as ttu
 
 
 def generate_pairwise_instances(x, choice):

@@ -1,10 +1,10 @@
 import logging
 
-from csrank.core.ranknet_core import RankNetCore
 from keras.optimizers import SGD
 from keras.regularizers import l2
 from sklearn.model_selection import train_test_split
 
+from csrank.core.ranknet_core import RankNetCore
 from .choice_functions import ChoiceFunctions
 from .util import generate_complete_pairwise_dataset
 

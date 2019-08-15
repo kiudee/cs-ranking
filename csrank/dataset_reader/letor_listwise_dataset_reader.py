@@ -6,11 +6,11 @@ from abc import ABCMeta
 
 import h5py
 import numpy as np
+from scipy.stats import rankdata
+
 from csrank.constants import OBJECT_RANKING, DISCRETE_CHOICE
 from csrank.dataset_reader.util import standardize_features_dict
 from csrank.util import print_dictionary, create_dir_recursively
-from scipy.stats import rankdata
-
 from .dataset_reader import DatasetReader
 
 

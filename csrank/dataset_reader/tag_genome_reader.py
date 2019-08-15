@@ -5,10 +5,10 @@ from itertools import combinations
 
 import numpy as np
 import pandas as pd
-from csrank.dataset_reader.dataset_reader import DatasetReader
 from sklearn.model_selection import train_test_split
 from sklearn.utils import check_random_state
 
+from csrank.dataset_reader.dataset_reader import DatasetReader
 from .util import get_key_for_indices, get_similarity_matrix, standardize_features
 
 MOVIE_ID = 'movieId'

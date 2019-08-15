@@ -1,10 +1,11 @@
 import logging
 
+from keras.optimizers import SGD
+from keras.regularizers import l2
+
 from csrank.core.cmpnet_core import CmpNetCore
 from csrank.dataset_reader.objectranking.util import generate_complete_pairwise_dataset
 from csrank.objectranking.object_ranker import ObjectRanker
-from keras.optimizers import SGD
-from keras.regularizers import l2
 
 __all__ = ['CmpNet']
 

@@ -1,10 +1,10 @@
 import logging
 
-from csrank.core.feta_network import FETANetwork
-from csrank.losses import hinged_rank_loss
 from keras.optimizers import SGD
 from keras.regularizers import l2
 
+from csrank.core.feta_network import FETANetwork
+from csrank.losses import hinged_rank_loss
 from .object_ranker import ObjectRanker
 
 __all__ = ['FETAObjectRanker']

@@ -1,18 +1,18 @@
 import logging
 
-import csrank.numpy_util as npu
-import csrank.theano_util as ttu
 import numpy as np
 import pymc3 as pm
 import theano
 import theano.tensor as tt
-from csrank.discretechoice.likelihoods import create_weight_dictionary, fit_pymc3_model
-from csrank.learner import Learner
-from csrank.util import print_dictionary
 from pymc3.variational.callbacks import CheckParametersConvergence
 from sklearn.cluster import MiniBatchKMeans
 from sklearn.utils import check_random_state
 
+import csrank.numpy_util as npu
+import csrank.theano_util as ttu
+from csrank.discretechoice.likelihoods import create_weight_dictionary, fit_pymc3_model
+from csrank.learner import Learner
+from csrank.util import print_dictionary
 from .discrete_choice import DiscreteObjectChooser
 from .likelihoods import likelihood_dict, LogLikelihood
 
@@ -93,7 +93,6 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         self.p = None
         self.y_nests = None
         self.threshold = 5e6
-
 
     @property
     def model_configuration(self):

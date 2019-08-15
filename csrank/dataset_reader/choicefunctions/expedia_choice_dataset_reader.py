@@ -1,9 +1,9 @@
 import logging
 import os
 
-from csrank.constants import CHOICE_FUNCTION
 from sklearn.utils import check_random_state
 
+from csrank.constants import CHOICE_FUNCTION
 from .util import sub_sampling_choices_from_relevance
 from ..expedia_dataset_reader import ExpediaDatasetReader
 

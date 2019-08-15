@@ -1,16 +1,16 @@
 import logging
 from itertools import product
 
-import csrank.numpy_util as npu
-import csrank.theano_util as ttu
 import numpy as np
 import pymc3 as pm
 import theano
 import theano.tensor as tt
-from csrank.learner import Learner
-from csrank.util import print_dictionary
 from pymc3.variational.callbacks import CheckParametersConvergence
 
+import csrank.numpy_util as npu
+import csrank.theano_util as ttu
+from csrank.learner import Learner
+from csrank.util import print_dictionary
 from .discrete_choice import DiscreteObjectChooser
 from .likelihoods import likelihood_dict, LogLikelihood, create_weight_dictionary, fit_pymc3_model
 

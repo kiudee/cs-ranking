@@ -2,12 +2,12 @@ import logging
 import os
 
 import numpy as np
-from csrank.constants import OBJECT_RANKING
 from joblib import load
 from sklearn.model_selection import ShuffleSplit
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import check_random_state
 
+from csrank.constants import OBJECT_RANKING
 from ..dataset_reader import DatasetReader
 
 
