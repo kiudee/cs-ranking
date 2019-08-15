@@ -1,8 +1,0 @@
-Model                   ,KendallsTau  ,SpearmanCorrelation,ZeroOneRankLoss,ZeroOneRankLossTies
-NoSetLayersDefaultParams,0.3645179868 ,0.4166039824       ,0.3177465796   ,0.3177480698
-5SetLayersDefaultParams ,0.0949659944 ,0.1175919771       ,0.4525159299   ,0.4525159299
-32SetLayersDefaultParams,-0.0071059465,-0.0065369606      ,0.5035532713   ,0.5035532713
-10SetLayersBestParams   ,0.805325985  ,0.8644829988       ,0.0973352417   ,0.0973352417
-NoSetLayersBestParams   ,0.3644899726 ,0.4167339802       ,0.3177621961   ,0.3177621961
-8SetLayersBestParams2   ,0.7991740108 ,0.8580089808       ,0.1004121453   ,0.1004121453
-NoSetLayersBestParams2  ,0.3637980223 ,0.4159359932       ,0.3181083202   ,0.3181083202

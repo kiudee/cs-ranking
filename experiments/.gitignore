@@ -8,9 +8,5 @@
 /single_cv_results/
 /predictions/
 /results/
-/mnist/
-/optimizers/
-/thesis/
-/detailedresults/
-/jobs/
-/presentation/
+/pc2/
+*.ipynb

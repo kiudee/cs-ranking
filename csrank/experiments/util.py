@@ -1,7 +1,6 @@
 import sys
 
 import pymc3 as pm
-
 from csrank.callbacks import EarlyStoppingWithWeights, LRScheduler, DebugOutput
 from csrank.choicefunctions import *
 from csrank.constants import *
@@ -36,7 +35,8 @@ dcms = {FETA_DC: FETADiscreteChoiceFunction, FATE_DC: FATEDiscreteChoiceFunction
         RANKNET_DC: RankNetDiscreteChoiceFunction, CMPNET_DC: CmpNetDiscreteChoiceFunction,
         MNL: MultinomialLogitModel, NLM: NestedLogitModel, GEV: GeneralizedNestedLogitModel,
         PCL: PairedCombinatorialLogit, RANKSVM_DC: PairwiseSVMDiscreteChoiceFunction, MLM: MixedLogitModel,
-        FATELINEAR_DC: FATELinearDiscreteChoiceFunction, FETALINEAR_DC: FETALinearDiscreteChoiceFunction}
+        FATELINEAR_DC: FATELinearDiscreteChoiceFunction, FETALINEAR_DC: FETALinearDiscreteChoiceFunction,
+        RANDOM_DC: RandomBaselineDC}
 
 learners = {**cfs, **dcms, **ors}
 
