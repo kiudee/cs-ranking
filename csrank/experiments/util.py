@@ -1,7 +1,6 @@
 import sys
 
 import pymc3 as pm
-
 from csrank.callbacks import EarlyStoppingWithWeights, LRScheduler, DebugOutput
 from csrank.choicefunction import *
 from csrank.constants import *
