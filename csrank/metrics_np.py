@@ -97,11 +97,14 @@ def zero_one_rank_loss_for_scores_np(y_true, s_pred):
 
 
 def auc_score(y_true, s_pred):
-    idx = np.where((y_true.sum(axis=1) != y_true.shape[-1]) & (y_true.sum(axis=1) != 1))
+    idx = np.where((y_true.sum(axis=1) != y_true.shape[-1] - 1) & (y_true.sum(axis=1) != y_true.shape[-1]) & (
+            y_true.sum(axis=1) != 1) & (y_true.sum(axis=1) != 0))[0]
     if len(idx) > 1:
         auc = roc_auc_score(y_true[idx], s_pred[idx], average='samples')
+    elif len(idx) == 1:
+        auc = roc_auc_score(y_true[idx][0], s_pred[idx][0])
     else:
-        auc = roc_auc_score(y_true[idx], s_pred[idx])
+        auc = np.nan
     return auc
 
 

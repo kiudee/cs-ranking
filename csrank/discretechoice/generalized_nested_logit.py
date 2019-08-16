@@ -90,6 +90,7 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
         self.Yt = None
         self.p = None
         self._config = None
+        self.threshold = 43e5
 
     @property
     def model_configuration(self):
@@ -219,6 +220,12 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
             -------
              model : pymc3 Model :class:`pm.Model`
         """
+        if np.prod(X.shape) > self.threshold:
+            l = int(self.threshold / np.prod(X.shape[1:]))
+            indices = self.random_state.choice(X.shape[0], l, replace=False)
+            X = X[indices, :, :]
+            Y = Y[indices, :]
+        self.logger.info("Train Set instances {} objects {} features {}".format(*X.shape))
         with pm.Model() as self.model:
             self.Xt = theano.shared(X)
             self.Yt = theano.shared(Y)

@@ -62,7 +62,7 @@ class CmpNetCore(Learner):
                                   range(self.n_hidden)]
         assert len(self.hidden_layers) == self.n_hidden
 
-    def _convert_instances(self, X, Y):
+    def _convert_instances_(self, X, Y):
         raise NotImplemented
 
     def construct_model(self):
@@ -126,7 +126,7 @@ class CmpNetCore(Learner):
             **kwd :
                 Keyword arguments for the fit function
         """
-        x1, x2, y_double = self._convert_instances(X, Y)
+        x1, x2, y_double = self._convert_instances_(X, Y)
 
         self.logger.debug("Instances created {}".format(x1.shape[0]))
         self.model = self.construct_model()

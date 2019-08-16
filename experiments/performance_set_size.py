@@ -23,18 +23,14 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import pymc3 as pm
-from docopt import docopt
-from sklearn.model_selection import ShuffleSplit
-from skopt.utils import load
-
-from csrank.experiments.constants import FETA_DC, MNL, NLM, GEV, PCL, MLM
-from csrank.experiments.dbconnection import DBConnector
-from csrank.experiments.util import get_dataset_reader, learners, \
-    callbacks_dictionary, lp_metric_dict, ParameterOptimizer, log_test_train_data, \
-    get_scores, create_optimizer_parameters2
+from csrank.experiments import *
 from csrank.metrics_np import categorical_accuracy_np
 from csrank.tensorflow_util import configure_numpy_keras
 from csrank.util import print_dictionary, get_duration_seconds, duration_till_now, seconds_to_time, setup_logging
+from docopt import docopt
+from sklearn.model_selection import ShuffleSplit
+from skopt.utils import load
+from csrank.tuning import ParameterOptimizer
 
 OPTIMIZE_ON_OBJECTS = [5, 7, 15, 17]
 
@@ -157,7 +153,7 @@ if __name__ == '__main__':
     if job_description['learner_params'].get("add_zeroth_order_model", False):
         add_in_name = '_zero'
     model_name = '{}{}'.format(learner_name, add_in_name)
-    learner_func = learners[learner_name]
+    learner_func = cfs[learner_name]
     X_train, Y_train, X_test, Y_test = dataset_reader.get_single_train_test_split()
 
     # Creating the learners
@@ -190,7 +186,7 @@ if __name__ == '__main__':
             for j, p in enumerate(parameters):
                 param_dict[p] = best_point[i + j]
 
-            if isinstance(obj, learners[learner_name]):
+            if isinstance(obj, cfs[learner_name]):
                 best_learner_params = copy.deepcopy(param_dict)
                 logger.info('Best learner params {}'.format(best_learner_params))
             else:

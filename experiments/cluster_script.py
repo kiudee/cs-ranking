@@ -28,11 +28,13 @@ import numpy as np
 from docopt import docopt
 from sklearn.model_selection import ShuffleSplit
 
-from csrank import *
 from csrank.metrics import make_ndcg_at_k_loss
-from csrank.tensorflow_util import configure_numpy_keras, get_mean_loss_for_dictionary
+from csrank.tensorflow_util import configure_numpy_keras, get_mean_loss
 from csrank.util import create_dir_recursively, duration_till_now, seconds_to_time, \
     print_dictionary, get_duration_seconds, setup_logging
+from csrank.experiments import *
+
+from csrank.tuning import ParameterOptimizer
 
 DIR_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 LOGS_FOLDER = 'logs'
@@ -110,7 +112,7 @@ if __name__ == "__main__":
 
             time_taken = duration_till_now(start)
             logger.info("Time Taken till now: {}  milliseconds".format(seconds_to_time(time_taken)))
-            time_eout_eval = get_duration_seconds('10H')
+            time_eout_eval = get_duration_seconds('1H')
             logger.info(
                 "Time spared for the out of sample evaluation : {} ".format(seconds_to_time(time_eout_eval)))
 
@@ -151,7 +153,7 @@ if __name__ == "__main__":
                 if "NDCG" in name:
                     evaluation_metric = make_ndcg_at_k_loss(k=n_objects)
                     predictions = y_pred
-                metric_loss = get_mean_loss_for_dictionary(evaluation_metric, Y_test, predictions)
+                metric_loss = get_mean_loss(evaluation_metric, Y_test, predictions)
                 logger.info(ERROR_OUTPUT_STRING % (name, metric_loss))
                 if np.isnan(metric_loss):
                     results[name] = "\'Infinity\'"

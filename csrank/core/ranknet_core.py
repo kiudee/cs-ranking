@@ -84,7 +84,7 @@ class RankNetCore(Learner):
         model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
         return model
 
-    def _convert_instances(self, X, Y):
+    def _convert_instances_(self, X, Y):
         raise NotImplemented
 
     def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
@@ -117,7 +117,7 @@ class RankNetCore(Learner):
             **kwd :
                 Keyword arguments for the fit function
         """
-        X1, X2, Y_single = self._convert_instances(X, Y)
+        X1, X2, Y_single = self._convert_instances_(X, Y)
 
         self.logger.debug("Instances created {}".format(X1.shape[0]))
         self.logger.debug('Creating the model')
