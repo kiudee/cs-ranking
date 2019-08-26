@@ -4,11 +4,9 @@ from keras import backend as K
 
 from csrank.tensorflow_util import scores_to_rankings, get_instances_objects, tensorify
 
-__all__ = ['zero_one_rank_loss', 'zero_one_rank_loss_for_scores',
-           'zero_one_rank_loss_for_scores_ties',
-           'make_ndcg_at_k_loss', 'kendalls_tau_for_scores',
-           'spearman_correlation_for_scores', "zero_one_accuracy",
-           "zero_one_accuracy_for_scores", "topk_categorical_accuracy"]
+__all__ = ['zero_one_rank_loss', 'zero_one_rank_loss_for_scores', 'zero_one_rank_loss_for_scores_ties',
+           'make_ndcg_at_k_loss', 'kendalls_tau_for_scores', 'spearman_correlation_for_scores', "zero_one_accuracy",
+           "zero_one_accuracy_for_scores", "topk_categorical_accuracy", "ndcg_at_k", "dcg_at_k"]
 
 
 def zero_one_rank_loss(y_true, y_pred):
@@ -123,3 +121,15 @@ def topk_categorical_accuracy(k=5):
         return acc
 
     return topk_acc
+
+def dcg_at_k(r, k): #required for LambdaMART
+        r = np.asfarray(r)[:k]
+        if r.size:
+            return np.sum(np.subtract(np.power(2, r), 1) / np.log2(np.arange(2, r.size + 2)))
+        return 0.
+
+def ndcg_at_k(r, k):#required for LambdaMART
+    idcg = dcg_at_k(sorted(r, reverse=True), k)
+    if not idcg:
+        return 0.
+    return (dcg_at_k(r, k) / idcg)

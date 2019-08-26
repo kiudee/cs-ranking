@@ -14,6 +14,8 @@ from csrank.objectranking.fate_object_ranker import FATEObjectRanker
 optimizer = SGD(lr=1e-3, momentum=0.9, nesterov=True)
 
 object_rankers = {
+LAMBDAMART: (LambdaMART, {"min_samples_split": 2, "max_depth": 50, "min_samples_leaf": 1,
+                              "max_leaf_nodes": 10}, (0.66, 0.0)),
     FATELINEAR_RANKER: (FATELinearObjectRanker, {"n_hidden_set_units": 128, "batch_size": 32}, (1.0, 0.0)),
     FETALINEAR_RANKER: (FETALinearObjectRanker, {}, (0.9112, 0.0)),
     FETA_RANKER: (FETAObjectRanker, {"add_zeroth_order_model": True, "optimizer": optimizer}, (0.0, 1.0)),
