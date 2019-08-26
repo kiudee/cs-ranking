@@ -4,6 +4,7 @@ from .fate_object_ranker import FATEObjectRanker
 from .fatelinear_object_ranker import FATELinearObjectRanker
 from .feta_object_ranker import FETAObjectRanker
 from .fetalinear_object_ranker import FETALinearObjectRanker
+from .lambdamart import LambdaMART
 from .list_net import ListNet
 from .rank_net import RankNet
 from .rank_svm import RankSVM
