@@ -27,6 +27,7 @@ LISTNET = 'listnet'
 FATELINEAR_RANKER = "fatelinear_ranker"
 FETALINEAR_RANKER = "fetalinear_ranker"
 RANDOM_RANKER = "random_ranker"
+LAMBDAMART = "lambdamart"
 
 FETA_CHOICE = 'feta_choice'
 FETALINEAR_CHOICE = "fetalinear_choice"
