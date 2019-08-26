@@ -86,6 +86,7 @@ def test_object_ranker_fixed(trivial_ranking_problem, ranker_name):
     params = {"n_hidden": 20, "n_units": 20, "n_hidden_set_units": 2, "n_hidden_set_layers": 10,
               "n_hidden_joint_units": 2, "n_hidden_joint_layers": 10, "reg_strength": 1e-3, "learning_rate": 1e-1,
               "batch_size": 32, "alpha": 0.5, "l1_ratio": 0.7, "tol": 1e-2, "C": 10, "n_mixtures": 10, "n_nests": 5,
-              "regularization": "l2"}
+              "regularization": "l2", "min_samples_split": 2, "max_depth": 50, "min_samples_leaf": 1,
+              "max_leaf_nodes": 10}
     ranker.set_tunable_parameters(**params)
     check_leaner(ranker, params, rtol, atol)
