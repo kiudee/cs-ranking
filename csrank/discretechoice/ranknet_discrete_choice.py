@@ -72,7 +72,7 @@ class RankNetDiscreteChoiceFunction(RankNetCore, DiscreteObjectChooser):
     def construct_model(self):
         return super().construct_model()
 
-    def _convert_instances(self, X, Y):
+    def _convert_instances_(self, X, Y):
         self.logger.debug('Creating the Dataset')
         x1, x2, garbage, garbage, y_single = generate_complete_pairwise_dataset(X, Y)
         del garbage
@@ -81,7 +81,6 @@ class RankNetDiscreteChoiceFunction(RankNetCore, DiscreteObjectChooser):
             x1 = x1[indices, :]
             x2 = x2[indices, :]
             y_single = y_single[indices]
-            self.logger.debug('Finished the Dataset instances {}'.format(x1.shape[0]))
         self.logger.debug('Finished the Dataset instances {}'.format(x1.shape[0]))
         return x1, x2, y_single
 

@@ -10,7 +10,7 @@ from keras.metrics import categorical_accuracy
 from sklearn.model_selection import ShuffleSplit
 from sklearn.utils import check_random_state
 from skopt import Optimizer
-from skopt.space import check_dimension, Categorical
+from skopt.space import check_dimension, Categorical, Integer
 from skopt.utils import cook_estimator, normalize_dimensions, dump, load
 
 from csrank.constants import OBJECT_RANKING, LABEL_RANKING, DISCRETE_CHOICE, \
@@ -18,7 +18,7 @@ from csrank.constants import OBJECT_RANKING, LABEL_RANKING, DISCRETE_CHOICE, \
 from csrank.learner import Learner
 from csrank.metrics import *
 from csrank.metrics_np import *
-from csrank.tensorflow_util import get_mean_loss_for_dictionary, get_loss_for_array
+from csrank.tensorflow_util import get_mean_loss
 from csrank.tunable import Tunable
 from csrank.util import duration_till_now, create_dir_recursively, \
     seconds_to_time, \
@@ -96,7 +96,7 @@ class ParameterOptimizer(Learner):
             self.tuning_callbacks = tuning_callbacks
         loss_funcs = {OBJECT_RANKING: zero_one_rank_loss, LABEL_RANKING: zero_one_rank_loss,
                       DISCRETE_CHOICE: categorical_accuracy, DYAD_RANKING: zero_one_rank_loss,
-                      CHOICE_FUNCTION: hamming}
+                      CHOICE_FUNCTION: f1_measure}
         if validation_loss is None:
             self.validation_loss = loss_funcs[learning_problem]
             self.logger.info('Loss function is not specified, using {}'.format(loss_funcs[learning_problem].__name__))
@@ -169,10 +169,7 @@ class ParameterOptimizer(Learner):
         try:
             self.learner.fit(xtrain, ytrain, **self._fit_params)
             ypred = self.learner(xtest)
-            if isinstance(xtest, dict):
-                loss = get_mean_loss_for_dictionary(self.validation_loss, ytest, ypred)
-            else:
-                loss = get_loss_for_array(self.validation_loss, ytest, ypred)
+            loss = get_mean_loss(self.validation_loss, ytest, ypred)
             time_taken = duration_till_now(start)
         except:
             self.logger.error(traceback.format_exc())
@@ -373,7 +370,7 @@ class ParameterOptimizer(Learner):
             self.logger.info("Parameter Space: {}".format(transformed))
             norm_space = normalize_dimensions(transformed)
             self.logger.info("Parameter Space after transformation: {}".format(norm_space))
-            categorical_space = np.array([isinstance(s, Categorical) for s in norm_space])
+            categorical_space = np.array([isinstance(s, Categorical) or isinstance(s, Integer) for s in norm_space])
             self.logger.info("categorical_space: {}".format(categorical_space))
             if np.all(categorical_space):
                 base_estimator = cook_estimator("RF", space=norm_space, random_state=gp_seed)

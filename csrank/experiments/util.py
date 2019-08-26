@@ -6,40 +6,39 @@ from csrank.callbacks import EarlyStoppingWithWeights, LRScheduler, DebugOutput
 from csrank.choicefunctions import *
 from csrank.constants import *
 from csrank.dataset_reader import *
+from csrank.discretechoice import *
 from csrank.experiments.constants import *
 from csrank.metrics import zero_one_rank_loss, zero_one_accuracy, make_ndcg_at_k_loss
 from csrank.metrics_np import *
 from csrank.objectranking import *
 
 __all__ = ['log_test_train_data', 'get_dataset_reader', 'create_optimizer_parameters', 'create_optimizer_parameters2',
-           'get_scores', 'datasets', 'learners', 'ranking_metrics', 'discrete_choice_metrics', 'choice_metrics',
-           'lp_metric_dict', 'metrics_on_predictions']
+           'get_scores', 'datasets', 'cfs', 'ranking_metrics', 'discrete_choice_metrics', 'choice_metrics',
+           'lp_metric_dict', 'metrics_on_predictions', 'callbacks_dictionary']
 
 datasets = {SYNTHETIC_OR: ObjectRankingDatasetGenerator, DEPTH: DepthDatasetReader,
             SUSHI: SushiObjectRankingDatasetReader, IMAGE_DATASET: ImageDatasetReader,
             TAG_GENOME_OR: TagGenomeObjectRankingDatasetReader, SENTENCE_ORDERING: SentenceOrderingDatasetReader,
-            LETOR_OR: LetorListwiseObjectRankingDatasetReader,
-            LETOR_DC: LetorRankingDiscreteChoiceDatasetReader, SYNTHETIC_DC: DiscreteChoiceDatasetGenerator,
-            MNIST_DC: MNISTDiscreteChoiceDatasetReader, TAG_GENOME_DC: TagGenomeDiscreteChoiceDatasetReader,
-            SUSHI_DC: SushiDiscreteChoiceDatasetReader, SYNTHETIC_CHOICE: ChoiceDatasetGenerator,
+            LETOR_OR: LetorListwiseObjectRankingDatasetReader, SYNTHETIC_DC: DiscreteChoiceDatasetGenerator,
+            LETOR_LISTWISE_DC: LetorListwiseDiscreteChoiceDatasetReader, MNIST_DC: MNISTDiscreteChoiceDatasetReader,
+            LETOR_DC: LetorRankingDiscreteChoiceDatasetReader, SUSHI_DC: SushiDiscreteChoiceDatasetReader,
+            TAG_GENOME_DC: TagGenomeDiscreteChoiceDatasetReader, SYNTHETIC_CHOICE: ChoiceDatasetGenerator,
             MNIST_CHOICE: MNISTChoiceDatasetReader, LETOR_CHOICE: LetorRankingChoiceDatasetReader,
             EXP_CHOICE: ExpediaChoiceDatasetReader, EXP_DC: ExpediaDiscreteChoiceDatasetReader}
-learners = {FETA_RANKER: FETAObjectRanker, RANKNET: RankNet, CMPNET: CmpNet, ERR: ExpectedRankRegression,
-            RANKSVM: RankSVM, FATE_RANKER: FATEObjectRanker, LISTNET: ListNet, FETA_CHOICE: FETAChoiceFunction,
-            FATE_CHOICE: FATEChoiceFunction, GLM_CHOICE: GeneralizedLinearModel, RANKNET_CHOICE: RankNetChoiceFunction,
-            CMPNET_CHOICE: CmpNetChoiceFunction, RANKSVM_CHOICE: PairwiseSVMChoiceFunction, RANDOM_CHOICE: AllPositive}
-try:
-    from csrank.discretechoice import *
 
-    dcm_learners = {FETA_DC: FETADiscreteChoiceFunction, FATE_DC: FATEDiscreteChoiceFunction,
-                    RANKNET_DC: RankNetDiscreteChoiceFunction, CMPNET_DC: CmpNetDiscreteChoiceFunction,
-                    MNL: MultinomialLogitModel, NLM: NestedLogitModel, GEV: GeneralizedNestedLogitModel,
-                    PCL: PairedCombinatorialLogit, RANKSVM_DC: PairwiseSVMDiscreteChoiceFunction, MLM: MixedLogitModel}
+cfs = {FETA_CHOICE: FETAChoiceFunction, FATE_CHOICE: FATEChoiceFunction, GLM_CHOICE: GeneralizedLinearModel,
+       RANKNET_CHOICE: RankNetChoiceFunction, CMPNET_CHOICE: CmpNetChoiceFunction,
+       FETALINEAR_CHOICE: FETALinearChoiceFunction, FATELINEAR_CHOICE: FATELinearChoiceFunction,
+       RANKSVM_CHOICE: PairwiseSVMChoiceFunction, RANDOM_CHOICE: AllPositive}
+ors = {FETA_RANKER: FETAObjectRanker, RANKNET: RankNet, CMPNET: CmpNet, ERR: ExpectedRankRegression,
+       RANKSVM: RankSVM, FATE_RANKER: FATEObjectRanker, LISTNET: ListNet}
+dcms = {FETA_DC: FETADiscreteChoiceFunction, FATE_DC: FATEDiscreteChoiceFunction,
+        RANKNET_DC: RankNetDiscreteChoiceFunction, CMPNET_DC: CmpNetDiscreteChoiceFunction,
+        MNL: MultinomialLogitModel, NLM: NestedLogitModel, GEV: GeneralizedNestedLogitModel,
+        PCL: PairedCombinatorialLogit, RANKSVM_DC: PairwiseSVMDiscreteChoiceFunction, MLM: MixedLogitModel,
+        FATELINEAR_DC: FATELinearDiscreteChoiceFunction, FETALINEAR_DC: FETALinearDiscreteChoiceFunction}
 
-except ImportError:
-    dcm_learners = {}
-
-learners = {**learners, **dcm_learners}
+learners = {**cfs, **dcms, **ors}
 
 ranking_metrics = {'KendallsTau': kendalls_tau_for_scores_np,
                    'SpearmanCorrelation': spearman_correlation_for_scores_scipy,

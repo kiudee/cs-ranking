@@ -62,7 +62,7 @@ class PairwiseSVM(Learner):
                 Keyword arguments for the fit function
 
         """
-        x_train, y_single = self._convert_instances(X, Y)
+        x_train, y_single = self._convert_instances_(X, Y)
         if x_train.shape[0] > self.threshold_instances:
             self.model = LogisticRegression(C=self.C, tol=self.tol, fit_intercept=self.fit_intercept,
                                             random_state=self.random_state)
@@ -93,7 +93,7 @@ class PairwiseSVM(Learner):
         self.logger.info("Done predicting scores")
         return np.array(scores)
 
-    def _convert_instances(self, X, Y):
+    def _convert_instances_(self, X, Y):
         raise NotImplemented
 
     def set_tunable_parameters(self, C=1.0, tol=1e-4, **point):

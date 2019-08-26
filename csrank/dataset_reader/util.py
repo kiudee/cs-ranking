@@ -122,3 +122,18 @@ def standardize_features(x_train, x_test):
     x_train = x_train.reshape(-1, n_objects, n_features)
     x_test = x_test.reshape(-1, n_objects, n_features)
     return x_train, x_test
+
+
+def standardize_features_dict(x_train, x_test):
+    scalar = StandardScaler()
+    n_objects, n_features = x_train.shape[-2:]
+
+    x_train = x_train.reshape(-1, n_features)
+    x_train = scalar.fit_transform(x_train)
+
+    for n in x_test.keys():
+        x_test[n] = x_test[n].reshape(-1, n_features)
+        x_test[n] = scalar.transform(x_test[n])
+        x_test[n] = x_test[n].reshape(-1, n, n_features)
+    x_train = x_train.reshape(-1, n_objects, n_features)
+    return x_train, x_test

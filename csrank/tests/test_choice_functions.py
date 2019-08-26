@@ -22,11 +22,13 @@ def get_vals(values):
 choice_functions = {
     FETA_CHOICE: (FETAChoiceFunction, {"add_zeroth_order_model": True, "optimizer": optimizer},
                   get_vals([0.946, 0.9684, 0.9998])),
-    RANKNET_CHOICE: (RankNetChoiceFunction, {"optimizer": optimizer}, get_vals([0.9522, 0.9866, 1.0])),
-    CMPNET_CHOICE: (CmpNetChoiceFunction, {"optimizer": optimizer}, get_vals([0.8554, 0.8641, 0.966])),
     FATE_CHOICE: (FATEChoiceFunction, {"n_hidden_joint_layers": 1, "n_hidden_set_layers": 1, "n_hidden_joint_units": 5,
                                        "n_hidden_set_units": 5, "optimizer": optimizer},
                   get_vals([0.8185, 0.6845, 0.9924])),
+    FATELINEAR_CHOICE: (FATELinearChoiceFunction, {}, get_vals([0.8014, 0.4906, 0.9998])),
+    FETALINEAR_CHOICE: (FETALinearChoiceFunction, {}, get_vals([0.8782, 0.8894, 0.9998])),
+    RANKNET_CHOICE: (RankNetChoiceFunction, {"optimizer": optimizer}, get_vals([0.9522, 0.9866, 1.0])),
+    CMPNET_CHOICE: (CmpNetChoiceFunction, {"optimizer": optimizer}, get_vals([0.8554, 0.8649, 0.966])),
     GLM_CHOICE: (GeneralizedLinearModel, {}, get_vals([0.9567, 0.9955, 1.0])),
     RANKSVM_CHOICE: (PairwiseSVMChoiceFunction, {}, get_vals([0.9522, 0.9955, 1.0]))
 }
@@ -50,12 +52,15 @@ def test_choice_function_fixed(trivial_choice_problem, name):
     params, accuracies = choice_functions[name][1], choice_functions[name][2]
     params["n_objects"], params["n_object_features"] = tuple(x.shape[1:])
     learner = choice_function(**params)
-    learner.fit(x, y, epochs=100, validation_split=0, verbose=False)
+    if "linear" in name:
+        learner.fit(x, y, epochs=10, validation_split=0, verbose=False)
+    else:
+        learner.fit(x, y, epochs=100, validation_split=0, verbose=False)
     s_pred = learner.predict_scores(x)
     y_pred = learner.predict_for_scores(s_pred)
     y_pred_2 = learner.predict(x)
     rtol = 1e-2
-    atol = 1e-4
+    atol = 5e-2
     assert np.isclose(0.0, subset_01_loss(y_pred, y_pred_2), rtol=rtol, atol=atol, equal_nan=False)
     for key, value in accuracies.items():
         metric = choice_metrics[key]

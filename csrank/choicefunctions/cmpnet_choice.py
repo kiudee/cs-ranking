@@ -74,16 +74,16 @@ class CmpNetChoiceFunction(CmpNetCore, ChoiceFunctions):
         self.logger.info("Initializing network with object features {}".format(self.n_object_features))
         self.threshold = 0.5
 
-    def _convert_instances(self, X, Y):
+    def _convert_instances_(self, X, Y):
         self.logger.debug('Creating the Dataset')
         x1, x2, garbage, y_double, garbage = generate_complete_pairwise_dataset(X, Y)
         del garbage
-        self.logger.debug('Finished the Dataset')
         if x1.shape[0] > self.threshold_instances:
             indices = self.random_state.choice(x1.shape[0], self.threshold_instances, replace=False)
             x1 = x1[indices, :]
             x2 = x2[indices, :]
             y_double = y_double[indices, :]
+        self.logger.debug('Finished the Dataset instances {}'.format(x1.shape[0]))
         return x1, x2, y_double
 
     def construct_model(self):
@@ -134,7 +134,6 @@ class CmpNetChoiceFunction(CmpNetCore, ChoiceFunctions):
                             validation_split, verbose, **kwd)
             finally:
                 self.logger.info('Fitting utility function finished. Start tuning threshold.')
-                self.threshold = self._tune_threshold(X_val, Y_val, thin_thresholds=thin_thresholds)
         else:
             super().fit(X, Y, epochs, callbacks, validation_split, verbose,
                         **kwd)

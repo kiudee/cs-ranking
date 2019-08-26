@@ -9,8 +9,8 @@ import numpy as np
 from scipy.stats import rankdata
 
 from csrank.constants import OBJECT_RANKING, DISCRETE_CHOICE
-from csrank.dataset_reader.util import standardize_features
-from csrank.util import print_dictionary
+from csrank.dataset_reader.util import standardize_features_dict
+from csrank.util import print_dictionary, create_dir_recursively
 from .dataset_reader import DatasetReader
 
 
@@ -33,6 +33,7 @@ class LetorListwiseDatasetReader(DatasetReader, metaclass=ABCMeta):
         self.dataset_indices = np.arange(5)
         self.condition = np.zeros(5, dtype=bool)
         self.file_format = os.path.join(self.dirname, str(self.year), "I{}.h5")
+        create_dir_recursively(self.file_format, is_file_path=True)
 
         for i in self.dataset_indices:
             h5py_file_pth = self.file_format.format(i + 1)
@@ -42,6 +43,7 @@ class LetorListwiseDatasetReader(DatasetReader, metaclass=ABCMeta):
         assert fold_id in self.dataset_indices, "For fold {} no test dataset present".format(fold_id + 1)
         self.logger.info("Test dataset is I{}".format(fold_id + 1))
         self.fold_id = fold_id
+        self.__load_dataset__()
 
     def __load_dataset__(self):
         if not (self.condition.all()):
@@ -232,7 +234,7 @@ class LetorListwiseDatasetReader(DatasetReader, metaclass=ABCMeta):
         return self.X_train, self.Y_train, self.X_test, self.Y_test
 
     def get_single_train_test_split(self):
-        X_train, Y_train = self.sub_sampling_from_dictionary(train_test="train")
-        X_test, Y_test = self.sub_sampling_from_dictionary(train_test="test")
-        X_train, X_test = standardize_features(X_train, X_test)
-        return X_train, Y_train, X_test, Y_test
+        self.X, self.Y = self.sub_sampling_from_dictionary(train_test="train")
+        self.X, self.X_test = standardize_features_dict(self.X, self.X_test)
+        self.__check_dataset_validity__()
+        return self.X, self.Y, self.X_test, self.Y_test
