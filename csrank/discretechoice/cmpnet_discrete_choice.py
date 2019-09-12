@@ -3,7 +3,7 @@ import logging
 from keras.optimizers import SGD
 from keras.regularizers import l2
 
-from csrank.choicefunctions.util import generate_complete_pairwise_dataset
+from csrank.choicefunction.util import generate_complete_pairwise_dataset
 from csrank.core.cmpnet_core import CmpNetCore
 from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 
@@ -45,7 +45,9 @@ class CmpNetDiscreteChoiceFunction(CmpNetCore, DiscreteObjectChooser):
             batch_normalization : bool
                 Whether to use batch normalization in each hidden layer
             kernel_regularizer : function
-                Regularizer function applied to all the hidden weight matrices.
+                Regularizer function applied to all the hidden weight matrices
+            kernel_initializer : function or string
+                Initialization function for the weights of each hidden layer
             activation : function or string
                 Type of activation function to use in each hidden layer
             optimizer : function or string

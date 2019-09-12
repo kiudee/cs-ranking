@@ -306,6 +306,7 @@ class DBConnector(metaclass=ABCMeta):
                     self.logger.info("The job {} with fold {} already exist".format(new_job_id, fold_id))
                     break
         if new_job_id is None:
+            del job_desc['job_id']
             keys = list(job_desc.keys())
             columns = ', '.join(keys)
             index = keys.index('fold_id')
@@ -319,8 +320,8 @@ class DBConnector(metaclass=ABCMeta):
 
         self.logger.info("Job {} with fold id {} updated/inserted".format(new_job_id, fold_id))
         start = datetime.now()
-        update_job = """UPDATE {} set job_allocated_time = %s WHERE job_id = %s""".format(avail_jobs)
-        self.cursor_db.execute(update_job, (start, new_job_id))
+        update_job = """UPDATE {} set job_allocated_time = %s, hash_value = %s WHERE job_id = %s""".format(avail_jobs)
+        self.cursor_db.execute(update_job, (start, job_desc["hash_value"], new_job_id))
         select_job = """SELECT * FROM {0} WHERE {0}.job_id = {1} FOR UPDATE""".format(running_jobs, new_job_id)
         self.cursor_db.execute(select_job)
         count_ = len(self.cursor_db.fetchall())

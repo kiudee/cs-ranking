@@ -5,7 +5,7 @@ import pytest
 import tensorflow as tf
 from keras.optimizers import SGD
 
-from csrank.choicefunctions import *
+from csrank.choicefunction import *
 from csrank.experiments.constants import *
 from csrank.experiments.util import metrics_on_predictions
 from csrank.metrics_np import f1_measure, subset_01_loss, instance_informedness, auc_score

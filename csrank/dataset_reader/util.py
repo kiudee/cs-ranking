@@ -110,30 +110,45 @@ def print_no_newline(i, total):
 
 
 def standardize_features(x_train, x_test):
-    scalar = StandardScaler()
-    n_objects, n_features = x_train.shape[-2:]
-
-    x_train = x_train.reshape(-1, n_features)
-    x_test = x_test.reshape(-1, n_features)
-
-    x_train = scalar.fit_transform(x_train)
-    x_test = scalar.transform(x_test)
-
-    x_train = x_train.reshape(-1, n_objects, n_features)
-    x_test = x_test.reshape(-1, n_objects, n_features)
+    standardize = Standardize()
+    x_train = standardize.fit_transform(x_train)
+    x_test = standardize.transform(x_test)
     return x_train, x_test
 
 
-def standardize_features_dict(x_train, x_test):
-    scalar = StandardScaler()
-    n_objects, n_features = x_train.shape[-2:]
+class Standardize(object):
+    def __init__(self, scalar=StandardScaler):
+        self.scalar = scalar()
+        self.n_features = None
 
-    x_train = x_train.reshape(-1, n_features)
-    x_train = scalar.fit_transform(x_train)
+    def fit(self, X):
+        if isinstance(X, dict):
+            n_features = X[list(X.keys())[0]].shape[-1]
+            X = []
+            for x in X.values():
+                X.extend(x.reshape(-1, n_features))
+            X = np.array(X)
+            self.scalar.fit(X)
+        if isinstance(X, (np.ndarray, np.generic)):
+            n_features = X.shape[-1]
+            X = X.reshape(-1, n_features)
+            self.scalar.fit(X)
+        self.n_features = n_features
 
-    for n in x_test.keys():
-        x_test[n] = x_test[n].reshape(-1, n_features)
-        x_test[n] = scalar.transform(x_test[n])
-        x_test[n] = x_test[n].reshape(-1, n, n_features)
-    x_train = x_train.reshape(-1, n_objects, n_features)
-    return x_train, x_test
+    def transform(self, X):
+        if isinstance(X, dict):
+            for n in X.keys():
+                X[n] = X[n].reshape(-1, self.n_features)
+                X[n] = self.scalar.transform(X[n])
+                X[n] = X[n].reshape(-1, n, self.n_features)
+        if isinstance(X, (np.ndarray, np.generic)):
+            n_objects = X.shape[-2]
+            X = X.reshape(-1, self.n_features)
+            X = self.scalar.transform(X)
+            X = X.reshape(-1, n_objects, self.n_features)
+        return X
+
+    def fit_transform(self, X):
+        self.fit(X)
+        X = self.transform(X)
+        return X

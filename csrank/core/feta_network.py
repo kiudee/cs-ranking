@@ -13,6 +13,7 @@ from csrank.constants import allowed_dense_kwargs
 from csrank.layers import NormalizedDense
 from csrank.learner import Learner
 from csrank.losses import hinged_rank_loss
+from csrank.numpy_util import sigmoid
 from csrank.util import print_dictionary
 
 
@@ -135,16 +136,17 @@ class FETANetwork(Learner):
         pairs = np.empty((n2, 2, n_features))
         scores = np.zeros((n_instances, n_objects))
         for n in range(n_instances):
-            if self._use_zeroth_model:
-                scores[n] = self.zero_order_model.predict(X[n]).ravel()
             for k, (i, j) in enumerate(permutations(range(n_objects), 2)):
                 pairs[k] = (X[n, i], X[n, j])
-            result = self._predict_pair(pairs[:, 0], pairs[:, 1],
-                                        only_pairwise=True, **kwd)[:, 0]
+            result = self._predict_pair(pairs[:, 0], pairs[:, 1], only_pairwise=True, **kwd)[:, 0]
             scores[n] += result.reshape(n_objects, n_objects - 1).mean(axis=1)
-            scores[n] = 1. / (1. + np.exp(-scores[n]))
             del result
         del pairs
+        if self._use_zeroth_model:
+            scores_zero = self.zero_order_model.predict(X.reshape(-1, n_features))
+            scores_zero = scores_zero.reshape(n_instances, n_objects)
+            scores = scores + scores_zero
+        scores = sigmoid(scores)
         return scores
 
     def construct_model(self):
