@@ -1,13 +1,12 @@
 import logging
 
-from keras.losses import binary_crossentropy
-
 from csrank.core.feta_linear import FETALinearCore
+from csrank.losses import hinged_rank_loss
 from .object_ranker import ObjectRanker
 
 
 class FETALinearObjectRanker(FETALinearCore, ObjectRanker):
-    def __init__(self, n_object_features, n_objects, loss_function=binary_crossentropy,
+    def __init__(self, n_object_features, n_objects, loss_function=hinged_rank_loss,
                  learning_rate=5e-3, batch_size=256, random_state=None, **kwargs):
         """
             Create a FATELinear-network architecture for leaning discrete choice function. The first-aggregate-then-evaluate

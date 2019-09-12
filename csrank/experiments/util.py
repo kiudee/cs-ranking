@@ -1,8 +1,9 @@
 import sys
 
 import pymc3 as pm
+
 from csrank.callbacks import EarlyStoppingWithWeights, LRScheduler, DebugOutput
-from csrank.choicefunctions import *
+from csrank.choicefunction import *
 from csrank.constants import *
 from csrank.dataset_reader import *
 from csrank.discretechoice import *
@@ -19,8 +20,8 @@ datasets = {SYNTHETIC_OR: ObjectRankingDatasetGenerator, DEPTH: DepthDatasetRead
             SUSHI: SushiObjectRankingDatasetReader, IMAGE_DATASET: ImageDatasetReader,
             TAG_GENOME_OR: TagGenomeObjectRankingDatasetReader, SENTENCE_ORDERING: SentenceOrderingDatasetReader,
             LETOR_OR: LetorListwiseObjectRankingDatasetReader, SYNTHETIC_DC: DiscreteChoiceDatasetGenerator,
-            LETOR_LISTWISE_DC: LetorListwiseDiscreteChoiceDatasetReader, MNIST_DC: MNISTDiscreteChoiceDatasetReader,
-            LETOR_DC: LetorRankingDiscreteChoiceDatasetReader, SUSHI_DC: SushiDiscreteChoiceDatasetReader,
+            LETOR_DC: LetorListwiseDiscreteChoiceDatasetReader, MNIST_DC: MNISTDiscreteChoiceDatasetReader,
+            LETOR_RANKING_DC: LetorRankingDiscreteChoiceDatasetReader, SUSHI_DC: SushiDiscreteChoiceDatasetReader,
             TAG_GENOME_DC: TagGenomeDiscreteChoiceDatasetReader, SYNTHETIC_CHOICE: ChoiceDatasetGenerator,
             MNIST_CHOICE: MNISTChoiceDatasetReader, LETOR_CHOICE: LetorRankingChoiceDatasetReader,
             EXP_CHOICE: ExpediaChoiceDatasetReader, EXP_DC: ExpediaDiscreteChoiceDatasetReader}
@@ -30,7 +31,8 @@ cfs = {FETA_CHOICE: FETAChoiceFunction, FATE_CHOICE: FATEChoiceFunction, GLM_CHO
        FETALINEAR_CHOICE: FETALinearChoiceFunction, FATELINEAR_CHOICE: FATELinearChoiceFunction,
        RANKSVM_CHOICE: PairwiseSVMChoiceFunction, RANDOM_CHOICE: AllPositive}
 ors = {FETA_RANKER: FETAObjectRanker, RANKNET: RankNet, CMPNET: CmpNet, ERR: ExpectedRankRegression,
-       RANKSVM: RankSVM, FATE_RANKER: FATEObjectRanker, LISTNET: ListNet}
+       RANKSVM: RankSVM, FATE_RANKER: FATEObjectRanker, LISTNET: ListNet, FATELINEAR_RANKER: FATELinearObjectRanker,
+       FETALINEAR_RANKER: FETALinearObjectRanker}
 dcms = {FETA_DC: FETADiscreteChoiceFunction, FATE_DC: FATEDiscreteChoiceFunction,
         RANKNET_DC: RankNetDiscreteChoiceFunction, CMPNET_DC: CmpNetDiscreteChoiceFunction,
         MNL: MultinomialLogitModel, NLM: NestedLogitModel, GEV: GeneralizedNestedLogitModel,

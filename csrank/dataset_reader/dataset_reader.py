@@ -26,7 +26,7 @@ class DatasetReader(metaclass=ABCMeta):
                     - 'dyad_ranking' learner which will extend :class:`csrank.dyadranking.dyad_ranker.DyadRanker `
                     - 'label_ranking' learner which will extend :class:`csrank.labelranking.label_ranking.LabelRanking`
                     - 'discrete_choice' learner which will extend :class:`csrank.discretechoice.discrete_choice.DiscreteObjectChooser`
-                    - 'choice_function' learner which will extend :class:`csrank.choicefunctions.choice_functions.ChoiceFunctions`
+                    - 'choice_function' learner which will extend :class:`csrank.choicefunction.choice_functions.ChoiceFunctions`
             kwargs:
                 Keyword arguments for the dataset parser
         """

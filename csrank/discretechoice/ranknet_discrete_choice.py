@@ -3,7 +3,7 @@ import logging
 from keras.optimizers import SGD
 from keras.regularizers import l2
 
-from csrank.choicefunctions.util import generate_complete_pairwise_dataset
+from csrank.choicefunction.util import generate_complete_pairwise_dataset
 from csrank.core.ranknet_core import RankNetCore
 from .discrete_choice import DiscreteObjectChooser
 

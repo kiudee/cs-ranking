@@ -38,7 +38,7 @@ class Learner(Tunable, metaclass=ABCMeta):
         raise NotImplementedError
 
     def predict_for_scores(self, scores, **kwargs):
-        raise NotImplemented
+        raise NotImplementedError
 
     @abstractmethod
     def predict_scores(self, X, **kwargs):
