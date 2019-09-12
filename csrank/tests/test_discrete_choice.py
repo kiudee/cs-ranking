@@ -29,7 +29,7 @@ discrete_choice_functions = {
                                            "n_hidden_joint_units": 5, "n_hidden_set_units": 5, "optimizer": optimizer},
               get_vals([0.95, 0.998])),
     FATELINEAR_DC: (FATELinearDiscreteChoiceFunction, {"n_hidden_set_units": 1, "learning_rate": 5e-3,
-                                                       "batch_size": 32}, get_vals([0.022, 0.086])),
+                                                       "batch_size": 32}, get_vals([0.74, 0.934])),
     FETALINEAR_DC: (FETALinearDiscreteChoiceFunction, {}, get_vals([0.976, 0.9998])),
     MNL: (MultinomialLogitModel, {}, get_vals([0.998, 1.0])),
     NLM: (NestedLogitModel, {}, get_vals()),
@@ -61,7 +61,7 @@ def test_discrete_choice_function_fixed(trivial_discrete_choice_problem, name):
     params["n_objects"], params["n_object_features"] = tuple(x.shape[1:])
     learner = choice_function(**params)
     if name in [MNL, NLM, GEV, PCL, MLM]:
-        learner.fit(x, y, vi_params={"n": 200, "method": "advi", "callbacks": [CheckParametersConvergence()]})
+        learner.fit(x, y, vi_params={"n": 100, "method": "advi", "callbacks": [CheckParametersConvergence()]})
     elif "linear" in name:
         learner.fit(x, y, epochs=10, validation_split=0, verbose=False)
     else:
