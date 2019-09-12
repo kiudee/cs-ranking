@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import check_random_state
 
 import csrank.theano_util as ttu
-from csrank.choicefunctions.util import create_weight_dictionary, BinaryCrossEntropyLikelihood
+from csrank.choicefunction.util import create_weight_dictionary, BinaryCrossEntropyLikelihood
 from csrank.discretechoice.likelihoods import fit_pymc3_model
 from csrank.learner import Learner
 from csrank.util import print_dictionary

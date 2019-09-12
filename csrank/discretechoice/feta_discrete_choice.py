@@ -1,6 +1,8 @@
 import logging
 from itertools import combinations
+from itertools import permutations
 
+import numpy as np
 from keras import Input, Model
 from keras import backend as K
 from keras.layers import Dense, Lambda, concatenate, Activation
@@ -9,6 +11,7 @@ from keras.regularizers import l2
 
 from csrank.core.feta_network import FETANetwork
 from csrank.layers import NormalizedDense
+from csrank.numpy_util import sigmoid
 from .discrete_choice import DiscreteObjectChooser
 
 
@@ -101,6 +104,8 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
         if self._use_zeroth_model:
             self.output_node_zeroth = Dense(1, activation="linear", kernel_regularizer=self.kernel_regularizer,
                                             name="zero_score")
+            self.weighted_sum = Dense(1, activation='sigmoid', kernel_regularizer=self.kernel_regularizer,
+                                      name='weighted_sum')
 
     def construct_model(self):
         """
@@ -165,19 +170,17 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
         scores = [Lambda(sum_fun)(x) for x in outputs]
         scores = concatenate(scores)
         self.logger.debug('1st order model finished')
-
         if self._use_zeroth_model:
             def get_score_object(i):
                 return Lambda(lambda x: x[:, i, None])
 
             concat_scores = [concatenate([get_score_object(i)(scores), get_score_object(i)(zeroth_order_scores)]) for i
                              in range(self.n_objects)]
-            weighted_sum = Dense(1, activation='sigmoid', kernel_initializer=self.kernel_initializer,
-                                 kernel_regularizer=self.kernel_regularizer, name='weighted_sum')
             scores = []
             for i in range(self.n_objects):
-                scores.append(weighted_sum(concat_scores[i]))
+                scores.append(self.weighted_sum(concat_scores[i]))
             scores = concatenate(scores)
+
         # if self._use_zeroth_model:
         #     scores = add([scores, zeroth_order_scores])
         # if self._use_zeroth_model:
@@ -201,6 +204,42 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
         self.logger.debug('Compiling complete model...')
         model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
         return model
+
+    def _create_weighted_model(self, n_objects):
+        def get_score_object(i):
+            return Lambda(lambda x: x[:, i, None])
+
+        s1 = Input(shape=(n_objects,))
+        s2 = Input(shape=(n_objects,))
+        concat_scores = [concatenate([get_score_object(i)(s1), get_score_object(i)(s2)]) for i
+                         in range(n_objects)]
+        scores = []
+        for i in range(n_objects):
+            scores.append(self.weighted_sum(concat_scores[i]))
+        scores = concatenate(scores)
+        model = Model(inputs=[s1, s2], outputs=scores)
+        return model
+
+    def _predict_scores_using_pairs(self, X, **kwd):
+        n_instances, n_objects, n_features = X.shape
+        n2 = n_objects * (n_objects - 1)
+        pairs = np.empty((n2, 2, n_features))
+        scores = np.zeros((n_instances, n_objects))
+        for n in range(n_instances):
+            for k, (i, j) in enumerate(permutations(range(n_objects), 2)):
+                pairs[k] = (X[n, i], X[n, j])
+            result = self._predict_pair(pairs[:, 0], pairs[:, 1], only_pairwise=True, **kwd)[:, 0]
+            scores[n] += result.reshape(n_objects, n_objects - 1).mean(axis=1)
+            del result
+        del pairs
+        if self._use_zeroth_model:
+            scores_zero = self.zero_order_model.predict(X.reshape(-1, n_features))
+            scores_zero = scores_zero.reshape(n_instances, n_objects)
+            model = self._create_weighted_model(n_objects)
+            scores = model.predict([scores, scores_zero], **kwd)
+        else:
+            scores = sigmoid(scores)
+        return scores
 
     def _create_zeroth_order_model(self):
         inp = Input(shape=(self.n_object_features,))

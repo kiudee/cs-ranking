@@ -1,8 +1,8 @@
 import logging
 
-from csrank.learner import Learner
 from sklearn.utils import check_random_state
 
+from csrank.learner import Learner
 from .discrete_choice import DiscreteObjectChooser
 
 

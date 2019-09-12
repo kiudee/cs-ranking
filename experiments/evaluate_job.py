@@ -31,9 +31,9 @@ from docopt import docopt
 from sklearn.model_selection import ShuffleSplit
 
 from csrank.experiments import *
-from csrank.tuning import ParameterOptimizer
 from csrank.metrics import make_ndcg_at_k_loss
 from csrank.tensorflow_util import configure_numpy_keras, get_mean_loss, eval_loss
+from csrank.tuning import ParameterOptimizer
 from csrank.util import create_dir_recursively, duration_till_now, seconds_to_time, \
     print_dictionary, get_duration_seconds, setup_logging, rename_file_if_exist
 
@@ -107,6 +107,7 @@ if __name__ == "__main__":
             if learner_name in [MNL, PCL, NLM, GEV]:
                 fit_params['random_seed'] = seed + fold_id
             hash_file = os.path.join(DIR_PATH, MODEL_FOLDER, "{}.h5".format(hash_value))
+            create_dir_recursively(hash_file, True)
             learner_params['n_objects'], learner_params['n_object_features'] = X_train.shape[1:]
             learner_params["random_state"] = random_state
             logger.info("learner params {}".format(print_dictionary(learner_params)))
@@ -170,6 +171,10 @@ if __name__ == "__main__":
             dbConnector.insert_results(experiment_schema=experiment_schema, experiment_table=experiment_table,
                                        results=results)
             dbConnector.mark_running_job_finished(job_id)
+            if "224" in str(cluster_id):
+                f = open("{}/.hash_value".format(os.environ['HOME']), "w+")
+                f.write(hash_value + "\n")
+                f.close()
         except Exception as e:
             if hasattr(e, 'message'):
                 message = e.message

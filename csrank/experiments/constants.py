@@ -12,8 +12,8 @@ EXP_CHOICE = "exp_choice"
 DEPTH = 'depth'
 SENTENCE_ORDERING = "sentence_ordering"
 LETOR_OR = "letor_or"
-LETOR_LISTWISE_DC = "letor_lw_dc"
 LETOR_DC = "letor_dc"
+LETOR_RANKING_DC = "letor_ranking_dc"
 SUSHI_DC = "sushi_dc"
 EXP_DC = "exp_dc"
 

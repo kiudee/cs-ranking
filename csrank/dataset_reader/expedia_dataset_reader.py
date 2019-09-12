@@ -10,7 +10,7 @@ from pandas.api.types import is_numeric_dtype
 from sklearn.model_selection import ShuffleSplit
 
 from csrank.dataset_reader.dataset_reader import DatasetReader
-from csrank.dataset_reader.util import standardize_features, standardize_features_dict
+from csrank.dataset_reader.util import standardize_features
 from csrank.util import print_dictionary
 
 
@@ -146,7 +146,7 @@ class ExpediaDatasetReader(DatasetReader, metaclass=ABCMeta):
             self.Y_test[n_obj] = np.copy(self.Y_dict[n_obj][test_idx])
         self.X, self.Y = self.sub_sampling_from_dictionary()
         self.__check_dataset_validity__()
-        self.X, self.X_test = standardize_features_dict(self.X, self.X_test)
+        self.X, self.X_test = standardize_features(self.X, self.X_test)
         return self.X, self.Y, self.X_test, self.Y_test
 
     def sub_sampling_function(self, Xt, Yt):
@@ -156,4 +156,5 @@ class ExpediaDatasetReader(DatasetReader, metaclass=ABCMeta):
         raise NotImplemented
 
     def get_dataset_dictionaries(self):
+        self.X_test, self.X_test = standardize_features(self.X, self.X_test)
         return self.X_train, self.Y_train, self.X_test, self.Y_test

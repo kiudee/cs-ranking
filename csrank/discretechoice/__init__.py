@@ -1,3 +1,4 @@
+from .baseline import RandomBaselineDC
 from .cmpnet_discrete_choice import CmpNetDiscreteChoiceFunction
 from .fate_discrete_choice import FATEDiscreteChoiceFunction
 from .fatelinear_discrete_choice import FATELinearDiscreteChoiceFunction
@@ -11,4 +12,3 @@ from .nested_logit_model import NestedLogitModel
 from .paired_combinatorial_logit import PairedCombinatorialLogit
 from .pairwise_discrete_choice import PairwiseSVMDiscreteChoiceFunction
 from .ranknet_discrete_choice import RankNetDiscreteChoiceFunction
-from .baseline import RandomBaselineDC
