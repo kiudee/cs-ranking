@@ -42,6 +42,7 @@ class FATELinearCore(Learner):
             self.random_state.normal(loc=0, scale=std, size=(self.n_object_features + self.n_hidden_set_units)),
             dtype=tf.float32)
         self.b2 = tf.Variable(self.random_state.normal(loc=0, scale=std, size=1), dtype=tf.float32)
+
         set_rep = tf.reduce_mean(tf.tensordot(self.X, self.W1, axes=1), axis=1) + self.b1
 
         self.set_rep = tf.reshape(tf.tile(set_rep, tf.constant([1, n_objects])),

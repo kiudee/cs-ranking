@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 import tensorflow as tf
 from keras.optimizers import SGD
+from pymc3.variational.callbacks import CheckParametersConvergence
 
 from csrank.dataset_reader.discretechoice.util import convert_to_label_encoding
 from csrank.discretechoice import *
@@ -27,13 +28,14 @@ discrete_choice_functions = {
     FATE_DC: (FATEDiscreteChoiceFunction, {"n_hidden_joint_layers": 1, "n_hidden_set_layers": 1,
                                            "n_hidden_joint_units": 5, "n_hidden_set_units": 5, "optimizer": optimizer},
               get_vals([0.95, 0.998])),
-    FATELINEAR_DC: (FATELinearDiscreteChoiceFunction, {"n_hidden_set_units": 10, "learning_rate": 5e-3,
+    FATELINEAR_DC: (FATELinearDiscreteChoiceFunction, {"n_hidden_set_units": 1, "learning_rate": 5e-3,
                                                        "batch_size": 32}, get_vals([0.022, 0.086])),
     FETALINEAR_DC: (FETALinearDiscreteChoiceFunction, {}, get_vals([0.976, 0.9998])),
     MNL: (MultinomialLogitModel, {}, get_vals([0.998, 1.0])),
     NLM: (NestedLogitModel, {}, get_vals()),
     PCL: (PairedCombinatorialLogit, {}, get_vals()),
     GEV: (GeneralizedNestedLogitModel, {}, get_vals()),
+    MLM: (MixedLogitModel, {}, get_vals()),
     RANKSVM_DC: (PairwiseSVMDiscreteChoiceFunction, {}, get_vals([0.982, 0.982]))
 }
 
@@ -58,7 +60,9 @@ def test_discrete_choice_function_fixed(trivial_discrete_choice_problem, name):
     params, accuracies = discrete_choice_functions[name][1], discrete_choice_functions[name][2]
     params["n_objects"], params["n_object_features"] = tuple(x.shape[1:])
     learner = choice_function(**params)
-    if "linear" in name:
+    if name in [MNL, NLM, GEV, PCL, MLM]:
+        learner.fit(x, y, vi_params={"n": 200, "method": "advi", "callbacks": [CheckParametersConvergence()]})
+    elif "linear" in name:
         learner.fit(x, y, epochs=10, validation_split=0, verbose=False)
     else:
         learner.fit(x, y, epochs=100, validation_split=0, verbose=False)

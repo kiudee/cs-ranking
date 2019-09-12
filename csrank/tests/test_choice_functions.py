@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 import tensorflow as tf
 from keras.optimizers import SGD
+from pymc3.variational.callbacks import CheckParametersConvergence
 
 from csrank.choicefunction import *
 from csrank.experiments.constants import *
@@ -52,7 +53,9 @@ def test_choice_function_fixed(trivial_choice_problem, name):
     params, accuracies = choice_functions[name][1], choice_functions[name][2]
     params["n_objects"], params["n_object_features"] = tuple(x.shape[1:])
     learner = choice_function(**params)
-    if "linear" in name:
+    if name == GLM_CHOICE:
+        learner.fit(x, y, vi_params={"n": 200, "method": "advi", "callbacks": [CheckParametersConvergence()]})
+    elif "linear" in name:
         learner.fit(x, y, epochs=10, validation_split=0, verbose=False)
     else:
         learner.fit(x, y, epochs=100, validation_split=0, verbose=False)
