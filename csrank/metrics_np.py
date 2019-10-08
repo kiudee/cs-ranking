@@ -1,3 +1,4 @@
+from functools import partial
 import numpy as np
 from scipy.stats import spearmanr
 from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_score, average_precision_score, \
@@ -157,3 +158,51 @@ def categorical_accuracy_np(y_true, y_pred):
     choices = np.argmax(y_pred, axis=1)
     accuracies = np.equal(y_true, choices)
     return np.mean(accuracies)
+
+
+def relevance_gain_np(grading, max_grade):
+    """Plain python version of `relevance_gain`, see the documentation
+    of that function for details."""
+    inverse_grading = -grading + max_grade
+    return (2 ** inverse_grading - 1) / (2 ** max_grade)
+
+
+def err_np(y_true, y_pred, utility_function=None, probability_mapping=None):
+    """Plain python version of `err`, see the documentation of that
+    function for details.
+    """
+    if probability_mapping is None:
+        # assume y_true is a ranking, use relevance gain
+        max_grade = np.max(y_true)
+        probability_mapping = partial(relevance_gain_np, max_grade=max_grade)
+    if utility_function is None:
+        # reciprocal rank
+        utility_function = lambda r: 1 / r
+
+    ninstances, nobjects = np.shape(y_pred)
+
+    satisfied_probs = np.reshape(list(map(probability_mapping, y_true.flatten())), np.shape(y_true))
+
+    # sort satisfied probabilities according to the predicted ranking
+    # black magic invocation to reorder each row
+    row_indices = np.arange(ninstances).reshape(-1, 1)
+    satisfied_at_rank = satisfied_probs[row_indices, y_pred]
+
+
+    # still not satisfied after having examined the first r ranks
+    not_yet_satisfied_at_rank = np.cumprod(1 - satisfied_at_rank, axis=1)
+
+    # append a column of 1s and drop the last column, since the
+    # probability the need has not been satisfied at the 0th rank is 1
+    not_yet_satisfied_at_rank = np.hstack((
+        np.ones(np.shape(not_yet_satisfied_at_rank)[0]).reshape(-1, 1),
+        not_yet_satisfied_at_rank,
+    ))[:, :-1]
+
+    # map over flattened array, then restore shape
+    utilities = list(map(utility_function, range(1, nobjects + 1)))
+
+    discount_at_rank = not_yet_satisfied_at_rank * utilities
+    discounted_document_values = satisfied_at_rank * discount_at_rank
+    results = np.sum(discounted_document_values, axis=1)
+    return np.average(results)
