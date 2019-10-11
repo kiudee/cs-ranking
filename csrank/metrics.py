@@ -1,3 +1,48 @@
+"""Various metrics that can be used to evaluate rankings.
+
+All metrics take two parameters: `y_true` and `y_pred`. Both of these
+are (n_instances, n_objects) shaped arrays of integers. We call these
+arrays rankings. The element (i, j) of a ranking specifies the rank of
+the jth object in the ith instance. `y_true` should be set to the
+"ground truth" to evaluate against, while `y_pred` is the prediction
+that should be evaluated.
+
+Examples
+--------
+Lets assume we have two instances: ABCD and abcd. The "ground truth"
+rankings are A > D > C > B and d < c < a < b.
+
+We applied some ranking algorithm, which gave rankings of A > C > D > B
+and d < a < b < c respectively.
+
+Let's use some of the metrics defined here to evaluate the performance
+of our ranker:
+
+First encode the ground truth as a list of rankings. 0 is the highest
+rank:
+>>> y_true = [
+...     [0, 3, 2, 1], # A > D > C > B, 0 is the highest rank
+...     [2, 3, 1, 0], # d < c < a < b
+... ]
+
+Now similarly encode our prediction:
+>>> y_pred = [
+...     [0, 3, 1, 2], # A > C > D > B
+...     [1, 2, 3, 0], # d < a < b < c
+... ]
+
+Evaluate with a simple zero-one loss:
+>>> from keras import backend as K
+>>> K.eval(zero_one_rank_loss(y_true, y_pred))
+0.25
+
+This is what we would expect: 25% of the objects were ranked at exactly the
+right place. This might not be the most realistic metric, so let's try the
+expected reciprocal rank instead:
+
+>>> K.eval(err(y_true, y_pred))
+0.6365559895833333
+"""
 from functools import partial
 import numpy as np
 import tensorflow as tf
