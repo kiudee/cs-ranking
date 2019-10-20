@@ -11,6 +11,7 @@ from sklearn.model_selection import train_test_split
 
 from csrank.core.feta_network import FETANetwork
 from csrank.layers import NormalizedDense
+from csrank.numpy_util import sigmoid
 from .choice_functions import ChoiceFunctions
 
 
@@ -176,6 +177,11 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
         model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
         return model
 
+    def _predict_scores_using_pairs(self, X, **kwd):
+        scores = super()._predict_scores_using_pairs(X=X, **kwd)
+        scores = sigmoid(scores)
+        return scores
+
     def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, tune_size=0.1, thin_thresholds=1, verbose=0,
             **kwd):
         """
@@ -210,7 +216,7 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
                             validation_split, verbose, **kwd)
             finally:
                 self.logger.info('Fitting utility function finished. Start tuning threshold.')
-                self.threshold = self._tune_threshold(X_val, Y_val, thin_thresholds=thin_thresholds)
+                self.threshold = self._tune_threshold(X_val, Y_val, thin_thresholds=thin_thresholds, verbose=verbose)
         else:
             super().fit(X, Y, epochs, callbacks, validation_split, verbose,
                         **kwd)

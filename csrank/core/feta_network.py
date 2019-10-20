@@ -146,7 +146,6 @@ class FETANetwork(Learner):
             scores_zero = self.zero_order_model.predict(X.reshape(-1, n_features))
             scores_zero = scores_zero.reshape(n_instances, n_objects)
             scores = scores + scores_zero
-        scores = sigmoid(scores)
         return scores
 
     def construct_model(self):
@@ -272,7 +271,7 @@ class FETANetwork(Learner):
     def _predict_scores_fixed(self, X, **kwargs):
         n_objects = X.shape[-2]
         self.logger.info("For Test instances {} objects {} features {}".format(*X.shape))
-        if self.max_number_of_objects < self._n_objects or self.n_objects != n_objects:
+        if self.n_objects != n_objects:
             scores = self._predict_scores_using_pairs(X, **kwargs)
         else:
             scores = self.model.predict(X, **kwargs)
@@ -306,6 +305,7 @@ class FETANetwork(Learner):
         self.optimizer = self.optimizer.from_config(self._optimizer_config)
         K.set_value(self.optimizer.lr, learning_rate)
         self._pairwise_model = None
+        self._zero_order_model = None
         self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
                                activation=self.activation, **self.kwargs)
         if len(point) > 0:
