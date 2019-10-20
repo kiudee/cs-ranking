@@ -124,7 +124,10 @@ if __name__ == "__main__":
             optimizer_model = ParameterOptimizer(**hp_params)
             optimizer_model.fit(X_train, Y_train, **hp_fit_params)
             hp_fit_params['n_iter'] = 0
-            for fold_id in range(5):
+            n_fold = 5
+            if dataset_name == SYNTHETIC_OR and dataset_params.get('dataset_type', "") == 'medoid':
+                n_fold = 10
+            for fold_id in range(n_fold):
                 if fold_id != 0:
                     del X_train, X_test, Y_test, Y_train
                     random_state = np.random.RandomState(seed=seed + fold_id)

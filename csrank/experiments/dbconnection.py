@@ -383,8 +383,7 @@ class DBConnector(metaclass=ABCMeta):
 
     def get_hash_value_for_job(self, job):
         keys = ['fold_id', 'learner', 'dataset_params', 'fit_params', 'learner_params', 'hp_ranges',
-                'hp_fit_params',
-                'inner_folds', 'validation_loss', 'dataset']
+                'hp_fit_params', 'inner_folds', 'validation_loss', 'dataset']
         hash_string = ""
         for k in keys:
             hash_string = hash_string + str(k) + ':' + str(job[k])
