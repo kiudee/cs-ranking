@@ -185,7 +185,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
                 self._fit(X_train, Y_train, sampler=sampler, vi_params=vi_params, **kwargs)
             finally:
                 self.logger.info('Fitting utility function finished. Start tuning threshold.')
-                self.threshold = self._tune_threshold(X_val, Y_val, thin_thresholds=thin_thresholds)
+                self.threshold = self._tune_threshold(X_val, Y_val, thin_thresholds=thin_thresholds, verbose=verbose)
         else:
             self._fit(X, Y, sampler=sampler, sample_params={"tune": 2, "draws": 2, "chains": 4, "njobs": 8},
                       vi_params={"n": 20000, "method": "advi", "callbacks": [

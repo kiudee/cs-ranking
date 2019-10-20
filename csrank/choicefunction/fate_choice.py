@@ -153,7 +153,7 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
                 super().fit(X_train, Y_train, **kwargs)
             finally:
                 self.logger.info('Fitting utility function finished. Start tuning threshold.')
-                self.threshold = self._tune_threshold(X_val, Y_val, thin_thresholds=thin_thresholds)
+                self.threshold = self._tune_threshold(X_val, Y_val, thin_thresholds=thin_thresholds, verbose=verbose)
         else:
             super().fit(X, Y, **kwargs)
             self.threshold = 0.5
