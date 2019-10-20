@@ -32,7 +32,7 @@ cfs = {FETA_CHOICE: FETAChoiceFunction, FATE_CHOICE: FATEChoiceFunction, GLM_CHO
        RANKSVM_CHOICE: PairwiseSVMChoiceFunction, RANDOM_CHOICE: AllPositive}
 ors = {FETA_RANKER: FETAObjectRanker, RANKNET: RankNet, CMPNET: CmpNet, ERR: ExpectedRankRegression,
        RANKSVM: RankSVM, FATE_RANKER: FATEObjectRanker, LISTNET: ListNet, FATELINEAR_RANKER: FATELinearObjectRanker,
-       FETALINEAR_RANKER: FETALinearObjectRanker}
+       FETALINEAR_RANKER: FETALinearObjectRanker, RANDOM_RANKER: RandomBaselineRanker}
 dcms = {FETA_DC: FETADiscreteChoiceFunction, FATE_DC: FATEDiscreteChoiceFunction,
         RANKNET_DC: RankNetDiscreteChoiceFunction, CMPNET_DC: CmpNetDiscreteChoiceFunction,
         MNL: MultinomialLogitModel, NLM: NestedLogitModel, GEV: GeneralizedNestedLogitModel,

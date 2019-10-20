@@ -9,4 +9,8 @@
 /predictions/
 /results/
 /pc2/
-*.ipynb
+/config/
+/detailedresults/
+/journalresults/
+/logs/
+/thesis/

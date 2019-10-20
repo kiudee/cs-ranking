@@ -187,3 +187,8 @@ if __name__ == "__main__":
             logger.error(traceback.format_exc())
             message = "exception{}".format(sys.exc_info()[0].__name__)
             dbConnector.append_error_string_in_running_job(job_id=job_id, error_message=message)
+        finally:
+            if "224" in str(cluster_id):
+                f = open("{}/.hash_value".format(os.environ['HOME']), "w+")
+                f.write(hash_value + "\n")
+                f.close()
