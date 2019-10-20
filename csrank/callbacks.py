@@ -3,7 +3,8 @@ import math
 import warnings
 
 import numpy as np
-from keras.callbacks import Callback, LearningRateScheduler, EarlyStopping
+from keras import backend as K
+from keras.callbacks import Callback, EarlyStopping
 
 from csrank.tunable import Tunable
 from csrank.util import print_dictionary
@@ -89,25 +90,45 @@ class weightHistory(Callback):
         self.zero_weights.append(close.sum())
 
 
-class LRScheduler(LearningRateScheduler, Tunable):
+class LRScheduler(Callback, Tunable):
     """Learning rate scheduler.
 
-        # Arguments
-            epochs_drop: unsigned int
-            drop:
-            verbose: int. 0: quiet, 1: update messages.
-        """
+        Parameters
+        ----------
+        epochs_drop: unsigned int
+            The number of epochs after which the learning rate is reduced
+        drop: float [0,1):
+            The percentage of the learning rate which needs to be dropped
+        verbose: int. 0: quiet, 1: update messages#
 
-    def __init__(self, epochs_drop=300, drop=0.1, **kwargs):
-        super(LRScheduler, self).__init__(self.step_decay, **kwargs)
+    """
 
+    def __init__(self, epochs_drop=300, drop=0.1, verbose=0, **kwargs):
+        super(LRScheduler, self).__init__()
+        self.verbose = verbose
         self.epochs_drop = epochs_drop
         self.drop = drop
+        self.initial_lr = None
 
-    def step_decay(self, epoch, lr):
+    def step_decay(self, epoch):
         step = math.floor((1 + epoch) / self.epochs_drop)
-        lrate = lr * math.pow(self.drop, step)
-        return lrate
+        new_lr = self.initial_lr * math.pow(self.drop, step)
+        return new_lr
+
+    def on_epoch_begin(self, epoch, logs=None):
+        if not hasattr(self.model.optimizer, 'lr'):
+            raise ValueError('Optimizer must have a "lr" attribute.')
+        if epoch == 0:
+            self.initial_lr = float(K.get_value(self.model.optimizer.lr))
+        lr = self.step_decay(epoch)
+        K.set_value(self.model.optimizer.lr, lr)
+        if self.verbose > 0:
+            print('\nEpoch %05d: LearningRateScheduler setting learning '
+                  'rate to %s.' % (epoch + 1, lr))
+
+    def on_epoch_end(self, epoch, logs=None):
+        logs = logs or {}
+        logs['lr'] = K.get_value(self.model.optimizer.lr)
 
     def set_tunable_parameters(self, epochs_drop=300, drop=0.1, **point):
         self.epochs_drop = epochs_drop
