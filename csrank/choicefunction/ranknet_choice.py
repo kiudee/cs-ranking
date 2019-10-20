@@ -127,7 +127,7 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
                 super().fit(X_train, Y_train, epochs, callbacks, validation_split, verbose, **kwd)
             finally:
                 self.logger.info('Fitting utility function finished. Start tuning threshold.')
-                self.threshold = self._tune_threshold(X_val, Y_val, thin_thresholds=thin_thresholds)
+                self.threshold = self._tune_threshold(X_val, Y_val, thin_thresholds=thin_thresholds, verbose=verbose)
         else:
             super().fit(X, Y, epochs, callbacks, validation_split, verbose, **kwd)
             self.threshold = 0.5
