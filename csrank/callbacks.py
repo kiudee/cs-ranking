@@ -4,15 +4,17 @@ import warnings
 
 import numpy as np
 from keras import backend as K
-from keras.callbacks import Callback, EarlyStopping
+from keras.callbacks import Callback
 
 from csrank.tunable import Tunable
 from csrank.util import print_dictionary
 
 
-class EarlyStoppingWithWeights(EarlyStopping, Tunable):
+class EarlyStoppingWithWeights(Callback, Tunable):
     """Stop training when a monitored quantity has stopped improving.
-    # Arguments
+
+        Parameters
+        ----------
         monitor: quantity to be monitored.
         min_delta: minimum change in the monitored quantity
             to qualify as an improvement, i.e. an absolute
@@ -28,26 +30,67 @@ class EarlyStoppingWithWeights(EarlyStopping, Tunable):
             monitored has stopped increasing; in `auto`
             mode, the direction is automatically inferred
             from the name of the monitored quantity.
+        baseline: Baseline value for the monitored quantity to reach.
+            Training will stop if the model doesn't show improvement
+            over the baseline.
+        restore_best_weights: whether to restore model weights from
+            the epoch with the best value of the monitored quantity.
+            If False, the model weights obtained at the last step of
+            training are used.
     """
 
-    def __init__(self, **kwargs):
-        super(EarlyStoppingWithWeights, self).__init__(**kwargs)
+    def __init__(self, monitor='val_loss', min_delta=0, patience=0, verbose=0, mode='auto', baseline=None,
+                 restore_best_weights=False):
+        super(EarlyStoppingWithWeights, self).__init__()
+        self.monitor = monitor
+        self.baseline = baseline
+        self.patience = patience
+        self.verbose = verbose
+        self.min_delta = min_delta
+        self.wait = 0
+        self.stopped_epoch = 0
+        self.restore_best_weights = restore_best_weights
+        self.best_weights = None
+
+        if mode not in ['auto', 'min', 'max']:
+            warnings.warn('EarlyStopping mode %s is unknown, '
+                          'fallback to auto mode.' % mode,
+                          RuntimeWarning)
+            mode = 'auto'
+
+        if mode == 'min':
+            self.monitor_op = np.less
+        elif mode == 'max':
+            self.monitor_op = np.greater
+        else:
+            if 'acc' in self.monitor:
+                self.monitor_op = np.greater
+            else:
+                self.monitor_op = np.less
+
+        if self.monitor_op == np.greater:
+            self.min_delta *= 1
+        else:
+            self.min_delta *= -1
         self.logger = logging.getLogger(EarlyStoppingWithWeights.__name__)
 
     def on_train_begin(self, logs=None):
-        super(EarlyStoppingWithWeights, self).on_train_begin(logs=logs)
-        self.epoch = 0
+        # Allow instances to be re-used
+        self.wait = 0
+        self.stopped_epoch = 0
+        if self.baseline is not None:
+            self.best = self.baseline
+        else:
+            self.best = np.Inf if self.monitor_op == np.less else -np.Inf
 
     def on_epoch_end(self, epoch, logs=None):
-        self.epoch += 1
+        self.stopped_epoch += 1
         current = logs.get(self.monitor)
         self.best_weights = self.model.get_weights()
         if current is None:
-            warnings.warn(
-                'Early stopping conditioned on metric `%s` '
-                'which is not available. Available metrics are: %s' %
-                (self.monitor, ','.join(list(logs.keys()))), RuntimeWarning
-            )
+            self.logger.warning(
+                'Early stopping conditioned on metric `%s` which is not available. Available metrics are: %s' % (
+                self.monitor, ','.join(list(logs.keys()))), RuntimeWarning)
             return
         if self.monitor_op(current - self.min_delta, self.best):
             self.best = current
@@ -56,12 +99,11 @@ class EarlyStoppingWithWeights(EarlyStopping, Tunable):
         else:
             self.wait += 1
             if self.wait >= self.patience:
-                self.stopped_epoch = self.epoch
                 self.model.stop_training = True
 
     def on_train_end(self, logs=None):
         if self.stopped_epoch > 0:
-            self.logger.info("Setting best weights for final epoch {}".format(self.epoch))
+            self.logger.info("Setting best weights for final epoch {}".format(self.stopped_epoch))
             self.model.set_weights(self.best_weights)
 
     def set_tunable_parameters(self, patience=300, min_delta=2, **point):
@@ -71,23 +113,6 @@ class EarlyStoppingWithWeights(EarlyStopping, Tunable):
             self.logger.warning('This callback does not support'
                                 ' tunable parameters'
                                 ' called: {}'.format(print_dictionary(point)))
-
-
-class weightHistory(Callback):
-    def on_train_begin(self, logs={}):
-        self.zero_weights = []
-        self.norm = []
-        self.hidden_units_used = []
-
-    def on_batch_end(self, batch, logs={}):
-        hidden = [layer for layer in self.model.layers
-                  if layer.name == 'hidden_1']
-
-        y = np.array(hidden[0].get_weights()[0])
-        close = np.isclose(y, 0, atol=1e-3)
-        self.hidden_units_used.append(len(np.unique(np.where(np.logical_not(close))[1])))
-        self.norm.append(np.abs(y).sum())
-        self.zero_weights.append(close.sum())
 
 
 class LRScheduler(Callback, Tunable):

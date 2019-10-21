@@ -35,21 +35,21 @@ def trivial_ranking_problem():
     return x, y_true
 
 
-def check_learner(ranker, params, rtol=1e-2, atol=1e-4):
+def check_params_tunable(tunable_obj, params, rtol=1e-2, atol=1e-4):
     for key, value in params.items():
-        if key in ranker.__dict__.keys():
-            expected = ranker.__dict__[key]
+        if key in tunable_obj.__dict__.keys():
+            expected = tunable_obj.__dict__[key]
             if isinstance(value, int) or isinstance(value, float):
-                if isinstance(ranker, PairedCombinatorialLogit) and key == "n_nests":
-                    ranker.n_nests == ranker.n_objects * (ranker.n_objects - 1) / 2
+                if isinstance(tunable_obj, PairedCombinatorialLogit) and key == "n_nests":
+                    tunable_obj.n_nests == tunable_obj.n_objects * (tunable_obj.n_objects - 1) / 2
                 else:
                     assert np.isclose(expected, value, rtol=rtol, atol=atol, equal_nan=False)
             else:
                 assert value == expected
-        elif key == "learning_rate" and "optimizer" in ranker.__dict__.keys():
-            assert np.isclose(ranker.optimizer.get_config()['learning_rate'], value, rtol=rtol, atol=atol, equal_nan=False)
-        elif key == "reg_strength" and "kernel_regularizer" in ranker.__dict__.keys():
-            config = ranker.kernel_regularizer.get_config()
+        elif key == "learning_rate" and "optimizer" in tunable_obj.__dict__.keys():
+            assert np.isclose(tunable_obj.optimizer.get_config()['lr'], value, rtol=rtol, atol=atol, equal_nan=False)
+        elif key == "reg_strength" and "kernel_regularizer" in tunable_obj.__dict__.keys():
+            config = tunable_obj.kernel_regularizer.get_config()
             val1 = np.isclose(config["l1"], value, rtol=rtol, atol=atol, equal_nan=False)
             val2 = np.isclose(config["l2"], value, rtol=rtol, atol=atol, equal_nan=False)
             assert val1 or val2
@@ -86,4 +86,4 @@ def test_object_ranker_fixed(trivial_ranking_problem, ranker_name):
               "batch_size": 32, "alpha": 0.5, "l1_ratio": 0.7, "tol": 1e-2, "C": 10, "n_mixtures": 10, "n_nests": 5,
               "regularization": "l2"}
     ranker.set_tunable_parameters(**params)
-    check_learner(ranker, params, rtol, atol)
+    check_params_tunable(ranker, params, rtol, atol)

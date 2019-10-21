@@ -11,7 +11,7 @@ from csrank.discretechoice import *
 from csrank.experiments.constants import *
 from csrank.experiments.util import metrics_on_predictions
 from csrank.metrics_np import categorical_accuracy_np, topk_categorical_accuracy_np, subset_01_loss
-from csrank.tests.test_ranking import check_learner
+from csrank.tests.test_ranking import check_params_tunable
 
 metrics = {'CategoricalAccuracy': categorical_accuracy_np, 'CategoricalTopK2': topk_categorical_accuracy_np(k=2)}
 optimizer = SGD(lr=1e-3, momentum=0.9, nesterov=True)
@@ -85,4 +85,4 @@ def test_discrete_choice_function_fixed(trivial_discrete_choice_problem, name):
               "batch_size": 32, "alpha": 0.5, "l1_ratio": 0.7, "tol": 1e-2, "C": 10, "n_mixtures": 10, "n_nests": 5,
               "regularization": "l2"}
     learner.set_tunable_parameters(**params)
-    check_learner(learner, params, rtol, atol)
+    check_params_tunable(learner, params, rtol, atol)
