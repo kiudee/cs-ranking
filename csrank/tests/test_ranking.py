@@ -14,7 +14,7 @@ from csrank.objectranking.fate_object_ranker import FATEObjectRanker
 optimizer = SGD(lr=1e-3, momentum=0.9, nesterov=True)
 
 object_rankers = {
-    FATELINEAR_RANKER: (FATELinearObjectRanker, {"n_hidden_set_units": 1, "batch_size": 32}, (0.0, 1.0)),
+    FATELINEAR_RANKER: (FATELinearObjectRanker, {"n_hidden_set_units": 12, "batch_size": 1}, (0.0, 1.0)),
     FETALINEAR_RANKER: (FETALinearObjectRanker, {}, (0.0, 1.0)),
     FETA_RANKER: (FETAObjectRanker, {"add_zeroth_order_model": True, "optimizer": optimizer}, (0.0, 1.0)),
     RANKNET: (RankNet, {"optimizer": optimizer}, (0.0, 1.0)),
@@ -30,7 +30,7 @@ object_rankers = {
 @pytest.fixture(scope="module")
 def trivial_ranking_problem():
     random_state = np.random.RandomState(123)
-    x = random_state.randn(200, 5, 1)
+    x = random_state.randn(2, 5, 1)
     y_true = x.argsort(axis=1).argsort(axis=1).squeeze(axis=-1)
     return x, y_true
 
