@@ -14,5 +14,5 @@ keras>=2.1.5,<2.3
 pymc3>=3.5
 theano>=1.0
 # Pick either CPU or GPU version of tensorflow:
-tensorflow>=1.5
+tensorflow>=1.5,<2.0
 # tensorflow-gpu>=1.0.1
