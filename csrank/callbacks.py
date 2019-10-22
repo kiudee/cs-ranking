@@ -121,15 +121,26 @@ class LRScheduler(LearningRateScheduler, Tunable):
 class DebugOutput(Callback):
 
     def __init__(self, delta=100, **kwargs):
+        """ Logging the epochs when done.
+
+            Parameters
+            ----------
+            delta: unsigned int
+                The number of epochs after which the message is logged
+            kwargs:
+                Keyword arguments
+
+        """
         super(DebugOutput, self).__init__(**kwargs)
         self.delta = delta
+        self.epoch = 0
+        self.logger = logging.getLogger(DebugOutput.__name__)
 
     def on_train_end(self, logs=None):
         self.logger.debug('Total number of epochs: {}'.format(self.epoch))
 
     def on_train_begin(self, logs=None):
         self.epoch = 0
-        self.logger = logging.getLogger('DebugOutput')
 
     def on_epoch_end(self, epoch, logs=None):
         self.epoch += 1
