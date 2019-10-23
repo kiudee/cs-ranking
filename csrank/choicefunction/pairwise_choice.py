@@ -75,6 +75,8 @@ class PairwiseSVMChoiceFunction(PairwiseSVM, ChoiceFunctions):
                 Percentage of instances to split off to tune the threshold for the choice function
             thin_thresholds: int
                 The number of instances of scores to skip while tuning the threshold
+            verbose : bool
+                Print verbose information
             **kwd :
                 Keyword arguments for the fit function
 
