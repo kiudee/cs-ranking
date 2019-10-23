@@ -1,3 +1,0 @@
-from .fate_label_ranker import FATELabelRanker
-from .instance_based_label_ranking import InstanceBasedLabelRanker
-from .ranking_by_pairwise_comparison import RankingbyPairwiseComparisonLabelRanker
