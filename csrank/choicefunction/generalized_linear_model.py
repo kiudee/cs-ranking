@@ -138,7 +138,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
         self.logger.info("Model construction completed")
 
     def fit(self, X, Y, sampler='variational', tune=500, draws=500, tune_size=0.1, thin_thresholds=1,
-            vi_params={"n": 20000, "method": "advi", "callbacks": [CheckParametersConvergence()]}, **kwargs):
+            vi_params={"n": 20000, "method": "advi", "callbacks": [CheckParametersConvergence()]}, verbose=0, **kwargs):
         """
             Fit a generalized logit model on the provided set of queries X and choices Y of those objects. The
             provided queries and corresponding preferences are of a fixed size (numpy arrays). For learning this network
@@ -176,6 +176,8 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
                 Percentage of instances to split off to tune the threshold for the choice function
             thin_thresholds: int
                 The number of instances of scores to skip while tuning the threshold
+            verbose : bool
+                Print verbose information
             **kwargs :
                 Keyword arguments for the fit function
         """
