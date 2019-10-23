@@ -134,6 +134,7 @@ class LRScheduler(Callback, Tunable):
         self.epochs_drop = epochs_drop
         self.drop = drop
         self.initial_lr = None
+        self.logger =logging.getLogger(LRScheduler.__name__)
 
     def step_decay(self, epoch):
         step = math.floor((1 + epoch) / self.epochs_drop)
