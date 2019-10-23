@@ -11,36 +11,37 @@ from csrank.util import print_dictionary
 
 
 class EarlyStoppingWithWeights(Callback, Tunable):
-    """Stop training when a monitored quantity has stopped improving.
-
-        Parameters
-        ----------
-        monitor: quantity to be monitored.
-        min_delta: minimum change in the monitored quantity
-            to qualify as an improvement, i.e. an absolute
-            change of less than min_delta, will count as no
-            improvement.
-        patience: number of epochs with no improvement
-            after which training will be stopped.
-        verbose: verbosity mode.
-        mode: one of {auto, min, max}. In `min` mode,
-            training will stop when the quantity
-            monitored has stopped decreasing; in `max`
-            mode it will stop when the quantity
-            monitored has stopped increasing; in `auto`
-            mode, the direction is automatically inferred
-            from the name of the monitored quantity.
-        baseline: Baseline value for the monitored quantity to reach.
-            Training will stop if the model doesn't show improvement
-            over the baseline.
-        restore_best_weights: whether to restore model weights from
-            the epoch with the best value of the monitored quantity.
-            If False, the model weights obtained at the last step of
-            training are used.
-    """
 
     def __init__(self, monitor='val_loss', min_delta=0, patience=0, verbose=0, mode='auto', baseline=None,
                  restore_best_weights=False):
+        """
+            Stop training when a monitored quantity has stopped improving.
+
+            Parameters
+            ----------
+            monitor: quantity to be monitored.
+            min_delta: minimum change in the monitored quantity
+                to qualify as an improvement, i.e. an absolute
+                change of less than min_delta, will count as no
+                improvement.
+            patience: number of epochs with no improvement
+                after which training will be stopped.
+            verbose: verbosity mode.
+            mode: one of {auto, min, max}. In `min` mode,
+                training will stop when the quantity
+                monitored has stopped decreasing; in `max`
+                mode it will stop when the quantity
+                monitored has stopped increasing; in `auto`
+                mode, the direction is automatically inferred
+                from the name of the monitored quantity.
+            baseline: Baseline value for the monitored quantity to reach.
+                Training will stop if the model doesn't show improvement
+                over the baseline.
+            restore_best_weights: whether to restore model weights from
+                the epoch with the best value of the monitored quantity.
+                If False, the model weights obtained at the last step of
+                training are used.
+        """
         super(EarlyStoppingWithWeights, self).__init__()
         self.monitor = monitor
         self.baseline = baseline
@@ -90,7 +91,7 @@ class EarlyStoppingWithWeights(Callback, Tunable):
         if current is None:
             self.logger.warning(
                 'Early stopping conditioned on metric `%s` which is not available. Available metrics are: %s' % (
-                self.monitor, ','.join(list(logs.keys()))), RuntimeWarning)
+                    self.monitor, ','.join(list(logs.keys()))), RuntimeWarning)
             return
         if self.monitor_op(current - self.min_delta, self.best):
             self.best = current
@@ -134,7 +135,7 @@ class LRScheduler(Callback, Tunable):
         self.epochs_drop = epochs_drop
         self.drop = drop
         self.initial_lr = None
-        self.logger =logging.getLogger(LRScheduler.__name__)
+        self.logger = logging.getLogger(LRScheduler.__name__)
 
     def step_decay(self, epoch):
         step = math.floor((1 + epoch) / self.epochs_drop)
