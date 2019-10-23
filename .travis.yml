@@ -21,7 +21,7 @@ env:
   - TESTCMD="--cov-append csrank/tests/test_choice_functions.py"
   - TESTCMD="--cov-append csrank/tests/test_discrete_choice.py"
   - TESTCMD="--cov-append csrank/tests/test_ranking.py"
-  - TESTCMD="--cov-append csrank/tests/test_fate.py csrank/tests/test_losses.py csrank/tests/test_metrics.py csrank/tests/test_tuning.py csrank/tests/test_util.py"
+  - TESTCMD="--cov-append csrank/tests/test_fate.py csrank/tests/test_losses.py csrank/tests/test_metrics.py csrank/tests/test_tuning.py csrank/tests/test_util.py csrank/tests/test_tuning.py csrank/tests/test_callback.py"
 
 script:
   - pytest -v --cov=csrank --ignore experiments $TESTCMD
