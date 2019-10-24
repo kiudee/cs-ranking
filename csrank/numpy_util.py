@@ -63,5 +63,30 @@ def scores_to_rankings(score_matrix):
 
 
 def ranking_ordering_conversion(input):
+    """Converts a ranking to an ordering.
+
+    A ranking is a list of object ranks, with the object identities
+    being determined by the list indices. In contrast, an ordering is a
+    list of object identities with the array indices determining the
+    order.
+
+    Examples
+    --------
+    Consider the ranking 0 > 3 > 1 > 2. The 1st object is at the 2nd
+    position, the 2nd object on the 3rd position etc. The resulting
+    ranking is:
+
+    >>> ranking = [[0, 2, 3, 1]]
+
+    Which can be converted back to an ordering:
+
+    >>> ranking_ordering_conversion(ranking).tolist()
+    [[0, 3, 1, 2]]
+
+    Parameters
+    ----------
+    ranking: 2d array of integers, unique within each row
+        The object rankings.
+    """
     output = np.argsort(input, axis=1)
     return output
