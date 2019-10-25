@@ -23,14 +23,15 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import pymc3 as pm
-from csrank.experiments import *
-from csrank.metrics_np import categorical_accuracy_np
-from csrank.tensorflow_util import configure_numpy_keras
-from csrank.util import print_dictionary, get_duration_seconds, duration_till_now, seconds_to_time, setup_logging
 from docopt import docopt
 from sklearn.model_selection import ShuffleSplit
 from skopt.utils import load
+
+from csrank.experiments import *
+from csrank.metrics_np import categorical_accuracy_np
+from csrank.tensorflow_util import configure_numpy_keras
 from csrank.tuning import ParameterOptimizer
+from csrank.util import print_dictionary, get_duration_seconds, duration_till_now, seconds_to_time, setup_logging
 
 OPTIMIZE_ON_OBJECTS = [5, 7, 15, 17]
 

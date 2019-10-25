@@ -28,13 +28,12 @@ import numpy as np
 from docopt import docopt
 from sklearn.model_selection import ShuffleSplit
 
+from csrank.experiments import *
 from csrank.metrics import make_ndcg_at_k_loss
 from csrank.tensorflow_util import configure_numpy_keras, get_mean_loss
+from csrank.tuning import ParameterOptimizer
 from csrank.util import create_dir_recursively, duration_till_now, seconds_to_time, \
     print_dictionary, get_duration_seconds, setup_logging
-from csrank.experiments import *
-
-from csrank.tuning import ParameterOptimizer
 
 DIR_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 LOGS_FOLDER = 'logs'
@@ -101,6 +100,7 @@ if __name__ == "__main__":
             del dataset_reader
             inner_cv = ShuffleSplit(n_splits=n_inner_folds, test_size=0.1, random_state=random_state)
             hash_file = os.path.join(DIR_PATH, MODEL_FOLDER, "{}.h5".format(hash_value))
+            create_dir_recursively(hash_file, True)
             learner_params['n_objects'], learner_params['n_object_features'] = X_train.shape[1:]
             learner_params["random_state"] = random_state
             logger.info("learner params {}".format(print_dictionary(learner_params)))
@@ -174,3 +174,8 @@ if __name__ == "__main__":
             logger.error(traceback.format_exc())
             message = "exception{}".format(sys.exc_info()[0].__name__)
             dbConnector.append_error_string_in_running_job(job_id=job_id, error_message=message)
+        finally:
+            if "224" in str(cluster_id):
+                f = open("{}/.hash_value".format(os.environ['HOME']), "w+")
+                f.write(hash_value + "\n")
+                f.close()

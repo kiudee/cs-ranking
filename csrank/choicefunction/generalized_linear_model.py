@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import check_random_state
 
 import csrank.theano_util as ttu
-from csrank.choicefunctions.util import create_weight_dictionary, BinaryCrossEntropyLikelihood
+from csrank.choicefunction.util import create_weight_dictionary, BinaryCrossEntropyLikelihood
 from csrank.discretechoice.likelihoods import fit_pymc3_model
 from csrank.learner import Learner
 from csrank.util import print_dictionary
@@ -138,7 +138,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
         self.logger.info("Model construction completed")
 
     def fit(self, X, Y, sampler='variational', tune=500, draws=500, tune_size=0.1, thin_thresholds=1,
-            vi_params={"n": 20000, "method": "advi", "callbacks": [CheckParametersConvergence()]}, **kwargs):
+            vi_params={"n": 20000, "method": "advi", "callbacks": [CheckParametersConvergence()]}, verbose=0, **kwargs):
         """
             Fit a generalized logit model on the provided set of queries X and choices Y of those objects. The
             provided queries and corresponding preferences are of a fixed size (numpy arrays). For learning this network
@@ -176,6 +176,8 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
                 Percentage of instances to split off to tune the threshold for the choice function
             thin_thresholds: int
                 The number of instances of scores to skip while tuning the threshold
+            verbose : bool
+                Print verbose information
             **kwargs :
                 Keyword arguments for the fit function
         """
@@ -185,7 +187,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
                 self._fit(X_train, Y_train, sampler=sampler, vi_params=vi_params, **kwargs)
             finally:
                 self.logger.info('Fitting utility function finished. Start tuning threshold.')
-                self.threshold = self._tune_threshold(X_val, Y_val, thin_thresholds=thin_thresholds)
+                self.threshold = self._tune_threshold(X_val, Y_val, thin_thresholds=thin_thresholds, verbose=verbose)
         else:
             self._fit(X, Y, sampler=sampler, sample_params={"tune": 2, "draws": 2, "chains": 4, "njobs": 8},
                       vi_params={"n": 20000, "method": "advi", "callbacks": [

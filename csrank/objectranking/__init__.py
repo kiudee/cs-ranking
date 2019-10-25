@@ -7,3 +7,4 @@ from .fetalinear_object_ranker import FETALinearObjectRanker
 from .list_net import ListNet
 from .rank_net import RankNet
 from .rank_svm import RankSVM
+from .baseline import RandomBaselineRanker

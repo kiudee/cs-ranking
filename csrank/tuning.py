@@ -102,6 +102,7 @@ class ParameterOptimizer(Learner):
             self.logger.info('Loss function is not specified, using {}'.format(loss_funcs[learning_problem].__name__))
         else:
             self.validation_loss = validation_loss
+            self.logger.info('Using Loss function {}'.format(self.validation_loss.__name__))
 
         if self.validation_loss in accuracy_scores:
             self.validation_loss = convert_to_loss(self.validation_loss)

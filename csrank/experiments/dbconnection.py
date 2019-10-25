@@ -40,9 +40,6 @@ class DBConnector(metaclass=ABCMeta):
         self.connection.commit()
         self.connection.close()
 
-    def create_hash_value(self):
-        return get_hash_value_for_job(self.job_description)
-
     def add_jobs_in_avail_which_failed(self):
         self.init_connection()
         avail_jobs = "{}.avail_jobs".format(self.schema)
@@ -121,7 +118,7 @@ class DBConnector(metaclass=ABCMeta):
                 self.cursor_db.execute(select_job)
                 self.job_description = self.cursor_db.fetchone()
                 print(print_dictionary(self.job_description))
-                hash_value = self.create_hash_value()
+                hash_value = self.get_hash_value_for_job(self.job_description)
                 self.job_description["hash_value"] = hash_value
 
                 start = datetime.now()
@@ -280,7 +277,6 @@ class DBConnector(metaclass=ABCMeta):
         job_desc = dict(self.job_description)
         job_desc['fold_id'] = fold_id
         query_job_id = job_desc['job_id']
-        del job_desc['job_id']
         learner, learner_params = job_desc['learner'], job_desc['learner_params']
         if 'dataset_type' in job_desc['dataset_params'].keys():
             dataset, value, value2 = job_desc['dataset'], job_desc['dataset_params']['dataset_type'], \
@@ -292,9 +288,6 @@ class DBConnector(metaclass=ABCMeta):
                                      job_desc['dataset_params']['n_objects']
             expression = "dataset_params->> \'{}\' = \'{}\'".format("year", value)
             expression = "{} AND dataset_params->> \'{}\' = \'{}\'".format(expression, "n_objects", value2)
-        elif "exp" in job_desc['dataset']:
-            dataset, value = job_desc['dataset'], job_desc['dataset_params']['n_objects']
-            expression = "dataset_params->> \'{}\' = \'{}\'".format("n_objects", value)
         else:
             dataset = job_desc['dataset']
             expression = True
@@ -308,11 +301,12 @@ class DBConnector(metaclass=ABCMeta):
             for query in self.cursor_db.fetchall():
                 query = dict(query)
                 self.logger.info("Duplicate job {}".format(query['job_id']))
-                if get_hash_value_for_job(job_desc) == get_hash_value_for_job(query):
+                if self.get_hash_value_for_job(job_desc) == self.get_hash_value_for_job(query):
                     new_job_id = query['job_id']
                     self.logger.info("The job {} with fold {} already exist".format(new_job_id, fold_id))
                     break
         if new_job_id is None:
+            del job_desc['job_id']
             keys = list(job_desc.keys())
             columns = ', '.join(keys)
             index = keys.index('fold_id')
@@ -326,8 +320,8 @@ class DBConnector(metaclass=ABCMeta):
 
         self.logger.info("Job {} with fold id {} updated/inserted".format(new_job_id, fold_id))
         start = datetime.now()
-        update_job = """UPDATE {} set job_allocated_time = %s WHERE job_id = %s""".format(avail_jobs)
-        self.cursor_db.execute(update_job, (start, new_job_id))
+        update_job = """UPDATE {} set job_allocated_time = %s, hash_value = %s WHERE job_id = %s""".format(avail_jobs)
+        self.cursor_db.execute(update_job, (start, job_desc["hash_value"], new_job_id))
         select_job = """SELECT * FROM {0} WHERE {0}.job_id = {1} FOR UPDATE""".format(running_jobs, new_job_id)
         self.cursor_db.execute(select_job)
         count_ = len(self.cursor_db.fetchall())
@@ -387,14 +381,13 @@ class DBConnector(metaclass=ABCMeta):
                     self.logger.info("Results inserted for the job {}".format(job['fold_id']))
         self.close_connection()
 
-
-def get_hash_value_for_job(job):
-    keys = ['fold_id', 'learner', 'dataset_params', 'fit_params', 'learner_params', 'hp_ranges', 'hp_fit_params',
-            'inner_folds', 'validation_loss', 'dataset']
-    hash_string = ""
-    for k in keys:
-        hash_string = hash_string + str(k) + ':' + str(job[k])
-    print("Hash_string {}".format(hash_string))
-    hash_object = hashlib.sha1(hash_string.encode())
-    hex_dig = hash_object.hexdigest()
-    return str(hex_dig)
+    def get_hash_value_for_job(self, job):
+        keys = ['fold_id', 'learner', 'dataset_params', 'fit_params', 'learner_params', 'hp_ranges',
+                'hp_fit_params', 'inner_folds', 'validation_loss', 'dataset']
+        hash_string = ""
+        for k in keys:
+            hash_string = hash_string + str(k) + ':' + str(job[k])
+        hash_object = hashlib.sha1(hash_string.encode())
+        hex_dig = hash_object.hexdigest()
+        self.logger.info("Job_id {} Hash_string {}".format(job.get('job_id', None), str(hex_dig)))
+        return str(hex_dig)

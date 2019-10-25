@@ -8,9 +8,9 @@
 /single_cv_results/
 /predictions/
 /results/
-/mnist/
-/optimizers/
-/thesis/
+/pc2/
+/config/
 /detailedresults/
-/jobs/
-/presentation/
+/journalresults/
+/logs/
+/thesis/

@@ -47,7 +47,7 @@ class ChoiceFunctions(metaclass=ABCMeta):
             result = np.array(result, dtype=int)
         return result
 
-    def _tune_threshold(self, X_val, Y_val, thin_thresholds=1):
+    def _tune_threshold(self, X_val, Y_val, thin_thresholds=1, verbose=0):
         scores = self.predict_scores(X_val)
         probabilities = np.unique(scores)[::thin_thresholds]
         threshold = 0.0
@@ -59,7 +59,8 @@ class ChoiceFunctions(metaclass=ABCMeta):
                 if f1 > best:
                     threshold = p
                     best = f1
-                progress_bar(i, len(probabilities), status='Tuning threshold')
+                if verbose == 1:
+                    progress_bar(i, len(probabilities), status='Tuning threshold')
         except KeyboardInterrupt:
             self.logger.info("Keyboard interrupted")
         self.logger.info('Tuned threshold, obtained {:.2f} which achieved'

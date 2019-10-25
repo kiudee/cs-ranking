@@ -4,22 +4,29 @@ from keras.optimizers import SGD
 from keras.regularizers import l2
 from sklearn.model_selection import train_test_split
 
-from csrank.core.ranknet_core import RankNetCore
-from .choice_functions import ChoiceFunctions
-from .util import generate_complete_pairwise_dataset
+from csrank.choicefunction.choice_functions import ChoiceFunctions
+from csrank.choicefunction.util import generate_complete_pairwise_dataset
+from csrank.core.cmpnet_core import CmpNetCore
 
 
-class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
+class CmpNetChoiceFunction(CmpNetCore, ChoiceFunctions):
     def __init__(self, n_object_features, n_hidden=2, n_units=8, loss_function='binary_crossentropy',
                  batch_normalization=True, kernel_regularizer=l2(l=1e-4), kernel_initializer='lecun_normal',
                  activation='relu', optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9), metrics=['binary_accuracy'],
                  batch_size=256, random_state=None, **kwargs):
         """
-            Create an instance of the :class:`RankNetCore` architecture for learning a object ranking function.
-            It breaks the preferences into pairwise comparisons and learns a latent utility model for the objects.
-            This network learns a latent utility score for each object in the given query set
-            :math:`Q = \{x_1, \ldots ,x_n\}` using the equation :math:`U(x) = F(x, w)` where :math:`w` is the weight
-            vector. It is estimated using *pairwise preferences* generated from the choices.
+            Create an instance of the :class:`CmpNetCore` architecture for learning a choice function.
+            CmpNet breaks the preferences in form of rankings into pairwise comparisons and learns a pairwise model for
+            the each pair of object in the underlying set. For prediction list of objects is converted in pair of
+            objects and the pairwise predicate is evaluated using them. The outputs of the network for each pair of
+            objects :math:`U(x_1,x_2), U(x_2,x_1)` are evaluated.
+            :math:`U(x_1,x_2)` is a measure of how favorable it is to choose :math:`x_1` over :math:`x_2`.
+            The utility score of object :math:`x_i` in query set :math:`Q = \{ x_1 , \ldots , x_n \}` is evaluated as:
+
+            .. math::
+
+                U(x_i) = \left\{ \\frac{1}{n-1} \sum_{j \in [n] \setminus \{i\}} U_1(x_i , x_j)\\right\}
+
             The choice set is defined as:
 
             .. math::
@@ -40,8 +47,6 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
                 Whether to use batch normalization in each hidden layer
             kernel_regularizer : function
                 Regularizer function applied to all the hidden weight matrices.
-            kernel_initializer : function or string
-                Initialization function for the weights of each hidden layer
             activation : function or string
                 Type of activation function to use in each hidden layer
             optimizer : function or string
@@ -51,60 +56,61 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
             batch_size : int
                 Batch size to use during training
             random_state : int, RandomState instance or None
-                Seed of the pseudo-random generator or a RandomState instance
+                Seed of the pseudorandom generator or a RandomState instance
             **kwargs
                 Keyword arguments for the algorithms
 
             References
             ----------
-                [1] Burges, C. et al. (2005, August). "Learning to rank using gradient descent.", In Proceedings of the 22nd international conference on Machine learning (pp. 89-96). ACM.
+                [1] Leonardo Rigutini, Tiziano Papini, Marco Maggini, and Franco Scarselli. 2011. SortNet: Learning to Rank by a Neural Preference Function. IEEE Trans. Neural Networks 22, 9 (2011), 1368–1380. https://doi.org/10.1109/TNN.2011.2160875
 
-                [2] Burges, C. J. (2010). "From ranknet to lambdarank to lambdamart: An overview.", Learning, 11(23-581).
         """
         super().__init__(n_object_features=n_object_features, n_hidden=n_hidden, n_units=n_units,
                          loss_function=loss_function, batch_normalization=batch_normalization,
                          kernel_regularizer=kernel_regularizer, kernel_initializer=kernel_initializer,
                          activation=activation, optimizer=optimizer, metrics=metrics, batch_size=batch_size,
                          random_state=random_state, **kwargs)
-        self.logger = logging.getLogger(RankNetChoiceFunction.__name__)
+        self.logger = logging.getLogger(CmpNetChoiceFunction.__name__)
         self.logger.info("Initializing network with object features {}".format(self.n_object_features))
         self.threshold = 0.5
 
-    def construct_model(self):
-        return super().construct_model()
-
     def _convert_instances_(self, X, Y):
         self.logger.debug('Creating the Dataset')
-        x1, x2, garbage, garbage, y_single = generate_complete_pairwise_dataset(X, Y)
+        x1, x2, garbage, y_double, garbage = generate_complete_pairwise_dataset(X, Y)
         del garbage
         if x1.shape[0] > self.threshold_instances:
             indices = self.random_state.choice(x1.shape[0], self.threshold_instances, replace=False)
             x1 = x1[indices, :]
             x2 = x2[indices, :]
-            y_single = y_single[indices]
-            self.logger.debug("Sampling instances")
+            y_double = y_double[indices, :]
         self.logger.debug('Finished the Dataset instances {}'.format(x1.shape[0]))
-        return x1, x2, y_single
+        return x1, x2, y_double
+
+    def construct_model(self):
+        return super().construct_model()
 
     def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, tune_size=0.1, thin_thresholds=1, verbose=0,
             **kwd):
         """
-            Fit RankNet model for learning choice function on a provided set of queries. The provided queries can be of 
-            a fixed size (numpy arrays). For learning this network the binary cross entropy loss function for a pair of
-            objects :math:`x_i, x_j \in Q` is defined as:
+            Fit a CmptNet model for learning a choice fucntion on the provided set of queries X and preferences Y of
+            those objects. The provided queries and corresponding preferences are of a fixed size (numpy arrays). For
+            learning this network the binary cross entropy loss function for a pair of objects :math:`x_i, x_j \in Q`
+            is defined as:
 
             .. math::
 
-                C_{ij} =  -\\tilde{P_{ij}}\log(P_{ij}) - (1 - \\tilde{P_{ij}})\log(1 - P{ij}) \enspace,
+                C_{ij} =  -\\tilde{P_{ij}}(0)\\cdot \log(U(x_i,x_j)) - \\tilde{P_{ij}}(1) \\cdot \log(U(x_j,x_i)) \ ,
 
             where :math:`\\tilde{P_{ij}}` is ground truth probability of the preference of :math:`x_i` over :math:`x_j`.
-            :math:`\\tilde{P_{ij}} = 1` if :math:`x_i \succ x_j` else :math:`\\tilde{P_{ij}} = 0`.
+            :math:`\\tilde{P_{ij}} = (1,0)` if :math:`x_i \succ x_j` else :math:`\\tilde{P_{ij}} = (0,1)`.
 
             Parameters
             ----------
-            X : numpy array (n_instances, n_objects, n_features)
+            X : numpy array
+                (n_instances, n_objects, n_features)
                 Feature vectors of the objects
-            Y : numpy array (n_instances, n_objects)
+            Y : numpy array
+                (n_instances, n_objects)
                 Preferences in form of Orderings or Choices for given n_objects
             epochs : int
                 Number of epochs to run if training for a fixed query size
@@ -124,12 +130,13 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
         if tune_size > 0:
             X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=tune_size, random_state=self.random_state)
             try:
-                super().fit(X_train, Y_train, epochs, callbacks, validation_split, verbose, **kwd)
+                super().fit(X_train, Y_train, epochs, callbacks,
+                            validation_split, verbose, **kwd)
             finally:
                 self.logger.info('Fitting utility function finished. Start tuning threshold.')
-                self.threshold = self._tune_threshold(X_val, Y_val, thin_thresholds=thin_thresholds)
         else:
-            super().fit(X, Y, epochs, callbacks, validation_split, verbose, **kwd)
+            super().fit(X, Y, epochs, callbacks, validation_split, verbose,
+                        **kwd)
             self.threshold = 0.5
 
     def _predict_scores_fixed(self, X, **kwargs):
@@ -145,7 +152,6 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
         return super().predict(X, **kwargs)
 
     def clear_memory(self, **kwargs):
-        self.logger.info("Clearing memory")
         super().clear_memory(**kwargs)
 
     def set_tunable_parameters(self, n_hidden=32, n_units=2, reg_strength=1e-4, learning_rate=1e-3, batch_size=128,

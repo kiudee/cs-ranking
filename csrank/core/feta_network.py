@@ -13,6 +13,7 @@ from csrank.constants import allowed_dense_kwargs
 from csrank.layers import NormalizedDense
 from csrank.learner import Learner
 from csrank.losses import hinged_rank_loss
+from csrank.numpy_util import sigmoid
 from csrank.util import print_dictionary
 
 
@@ -135,16 +136,16 @@ class FETANetwork(Learner):
         pairs = np.empty((n2, 2, n_features))
         scores = np.zeros((n_instances, n_objects))
         for n in range(n_instances):
-            if self._use_zeroth_model:
-                scores[n] = self.zero_order_model.predict(X[n]).ravel()
             for k, (i, j) in enumerate(permutations(range(n_objects), 2)):
                 pairs[k] = (X[n, i], X[n, j])
-            result = self._predict_pair(pairs[:, 0], pairs[:, 1],
-                                        only_pairwise=True, **kwd)[:, 0]
+            result = self._predict_pair(pairs[:, 0], pairs[:, 1], only_pairwise=True, **kwd)[:, 0]
             scores[n] += result.reshape(n_objects, n_objects - 1).mean(axis=1)
-            scores[n] = 1. / (1. + np.exp(-scores[n]))
             del result
         del pairs
+        if self._use_zeroth_model:
+            scores_zero = self.zero_order_model.predict(X.reshape(-1, n_features))
+            scores_zero = scores_zero.reshape(n_instances, n_objects)
+            scores = scores + scores_zero
         return scores
 
     def construct_model(self):
@@ -270,7 +271,7 @@ class FETANetwork(Learner):
     def _predict_scores_fixed(self, X, **kwargs):
         n_objects = X.shape[-2]
         self.logger.info("For Test instances {} objects {} features {}".format(*X.shape))
-        if self.max_number_of_objects < self._n_objects or self.n_objects != n_objects:
+        if self.n_objects != n_objects:
             scores = self._predict_scores_using_pairs(X, **kwargs)
         else:
             scores = self.model.predict(X, **kwargs)
@@ -304,6 +305,7 @@ class FETANetwork(Learner):
         self.optimizer = self.optimizer.from_config(self._optimizer_config)
         K.set_value(self.optimizer.lr, learning_rate)
         self._pairwise_model = None
+        self._zero_order_model = None
         self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
                                activation=self.activation, **self.kwargs)
         if len(point) > 0:

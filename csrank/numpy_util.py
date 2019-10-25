@@ -34,7 +34,7 @@ def softmax(x, axis=1):
 
 
 def sigmoid(x):
-    x = 1 / (1 + np.exp(-1 * x))
+    x = 1. / (1. + np.exp(-x))
     return x
 
 

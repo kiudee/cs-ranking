@@ -1,3 +1,4 @@
+from .baseline import RandomBaselineDC
 from .cmpnet_discrete_choice import CmpNetDiscreteChoiceFunction
 from .fate_discrete_choice import FATEDiscreteChoiceFunction
 from .fatelinear_discrete_choice import FATELinearDiscreteChoiceFunction

@@ -22,6 +22,7 @@ class FATELinearCore(Learner):
         self.n_objects = n_objects
         self.epochs_drop = epochs_drop
         self.drop = drop
+        self.current_lr = None
         self.weight1 = None
         self.bias1 = None
         self.weight2 = None
@@ -41,6 +42,7 @@ class FATELinearCore(Learner):
             self.random_state.normal(loc=0, scale=std, size=(self.n_object_features + self.n_hidden_set_units)),
             dtype=tf.float32)
         self.b2 = tf.Variable(self.random_state.normal(loc=0, scale=std, size=1), dtype=tf.float32)
+
         set_rep = tf.reduce_mean(tf.tensordot(self.X, self.W1, axes=1), axis=1) + self.b1
 
         self.set_rep = tf.reshape(tf.tile(set_rep, tf.constant([1, n_objects])),
@@ -53,8 +55,8 @@ class FATELinearCore(Learner):
 
     def step_decay(self, epoch):
         step = math.floor((1 + epoch) / self.epochs_drop)
-        self.learning_rate = self.learning_rate * math.pow(self.drop, step)
-        self.optimizer = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(self.loss)
+        self.current_lr = self.learning_rate * math.pow(self.drop, step)
+        self.optimizer = tf.train.GradientDescentOptimizer(self.current_lr).minimize(self.loss)
 
     def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
         # Global Variables Initializer

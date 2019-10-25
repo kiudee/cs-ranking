@@ -109,3 +109,4 @@ copy_to_remote.sh
 copy_from_remote.sh
 
 *.sh
+/.pytest_cache/

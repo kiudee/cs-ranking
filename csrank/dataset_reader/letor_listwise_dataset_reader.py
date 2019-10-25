@@ -9,7 +9,7 @@ import numpy as np
 from scipy.stats import rankdata
 
 from csrank.constants import OBJECT_RANKING, DISCRETE_CHOICE
-from csrank.dataset_reader.util import standardize_features_dict
+from csrank.dataset_reader.util import standardize_features
 from csrank.util import print_dictionary, create_dir_recursively
 from .dataset_reader import DatasetReader
 
@@ -231,10 +231,11 @@ class LetorListwiseDatasetReader(DatasetReader, metaclass=ABCMeta):
         pass
 
     def get_dataset_dictionaries(self):
+        self.X_test, self.X_test = standardize_features(self.X, self.X_test)
         return self.X_train, self.Y_train, self.X_test, self.Y_test
 
     def get_single_train_test_split(self):
         self.X, self.Y = self.sub_sampling_from_dictionary(train_test="train")
-        self.X, self.X_test = standardize_features_dict(self.X, self.X_test)
+        self.X, self.X_test = standardize_features(self.X, self.X_test)
         self.__check_dataset_validity__()
         return self.X, self.Y, self.X_test, self.Y_test

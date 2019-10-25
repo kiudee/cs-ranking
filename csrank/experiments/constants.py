@@ -12,8 +12,8 @@ EXP_CHOICE = "exp_choice"
 DEPTH = 'depth'
 SENTENCE_ORDERING = "sentence_ordering"
 LETOR_OR = "letor_or"
-LETOR_LISTWISE_DC = "letor_lw_dc"
 LETOR_DC = "letor_dc"
+LETOR_RANKING_DC = "letor_ranking_dc"
 SUSHI_DC = "sushi_dc"
 EXP_DC = "exp_dc"
 
@@ -26,6 +26,7 @@ FATE_RANKER = "fate_ranker"
 LISTNET = 'listnet'
 FATELINEAR_RANKER = "fatelinear_ranker"
 FETALINEAR_RANKER = "fetalinear_ranker"
+RANDOM_RANKER = "random_ranker"
 
 FETA_CHOICE = 'feta_choice'
 FETALINEAR_CHOICE = "fetalinear_choice"
@@ -44,6 +45,7 @@ FETA_DC = 'feta_dc'
 FATE_DC = "fate_dc"
 FATELINEAR_DC = "fatelinear_dc"
 FETALINEAR_DC = "fetalinear_dc"
+RANDOM_DC = "random_dc"
 
 RANKNET_DC = "ranknet_dc"
 CMPNET_DC = "cmpnet_dc"
@@ -54,8 +56,7 @@ PCL = 'paired_combinatorial_logit'
 RANKSVM_DC = 'ranksvm_dc'
 MLM = 'mixed_logit_model'
 
-DCMS = [FETA_DC, FATE_DC, RANKNET_DC, MNL, NLM, GEV, PCL, MLM, RANKSVM_DC, FATELINEAR_DC, FETALINEAR_DC]
+DCMS = [FETA_DC, FATE_DC, RANKNET_DC, MNL, NLM, GEV, PCL, MLM, RANKSVM_DC, FATELINEAR_DC, FETALINEAR_DC, RANDOM_DC]
 CHOICE_FUNCTIONS = [FETA_CHOICE, FATE_CHOICE, RANKNET_CHOICE, RANKSVM_CHOICE, GLM_CHOICE, RANDOM_CHOICE,
                     FATELINEAR_CHOICE, FETALINEAR_CHOICE]
-OBJECT_RANKERS = [RANKSVM, ERR, CMPNET, RANKNET, FETA_RANKER, FATE_RANKER, LISTNET, FATELINEAR_RANKER,
-                  FETALINEAR_RANKER]
+OBJECT_RANKERS = [FATE_RANKER, FETA_RANKER, FATELINEAR_RANKER, FETALINEAR_RANKER, RANKSVM, ERR, RANKNET, LISTNET, RANDOM_RANKER]
