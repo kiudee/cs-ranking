@@ -1,7 +1,7 @@
 """Experiment runner for one dataset.
 
 Usage:
-  generalization_experiment.py (--n_objects=<n_objects> --dataset_type=<dataset_type>)
+  generalization_experiment.py (--dataset=<dataset> --dataset_type=<dataset_type> --learning_problem=<learning_problem>)
 
   generalization_experiment.py (-h | --help)
 
@@ -9,132 +9,229 @@ Arguments:
     FILE       An argument for passing in a file.
 Options:
   -h --help             Show this screen.
-  --n_objects=<n_objects>         Number of Objects of the random generator [default: 5]
-  --dataset_type=<dataset_type>   Synthetic Dataset type
+  --dataset=<dataset>         The dataset name
+  --dataset_type=<dataset_type>   The dataset variant
+  --learning_problem=<learning_problem>   The Learning Problem variant
 """
+import copy
+import hashlib
 import inspect
 import logging
 import os
+from datetime import datetime
 
 import numpy as np
 import pandas as pd
 from docopt import docopt
+from pymc3.variational.callbacks import CheckParametersConvergence
+from sklearn.model_selection import ShuffleSplit
+from skopt.utils import load
 
-from csrank import ObjectRankingDatasetGenerator, FETAObjectRanker, RankNet, ListNet, RankSVM, FATEObjectRanker, \
-    ExpectedRankRegression
-from csrank.callbacks import DebugOutput, LRScheduler
-from csrank.metrics import zero_one_rank_loss_for_scores
-from csrank.tensorflow_util import get_tensor_value, configure_numpy_keras
-from csrank.util import rename_file_if_exist, setup_logging
+from csrank.constants import OBJECT_RANKING, CHOICE_FUNCTION, DISCRETE_CHOICE
+from csrank.experiments import *
+from csrank.experiments.util import learners
+from csrank.metrics_np import categorical_accuracy_np, zero_one_rank_loss_for_scores_np, f1_measure
+from csrank.tensorflow_util import configure_numpy_keras
+from csrank.util import print_dictionary, get_duration_seconds, setup_logging
 
+N_OBJECTS_ARRAY = np.arange(3, 20)
+OBJECTS = "Objects"
 MODEL = "aModel"
 
 ERROR_OUTPUT_STRING = 'Out of sample error {} : {} for n_objects {}'
+LOGS_FOLDER = 'logs'
+OPTIMIZER_FOLDER = 'optimizers'
+PREDICTIONS_FOLDER = 'predictions'
+MODEL_FOLDER = 'models'
+RESULT_FOLDER = 'results'
+
+DIR_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
 
-def generate_dataset(dataset_type, n_objects=5, random_state=42):
-    parameters = {"n_features": 2, "n_objects": n_objects, "n_train_instances": 10000, "n_test_instances": 100000,
-                  "dataset_type": dataset_type, "random_state": random_state}
-    generator = ObjectRankingDatasetGenerator(**parameters)
-    return generator.get_single_train_test_split()
+def get_hash_string(logger, job):
+    keys = ['learner', 'dataset_params', 'learner_params', 'hp_ranges', 'dataset']
+    hash_string = ""
+    for k in keys:
+        hash_string = hash_string + str(k) + ':' + str(job[k])
+    hash_object = hashlib.sha1(hash_string.encode())
+    hex_dig = hash_object.hexdigest()
+    logger.info("Job_id {} Hash_string {}".format(job.get('job_id', None), str(hex_dig)))
+    return str(hex_dig)[:4]
 
 
-def get_evaluation_result(gor, X_train, Y_train, epochs, dataset_type, callbacks=[DebugOutput()]):
-    gor.fit(X_train, Y_train, callbacks=callbacks, epochs=epochs)
-    eval_results = {}
-    for n_objects in np.arange(3, 25):
-        _, _, X_test, Y_test = generate_dataset(dataset_type, n_objects=n_objects,
-                                                random_state=seed + n_objects * 5)
-        y_pred_scores = gor.predict_scores(X_test, batch_size=X_test.shape[0])
-        metric_loss = get_tensor_value(zero_one_rank_loss_for_scores(Y_test, y_pred_scores))
-        logger.info(ERROR_OUTPUT_STRING.format("zero_one_rank_loss", str(np.mean(metric_loss)), n_objects))
-        eval_results[n_objects] = metric_loss
-    return eval_results
+def save_results(rows_list, df_path):
+    df = pd.DataFrame(rows_list)
+    df = df.set_index(MODEL).T
+    if not os.path.isfile(df_path):
+        dataFrame = df
+        df.insert(0, OBJECTS, N_OBJECTS_ARRAY)
+    else:
+        dataFrame = pd.read_csv(df_path, index_col=0)
+        for col in list(df.columns):
+            dataFrame[col] = np.array(df[col])
+    dataFrame.to_csv(df_path, index=OBJECTS)
 
 
 if __name__ == '__main__':
     arguments = docopt(__doc__)
-    n_train_objects = int(arguments['--n_objects'])
-    dataset_type = arguments['--dataset_type']
-    dirname = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    log_path = os.path.join(dirname, "logs", "generalizing_mean_{}_{}.log".format(dataset_type, n_train_objects))
-    df_path = os.path.join(dirname, "logs", "generalizing_mean_{}_{}.csv".format(dataset_type, n_train_objects))
-    log_path = rename_file_if_exist(log_path)
-    df_path = rename_file_if_exist(df_path)
-    random_state = np.random.RandomState(seed=42)
-    seed = random_state.randint(2 ** 32)
-
-    rows_list = []
+    start = datetime.now()
+    dataset = str(arguments['--dataset'])
+    dataset_type = str(arguments['--dataset_type'])
+    learning_problem = str(arguments['--learning_problem'])
+    log_path = os.path.join(DIR_PATH, LOGS_FOLDER, "generalization_{}_{}.log".format(dataset_type, learning_problem))
+    df_path = os.path.join(DIR_PATH, RESULT_FOLDER, "generalization_{}_{}.csv".format(dataset_type, learning_problem))
+    config_file_path = os.path.join(DIR_PATH, 'config', 'clusterdb.json')
+    metrics_dict = {OBJECT_RANKING: zero_one_rank_loss_for_scores_np, DISCRETE_CHOICE: categorical_accuracy_np,
+                    CHOICE_FUNCTION: f1_measure}
+    metric_name_dict = {OBJECT_RANKING: 'ZeroOneRankLoss', DISCRETE_CHOICE: 'CategoricalAccuracy',
+                        CHOICE_FUNCTION: 'F1Score'}
+    LEARNERS_DICTIONARY = {DISCRETE_CHOICE: DCMS, CHOICE_FUNCTION: CHOICE_FUNCTIONS, OBJECT_RANKING: OBJECT_RANKERS}
 
     setup_logging(log_path=log_path)
-    configure_numpy_keras(seed=seed)
-    logger = logging.getLogger('Generalization Experiment')
-    X_train, Y_train, _, _ = generate_dataset(dataset_type, n_objects=n_train_objects, random_state=seed)
-    n_instances, n_train_objects, n_features = X_train.shape
-    epochs = 1500
-    params = {"n_objects": n_train_objects, "n_object_features": n_features}
+    logger = logging.getLogger('PerformanceSetSizes')
+    dbConnector = DBConnector(config_file_path=config_file_path)
+    dbConnector.init_connection()
+    select_st = "SELECT * FROM {0} WHERE {0}.dataset=\'{1}\' AND dataset_params->>'dataset_type'=\'{2}\' " \
+                "AND {0}.fold_id={3}".format('{0}', dataset, dataset_type, 0)
+    models_done = []
+    df = None
+    if os.path.isfile(df_path):
+        df = pd.read_csv(df_path, index_col=0)
+        models_done = list(df.columns)
+    logger.info("Models done {}".format(models_done))
+    run_jobs = []
+    if learning_problem == DISCRETE_CHOICE:
+        dbConnector.cursor_db.execute(select_st.format('discrete_choice.avail_jobs'))
+        for job in dbConnector.cursor_db.fetchall():
+            run_jobs.append(dict(job))
+        logger.info("Query {}".format(select_st.format('discrete_choice.avail_jobs')))
+        dbConnector.cursor_db.execute(select_st.format('pymc3_discrete_choice.avail_jobs'))
+        for job in dbConnector.cursor_db.fetchall():
+            run_jobs.append(dict(job))
+        logger.info("Query {}".format(select_st.format('pymc3_discrete_choice.avail_jobs')))
+    elif learning_problem == OBJECT_RANKING:
+        dbConnector.cursor_db.execute(select_st.format('object_ranking.avail_jobs'))
+        for job in dbConnector.cursor_db.fetchall():
+            run_jobs.append(dict(job))
+        logger.info("Query {}".format(select_st.format('object_ranking.avail_jobs')))
+    elif learning_problem == CHOICE_FUNCTION:
+        dbConnector.cursor_db.execute(select_st.format('choice_functions.avail_jobs'))
+        for job in dbConnector.cursor_db.fetchall():
+            run_jobs.append(dict(job))
+        logger.info("Query {}".format(select_st.format('choice_functions.avail_jobs')))
+    dbConnector.close_connection()
+    for job in run_jobs:
+        logger.info("learner {} learner_params {}".format(job["learner"], job["learner_params"]))
+    duration = get_duration_seconds('7D')
+    logger.info("DB config filePath {}".format(config_file_path))
+    logger.info("Arguments {}".format(arguments))
+    if dataset_type == 'median':
+        N_OBJECTS_ARRAY = np.arange(3, 20, step=2)
+    logger.info("N_OBJECTS_ARRAY {}".format(N_OBJECTS_ARRAY))
+    for job_description in run_jobs:
+        rows_list = []
+        seed = int(job_description["seed"])
+        job_id = int(job_description["job_id"])
+        fold_id = int(job_description["fold_id"])
+        dataset_name = job_description["dataset"]
+        n_inner_folds = int(job_description["inner_folds"])
+        dataset_params = job_description["dataset_params"]
+        learner_name = job_description["learner"]
+        fit_params = copy.deepcopy(job_description["fit_params"])
+        learner_params = job_description["learner_params"]
+        hp_iters = int(job_description["hp_iters"])
+        hp_ranges = copy.deepcopy(job_description["hp_ranges"])
+        hp_fit_params = copy.deepcopy(job_description["hp_fit_params"])
+        learning_problem = job_description["learning_problem"]
+        experiment_schema = job_description["experiment_schema"]
+        experiment_table = job_description["experiment_table"]
+        validation_loss = job_description["validation_loss"]
+        hash_value = job_description["hash_value"]
+        random_state = np.random.RandomState(seed=seed + fold_id)
+        optimizer_path = os.path.join(DIR_PATH, OPTIMIZER_FOLDER, "{}".format(hash_value))
+        hash_file = os.path.join(DIR_PATH, MODEL_FOLDER, "{}.h5".format(hash_value))
 
-    logger.info("############################# With FATERanker ##############################")  # 53
-    point = {'n_hidden_set_units': 86, 'n_hidden_set_layers': 4, 'n_hidden_joint_units': 42, 'n_hidden_joint_layers': 5,
-             'reg_strength': 4.815764337557941e-07, 'learning_rate': 0.00287838171819095, 'batch_size': 334}
-    fate = FATEObjectRanker(n_objects=n_train_objects, n_object_features=n_features)
-    fate.set_tunable_parameters(**point)
-    params = {'epochs_drop': 152, 'drop': 0.08534838347396632}
-    lr = LRScheduler(**params)
-    result = get_evaluation_result(fate, X_train, Y_train, epochs, dataset_type, callbacks=[lr, DebugOutput()])
-    result[MODEL] = "FATERanker"
-    rows_list.append(result)
+        configure_numpy_keras(seed=seed)
+        dataset_params['random_state'] = random_state
+        dataset_params['fold_id'] = fold_id
+        dataset_reader = get_dataset_reader(dataset_name, dataset_params)
+        inner_cv = ShuffleSplit(n_splits=n_inner_folds, test_size=0.1, random_state=random_state)
+        if learner_name in [MNL, PCL, NLM, GEV, MLM]:
+            fit_params['random_seed'] = seed + fold_id
+            fit_params['vi_params']["callbacks"] = [CheckParametersConvergence(diff="absolute", tolerance=0.01, every=50)]
+        optimizer = load(optimizer_path)
+        if "ps" in optimizer.acq_func:
+            best_i = np.argmin(np.array(optimizer.yi)[:, 0])
+        else:
+            best_i = np.argmin(optimizer.yi)
+        best_point = optimizer.Xi[best_i]
+        best_loss = optimizer.yi[best_i]
+        logger.info("Best parameters so far with a loss of {:.4f}:\n {}".format(best_loss, best_point))
+        logger.info(print_dictionary(job_description))
+        add_in_name = ''
+        if job_description['learner_params'].get("add_zeroth_order_model", False):
+            add_in_name = '_zero'
+        model_name = '{}{}'.format(learner_name, add_in_name)
+        learner_func = learners[learner_name]
+        X_train, Y_train, X_test, Y_test = dataset_reader.get_single_train_test_split()
+        metric_function = metrics_dict[learning_problem]
+        metric_name = metric_name_dict[learning_problem]
+        df_path = os.path.join(DIR_PATH, RESULT_FOLDER, "performance_sets_{}_{}.csv".format(learning_problem, dataset_type))
+        logging.info("Saving the results for dataset {} for model {}".format(dataset_type, learner_name))
+        p_bool = (not (model_name in models_done and (model_name + '_gen') in models_done))
+        logger.info("Present bool {}".format(p_bool))
+        if not (model_name + '_gen') in models_done and learner_name not in [PCL, FETALINEAR_DC, FATELINEAR_DC]:
+            learner_params['n_objects'], learner_params['n_object_features'] = X_train.shape[1:]
+            logger.info("learner params {}".format(print_dictionary(learner_params)))
+            learner = learner_func(**learner_params)
+            learner.hash_file = hash_file
+            if learner_name in hp_ranges.keys():
+                tuned_objects = {learner: hp_ranges.get(learner_name, {}).keys()}
+            if "callbacks" in fit_params.keys():
+                callbacks = []
+                for key, value in fit_params.get("callbacks", {}).items():
+                    callback = callbacks_dictionary[key]
+                    callback = callback(**value)
+                    callbacks.append(callback)
+                    if key in hp_ranges.keys():
+                        tuned_objects[callback] = hp_ranges[key].keys()
+                fit_params["callbacks"] = callbacks
+            # Setting tunable parameters
+            i = 0
+            for obj, parameters in tuned_objects.items():
+                param_dict = dict()
+                for j, p in enumerate(parameters):
+                    param_dict[p] = best_point[i + j]
+                if isinstance(obj, learners[learner_name]):
+                    best_learner_params = copy.deepcopy(param_dict)
+                    logger.info('Best learner params {}'.format(best_learner_params))
+                else:
+                    obj.set_tunable_parameters(**param_dict)
+                    logger.info('obj: {}, current parameters {}'.format(type(obj).__name__, param_dict))
+                i += len(parameters)
+                learner.set_tunable_parameters(**best_learner_params)
+            learner.fit(X_train, Y_train, **fit_params)
+            eval_results = {MODEL: model_name}
+            for n_objects in N_OBJECTS_ARRAY:
+                if "synthetic" in dataset:
+                    dataset_reader.kwargs['n_objects'] = n_objects
+                else:
+                    dataset_reader.n_objects = n_objects
+                X_train, Y_train, X_test, Y_test = dataset_reader.get_single_train_test_split()
+                batch_size = X_test.shape[0]
+                logger.info("############################## Learner 2 ####################################")
+                if "clear_memory" in dir(learner):
+                    learner.clear_memory(n_objects=n_objects)
+                s_pred, y_pred = get_scores(learner, batch_size, X_test, Y_test, logger)
+                if metric_function in metrics_on_predictions:
+                    metric_loss = metric_function(Y_test, y_pred)
+                else:
+                    metric_loss = metric_function(Y_test, s_pred)
+                logger.info("Learned on {} objects and predicting on others ".format(dataset_params['n_objects']))
+                logger.info(ERROR_OUTPUT_STRING.format(metric_name, str(np.mean(metric_loss)), n_objects))
+                eval_results[n_objects] = metric_loss
 
-    logger.info("############################# With FETARanker ##############################")  # 22
-    point = {'n_hidden': 6, 'n_units': 21, 'learning_rate': 0.002877977772158241, 'reg_strength': 0.006856379975844599,
-             'batch_size': 688}
-    feta = FETAObjectRanker(n_objects=n_train_objects, n_object_features=n_features)
-    feta.set_tunable_parameters(**point)
-    params = {'epochs_drop': 199, 'drop': 0.02498577223683132}
-    lr = LRScheduler(**params)
-    result = get_evaluation_result(feta, X_train, Y_train, epochs, dataset_type, callbacks=[lr, DebugOutput()])
-    result[MODEL] = "FETARanker"
-    rows_list.append(result)
-
-    logger.info("############################# With RankNet ##############################")  # 24
-    point = {'n_hidden': 2, 'n_units': 38, 'learning_rate': 0.0004869994896776387, 'reg_strength': 0.1,
-             'batch_size': 410}
-    ranknet = RankNet(n_objects=n_train_objects, n_object_features=n_features)
-    ranknet.set_tunable_parameters(**point)
-    params = {'epochs_drop': 250, 'drop': 0.01}
-    lr = LRScheduler(**params)
-    result = get_evaluation_result(ranknet, X_train, Y_train, epochs, dataset_type, callbacks=[lr, DebugOutput()])
-    result[MODEL] = "RankNet"
-    rows_list.append(result)
-
-    logger.info("############################# With ListNet ##############################")  # 53
-    point = {'n_hidden': 13, 'n_units': 25, 'learning_rate': 0.0044822356571576245,
-             'reg_strength': 0.00017570468364928768, 'batch_size': 805}
-    listnet = ListNet(n_top=3, n_objects=n_train_objects, n_object_features=n_features)
-    listnet.set_tunable_parameters(**point)
-    params = {'epochs_drop': 166, 'drop': 0.06140848438671757}
-    lr = LRScheduler(**params)
-    result = get_evaluation_result(listnet, X_train, Y_train, epochs, dataset_type, callbacks=[lr, DebugOutput()])
-    result[MODEL] = "ListNet"
-    rows_list.append(result)
-
-    logger.info("############################# With ExpectedRankRegression ##############################")  # 3
-    point = {'tol': 0.0006463744551066736, 'alpha': 7.0942908812201645e-06, 'l1_ratio': 0.048064055105687134}
-    err = ExpectedRankRegression(n_objects=n_train_objects, n_object_features=n_features)
-    err.set_tunable_parameters(**point)
-    result = get_evaluation_result(err, X_train, Y_train, epochs, dataset_type)
-    result[MODEL] = "ERR"
-    rows_list.append(result)
-
-    logger.info("############################# With RankSVM ##############################")  # 34
-    point = {'tol': 0.49644832732622124, 'C': 12}
-    err = RankSVM(n_objects=n_train_objects, n_object_features=n_features)
-    err.set_tunable_parameters(**point)
-    result = get_evaluation_result(err, X_train, Y_train, epochs, dataset_type)
-    result[MODEL] = "RankSVM"
-    rows_list.append(result)
-
-    df = pd.DataFrame(rows_list)
-    df = df.set_index(MODEL).T
-    df.to_csv(df_path)
-    pd.read_csv(df_path)
+            logger.info("Saving  model {}".format(model_name))
+            rows_list.append(eval_results)
+            save_results(rows_list, df_path)
+            del learner

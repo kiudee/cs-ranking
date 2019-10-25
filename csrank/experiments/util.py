@@ -13,7 +13,7 @@ from csrank.objectranking import *
 
 __all__ = ['log_test_train_data', 'get_dataset_reader', 'create_optimizer_parameters', 'create_optimizer_parameters2',
            'get_scores', 'datasets', 'cfs', 'ranking_metrics', 'discrete_choice_metrics', 'choice_metrics',
-           'lp_metric_dict', 'metrics_on_predictions', 'callbacks_dictionary']
+           'lp_metric_dict', 'metrics_on_predictions', 'callbacks_dictionary', 'learners']
 
 datasets = {SYNTHETIC_OR: ObjectRankingDatasetGenerator, DEPTH: DepthDatasetReader,
             SUSHI: SushiObjectRankingDatasetReader, IMAGE_DATASET: ImageDatasetReader,
