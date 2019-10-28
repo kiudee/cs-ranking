@@ -18,6 +18,7 @@ import hashlib
 import inspect
 import logging
 import os
+import sys
 from datetime import datetime
 
 import numpy as np
@@ -32,9 +33,10 @@ from csrank.experiments import *
 from csrank.experiments.util import learners
 from csrank.metrics_np import categorical_accuracy_np, zero_one_rank_loss_for_scores_np, f1_measure
 from csrank.tensorflow_util import configure_numpy_keras
-from csrank.util import print_dictionary, get_duration_seconds, setup_logging
+from csrank.util import print_dictionary, setup_logging
 
-N_OBJECTS_ARRAY = np.arange(3, 20)
+max_objects = 30
+N_OBJECTS_ARRAY = np.arange(3, max_objects)
 OBJECTS = "Objects"
 MODEL = "aModel"
 
@@ -69,6 +71,7 @@ def save_results(rows_list, df_path):
         dataFrame = pd.read_csv(df_path, index_col=0)
         for col in list(df.columns):
             dataFrame[col] = np.array(df[col])
+    dataFrame.sort_index(axis=1, inplace=True)
     dataFrame.to_csv(df_path, index=OBJECTS)
 
 
@@ -85,14 +88,17 @@ if __name__ == '__main__':
                     CHOICE_FUNCTION: f1_measure}
     metric_name_dict = {OBJECT_RANKING: 'ZeroOneRankLoss', DISCRETE_CHOICE: 'CategoricalAccuracy',
                         CHOICE_FUNCTION: 'F1Score'}
-    LEARNERS_DICTIONARY = {DISCRETE_CHOICE: DCMS, CHOICE_FUNCTION: CHOICE_FUNCTIONS, OBJECT_RANKING: OBJECT_RANKERS}
+    LEARNERS_DICTIONARY = {DISCRETE_CHOICE: DCFS, CHOICE_FUNCTION: CHOICE_FUNCTIONS, OBJECT_RANKING: OBJECT_RANKERS}
 
     setup_logging(log_path=log_path)
-    logger = logging.getLogger('PerformanceSetSizes')
+    logger = logging.getLogger('Generalization')
     dbConnector = DBConnector(config_file_path=config_file_path)
     dbConnector.init_connection()
     select_st = "SELECT * FROM {0} WHERE {0}.dataset=\'{1}\' AND dataset_params->>'dataset_type'=\'{2}\' " \
                 "AND {0}.fold_id={3}".format('{0}', dataset, dataset_type, 0)
+    logger.info("DB config filePath {}".format(config_file_path))
+    logger.info("Arguments {}".format(arguments))
+    configure_numpy_keras(seed=42)
     models_done = []
     df = None
     if os.path.isfile(df_path):
@@ -120,13 +126,23 @@ if __name__ == '__main__':
             run_jobs.append(dict(job))
         logger.info("Query {}".format(select_st.format('choice_functions.avail_jobs')))
     dbConnector.close_connection()
+    all_learners = {}
     for job in run_jobs:
-        logger.info("learner {} learner_params {}".format(job["learner"], job["learner_params"]))
-    duration = get_duration_seconds('7D')
-    logger.info("DB config filePath {}".format(config_file_path))
-    logger.info("Arguments {}".format(arguments))
+        name, param, dataset = job["learner"], job["learner_params"], job["dataset"]
+        param['n_objects'], param['n_object_features'] = job['dataset_params']['n_objects'], job['dataset_params'].get(
+            'n_features', 0)
+        hash_file = os.path.join(DIR_PATH, MODEL_FOLDER, "{}.h5".format(job['hash_value']))
+        if param['n_object_features'] == 0:
+            if 'tag_genome' in dataset:
+                param['n_object_features'] = 1128
+            elif 'mnist' in dataset:
+                param['n_object_features'] = 128
+        learner = learners[name](**param)
+        learner.hash_file = hash_file
+        all_learners[name] = learner
+        logger.info('Learner {}, params {}, for dataset {}'.format(name, param, dataset))
     if dataset_type == 'median':
-        N_OBJECTS_ARRAY = np.arange(3, 20, step=2)
+        N_OBJECTS_ARRAY = np.arange(3, max_objects, step=2)
     logger.info("N_OBJECTS_ARRAY {}".format(N_OBJECTS_ARRAY))
     for job_description in run_jobs:
         rows_list = []
@@ -149,9 +165,10 @@ if __name__ == '__main__':
         hash_value = job_description["hash_value"]
         random_state = np.random.RandomState(seed=seed + fold_id)
         optimizer_path = os.path.join(DIR_PATH, OPTIMIZER_FOLDER, "{}".format(hash_value))
-        hash_file = os.path.join(DIR_PATH, MODEL_FOLDER, "{}.h5".format(hash_value))
-
-        configure_numpy_keras(seed=seed)
+        logger.info("################## {} ##################".format(learner_name.title()))
+        jd = {k: job_description[k] for k in ('learner', 'dataset_params', 'learner_params', 'hp_ranges', 'dataset',
+                                              'hash_value', 'fit_params') if k in job_description}
+        logger.info(print_dictionary(jd))
         dataset_params['random_state'] = random_state
         dataset_params['fold_id'] = fold_id
         dataset_reader = get_dataset_reader(dataset_name, dataset_params)
@@ -159,32 +176,38 @@ if __name__ == '__main__':
         if learner_name in [MNL, PCL, NLM, GEV, MLM]:
             fit_params['random_seed'] = seed + fold_id
             fit_params['vi_params']["callbacks"] = [CheckParametersConvergence(diff="absolute", tolerance=0.01, every=50)]
-        optimizer = load(optimizer_path)
-        if "ps" in optimizer.acq_func:
-            best_i = np.argmin(np.array(optimizer.yi)[:, 0])
-        else:
-            best_i = np.argmin(optimizer.yi)
-        best_point = optimizer.Xi[best_i]
-        best_loss = optimizer.yi[best_i]
-        logger.info("Best parameters so far with a loss of {:.4f}:\n {}".format(best_loss, best_point))
-        logger.info(print_dictionary(job_description))
+        optimizer = None
+        try:
+            optimizer = load(optimizer_path)
+            if "ps" in optimizer.acq_func:
+                best_i = np.argmin(np.array(optimizer.yi)[:, 0])
+            else:
+                best_i = np.argmin(optimizer.yi)
+            best_point = optimizer.Xi[best_i]
+            best_loss = optimizer.yi[best_i]
+            logger.info("Best parameters so far with a loss of {:.4f}:\n {}".format(best_loss, best_point))
+        except KeyError as e:
+            print("I/O error({0})".format(e))
+        except ValueError:
+            print("Could not convert data to an integer.")
+        except:
+            print("Unexpected error:", sys.exc_info()[0])
+        if optimizer is None:
+            logger.info("Learner Skipped {}".format(learner_name))
         add_in_name = ''
         if job_description['learner_params'].get("add_zeroth_order_model", False):
             add_in_name = '_zero'
         model_name = '{}{}'.format(learner_name, add_in_name)
-        learner_func = learners[learner_name]
         X_train, Y_train, X_test, Y_test = dataset_reader.get_single_train_test_split()
         metric_function = metrics_dict[learning_problem]
         metric_name = metric_name_dict[learning_problem]
-        df_path = os.path.join(DIR_PATH, RESULT_FOLDER, "performance_sets_{}_{}.csv".format(learning_problem, dataset_type))
-        logging.info("Saving the results for dataset {} for model {}".format(dataset_type, learner_name))
-        p_bool = (not (model_name in models_done and (model_name + '_gen') in models_done))
-        logger.info("Present bool {}".format(p_bool))
-        if not (model_name + '_gen') in models_done and learner_name not in [PCL, FETALINEAR_DC, FATELINEAR_DC]:
-            learner_params['n_objects'], learner_params['n_object_features'] = X_train.shape[1:]
+        if model_name in models_done + [PCL]:
+            logger.info("Model already present {}".format(model_name))
+        if optimizer is None:
+            logger.info("Optimizer is not loaded properly {}".format(model_name))
+        if model_name not in models_done and learner_name not in [PCL]:
+            learner = all_learners[learner_name]
             logger.info("learner params {}".format(print_dictionary(learner_params)))
-            learner = learner_func(**learner_params)
-            learner.hash_file = hash_file
             if learner_name in hp_ranges.keys():
                 tuned_objects = {learner: hp_ranges.get(learner_name, {}).keys()}
             if "callbacks" in fit_params.keys():
@@ -196,20 +219,21 @@ if __name__ == '__main__':
                     if key in hp_ranges.keys():
                         tuned_objects[callback] = hp_ranges[key].keys()
                 fit_params["callbacks"] = callbacks
-            # Setting tunable parameters
-            i = 0
-            for obj, parameters in tuned_objects.items():
-                param_dict = dict()
-                for j, p in enumerate(parameters):
-                    param_dict[p] = best_point[i + j]
-                if isinstance(obj, learners[learner_name]):
-                    best_learner_params = copy.deepcopy(param_dict)
-                    logger.info('Best learner params {}'.format(best_learner_params))
-                else:
-                    obj.set_tunable_parameters(**param_dict)
-                    logger.info('obj: {}, current parameters {}'.format(type(obj).__name__, param_dict))
-                i += len(parameters)
-                learner.set_tunable_parameters(**best_learner_params)
+            if optimizer is not None:
+                # Setting tunable parameters
+                i = 0
+                for obj, parameters in tuned_objects.items():
+                    param_dict = dict()
+                    for j, p in enumerate(parameters):
+                        param_dict[p] = best_point[i + j]
+                    if isinstance(obj, learners[learner_name]):
+                        best_learner_params = copy.deepcopy(param_dict)
+                        logger.info('Best learner params {}'.format(best_learner_params))
+                    else:
+                        obj.set_tunable_parameters(**param_dict)
+                        logger.info('obj: {}, current parameters {}'.format(type(obj).__name__, param_dict))
+                    i += len(parameters)
+                    learner.set_tunable_parameters(**best_learner_params)
             learner.fit(X_train, Y_train, **fit_params)
             eval_results = {MODEL: model_name}
             for n_objects in N_OBJECTS_ARRAY:
@@ -219,7 +243,6 @@ if __name__ == '__main__':
                     dataset_reader.n_objects = n_objects
                 X_train, Y_train, X_test, Y_test = dataset_reader.get_single_train_test_split()
                 batch_size = X_test.shape[0]
-                logger.info("############################## Learner 2 ####################################")
                 if "clear_memory" in dir(learner):
                     learner.clear_memory(n_objects=n_objects)
                 s_pred, y_pred = get_scores(learner, batch_size, X_test, Y_test, logger)
@@ -234,4 +257,7 @@ if __name__ == '__main__':
             logger.info("Saving  model {}".format(model_name))
             rows_list.append(eval_results)
             save_results(rows_list, df_path)
-            del learner
+    if "224" in str(os.environ.get('HOSTNAME', 0)):
+        f = open("{}/.hash_value".format(os.environ['HOME']), "w+")
+        f.write("generalization_{}_{}".format(dataset_type, learning_problem) + "\n")
+        f.close()

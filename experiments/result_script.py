@@ -127,6 +127,7 @@ def get_results_for_dataset(DATASET, logger, learning_problem=DISCRETE_CHOICE, d
         df_full['hammingloss'] = 1 - df_full['hammingloss']
         df_full.rename(columns={'subset01loss': 'subset01accuracy', 'hammingloss': 'hammingaccuracy'}, inplace=True)
     columns = list(df_full.columns)
+
     return df_full, columns
 
 
