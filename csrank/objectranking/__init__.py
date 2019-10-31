@@ -1,3 +1,4 @@
+from .baseline import RandomBaselineRanker
 from .cmp_net import CmpNet
 from .expected_rank_regression import ExpectedRankRegression
 from .fate_object_ranker import FATEObjectRanker
@@ -7,4 +8,3 @@ from .fetalinear_object_ranker import FETALinearObjectRanker
 from .list_net import ListNet
 from .rank_net import RankNet
 from .rank_svm import RankSVM
-from .baseline import RandomBaselineRanker

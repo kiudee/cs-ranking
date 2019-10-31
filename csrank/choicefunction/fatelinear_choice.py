@@ -1,14 +1,14 @@
 import logging
 
 from keras.losses import binary_crossentropy
-from sklearn.model_selection import train_test_split
+from keras.optimizers import SGD
+from keras.regularizers import l2
 
-from csrank.core.fate_linear import FATELinearCore
-from .choice_functions import ChoiceFunctions
+from .fate_choice import FATEChoiceFunction
 
 
-class FATELinearChoiceFunction(FATELinearCore, ChoiceFunctions):
-    def __init__(self, n_object_features, n_objects, n_hidden_set_units=2, loss_function=binary_crossentropy,
+class FATELinearChoiceFunction(FATEChoiceFunction):
+    def __init__(self, n_object_features, n_hidden_set_units=2, loss_function=binary_crossentropy,
                  learning_rate=1e-3, batch_size=256, random_state=None, **kwargs):
         """
             Create a FATELinear-network architecture for leaning discrete choice function. The first-aggregate-then-evaluate
@@ -34,8 +34,6 @@ class FATELinearChoiceFunction(FATELinearCore, ChoiceFunctions):
             ----------
             n_object_features : int
                 Dimensionality of the feature space of each object
-            n_objects : int
-                Number of objects in each choice set
             n_hidden_set_units : int
                 Number of hidden set units.
             batch_size : int
@@ -47,24 +45,17 @@ class FATELinearChoiceFunction(FATELinearCore, ChoiceFunctions):
             **kwargs
                 Keyword arguments for the @FATENetwork
         """
-        super().__init__(n_object_features=n_object_features, n_objects=n_objects,
-                         n_hidden_set_units=n_hidden_set_units, learning_rate=learning_rate, batch_size=batch_size,
-                         loss_function=loss_function, random_state=random_state, **kwargs)
+        super().__init__(n_object_features=n_object_features, n_hidden_set_layers=1, n_hidden_joint_layers=1,
+                         n_hidden_set_units=n_hidden_set_units, n_hidden_joint_units=1, loss_function=loss_function,
+                         activation='selu', kernel_initializer='lecun_normal', kernel_regularizer=l2(l=0.01),
+                         batch_size=batch_size, optimizer=SGD(lr=learning_rate, nesterov=True, momentum=0.9),
+                         metrics=['binary_accuracy'], random_state=random_state, **kwargs)
         self.logger = logging.getLogger(FATELinearChoiceFunction.__name__)
 
     def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, tune_size=0.1, thin_thresholds=1, verbose=0,
             **kwd):
-        if tune_size > 0:
-            X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=tune_size, random_state=self.random_state)
-            try:
-                super().fit(X_train, Y_train, epochs, callbacks, validation_split, verbose, **kwd)
-            finally:
-                self.logger.info('Fitting utility function finished. Start tuning threshold.')
-                self.threshold = self._tune_threshold(X_val, Y_val, thin_thresholds=thin_thresholds, verbose=verbose)
-        else:
-            super().fit(X, Y, epochs, callbacks, validation_split, verbose,
-                        **kwd)
-            self.threshold = 0.5
+        super().fit(X=X, Y=Y, epochs=epochs, callbacks=callbacks, validation_split=validation_split,
+                    tune_size=tune_size, thin_thresholds=1, verbose=verbose, **kwd)
 
     def _predict_scores_fixed(self, X, **kwargs):
         return super()._predict_scores_fixed(X, **kwargs)
@@ -73,12 +64,13 @@ class FATELinearChoiceFunction(FATELinearCore, ChoiceFunctions):
         return super().predict_scores(X, **kwargs)
 
     def predict_for_scores(self, scores, **kwargs):
-        return ChoiceFunctions.predict_for_scores(self, scores, **kwargs)
+        return super().predict_for_scores(scores, **kwargs)
 
     def predict(self, X, **kwargs):
         return super().predict(X, **kwargs)
 
-    def set_tunable_parameters(self, n_hidden_set_units=32, learning_rate=1e-3, batch_size=128, epochs_drop=300,
-                               drop=0.1, **point):
-        super().set_tunable_parameters(n_hidden_set_units=n_hidden_set_units, learning_rate=learning_rate,
-                                       batch_size=batch_size, epochs_drop=epochs_drop, drop=drop, **point)
+    def set_tunable_parameters(self, n_hidden_set_units=32, learning_rate=1e-3, batch_size=128, reg_strength=1e-4,
+                               **point):
+        super().set_tunable_parameters(n_hidden_joint_layers=1, n_hidden_joint_units=1, n_hidden_set_layers=1,
+                                       n_hidden_set_units=n_hidden_set_units, reg_strength=reg_strength,
+                                       learning_rate=learning_rate, batch_size=batch_size, **point)

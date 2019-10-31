@@ -13,7 +13,6 @@ from csrank.constants import allowed_dense_kwargs
 from csrank.layers import NormalizedDense
 from csrank.learner import Learner
 from csrank.losses import hinged_rank_loss
-from csrank.numpy_util import sigmoid
 from csrank.util import print_dictionary
 
 
