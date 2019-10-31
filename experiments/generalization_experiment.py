@@ -50,6 +50,7 @@ RESULT_FOLDER = 'results'
 DIR_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
 
+
 def get_hash_string(logger, job):
     keys = ['learner', 'dataset_params', 'learner_params', 'hp_ranges', 'dataset']
     hash_string = ""
@@ -205,7 +206,11 @@ if __name__ == '__main__':
             logger.info("Model already present {}".format(model_name))
         if optimizer is None:
             logger.info("Optimizer is not loaded properly {}".format(model_name))
-        if model_name not in models_done and learner_name not in [PCL]:
+        if (model_name not in models_done and learner_name not in [PCL]) or learner_name == FATELINEAR_RANKER:
+            if learner == FATELINEAR_RANKER:
+                fit_params["epochs"] = 300
+                best_point[0] = 5
+                model_name = FATELINEAR_RANKER + "_2"
             learner = all_learners[learner_name]
             logger.info("learner params {}".format(print_dictionary(learner_params)))
             if learner_name in hp_ranges.keys():

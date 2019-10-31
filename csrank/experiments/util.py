@@ -1,6 +1,7 @@
 import sys
 
 import pymc3 as pm
+
 from csrank.callbacks import EarlyStoppingWithWeights, LRScheduler, DebugOutput
 from csrank.choicefunction import *
 from csrank.constants import *
@@ -164,10 +165,16 @@ def get_scores(object, batch_size, X_test, Y_test, logger):
             if batch_size == 0:
                 break
             logger.info("Batch_size {}".format(batch_size))
+            logger.info(object)
             if isinstance(object, AllPositive):
                 s_pred = object.predict_scores(X_test, Y_test)
+            elif isinstance(object, (GeneralizedLinearModel, PairedCombinatorialLogit, MultinomialLogitModel,
+                                     NestedLogitModel, GeneralizedNestedLogitModel)):
+                s_pred = object.predict_scores(X_test)
             else:
                 s_pred = object.predict_scores(X_test, batch_size=batch_size)
+        except TypeError as e:
+            logger.info(e)
         except:
             logger.error("Unexpected Error {}".format(sys.exc_info()[0]))
             s_pred = None

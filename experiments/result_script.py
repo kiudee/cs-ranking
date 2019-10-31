@@ -126,6 +126,10 @@ def get_results_for_dataset(DATASET, logger, learning_problem=DISCRETE_CHOICE, d
         df_full['subset01loss'] = 1 - df_full['subset01loss']
         df_full['hammingloss'] = 1 - df_full['hammingloss']
         df_full.rename(columns={'subset01loss': 'subset01accuracy', 'hammingloss': 'hammingaccuracy'}, inplace=True)
+    if learning_problem == OBJECT_RANKING:
+        df_full['zeroonerankloss'] = 1 - df_full['zeroonerankloss']
+        df_full.rename(columns={'zeroonerankloss': 'zeroonerankaccurancy', 'zerooneranklossties': 'expectedreciprocalrank'}, inplace=True)
+
     columns = list(df_full.columns)
 
     return df_full, columns
@@ -158,8 +162,8 @@ def get_combined_results(DATASET, logger, learning_problem, latex_row=False):
     for dataset, dgroup in df_full.groupby(['dataset']):
         for learner, group in dgroup.groupby(['learner']):
             one_row = [dataset, learner]
-            std = np.around(group.std(axis=0, skipna=True).values, 3)
-            mean = np.around(group.mean(axis=0, skipna=True).values, 3)
+            std = np.around(group.std(axis=0, skipna=True).values, 4)
+            mean = np.around(group.mean(axis=0, skipna=True).values, 4)
             if np.all(np.isnan(std)):
                 one_row.extend(["{:.4f}".format(m) for m in mean])
             else:
@@ -179,14 +183,13 @@ def get_combined_results_plot(DATASET, logger, learning_problem, latex_row=False
     columns = []
     idx = cols.index('learner') + 1
     for c in cols[idx:]:
-        if 'categorical' in c:
-            columns.append("{}se".format(c))
+        columns.append("{}se".format(c))
     columns = cols + columns
     for dataset, dgroup in df_full.groupby(['dataset']):
         for learner, group in dgroup.groupby(['learner']):
             one_row = [dataset, learner]
-            std = np.around(group.std(axis=0, skipna=True).values, 3)
-            mean = np.around(group.mean(axis=0, skipna=True).values, 3)
+            std = np.around(group.std(axis=0, skipna=True).values, 4)
+            mean = np.around(group.mean(axis=0, skipna=True).values, 4)
             if np.all(np.isnan(std)):
                 one_row.extend([m for m in mean])
                 one_row.extend([0.0 for m in mean])

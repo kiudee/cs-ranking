@@ -56,14 +56,15 @@ PCL = 'paired_combinatorial_logit'
 RANKSVM_DC = 'ranksvm_dc'
 MLM = 'mixed_logit_model'
 
-DCFS = [FETA_DC, FATE_DC, FETALINEAR_DC, FATELINEAR_DC, RANKNET_DC, MNL, NLM, GEV, PCL, MLM, RANKSVM_DC, RANDOM_DC]
-DCMS = ['FETA-Net', 'FATE-Net', 'FETA-Linear', 'FATE-Linear', 'RankNetDC', 'LogitModel', 'NestedLogit',
-        'GenNestedLogit', 'PairedLogit', 'MixedLogit', 'PairwiseSVM', 'Baseline']
+DCFS = [FETA_DC, FATE_DC, FETALINEAR_DC, FATELINEAR_DC, RANKNET_DC, RANKSVM_DC, MNL, NLM, GEV, PCL, MLM, RANDOM_DC]
+DCMS = ['FETA-Net', 'FATE-Net', 'FETA-Linear', 'FATE-Linear', 'RankNetDC', 'PairwiseSVM', 'LogitModel', 'NestedLogit',
+        'GenNestedLogit', 'PairedLogit', 'MixedLogit', 'Random']
 
-CHOICE_FUNCTIONS = [FETA_CHOICE, FATE_CHOICE, FATELINEAR_CHOICE, FETALINEAR_CHOICE, RANKNET_CHOICE, RANKSVM_CHOICE,
+CHOICE_FUNCTIONS = [FETA_CHOICE, FATE_CHOICE, FETALINEAR_CHOICE, FATELINEAR_CHOICE, RANKNET_CHOICE, RANKSVM_CHOICE,
                     GLM_CHOICE, RANDOM_CHOICE]
 CHOICE_MODELS = ['FETA-Net', 'FATE-Net', "FETA-Linear", "FATE-Linear", 'RankNet-Choice', 'PairwiseSVM',
                  'GeneralizedLinearModel', "AllPositive"]
 
-OBJECT_RANKERS = [FATE_RANKER, FETA_RANKER, FATELINEAR_RANKER, FETALINEAR_RANKER, RANKSVM, ERR, RANKNET, LISTNET, RANDOM_RANKER]
-OR_MODELS = ['FATE-Net', 'FETA-Net', "FATE-Linear", "FETA-Linear", 'RankSVM', 'ERR', 'RankNet', "ListNet", "Baseline"]
+OBJECT_RANKERS = [FETA_RANKER, FATE_RANKER, FETALINEAR_RANKER, FATELINEAR_RANKER, RANKNET, LISTNET, RANKSVM, ERR,
+                  RANDOM_RANKER]
+OR_MODELS = ['FETA-Net', 'FATE-Net', "FETA-Linear", "FATE-Linear", 'RankNet', "ListNet", 'RankSVM', 'ERR', "Random"]

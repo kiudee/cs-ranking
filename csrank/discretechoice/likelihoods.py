@@ -123,8 +123,8 @@ def fit_pymc3_model(self, sampler, draws, tune, vi_params, **kwargs):
     elif sampler == 'metropolis':
         with self.model:
             start = pm.find_MAP()
-            self.trace = pm.sample(chains=2, cores=8, tune=tune, draws=draws, **kwargs, step=pm.Metropolis(),
+            self.trace = pm.sample(chains=2, cores=8, tune=tune, draws=draws, step=pm.Metropolis(),
                                    start=start)
     else:
         with self.model:
-            self.trace = pm.sample(chains=2, cores=8, tune=tune, draws=draws, **kwargs, step=pm.NUTS())
+            self.trace = pm.sample(chains=2, cores=8, tune=tune, draws=draws, step=pm.NUTS())
