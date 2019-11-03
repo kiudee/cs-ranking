@@ -142,6 +142,17 @@ def hamming(y_true, y_pred):
     return hamming_loss(y_true, y_pred)
 
 
+def categorical_accuracy_np(y_true, y_pred, normalize=False):
+    n_objects = y_true.shape[-1]
+    y_true = np.argmax(y_true, axis=1)
+    choices = np.argmax(y_pred, axis=1)
+    accuracies = np.mean(np.equal(y_true, choices))
+    if normalize:
+        minimum = 1 / n_objects
+        accuracies = (accuracies - minimum) / (1.0 - minimum)
+    return accuracies
+
+
 def topk_categorical_accuracy_np(k=5, normalize=False):
     def topk_acc(y_true, y_pred):
         n_objects = y_pred.shape[-1]
@@ -157,17 +168,6 @@ def topk_categorical_accuracy_np(k=5, normalize=False):
         return accuracies
 
     return topk_acc
-
-
-def categorical_accuracy_np(y_true, y_pred, normalize=False):
-    n_objects = y_true.shape[-1]
-    y_true = np.argmax(y_true, axis=1)
-    choices = np.argmax(y_pred, axis=1)
-    accuracies = np.mean(np.equal(y_true, choices))
-    if normalize:
-        minimum = 1 / n_objects
-        accuracies = (accuracies - minimum) / (1.0 - minimum)
-    return accuracies
 
 
 def relevance_gain_np(grading, max_grade):
