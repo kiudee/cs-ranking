@@ -1,4 +1,5 @@
 from functools import partial
+
 import numpy as np
 from scipy.stats import spearmanr
 from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_score, average_precision_score, \
@@ -141,23 +142,32 @@ def hamming(y_true, y_pred):
     return hamming_loss(y_true, y_pred)
 
 
-def topk_categorical_accuracy_np(k=5):
+def topk_categorical_accuracy_np(k=5, normalize=False):
     def topk_acc(y_true, y_pred):
+        n_objects = y_pred.shape[-1]
         topK = y_pred.argsort(axis=1)[:, -k:][:, ::-1]
         accuracies = np.zeros_like(y_true, dtype=bool)
         y_true = np.argmax(y_true, axis=1)
         for i, top in enumerate(topK):
             accuracies[i] = y_true[i] in top
-        return np.mean(accuracies)
+        accuracies = np.mean(accuracies)
+        if normalize:
+            minimum = k / n_objects
+            accuracies = (accuracies - minimum) / (1.0 - minimum)
+        return accuracies
 
     return topk_acc
 
 
-def categorical_accuracy_np(y_true, y_pred):
+def categorical_accuracy_np(y_true, y_pred, normalize=False):
+    n_objects = y_true.shape[-1]
     y_true = np.argmax(y_true, axis=1)
     choices = np.argmax(y_pred, axis=1)
-    accuracies = np.equal(y_true, choices)
-    return np.mean(accuracies)
+    accuracies = np.mean(np.equal(y_true, choices))
+    if normalize:
+        minimum = 1 / n_objects
+        accuracies = (accuracies - minimum) / (1.0 - minimum)
+    return accuracies
 
 
 def relevance_gain_np(grading, max_grade):
@@ -187,7 +197,6 @@ def err_np(y_true, y_pred, utility_function=None, probability_mapping=None):
     # black magic invocation to reorder each row
     row_indices = np.arange(ninstances).reshape(-1, 1)
     satisfied_at_rank = satisfied_probs[row_indices, y_pred]
-
 
     # still not satisfied after having examined the first r ranks
     not_yet_satisfied_at_rank = np.cumprod(1 - satisfied_at_rank, axis=1)

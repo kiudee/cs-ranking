@@ -13,6 +13,14 @@ __all__ = ['learners_map', 'get_dataset_name', 'get_results_for_dataset', 'get_c
 DIR_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 config_file_path = os.path.join(DIR_PATH, 'config', 'clusterdb.json')
 learners_map = {CHOICE_FUNCTION: "ChoiceModel", OBJECT_RANKING: "Ranker", DISCRETE_CHOICE: "DiscreteChoiceModel"}
+metrics_map = {CHOICE_FUNCTION: 1, OBJECT_RANKING: 1, DISCRETE_CHOICE: 1}
+metric_name_dict = {OBJECT_RANKING: '01RankAccuracy', DISCRETE_CHOICE: 'CategoricalAccuracy',
+                    CHOICE_FUNCTION: 'F1Score'}
+m_map = {"categoricalaccuracy": "Accuracy", 'hammingaccuracy': 'HammingAccuracy', 'aucscore': 'AucScore',
+         'kendallstau': 'KendallsTau',
+         'spearmancorrelation': "SpearmanCorrelation", "zeroonerankaccurancy": "01RankAccuracy",
+         "expectedreciprocalrank": "ExpectedReciprocalRank", "zerooneaccuracy": "01Accuracy",
+         'averageprecisionscore': 'AveragePrecisionScore', "ndcgtopall": "NDCGTopAll"}
 
 
 def get_hash_string(logger, job):
@@ -128,7 +136,9 @@ def get_results_for_dataset(DATASET, logger, learning_problem=DISCRETE_CHOICE, d
         df_full.rename(columns={'subset01loss': 'subset01accuracy', 'hammingloss': 'hammingaccuracy'}, inplace=True)
     if learning_problem == OBJECT_RANKING:
         df_full['zeroonerankloss'] = 1 - df_full['zeroonerankloss']
-        df_full.rename(columns={'zeroonerankloss': 'zeroonerankaccurancy', 'zerooneranklossties': 'expectedreciprocalrank'}, inplace=True)
+        df_full.rename(
+            columns={'zeroonerankloss': 'zeroonerankaccurancy', 'zerooneranklossties': 'expectedreciprocalrank'},
+            inplace=True)
 
     columns = list(df_full.columns)
 
@@ -137,13 +147,13 @@ def get_results_for_dataset(DATASET, logger, learning_problem=DISCRETE_CHOICE, d
 
 def create_df(columns, data, learning_problem):
     for i in range(len(columns)):
-        if "categorical" in columns[i]:
-            if "accuracy" in columns[i]:
-                columns[i] = "Categorical" + columns[i].split("categorical")[-1].title()
-            else:
-                columns[i] = "Top-{}".format(columns[i].split("topk")[-1])
+        if "top" in columns[i] and 'ndcg' not in columns[i]:
+            columns[i] = "Top-{}".format(columns[i].split("topk")[-1])
+        elif "se" in columns[i] and columns[i] != 'dataset':
+            c = columns[i].split("se")[0]
+            columns[i] = m_map.get(c, c.title()) + "Se"
         else:
-            columns[i] = columns[i].title()
+            columns[i] = m_map.get(columns[i], columns[i].title())
             if columns[i] == 'Learner':
                 columns[i] = learners_map[learning_problem]
     df = pd.DataFrame(data, columns=columns)

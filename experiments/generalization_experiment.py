@@ -49,6 +49,11 @@ RESULT_FOLDER = 'results'
 
 DIR_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
+metrics_dict = {OBJECT_RANKING: zero_one_rank_loss_for_scores_np, DISCRETE_CHOICE: categorical_accuracy_np,
+                CHOICE_FUNCTION: f1_measure}
+metric_name_dict = {OBJECT_RANKING: 'ZeroOneRankLoss', DISCRETE_CHOICE: 'CategoricalAccuracy',
+                    CHOICE_FUNCTION: 'F1Score'}
+LEARNERS_DICTIONARY = {DISCRETE_CHOICE: DCFS, CHOICE_FUNCTION: CHOICE_FUNCTIONS, OBJECT_RANKING: OBJECT_RANKERS}
 
 
 def get_hash_string(logger, job):
@@ -85,11 +90,6 @@ if __name__ == '__main__':
     log_path = os.path.join(DIR_PATH, LOGS_FOLDER, "generalization_{}_{}.log".format(dataset_type, learning_problem))
     df_path = os.path.join(DIR_PATH, RESULT_FOLDER, "generalization_{}_{}.csv".format(dataset_type, learning_problem))
     config_file_path = os.path.join(DIR_PATH, 'config', 'clusterdb.json')
-    metrics_dict = {OBJECT_RANKING: zero_one_rank_loss_for_scores_np, DISCRETE_CHOICE: categorical_accuracy_np,
-                    CHOICE_FUNCTION: f1_measure}
-    metric_name_dict = {OBJECT_RANKING: 'ZeroOneRankLoss', DISCRETE_CHOICE: 'CategoricalAccuracy',
-                        CHOICE_FUNCTION: 'F1Score'}
-    LEARNERS_DICTIONARY = {DISCRETE_CHOICE: DCFS, CHOICE_FUNCTION: CHOICE_FUNCTIONS, OBJECT_RANKING: OBJECT_RANKERS}
 
     setup_logging(log_path=log_path)
     logger = logging.getLogger('Generalization')
@@ -176,7 +176,8 @@ if __name__ == '__main__':
         inner_cv = ShuffleSplit(n_splits=n_inner_folds, test_size=0.1, random_state=random_state)
         if learner_name in [MNL, PCL, NLM, GEV, MLM]:
             fit_params['random_seed'] = seed + fold_id
-            fit_params['vi_params']["callbacks"] = [CheckParametersConvergence(diff="absolute", tolerance=0.01, every=50)]
+            fit_params['vi_params']["callbacks"] = [
+                CheckParametersConvergence(diff="absolute", tolerance=0.01, every=50)]
         optimizer = None
         try:
             optimizer = load(optimizer_path)
@@ -206,11 +207,11 @@ if __name__ == '__main__':
             logger.info("Model already present {}".format(model_name))
         if optimizer is None:
             logger.info("Optimizer is not loaded properly {}".format(model_name))
-        if (model_name not in models_done and learner_name not in [PCL]) or learner_name == FATELINEAR_RANKER:
-            if learner == FATELINEAR_RANKER:
-                fit_params["epochs"] = 300
-                best_point[0] = 5
-                model_name = FATELINEAR_RANKER + "_2"
+        if learner_name in [FATELINEAR_RANKER, FETALINEAR_RANKER, FATELINEAR_DC, FETALINEAR_DC] or \
+                (model_name not in models_done and learner_name not in [PCL]):
+            if learner_name in [FATELINEAR_RANKER, FETALINEAR_RANKER, FATELINEAR_DC, FETALINEAR_DC]:
+                fit_params["epochs"] = 500
+                model_name = learner_name + "_2"
             learner = all_learners[learner_name]
             logger.info("learner params {}".format(print_dictionary(learner_params)))
             if learner_name in hp_ranges.keys():

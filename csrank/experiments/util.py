@@ -1,4 +1,5 @@
 import sys
+import traceback
 
 import pymc3 as pm
 
@@ -177,6 +178,7 @@ def get_scores(object, batch_size, X_test, Y_test, logger):
             logger.info(e)
         except:
             logger.error("Unexpected Error {}".format(sys.exc_info()[0]))
+            logger.error(traceback.print_exc())
             s_pred = None
             batch_size = int(batch_size / 10)
     y_pred = object.predict_for_scores(s_pred)
