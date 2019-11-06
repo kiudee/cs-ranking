@@ -126,7 +126,7 @@ class ExpediaDatasetReader(DatasetReader, metaclass=ABCMeta):
             x_train, x_test = standardize_features(x_train, x_test)
             yield x_train, y_train, x_test, y_test
 
-    def get_single_train_test_split(self):
+    def split_dictionaries(self):
         splits = dict()
         cv_iter = ShuffleSplit(n_splits=1, random_state=self.random_state, test_size=0.80)
         for n_obj, arr in self.X_dict.items():
@@ -144,6 +144,9 @@ class ExpediaDatasetReader(DatasetReader, metaclass=ABCMeta):
             self.X_test[n_obj] = np.copy(self.X_dict[n_obj][test_idx])
             self.Y_train[n_obj] = np.copy(self.Y_dict[n_obj][train_idx])
             self.Y_test[n_obj] = np.copy(self.Y_dict[n_obj][test_idx])
+
+    def get_single_train_test_split(self):
+        self.split_dictionaries()
         self.X, self.Y = self.sub_sampling_from_dictionary()
         self.__check_dataset_validity__()
         self.X, self.X_test = standardize_features(self.X, self.X_test)

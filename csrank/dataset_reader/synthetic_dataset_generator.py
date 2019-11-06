@@ -17,6 +17,8 @@ class SyntheticDatasetGenerator(DatasetReader):
         self.kwargs = kwargs
         self.n_test_instances = n_test_instances
         self.n_train_instances = n_train_instances
+        self.n_features = self.kwargs['n_features']
+        self.n_objects = self.kwargs['n_objects']
         self.logger = logging.getLogger(SyntheticDatasetGenerator.__name__)
         self.standardize = standardize
         self.logger.info("Key word arguments {}".format(kwargs))
