@@ -20,15 +20,13 @@ DIR_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe(
 config_file_path = os.path.join(DIR_PATH, 'config', 'clusterdb.json')
 learners_map = {CHOICE_FUNCTION: "ChoiceModel", OBJECT_RANKING: "Ranker", DISCRETE_CHOICE: "DiscreteChoiceModel"}
 metric_name_dict = {OBJECT_RANKING: "$0/1$ Ranking Accuracy", DISCRETE_CHOICE: 'Accuracy',
-                    CHOICE_FUNCTION: '$F_1$' + 'Measure'}
+                    CHOICE_FUNCTION: '$F_1$-measure'}
 learning_model_dict = {OBJECT_RANKING: OR_MODELS, DISCRETE_CHOICE: DCMS, CHOICE_FUNCTION: CHOICE_MODELS}
 m_map = {"categoricalaccuracy": "Accuracy", 'hammingaccuracy': 'HammingAccuracy', 'aucscore': 'AUC-Score',
-         'kendallstau': 'KendallsTau', 'spearmancorrelation': "SpearmanCorrelation", "f1score": '$F_1$' + 'Measure',
+         'kendallstau': 'KendallsTau', 'spearmancorrelation': "SpearmanCorrelation", "f1score": '$F_1$-measure',
          "zeroonerankaccurancy": "$0/1$ Ranking Accuracy", "expectedreciprocalrank": "ExpectedReciprocalRank",
          "zerooneaccuracy": "$0/1$ Accuracy", 'averageprecisionscore': 'AveragePrecisionScore',
          "ndcgtopall": "NDCGTopAll"}
-fig_param = {'facecolor': 'w', 'edgecolor': 'w', 'transparent': False, 'dpi': 800, 'bbox_inches': 'tight',
-             'pad_inches': 0.05}
 MNIST = "MNIST"
 LETOR = "LETOR"
 
@@ -231,6 +229,8 @@ def get_combined_results_plot(DATASET, logger, learning_problem, latex_row=False
 
 
 def bar_plot_for_problem(df, learning_problem, start, params, extension):
+    fig_param = {'facecolor': 'w', 'edgecolor': 'w', 'transparent': False, 'dpi': 800, 'bbox_inches': 'tight',
+             'pad_inches': 0.05}
     bar_width = 0.20
     opacity = 0.6
     learning_model = learners_map[learning_problem]
@@ -250,28 +250,34 @@ def bar_plot_for_problem(df, learning_problem, start, params, extension):
     # for sub_df, sub_plot in zip([df1, df2], [ax1, ax2]):
     fig_param['format'] = extension
     for i, sub_df in enumerate(dfs):
-        fig, ax = plt.subplots(figsize=(8, 5), frameon=True, edgecolor='k', facecolor='white')
+        fig, ax = plt.subplots(figsize=(5.63, 2.6), frameon=True, edgecolor='k', facecolor='white')
         uds = np.array(sub_df.Dataset.unique())
         init_index = bar_width * (len(u_models) + 1) * np.arange(1, len(uds) + 1)
         index = init_index
         init_index = init_index + bar_width * (len(u_models)) / 2.0
         end = 1.01
+        handels = []
+        labels = []
         for model in u_models:
             acc = sub_df[sub_df[learning_model] == model][col].values
             errors = sub_df[sub_df[learning_model] == model][colse].values
-            plt.bar(x=index, height=acc, yerr=errors, width=bar_width, alpha=opacity, label=model)
+            handle = ax.bar(x=index, height=acc, yerr=errors, width=bar_width, alpha=opacity, label=model)
             index = index + bar_width
+            handels.append(handle)
+            labels.append(model)
         ax.spines['right'].set_visible(False)
         ax.spines['top'].set_visible(False)
-        ax.legend(**params)
+        legd = ax.legend(**params)
         plt.ylim(start, end)
-        plt.xticks(init_index, uds)
-        plt.yticks(np.arange(start, end, 0.05))
-        plt.xlabel("Dataset")
-        plt.ylabel(col)
+        plt.xticks(init_index, uds, fontsize=7)
+        plt.yticks(np.arange(start, end, 0.1), fontsize=7)
+        #plt.xlabel("Dataset", fontsize=8)
+        col = col.replace("$0/1$ Ranking Accuracy", "$0/1$ \n Ranking Accuracy")
+        plt.ylabel(col, fontsize=8)
         plt.tight_layout()
         f_path = fname.format(learning_problem, i, extension)
         fig_param['fname'] = f_path
+        #fig_param[' bbox_extra_artists'] = (legd,)
         plt.savefig(**fig_param)
         plt.show()
         i += 1
