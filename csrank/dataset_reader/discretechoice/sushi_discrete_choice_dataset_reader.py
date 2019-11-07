@@ -9,11 +9,12 @@ from ..sushi_dataset_reader import SushiDatasetReader
 
 
 class SushiDiscreteChoiceDatasetReader(SushiDatasetReader):
-    def __init__(self, random_state=None, **kwargs):
+    def __init__(self, random_state=None, test_size=0.30, **kwargs):
         super(SushiDiscreteChoiceDatasetReader, self).__init__(learning_problem=DISCRETE_CHOICE, **kwargs)
         self.random_state = check_random_state(random_state)
         self.Y = np.argmin(self.Y, axis=1)
         self.Y = convert_to_label_encoding(self.Y, self.X.shape[1])
+        self.test_size = test_size
 
     def splitter(self, iter):
         for train_idx, test_idx in iter:

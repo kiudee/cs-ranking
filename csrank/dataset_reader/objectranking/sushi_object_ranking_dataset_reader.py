@@ -7,9 +7,10 @@ from ..sushi_dataset_reader import SushiDatasetReader
 
 
 class SushiObjectRankingDatasetReader(SushiDatasetReader):
-    def __init__(self, random_state=None, **kwargs):
+    def __init__(self, random_state=None, test_size=0.30, **kwargs):
         super(SushiObjectRankingDatasetReader, self).__init__(learning_problem=OBJECT_RANKING, **kwargs)
         self.random_state = check_random_state(random_state)
+        self.test_size = test_size
 
     def splitter(self, iter):
         for train_idx, test_idx in iter:
