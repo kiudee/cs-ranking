@@ -17,19 +17,19 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
     def __init__(self, n_object_features, loss_function='', regularization='l2', **kwargs):
         """
             Create an instance of the Multinomial Logit model for learning the discrete choice function. The utility
-            score for each object in query set :math:`Q` is defined as :math:`U(x) = w \cdot x`, where :math:`w` is
+            score for each object in query set :math:`Q` is defined as :math:`U(x) = w \\cdot x`, where :math:`w` is
             the weight vector. The probability of choosing an object :math:`x_i` is defined by taking softmax over the
             utility scores of the objects:
 
             .. math::
 
-                P(x_i \\lvert Q) = \\frac{exp(U(x_i))}{\sum_{x_j \in Q} exp(U(x_j))}
+                P(x_i \\lvert Q) = \\frac{exp(U(x_i))}{\\sum_{x_j \\in Q} exp(U(x_j))}
 
             The discrete choice for the given query set :math:`Q` is defined as:
 
             .. math::
 
-                dc(Q) := \operatorname{argmax}_{x_i \in Q }  \; P(x_i \\lvert Q)
+                dc(Q) := \\operatorname{argmax}_{x_i \\in Q }  \\; P(x_i \\lvert Q)
 
             Parameters
             ----------
@@ -76,17 +76,17 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
 
             .. math::
 
-                \\text{mu}_w \sim \\text{Normal}(\\text{mu}=0, \\text{sd}=5.0) \\\\
-                \\text{b}_w \sim \\text{HalfCauchy}(\\beta=1.0) \\\\
-                \\text{weights} \sim \\text{Laplace}(\\text{mu}=\\text{mu}_w, \\text{b}=\\text{b}_w)
+                \\text{mu}_w \\sim \\text{Normal}(\\text{mu}=0, \\text{sd}=5.0) \\\\
+                \\text{b}_w \\sim \\text{HalfCauchy}(\\beta=1.0) \\\\
+                \\text{weights} \\sim \\text{Laplace}(\\text{mu}=\\text{mu}_w, \\text{b}=\\text{b}_w)
 
             For ``l2`` regularization the priors are:
 
             .. math::
 
-                \\text{mu}_w \sim \\text{Normal}(\\text{mu}=0, \\text{sd}=5.0) \\\\
-                \\text{sd}_w \sim \\text{HalfCauchy}(\\beta=1.0) \\\\
-                \\text{weights} \sim \\text{Normal}(\\text{mu}=\\text{mu}_w, \\text{sd}=\\text{sd}_w)
+                \\text{mu}_w \\sim \\text{Normal}(\\text{mu}=0, \\text{sd}=5.0) \\\\
+                \\text{sd}_w \\sim \\text{HalfCauchy}(\\beta=1.0) \\\\
+                \\text{weights} \\sim \\text{Normal}(\\text{mu}=\\text{mu}_w, \\text{sd}=\\text{sd}_w)
         """
         if self._config is None:
             if self.regularization == 'l2':
@@ -102,13 +102,13 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
 
     def construct_model(self, X, Y):
         """
-            Constructs the multinomial logit model which evaluated the utility score as :math:`U(x) = w \cdot x`, where
+            Constructs the multinomial logit model which evaluated the utility score as :math:`U(x) = w \\cdot x`, where
             :math:`w` is the weight vector. The probability of choosing the object :math:`x_i` from the query set
-            :math:`Q = \{x_1, \ldots ,x_n\}` is:
+            :math:`Q = \\{x_1, \\ldots ,x_n\\}` is:
 
             .. math::
 
-                P_i = P(x_i \\lvert Q) = \\frac{exp(U(x_i))}{\sum_{x_j \in Q} exp(U(x_j))}
+                P_i = P(x_i \\lvert Q) = \\frac{exp(U(x_i))}{\\sum_{x_j \\in Q} exp(U(x_j))}
 
             Parameters
             ----------
@@ -142,11 +142,11 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
         """
             Fit a multinomial logit model on the provided set of queries X and choices Y of those objects. The
             provided queries and corresponding preferences are of a fixed size (numpy arrays). For learning this network
-            the categorical cross entropy loss function for each object :math:`x_i \in Q` is defined as:
+            the categorical cross entropy loss function for each object :math:`x_i \\in Q` is defined as:
 
             .. math::
 
-                C_{i} =  -y(i)\log(P_i) \enspace,
+                C_{i} =  -y(i)\\log(P_i) \\enspace,
 
             where :math:`y` is ground-truth discrete choice vector of the objects in the given query set :math:`Q`.
             The value :math:`y(i) = 1` if object :math:`x_i` is chosen else :math:`y(i) = 0`.

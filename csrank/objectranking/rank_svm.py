@@ -13,13 +13,13 @@ class RankSVM(ObjectRanker, PairwiseSVM):
                  fit_intercept=True, random_state=None, **kwargs):
         """
             Create an instance of the :class:`PairwiseSVM` model for learning a object ranking function.
-            It learns a linear deterministic utility function of the form :math:`U(x) = w \cdot x`, where :math:`w` is
+            It learns a linear deterministic utility function of the form :math:`U(x) = w \\cdot x`, where :math:`w` is
             the weight vector. It is estimated using *pairwise preferences* generated from the rankings.
             The ranking for the given query set :math:`Q` is defined as:
 
             .. math::
 
-                ρ(Q)  = \operatorname{argsort}_{x \in Q}  \; U(x)
+                ρ(Q)  = \\operatorname{argsort}_{x \\in Q}  \\; U(x)
 
             Parameters
             ----------

@@ -27,13 +27,13 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
             .. math::
                 \\mu_{C(x)} = \\frac{1}{\\lvert C(x) \\lvert} \\sum_{y \\in C(x)} \\phi(y)
 
-            where :math:`\phi \colon \mathcal{X} \\to \mathcal{Z}` maps each object :math:`y` to an
-            :math:`m`-dimensional embedding space :math:`\mathcal{Z} \subseteq \mathbb{R}^m`.
+            where :math:`\\phi \\colon \\mathcal{X} \\to \\mathcal{Z}` maps each object :math:`y` to an
+            :math:`m`-dimensional embedding space :math:`\\mathcal{Z} \\subseteq \\mathbb{R}^m`.
             The choice set is defined as:
 
             .. math::
 
-                c(Q) = \{ x \in Q \lvert \, U (x, \\mu_{C(x)}) > t \}
+                c(Q) = \\{ x \\in Q \\lvert \\, U (x, \\mu_{C(x)}) > t \\}
 
 
             Parameters

@@ -20,17 +20,17 @@ class CmpNetDiscreteChoiceFunction(CmpNetCore, DiscreteObjectChooser):
             objects and the pairwise predicate is evaluated using them. The outputs of the network for each pair of
             objects :math:`U(x_1,x_2), U(x_2,x_1)` are evaluated.
             :math:`U(x_1,x_2)` is a measure of how favorable it is to choose :math:`x_1` over :math:`x_2`.
-            The utility score of object :math:`x_i` in query set :math:`Q = \{ x_1 , \ldots , x_n \}` is evaluated as:
+            The utility score of object :math:`x_i` in query set :math:`Q = \\{ x_1 , \\ldots , x_n \\}` is evaluated as:
 
             .. math::
 
-                U(x_i) = \left\{ \\frac{1}{n-1} \sum_{j \in [n] \setminus \{i\}} U_1(x_i , x_j)\\right\}
+                U(x_i) = \\left\\{ \\frac{1}{n-1} \\sum_{j \\in [n] \\setminus \\{i\\}} U_1(x_i , x_j)\\right\\}
 
             The discrete choice for the given query set :math:`Q` is defined as:
 
             .. math::
 
-                dc(Q) := \operatorname{argmax}_{i \in [n]}  \; U(x_i)
+                dc(Q) := \\operatorname{argmax}_{i \\in [n]}  \\; U(x_i)
 
             Parameters
             ----------

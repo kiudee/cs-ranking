@@ -159,7 +159,7 @@ def load_dataset(filename):
                 instances[qid] = []
                 if '#' in arr:
                     arr = arr[:-2]
-            features = [float(re.search('\:([0-9\.]*)', x).group(1)) for x in arr[2:]]
+            features = [float(re.search(r'\:([0-9\.]*)', x).group(1)) for x in arr[2:]]
             instances[qid].append(Instance(depth, features))
     n_instances = len(instances)
     n_objects = len(instances[1])

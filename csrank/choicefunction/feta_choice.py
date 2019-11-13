@@ -25,19 +25,19 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
         """
             Create a FETA-network architecture for learning choice functions.
             The first-evaluate-then-aggregate approach approximates the context-dependent utility function using the
-            first-order utility function :math:`U_1 \colon \mathcal{X} \\times \mathcal{X} \\rightarrow [0,1]`
-            and zeroth-order utility function  :math:`U_0 \colon \mathcal{X} \\rightarrow [0,1]`.
+            first-order utility function :math:`U_1 \\colon \\mathcal{X} \\times \\mathcal{X} \\rightarrow [0,1]`
+            and zeroth-order utility function  :math:`U_0 \\colon \\mathcal{X} \\rightarrow [0,1]`.
             The scores each object :math:`x` using a context-dependent utility function :math:`U (x, C_i)`:
 
             .. math::
-                 U(x_i, C_i) = U_0(x_i) + \\frac{1}{n-1} \sum_{x_j \in Q \\setminus \{x_i\}} U_1(x_i , x_j) \, .
+                 U(x_i, C_i) = U_0(x_i) + \\frac{1}{n-1} \\sum_{x_j \\in Q \\setminus \\{x_i\\}} U_1(x_i , x_j) \\, .
 
             Training and prediction complexity is quadratic in the number of objects.
             The choice set is defined as:
 
             .. math::
 
-                c(Q) = \{ x_i \in Q \lvert \, U (x_i, C_i) > t \}
+                c(Q) = \\{ x_i \\in Q \\lvert \\, U (x_i, C_i) > t \\}
 
             Parameters
             ----------
@@ -110,11 +110,11 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
         """
             Construct the :math:`1`-st order and :math:`0`-th order models, which are used to approximate the
             :math:`U_1(x, C(x))` and the :math:`U_0(x)` utilities respectively. For each pair of objects in
-            :math:`x_i, x_j \in Q` :math:`U_1(x, C(x))` we construct :class:`CmpNetCore` with weight sharing to
+            :math:`x_i, x_j \\in Q` :math:`U_1(x, C(x))` we construct :class:`CmpNetCore` with weight sharing to
             approximate a pairwise-matrix. A pairwise matrix with index (i,j) corresponds to the :math:`U_1(x_i,x_j)`
             is a measure of how favorable it is to choose :math:`x_i` over :math:`x_j`. Using this matrix we calculate
             the borda score for each object to calculate :math:`U_1(x, C(x))`. For `0`-th order model we construct
-            :math:`\lvert Q \lvert` sequential networks whose weights are shared to evaluate the :math:`U_0(x)` for
+            :math:`\\lvert Q \\lvert` sequential networks whose weights are shared to evaluate the :math:`U_0(x)` for
             each object in the query set :math:`Q`. The output mode is using sigmoid activation.
 
             Returns

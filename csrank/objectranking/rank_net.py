@@ -18,13 +18,13 @@ class RankNet(RankNetCore, ObjectRanker):
         """ Create an instance of the :class:`RankNetCore` architecture for learning a object ranking function.
             It breaks the preferences into pairwise comparisons and learns a latent utility model for the objects.
             This network learns a latent utility score for each object in the given query set
-            :math:`Q = \{x_1, \ldots ,x_n\}` using the equation :math:`U(x) = F(x, w)` where :math:`w` is the weight
+            :math:`Q = \\{x_1, \\ldots ,x_n\\}` using the equation :math:`U(x) = F(x, w)` where :math:`w` is the weight
             vector. It is estimated using *pairwise preferences* generated from the rankings.
             The ranking for the given query set :math:`Q` is defined as:
 
             .. math::
 
-                ρ(Q)  = \operatorname{argsort}_{x \in Q}  \; U(x)
+                ρ(Q)  = \\operatorname{argsort}_{x \\in Q}  \\; U(x)
 
             Parameters
             ----------
@@ -90,14 +90,14 @@ class RankNet(RankNetCore, ObjectRanker):
         """
             Fit an object ranking learning RankNet model on a provided set of queries. The provided queries can be of a
             fixed size (numpy arrays). For learning this network the binary cross entropy loss function for a pair of
-            objects :math:`x_i, x_j \in Q` is defined as:
+            objects :math:`x_i, x_j \\in Q` is defined as:
 
             .. math::
 
-                C_{ij} =  -\\tilde{P_{ij}}\log(P_{ij}) - (1 - \\tilde{P_{ij}})\log(1 - P{ij}) \enspace,
+                C_{ij} =  -\\tilde{P_{ij}}\\log(P_{ij}) - (1 - \\tilde{P_{ij}})\\log(1 - P{ij}) \\enspace,
 
             where :math:`\\tilde{P_{ij}}` is ground truth probability of the preference of :math:`x_i` over :math:`x_j`.
-            :math:`\\tilde{P_{ij}} = 1` if :math:`x_i \succ x_j` else :math:`\\tilde{P_{ij}} = 0`.
+            :math:`\\tilde{P_{ij}} = 1` if :math:`x_i \\succ x_j` else :math:`\\tilde{P_{ij}} = 0`.
 
             Parameters
             ----------

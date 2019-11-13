@@ -16,7 +16,7 @@ class DiscreteObjectChooser(metaclass=ABCMeta):
         """
             Binary discrete choice vector :math:`y` represents the choices amongst the objects in :math:`Q`, such that
             :math:`y(k) = 1` represents that the object :math:`x_k` is chosen and :math:`y(k) = 0` represents
-            it is not chosen. For choice to be discrete :math:`\sum_{x_i \in Q} y(i) = 1`. Predict discrete choices for
+            it is not chosen. For choice to be discrete :math:`\\sum_{x_i \\in Q} y(i) = 1`. Predict discrete choices for
             the scores for a given collection of sets of objects (query sets).
 
             Parameters
