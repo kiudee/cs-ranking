@@ -22,18 +22,18 @@ class CmpNet(CmpNetCore, ObjectRanker):
             objects and the pairwise predicate is evaluated using them. The outputs of the network, i.e.,
             :math:`U(x_1,x_2), U(x_2,x_1)`for each pair of objects are evaluated.
             :math:`U(x_1,x_2)` is a measure of how favorable it is to choose :math:`x_1` over :math:`x_2`.
-            The utility score of object :math:`x_i` in query set :math:`Q = \{ x_1 , \ldots , x_n \}` is evaluated as:
+            The utility score of object :math:`x_i` in query set :math:`Q = \\{ x_1 , \\ldots , x_n \\}` is evaluated as:
 
             .. math::
 
-                U(x_i) = \left\{ \\frac{1}{n-1} \sum_{j \in [n] \setminus \{i\}} U_1(x_i , x_j)\\right\}
+                U(x_i) = \\left\\{ \\frac{1}{n-1} \\sum_{j \\in [n] \\setminus \\{i\\}} U_1(x_i , x_j)\\right\\}
 
 
             The ranking for the given query set :math:`Q` is defined as:
 
             .. math::
 
-                ρ(Q)  = \operatorname{argsort}_{x \in Q}  \; U(x)
+                ρ(Q)  = \\operatorname{argsort}_{x \\in Q}  \\; U(x)
 
 
            Parameters
@@ -97,14 +97,14 @@ class CmpNet(CmpNetCore, ObjectRanker):
         """
             Fit an object ranking learning CmpNet model on a provided set of queries. The provided queries can be of a
             fixed size (numpy arrays). For learning this network the binary cross entropy loss function for a pair of
-            objects :math:`x_i, x_j \in Q` is defined as:
+            objects :math:`x_i, x_j \\in Q` is defined as:
 
             .. math::
 
-                C_{ij} =  -\\tilde{P_{ij}}(0)\\cdot \log(U(x_i,x_j)) - \\tilde{P_{ij}}(1) \\cdot \log(U(x_j,x_i)) \ ,
+                C_{ij} =  -\\tilde{P_{ij}}(0)\\cdot \\log(U(x_i,x_j)) - \\tilde{P_{ij}}(1) \\cdot \\log(U(x_j,x_i)) \\ ,
 
             where :math:`\\tilde{P_{ij}}` is ground truth probability of the preference of :math:`x_i` over :math:`x_j`.
-            :math:`\\tilde{P_{ij}} = (1,0)` if :math:`x_i \succ x_j` else :math:`\\tilde{P_{ij}} = (0,1)`.
+            :math:`\\tilde{P_{ij}} = (1,0)` if :math:`x_i \\succ x_j` else :math:`\\tilde{P_{ij}} = (0,1)`.
 
             Parameters
             ----------

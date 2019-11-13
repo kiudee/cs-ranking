@@ -24,24 +24,24 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
             Create an instance of the Paired Combinatorial Logit model for learning the discrete choice function. This
             model considering each pair of objects as a different nest allowing unique covariances for each pair of objects,
             and each object is a member of :math:`n - 1` nests. This model structure is 1-layer of hierarchy and the
-            :math:`\lambda` for each nest :math:`B_k` signifies the degree of independence and  :math:`1-\lambda` signifies
-            the correlations between the object in it. We learn two weight vectors and the  :math:`\lambda s`.
-                * **weights** (:math:`w`): Weights to get the utility of the object :math:`Y_i = U(x_i) = w \cdot x_i`
-                * **lambda_k** (:math:`\lambda_k`): Lambda for nest nest :math:`B_k` for correlations between the obejcts.
+            :math:`\\lambda` for each nest :math:`B_k` signifies the degree of independence and  :math:`1-\\lambda` signifies
+            the correlations between the object in it. We learn two weight vectors and the  :math:`\\lambda s`.
+                * **weights** (:math:`w`): Weights to get the utility of the object :math:`Y_i = U(x_i) = w \\cdot x_i`
+                * **lambda_k** (:math:`\\lambda_k`): Lambda for nest nest :math:`B_k` for correlations between the obejcts.
 
             The probability of choosing an object :math:`x_i` from the given query set :math:`Q` is defined by product
             of choosing the nest in which :math:`x_i` exists and then choosing the the object from the nest.
 
             .. math::
 
-                P(x_i \\lvert Q) = P_i = \sum_{\substack{B_k \in \mathcal{B} \\ i \in B_k}}P_{i \\lvert B_k} P_{B_k} \enspace ,
+                P(x_i \\lvert Q) = P_i = \\sum_{\\substack{B_k \\in \\mathcal{B} \\ i \\in B_k}}P_{i \\lvert B_k} P_{B_k} \\enspace ,
 
 
             The discrete choice for the given query set :math:`Q` is defined as:
 
             .. math::
 
-                dc(Q) := \operatorname{argmax}_{x_i \in Q }  \; P(x_i \\lvert Q)
+                dc(Q) := \\operatorname{argmax}_{x_i \\in Q }  \\; P(x_i \\lvert Q)
 
             Parameters
             ----------
@@ -101,17 +101,17 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
 
             .. math::
 
-                \\text{mu}_w \sim \\text{Normal}(\\text{mu}=0, \\text{sd}=5.0) \\\\
-                \\text{b}_w \sim \\text{HalfCauchy}(\\beta=1.0) \\\\
-                \\text{weights} \sim \\text{Laplace}(\\text{mu}=\\text{mu}_w, \\text{b}=\\text{b}_w)
+                \\text{mu}_w \\sim \\text{Normal}(\\text{mu}=0, \\text{sd}=5.0) \\\\
+                \\text{b}_w \\sim \\text{HalfCauchy}(\\beta=1.0) \\\\
+                \\text{weights} \\sim \\text{Laplace}(\\text{mu}=\\text{mu}_w, \\text{b}=\\text{b}_w)
 
             For ``l2`` regularization the priors are:
 
             .. math::
 
-                \\text{mu}_w \sim \\text{Normal}(\\text{mu}=0, \\text{sd}=5.0) \\\\
-                \\text{sd}_w \sim \\text{HalfCauchy}(\\beta=1.0) \\\\
-                \\text{weights} \sim \\text{Normal}(\\text{mu}=\\text{mu}_w, \\text{sd}=\\text{sd}_w)
+                \\text{mu}_w \\sim \\text{Normal}(\\text{mu}=0, \\text{sd}=5.0) \\\\
+                \\text{sd}_w \\sim \\text{HalfCauchy}(\\beta=1.0) \\\\
+                \\text{weights} \\sim \\text{Normal}(\\text{mu}=\\text{mu}_w, \\text{sd}=\\text{sd}_w)
 
             Returns
             -------
@@ -136,22 +136,22 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         """
             This method calculates the probability of choosing an object from the query set using the following parameters of the model which are used:
 
-                * **weights** (:math:`w`): Weights to get the utility of the object :math:`Y_i = U(x_i) = w \cdot x_i`
-                * **lambda_k** (:math:`\lambda_k`): Lambda is the measure of independence amongst the obejcts in the nest :math:`B_k`
+                * **weights** (:math:`w`): Weights to get the utility of the object :math:`Y_i = U(x_i) = w \\cdot x_i`
+                * **lambda_k** (:math:`\\lambda_k`): Lambda is the measure of independence amongst the obejcts in the nest :math:`B_k`
 
             The probability of choosing the object  :math:`x_i` from the query set :math:`Q`:
 
             .. math::
-                    P_i = \sum_{j \in I \setminus i} P_{{i} \\lvert {ij}} P_{ij} \enspace where, \\\\
-                    P_{i \\lvert ij} = \\frac{\\boldsymbol{e}^{^{Y_i} /_{\lambda_{ij}}}}{\\boldsymbol{e}^{^{Y_i} /_{\lambda_{ij}}} + \\boldsymbol{e}^{^{Y_j} /_{\lambda_{ij}}}} \enspace ,\\\\
-                    P_{ij} = \\frac{{\\left( \\boldsymbol{e}^{^{V_i}/{\lambda_{ij}}} + \\boldsymbol{e}^{^{V_j}/{\lambda_{ij}}}  \\right)}^{\lambda_{ij}}}{\sum_{k=1}^{n-1} \sum_{\ell = k + 1}^{n} {\\left( \\boldsymbol{e}^{^{V_k}/{\lambda_{k\ell}}} + \\boldsymbol{e}^{^{V_{\ell}}/{\lambda_{k\ell}}}  \\right)}^{\lambda_{k\ell}}}
+                    P_i = \\sum_{j \\in I \\setminus i} P_{{i} \\lvert {ij}} P_{ij} \\enspace where, \\\\
+                    P_{i \\lvert ij} = \\frac{\\boldsymbol{e}^{^{Y_i} /_{\\lambda_{ij}}}}{\\boldsymbol{e}^{^{Y_i} /_{\\lambda_{ij}}} + \\boldsymbol{e}^{^{Y_j} /_{\\lambda_{ij}}}} \\enspace ,\\\\
+                    P_{ij} = \\frac{{\\left( \\boldsymbol{e}^{^{V_i}/{\\lambda_{ij}}} + \\boldsymbol{e}^{^{V_j}/{\\lambda_{ij}}}  \\right)}^{\\lambda_{ij}}}{\\sum_{k=1}^{n-1} \\sum_{\\ell = k + 1}^{n} {\\left( \\boldsymbol{e}^{^{V_k}/{\\lambda_{k\\ell}}} + \\boldsymbol{e}^{^{V_{\\ell}}/{\\lambda_{k\\ell}}}  \\right)}^{\\lambda_{k\\ell}}}
 
 
             Parameters
             ----------
             utility : theano tensor
                 (n_instances, n_objects)
-                Utility :math:`Y_i` of the objects :math:`x_i \in Q` in the query sets
+                Utility :math:`Y_i` of the objects :math:`x_i \\in Q` in the query sets
             lambda_k : theano tensor (range : [alpha, 1.0])
                 (n_nests)
                 Measure of independence amongst the obejcts in each nests
@@ -160,7 +160,7 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
             -------
             p : theano tensor
                 (n_instances, n_objects)
-                Choice probabilities :math:`P_i` of the objects :math:`x_i \in Q` in the query sets
+                Choice probabilities :math:`P_i` of the objects :math:`x_i \\in Q` in the query sets
 
         """
         n_objects = self.n_objects
@@ -209,8 +209,8 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
     def construct_model(self, X, Y):
         """
             Constructs the nested logit model by applying priors on weight vectors **weights** as per :meth:`model_configuration`.
-            Then we apply a uniform prior to the :math:`\lambda s`, i.e. :math:`\lambda s \sim Uniform(\\text{alpha}, 1.0)`.
-            The probability of choosing the object :math:`x_i` from the query set :math:`Q = \{x_1, \ldots ,x_n\}` is
+            Then we apply a uniform prior to the :math:`\\lambda s`, i.e. :math:`\\lambda s \\sim Uniform(\\text{alpha}, 1.0)`.
+            The probability of choosing the object :math:`x_i` from the query set :math:`Q = \\{x_1, \\ldots ,x_n\\}` is
             evaluated in :meth:`get_probabilities`.
 
             Parameters
@@ -242,11 +242,11 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         """
            Fit a paired combinatorial logit  model on the provided set of queries X and choices Y of those objects. The
            provided queries and corresponding preferences are of a fixed size (numpy arrays). For learning this network
-           the categorical cross entropy loss function for each object :math:`x_i \in Q` is defined as:
+           the categorical cross entropy loss function for each object :math:`x_i \\in Q` is defined as:
 
            .. math::
 
-               C_{i} =  -y(i)\log(P_i) \enspace,
+               C_{i} =  -y(i)\\log(P_i) \\enspace,
 
            where :math:`y` is ground-truth discrete choice vector of the objects in the given query set :math:`Q`.
            The value :math:`y(i) = 1` if object :math:`x_i` is chosen else :math:`y(i) = 0`.

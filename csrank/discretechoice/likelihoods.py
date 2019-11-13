@@ -33,15 +33,15 @@ likelihood_dict = {'categorical_crossentropy': categorical_crossentropy, 'binary
 
 
 class LogLikelihood(Discrete):
-    R"""
+    """
     Categorical log-likelihood.
 
     The most general discrete distribution.
 
-    .. math:: f(x \mid p) = p_x
+    .. math:: f(x \\mid p) = p_x
 
     ========  ===================================
-    Support   :math:`x \in \{0, 1, \ldots, |p|-1\}`
+    Support   :math:`x \\in \\{0, 1, \\ldots, |p|-1\\}`
     ========  ===================================
 
     Parameters

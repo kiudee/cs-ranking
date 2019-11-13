@@ -12,13 +12,13 @@ class PairwiseSVMChoiceFunction(PairwiseSVM, ChoiceFunctions):
                  fit_intercept=True, random_state=None, **kwargs):
         """
             Create an instance of the :class:`PairwiseSVM` model for learning a choice function.
-            It learns a linear deterministic utility function of the form :math:`U(x) = w \cdot x`, where :math:`w` is
+            It learns a linear deterministic utility function of the form :math:`U(x) = w \\cdot x`, where :math:`w` is
             the weight vector. It is estimated using *pairwise preferences* generated from the choices.
             The choice set is defined as:
 
             .. math::
 
-                c(Q) = \{ x_i \in Q \lvert \, U(x_i) > t \}
+                c(Q) = \\{ x_i \\in Q \\lvert \\, U(x_i) > t \\}
 
             Parameters
             ----------

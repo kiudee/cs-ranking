@@ -224,7 +224,7 @@ def err(y_true, y_pred, utility_function=None, probability_mapping=None):
         reciprocal of the rank (resulting in the ERR metric). If a
         different utility is specified, this function can compute any
         cascade metric. Corresponds to the function represented by
-        :math:`\phi` in [1]. This will usually be a monotonically
+        :math:`\\phi` in [1]. This will usually be a monotonically
         decreasing function, since the user is more likely to examine
         the first few results and therefore more likely to derive
         utility from them.

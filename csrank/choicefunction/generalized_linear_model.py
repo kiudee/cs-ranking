@@ -21,7 +21,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
         """
             Create an instance of the GeneralizedLinearModel model for learning the choice function. This model is
             adapted from the multinomial logit model :class:`csrank.discretechoice.multinomial_logit_model.MultinomialLogitModel`.
-            The utility score for each object in query set :math:`Q` is defined as :math:`U(x) = w \cdot x`,
+            The utility score for each object in query set :math:`Q` is defined as :math:`U(x) = w \\cdot x`,
             where :math:`w` is the weight vector. The probability of choosing an object :math:`x_i` is defined by taking
             sigmoid over the utility scores:
 
@@ -33,7 +33,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
 
             .. math::
 
-                c(Q) = \{ x_i \in Q \lvert \, P(x_i \\lvert Q) > t \}
+                c(Q) = \\{ x_i \\in Q \\lvert \\, P(x_i \\lvert Q) > t \\}
 
             Parameters
             ----------
@@ -78,17 +78,17 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
 
             .. math::
 
-                \\text{mu}_w \sim \\text{Normal}(\\text{mu}=0, \\text{sd}=5.0) \\\\
-                \\text{b}_w \sim \\text{HalfCauchy}(\\beta=1.0) \\\\
-                \\text{weights} \sim \\text{Laplace}(\\text{mu}=\\text{mu}_w, \\text{b}=\\text{b}_w)
+                \\text{mu}_w \\sim \\text{Normal}(\\text{mu}=0, \\text{sd}=5.0) \\\\
+                \\text{b}_w \\sim \\text{HalfCauchy}(\\beta=1.0) \\\\
+                \\text{weights} \\sim \\text{Laplace}(\\text{mu}=\\text{mu}_w, \\text{b}=\\text{b}_w)
 
             For ``l2`` regularization the priors are:
 
             .. math::
 
-                \\text{mu}_w \sim \\text{Normal}(\\text{mu}=0, \\text{sd}=5.0) \\\\
-                \\text{sd}_w \sim \\text{HalfCauchy}(\\beta=1.0) \\\\
-                \\text{weights} \sim \\text{Normal}(\\text{mu}=\\text{mu}_w, \\text{sd}=\\text{sd}_w)
+                \\text{mu}_w \\sim \\text{Normal}(\\text{mu}=0, \\text{sd}=5.0) \\\\
+                \\text{sd}_w \\sim \\text{HalfCauchy}(\\beta=1.0) \\\\
+                \\text{weights} \\sim \\text{Normal}(\\text{mu}=\\text{mu}_w, \\text{sd}=\\text{sd}_w)
         """
         if self.regularization == 'l2':
             weight = pm.Normal
@@ -103,9 +103,9 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
 
     def construct_model(self, X, Y):
         """
-            Constructs the linear logit model which evaluated the utility score as :math:`U(x) = w \cdot x`, where
+            Constructs the linear logit model which evaluated the utility score as :math:`U(x) = w \\cdot x`, where
             :math:`w` is the weight vector. The probability of choosing the object :math:`x_i` from the query set
-            :math:`Q = \{x_1, \ldots ,x_n\}` is:
+            :math:`Q = \\{x_1, \\ldots ,x_n\\}` is:
 
             .. math::
 
@@ -142,11 +142,11 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
         """
             Fit a generalized logit model on the provided set of queries X and choices Y of those objects. The
             provided queries and corresponding preferences are of a fixed size (numpy arrays). For learning this network
-            the binary cross entropy loss function for each object :math:`x_i \in Q` is defined as:
+            the binary cross entropy loss function for each object :math:`x_i \\in Q` is defined as:
 
             .. math::
 
-                C_{i} =  -y(i)\log(P_i) - (1 - y(i))\log(1 - P_i) \enspace,
+                C_{i} =  -y(i)\\log(P_i) - (1 - y(i))\\log(1 - P_i) \\enspace,
 
             where :math:`y` is ground-truth choice vector of the objects in the given query set :math:`Q`.
             The value :math:`y(i) = 1` if object :math:`x_i` is chosen else :math:`y(i) = 0`.

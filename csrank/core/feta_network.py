@@ -152,11 +152,11 @@ class FETANetwork(Learner):
         """
             Construct the :math:`1`-st order and :math:`0`-th order models, which are used to approximate the
             :math:`U_1(x, C(x))` and the :math:`U_0(x)` utilities respectively. For each pair of objects in
-            :math:`x_i, x_j \in Q` :math:`U_1(x, C(x))` we construct :class:`CmpNetCore` with weight sharing to
+            :math:`x_i, x_j \\in Q` :math:`U_1(x, C(x))` we construct :class:`CmpNetCore` with weight sharing to
             approximate a pairwise-matrix. A pairwise matrix with index (i,j) corresponds to the :math:`U_1(x_i,x_j)`
             is a measure of how favorable it is to choose :math:`x_i` over :math:`x_j`. Using this matrix we calculate
             the borda score for each object to calculate :math:`U_1(x, C(x))`. For `0`-th order model we construct
-            :math:`\lvert Q \lvert` sequential networks whose weights are shared to evaluate the :math:`U_0(x)` for
+            :math:`\\lvert Q \\lvert` sequential networks whose weights are shared to evaluate the :math:`U_0(x)` for
             each object in the query set :math:`Q`. The output mode is using linear activation.
 
             Returns

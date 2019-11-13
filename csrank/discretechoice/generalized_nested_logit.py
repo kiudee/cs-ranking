@@ -22,21 +22,21 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
         """
             Create an instance of the Generalized Nested Logit model for learning the discrete choice function. This
             model divides objects into subsets called nests, such that the each object is associtated to each nest to some degree.
-            This model structure is 1-layer of hierarchy and the :math:`\lambda` for each nest :math:`B_k` signifies the degree of independence
-            and  :math:`1-\lambda` signifies the correlations between the object in it. We learn two weight vectors and the  :math:`\lambda s`.
+            This model structure is 1-layer of hierarchy and the :math:`\\lambda` for each nest :math:`B_k` signifies the degree of independence
+            and  :math:`1-\\lambda` signifies the correlations between the object in it. We learn two weight vectors and the  :math:`\\lambda s`.
             The probability of choosing an object :math:`x_i` from the given query set :math:`Q` is defined by product
             of choosing the nest in which :math:`x_i` exists and then choosing the the object from the nest.
 
             .. math::
 
-                P(x_i \\lvert Q) = P_i = \sum_{\substack{B_k \in \mathcal{B} \\ i \in B_k}}P_{i \\lvert B_k} P_{B_k} \enspace ,
+                P(x_i \\lvert Q) = P_i = \\sum_{\\substack{B_k \\in \\mathcal{B} \\ i \\in B_k}}P_{i \\lvert B_k} P_{B_k} \\enspace ,
 
 
             The discrete choice for the given query set :math:`Q` is defined as:
 
             .. math::
 
-                dc(Q) := \operatorname{argmax}_{x_i \in Q }  \; P(x_i \\lvert Q)
+                dc(Q) := \\operatorname{argmax}_{x_i \\in Q }  \\; P(x_i \\lvert Q)
 
             Parameters
             ----------
@@ -104,17 +104,17 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
 
             .. math::
 
-                \\text{mu}_w \sim \\text{Normal}(\\text{mu}=0, \\text{sd}=5.0) \\\\
-                \\text{b}_w \sim \\text{HalfCauchy}(\\beta=1.0) \\\\
-                \\text{weights} \sim \\text{Laplace}(\\text{mu}=\\text{mu}_w, \\text{b}=\\text{b}_w)
+                \\text{mu}_w \\sim \\text{Normal}(\\text{mu}=0, \\text{sd}=5.0) \\\\
+                \\text{b}_w \\sim \\text{HalfCauchy}(\\beta=1.0) \\\\
+                \\text{weights} \\sim \\text{Laplace}(\\text{mu}=\\text{mu}_w, \\text{b}=\\text{b}_w)
 
             For ``l2`` regularization the priors are:
 
             .. math::
 
-                \\text{mu}_w \sim \\text{Normal}(\\text{mu}=0, \\text{sd}=5.0) \\\\
-                \\text{sd}_w \sim \\text{HalfCauchy}(\\beta=1.0) \\\\
-                \\text{weights} \sim \\text{Normal}(\\text{mu}=\\text{mu}_w, \\text{sd}=\\text{sd}_w)
+                \\text{mu}_w \\sim \\text{Normal}(\\text{mu}=0, \\text{sd}=5.0) \\\\
+                \\text{sd}_w \\sim \\text{HalfCauchy}(\\beta=1.0) \\\\
+                \\text{weights} \\sim \\text{Normal}(\\text{mu}=\\text{mu}_w, \\text{sd}=\\text{sd}_w)
 
             Returns
             -------
@@ -138,23 +138,23 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
         """
             This method calculates the probability of choosing an object from the query set using the following parameters of the model which are used:
 
-                * **weights** (:math:`w`): Weights to get the utility of the object :math:`Y_i = U(x_i) = w \cdot x_i`
-                * **weights_k** (:math:`w_k`): Weights to get fractional allocation of each object :math:'x_j'  in :math:'Q' to each nest math:`B_k` as :math:`\alpha_{ik} = w_k \cdot x_i`.
-                * **lambda_k** (:math:`\lambda_k`): Lambda for nest :math:`B_k` for correlations between the obejcts.
+                * **weights** (:math:`w`): Weights to get the utility of the object :math:`Y_i = U(x_i) = w \\cdot x_i`
+                * **weights_k** (:math:`w_k`): Weights to get fractional allocation of each object :math:'x_j'  in :math:'Q' to each nest math:`B_k` as :math:`\\alpha_{ik} = w_k \\cdot x_i`.
+                * **lambda_k** (:math:`\\lambda_k`): Lambda for nest :math:`B_k` for correlations between the obejcts.
 
             The probability of choosing the object :math:`x_i` from the query set :math:`Q`:
 
             .. math::
-                P_i = \sum_{\substack{B_k \in \mathcal{B} \\ i \in B_k}} P_{i \\lvert {B_k}} P_{B_k} \enspace where, \\\\
-                P_{B_k} = \\frac{{\\left(\sum_{j \in B_k} {\\left(\\alpha_{jk} \\boldsymbol{e}^{V_j} \\right)}^ {^{1}/{\lambda_k}} \\right)}^{\lambda_k}}{\sum_{\ell = 1}^{K} {\\left( \sum_{j \in B_{\ell}} {\\left( \\alpha_{j\ell} \\boldsymbol{e}^{V_j} \\right)}^{^{1}/{\lambda_\ell}} \\right)^{\lambda_{\ell}}}} \\\\
-                P_{{i} \\lvert {B_k}} = \\frac{{\\left(\\alpha_{ik} \\boldsymbol{e}^{V_i} \\right)}^{^{1}/{\lambda_k}}}{\sum_{j \in B_k} {\\left(\\alpha_{jk} \\boldsymbol{e}^{V_j} \\right)}^{^{1}/{\lambda_k}}} \enspace ,
+                P_i = \\sum_{\\substack{B_k \\in \\mathcal{B} \\ i \\in B_k}} P_{i \\lvert {B_k}} P_{B_k} \\enspace where, \\\\
+                P_{B_k} = \\frac{{\\left(\\sum_{j \\in B_k} {\\left(\\alpha_{jk} \\boldsymbol{e}^{V_j} \\right)}^ {^{1}/{\\lambda_k}} \\right)}^{\\lambda_k}}{\\sum_{\\ell = 1}^{K} {\\left( \\sum_{j \\in B_{\\ell}} {\\left( \\alpha_{j\\ell} \\boldsymbol{e}^{V_j} \\right)}^{^{1}/{\\lambda_\\ell}} \\right)^{\\lambda_{\\ell}}}} \\\\
+                P_{{i} \\lvert {B_k}} = \\frac{{\\left(\\alpha_{ik} \\boldsymbol{e}^{V_i} \\right)}^{^{1}/{\\lambda_k}}}{\\sum_{j \\in B_k} {\\left(\\alpha_{jk} \\boldsymbol{e}^{V_j} \\right)}^{^{1}/{\\lambda_k}}} \\enspace ,
 
 
             Parameters
             ----------
             utility : theano tensor
                 (n_instances, n_objects)
-                Utility :math:`Y_i` of the objects :math:`x_i \in Q` in the query sets
+                Utility :math:`Y_i` of the objects :math:`x_i \\in Q` in the query sets
             lambda_k : theano tensor (range : [alpha, 1.0])
                 (n_nests)
                 Measure of independence amongst the obejcts in each nests
@@ -166,7 +166,7 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
             -------
             p : theano tensor
                 (n_instances, n_objects)
-                Choice probabilities :math:`P_i` of the objects :math:`x_i \in Q` in the query sets
+                Choice probabilities :math:`P_i` of the objects :math:`x_i \\in Q` in the query sets
 
         """
         n_nests = self.n_nests
@@ -203,9 +203,9 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
     def construct_model(self, X, Y):
         """
             Constructs the nested logit model by applying priors on weight vectors **weights** and **weights_k** as per
-            :meth:`model_configuration`. Then we apply a uniform prior to the :math:`\lambda s`, i.e.
-            :math:`\lambda s \sim Uniform(\\text{alpha}, 1.0)`.The probability of choosing the object :math:`x_i` from the
-            query set :math:`Q = \{x_1, \ldots ,x_n\}` is evaluated in :meth:`get_probabilities`.
+            :meth:`model_configuration`. Then we apply a uniform prior to the :math:`\\lambda s`, i.e.
+            :math:`\\lambda s \\sim Uniform(\\text{alpha}, 1.0)`.The probability of choosing the object :math:`x_i` from the
+            query set :math:`Q = \\{x_1, \\ldots ,x_n\\}` is evaluated in :meth:`get_probabilities`.
 
             Parameters
             ----------
@@ -245,11 +245,11 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
         """
             Fit a generalized nested logit model on the provided set of queries X and choices Y of those objects. The
             provided queries and corresponding preferences are of a fixed size (numpy arrays). For learning this network
-            the categorical cross entropy loss function for each object :math:`x_i \in Q` is defined as:
+            the categorical cross entropy loss function for each object :math:`x_i \\in Q` is defined as:
 
             .. math::
 
-                C_{i} =  -y(i)\log(P_i) \enspace,
+                C_{i} =  -y(i)\\log(P_i) \\enspace,
 
             where :math:`y` is ground-truth discrete choice vector of the objects in the given query set :math:`Q`.
             The value :math:`y(i) = 1` if object :math:`x_i` is chosen else :math:`y(i) = 0`.

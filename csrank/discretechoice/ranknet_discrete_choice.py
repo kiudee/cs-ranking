@@ -17,14 +17,14 @@ class RankNetDiscreteChoiceFunction(RankNetCore, DiscreteObjectChooser):
             Create an instance of the :class:`RankNetCore` architecture for learning a choice function.
             It breaks the preferences into pairwise comparisons and learns a latent utility model for the objects.
             This network learns a latent utility score for each object in the given query set
-            :math:`Q = \{x_1, \ldots ,x_n\}` using the equation :math:`U(x) = F(x, w)` where :math:`w` is the weight
+            :math:`Q = \\{x_1, \\ldots ,x_n\\}` using the equation :math:`U(x) = F(x, w)` where :math:`w` is the weight
             vector. It is estimated using *pairwise preferences* generated from the discrete choices.
 
             The discrete choice for the given query set :math:`Q` is defined as:
 
             .. math::
 
-                ρ(Q)  = \operatorname{argsort}_{x \in Q}  \; U(x)
+                ρ(Q)  = \\operatorname{argsort}_{x \\in Q}  \\; U(x)
 
             Parameters
             ----------

@@ -10,13 +10,13 @@ class PairwiseSVMDiscreteChoiceFunction(PairwiseSVM, DiscreteObjectChooser):
                  fit_intercept=True, random_state=None, **kwargs):
         """
             Create an instance of the :class:`PairwiseSVM` model for learning a discrete choice function.
-            It learns a linear deterministic utility function of the form :math:`U(x) = w \cdot x`, where :math:`w` is
+            It learns a linear deterministic utility function of the form :math:`U(x) = w \\cdot x`, where :math:`w` is
             the weight vector. It is estimated using *pairwise preferences* generated from the discrete choices.
             The discrete choice for the given query set :math:`Q` is defined as:
 
             .. math::
 
-                ρ(Q)  = \operatorname{argmax}_{x \in Q}  \; U(x)
+                ρ(Q)  = \\operatorname{argmax}_{x \\in Q}  \\; U(x)
 
             Parameters
             ----------

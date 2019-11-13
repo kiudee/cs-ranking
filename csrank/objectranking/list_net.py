@@ -27,13 +27,13 @@ class ListNet(Learner, ObjectRanker):
                  metrics=[zero_one_rank_loss_for_scores_ties], batch_size=256, random_state=None, **kwargs):
         """ Create an instance of the ListNet architecture. ListNet trains a latent utility model based on
             top-k-subrankings of the objects. This network learns a latent utility score for each object in the given
-            query set :math:`Q = \{x_1, \ldots ,x_n\}` using the equation :math:`U(x) = F(x, w)` where :math:`w` is the
+            query set :math:`Q = \\{x_1, \\ldots ,x_n\\}` using the equation :math:`U(x) = F(x, w)` where :math:`w` is the
             weight vector. A listwise loss function like the negative Plackett-Luce likelihood is used for training.
             The ranking for the given query set :math:`Q` is defined as:
 
             .. math::
 
-                ρ(Q)  = \operatorname{argsort}_{x \in Q}  \; U(x)
+                ρ(Q)  = \\operatorname{argsort}_{x \\in Q}  \\; U(x)
 
             Parameters
             ----------
@@ -126,11 +126,11 @@ class ListNet(Learner, ObjectRanker):
         """
             Fit an object ranking learning ListNet on the top-k-subrankings in the provided set of queries. The provided
             queries can be of a fixed size (numpy arrays). For fitting the model we maximize the Plackett-Luce
-            likelihood. For example for query set :math:`Q = \{x_1,x_2,x_3\}`, the scores are :math:`Q = (s_1,s_2,s_3)`
-            and the ranking is :math:`\pi = (3,1,2)`. The  Plackett-Luce likelihood is defined as:
+            likelihood. For example for query set :math:`Q = \\{x_1,x_2,x_3\\}`, the scores are :math:`Q = (s_1,s_2,s_3)`
+            and the ranking is :math:`\\pi = (3,1,2)`. The  Plackett-Luce likelihood is defined as:
 
             .. math::
-                P_l(\pi) = \\frac{s_2}{s_1+s_2+s_3} \cdot \\frac{s_3}{s_1+s_3} \cdot \\frac{s_1}{s_1}
+                P_l(\\pi) = \\frac{s_2}{s_1+s_2+s_3} \\cdot \\frac{s_3}{s_1+s_3} \\cdot \\frac{s_1}{s_1}
 
             Note: For k=2 we obtain :class:`RankNet` as a special case.
 
@@ -189,7 +189,7 @@ class ListNet(Learner, ObjectRanker):
     def scoring_model(self):
         """
             Creates a scoring model from the trained ListNet, which predicts the utility scores for given set of objects.
-            This network consist of a sequential network which predicts the utility score for each object :math:`x \in Q`
+            This network consist of a sequential network which predicts the utility score for each object :math:`x \\in Q`
             using the latent utility function :math:`U(x) = F(x, w)` where :math:`w` is the weights of the model.
 
             Returns

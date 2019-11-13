@@ -328,7 +328,7 @@ class FATENetwork(FATENetworkCore):
             set :math:`Q` of size (n_objects, n_features),iterate over it for each object and concatenate the
             context-representation feature tensor of size :math:`\\lvert  \\mu_{C(x)} \\lvert` into a joint layers.
             So, for each object we share the weights in the joint network and the output of this network is used to
-            learn the generalized latent utility score :math:`U (x, \\mu_{C(x)})` of each object :math:`x \in Q`.
+            learn the generalized latent utility score :math:`U (x, \\mu_{C(x)})` of each object :math:`x \\in Q`.
 
             Parameters
             ----------
