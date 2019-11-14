@@ -35,7 +35,7 @@ def trivial_ranking_problem():
     return x, y_true
 
 
-def check_leaner(ranker, params, rtol=1e-2, atol=1e-4):
+def check_learner(ranker, params, rtol=1e-2, atol=1e-4):
     for key, value in params.items():
         if key in ranker.__dict__.keys():
             expected = ranker.__dict__[key]
@@ -86,4 +86,4 @@ def test_object_ranker_fixed(trivial_ranking_problem, ranker_name):
               "batch_size": 32, "alpha": 0.5, "l1_ratio": 0.7, "tol": 1e-2, "C": 10, "n_mixtures": 10, "n_nests": 5,
               "regularization": "l2"}
     ranker.set_tunable_parameters(**params)
-    check_leaner(ranker, params, rtol, atol)
+    check_learner(ranker, params, rtol, atol)
