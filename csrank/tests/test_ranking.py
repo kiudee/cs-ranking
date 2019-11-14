@@ -47,7 +47,7 @@ def check_learner(ranker, params, rtol=1e-2, atol=1e-4):
             else:
                 assert value == expected
         elif key == "learning_rate" and "optimizer" in ranker.__dict__.keys():
-            assert np.isclose(ranker.optimizer.get_config()['lr'], value, rtol=rtol, atol=atol, equal_nan=False)
+            assert np.isclose(ranker.optimizer.get_config()['learning_rate'], value, rtol=rtol, atol=atol, equal_nan=False)
         elif key == "reg_strength" and "kernel_regularizer" in ranker.__dict__.keys():
             config = ranker.kernel_regularizer.get_config()
             val1 = np.isclose(config["l1"], value, rtol=rtol, atol=atol, equal_nan=False)

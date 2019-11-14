@@ -9,8 +9,7 @@ psycopg2-binary>=2.7
 docopt>=0.6.0
 joblib>=0.9.4
 tqdm>=4.11.2
-# keras 2.3 renamed `lr` to `learning_rate`, we will deal with that in the tf2 transition
-keras>=2.1.5,<2.3
+keras>=2.3
 pymc3>=3.5
 theano>=1.0
 # Pick either CPU or GPU version of tensorflow:
