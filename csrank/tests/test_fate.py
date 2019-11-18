@@ -53,7 +53,7 @@ def test_construction_core():
     assert grc.batch_size == params["batch_size"]
     rtol = 1e-2
     atol = 1e-4
-    assert np.isclose(grc.optimizer.get_config()['learning_rate'], params["learning_rate"], rtol=rtol, atol=atol, equal_nan=False)
+    assert np.isclose(grc.optimizer.get_config()['lr'], params["learning_rate"], rtol=rtol, atol=atol, equal_nan=False)
     config = grc.kernel_regularizer.get_config()
     val1 = np.isclose(config["l1"], params["reg_strength"], rtol=rtol, atol=atol, equal_nan=False)
     val2 = np.isclose(config["l2"], params["reg_strength"], rtol=rtol, atol=atol, equal_nan=False)
