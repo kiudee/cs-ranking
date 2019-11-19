@@ -45,7 +45,7 @@ def trivial_choice_problem():
 
 @pytest.mark.parametrize("name", list(choice_functions.keys()))
 def test_choice_function_fixed(trivial_choice_problem, name):
-    tf.set_random_seed(0)
+    tf.compat.v1.set_random_seed(0)
     os.environ["KERAS_BACKEND"] = "tensorflow"
     np.random.seed(123)
     x, y = trivial_choice_problem

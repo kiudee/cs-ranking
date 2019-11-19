@@ -518,7 +518,7 @@ class FATENetwork(FATENetworkCore):
         if self.hash_file is not None:
             self.model.save_weights(self.hash_file)
             K.clear_session()
-            sess = tf.Session()
+            sess = tf.compat.v1.Session()
             K.set_session(sess)
             self.optimizer = self.optimizer.from_config(self._optimizer_config)
             self._construct_layers(activation=self.activation, kernel_initializer=self.kernel_initializer,

@@ -32,8 +32,8 @@ class FETALinearCore(Learner):
         self.W_last = None
 
     def _construct_model_(self, n_objects):
-        self.X = tf.placeholder("float32", [None, n_objects, self.n_object_features])
-        self.Y = tf.placeholder("float32", [None, n_objects])
+        self.X = tf.compat.v1.placeholder("float32", [None, n_objects, self.n_object_features])
+        self.Y = tf.compat.v1.placeholder("float32", [None, n_objects])
         std = 1 / np.sqrt(self.n_object_features)
         self.b1 = tf.Variable(self.random_state.normal(loc=0, scale=std, size=1), dtype=tf.float32)
         self.W1 = tf.Variable(self.random_state.normal(loc=0, scale=std, size=2 * self.n_object_features),
@@ -53,27 +53,27 @@ class FETALinearCore(Learner):
             outputs[i].append(n_g[:, None])
             outputs[j].append(n_l[:, None])
         outputs = [tf.concat(x, axis=1) for x in outputs]
-        outputs = tf.reduce_mean(outputs, axis=-1)
-        outputs = tf.transpose(outputs)
+        outputs = tf.reduce_mean(input_tensor=outputs, axis=-1)
+        outputs = tf.transpose(a=outputs)
         zero_outputs = tf.tensordot(self.X, self.W2, axes=1) + self.b2
         scores = tf.sigmoid(self.W_out[0] * zero_outputs + self.W_out[1] * outputs)
         scores = tf.cast(scores, tf.float32)
         self.loss = self.loss_function(self.Y, scores)
-        self.optimizer = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(self.loss)
+        self.optimizer = tf.compat.v1.train.GradientDescentOptimizer(self.learning_rate).minimize(self.loss)
 
     def step_decay(self, epoch):
         step = math.floor((1 + epoch) / self.epochs_drop)
         self.current_lr = self.learning_rate * math.pow(self.drop, step)
-        self.optimizer = tf.train.GradientDescentOptimizer(self.current_lr).minimize(self.loss)
+        self.optimizer = tf.compat.v1.train.GradientDescentOptimizer(self.current_lr).minimize(self.loss)
 
     def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
         # Global Variables Initializer
         n_instances, n_objects, n_features = X.shape
         assert n_features == self.n_object_features
         self._construct_model_(n_objects)
-        init = tf.global_variables_initializer()
+        init = tf.compat.v1.global_variables_initializer()
 
-        with tf.Session() as tf_session:
+        with tf.compat.v1.Session() as tf_session:
             tf_session.run(init)
             self._fit_(X, Y, epochs, n_instances, tf_session, verbose)
             training_cost = tf_session.run(self.loss, feed_dict={self.X: X, self.Y: Y})

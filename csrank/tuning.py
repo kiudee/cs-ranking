@@ -293,7 +293,7 @@ class ParameterOptimizer(Learner):
 
                 # Delete Tensorflow graph, to prevent memory leaks:
                 K.clear_session()
-                sess = tf.Session()
+                sess = tf.compat.v1.Session()
                 K.set_session(sess)
                 if (total_duration - max_fit_duration) < 0:
                     self.logger.info('Maximum time required by model to validate parameter values {}'.format(
@@ -310,7 +310,7 @@ class ParameterOptimizer(Learner):
 
         finally:
             K.clear_session()
-            sess = tf.Session()
+            sess = tf.compat.v1.Session()
             K.set_session(sess)
             self._callbacks_on_optimization_end()
             # self._fit_params["epochs"] = np.min([self._fit_params.get("epochs", 500) * 2, 1000])

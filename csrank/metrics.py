@@ -144,7 +144,7 @@ def spearman_correlation_for_scores(y_true, y_pred):
         objects_pred = predicted_rankings[:, i]
         objects_true = y_true[:, i]
         t = (objects_pred - objects_true) ** 2
-        sum_of_squared_distances = sum_of_squared_distances + tf.reduce_sum(t)
+        sum_of_squared_distances = sum_of_squared_distances + tf.reduce_sum(input_tensor=t)
     denominator = K.cast(n_objects * (n_objects ** 2 - 1) * n_instances, dtype='float32')
     spearman_correlation = 1 - (6 * sum_of_squared_distances) / denominator
     return spearman_correlation
@@ -164,7 +164,7 @@ def zero_one_accuracy_for_scores(y_true, y_pred):
 def topk_categorical_accuracy(k=5):
     def topk_acc(y_true, y_pred):
         y_true, y_pred = tensorify(y_true), tensorify(y_pred)
-        acc = tf.nn.in_top_k(y_pred, tf.argmax(y_true, axis=-1), k=k)
+        acc = tf.nn.in_top_k(predictions=y_pred, targets=tf.argmax(input=y_true, axis=-1), k=k)
         acc = K.cast(acc, dtype='float32')
         return acc
 
@@ -295,30 +295,30 @@ def err(y_true, y_pred, utility_function=None, probability_mapping=None):
         knowledge management. ACM, 2009. http://olivier.chapelle.cc/pub/err.pdf
     """
     if probability_mapping is None:
-        max_grade = tf.reduce_max(y_true)
+        max_grade = tf.reduce_max(input_tensor=y_true)
         probability_mapping = partial(relevance_gain, max_grade=max_grade)
     if utility_function is None:
         # reciprocal rank
         utility_function = lambda r: 1 / r
     y_true, y_pred = tensorify(y_true), tensorify(y_pred)
 
-    ninstances = tf.shape(y_pred)[0]
-    nobjects = tf.shape(y_pred)[1]
+    ninstances = tf.shape(input=y_pred)[0]
+    nobjects = tf.shape(input=y_pred)[1]
 
     # Using y_true and the probability mapping, we can derive the
     # probability that each object satisfies the users need (we need to
     # map over the flattened array and then restore the shape):
     satisfied_probs = tf.reshape(tf.map_fn(
         probability_mapping, tf.reshape(y_true, (-1,))
-    ), tf.shape(y_true))
+    ), tf.shape(input=y_true))
 
     # sort satisfied probabilities according to the predicted ranking
     rows = tf.range(0, ninstances)
-    rows_cast = tf.broadcast_to(tf.reshape(rows, (-1, 1)), tf.shape(y_pred))
+    rows_cast = tf.broadcast_to(tf.reshape(rows, (-1, 1)), tf.shape(input=y_pred))
     full_indices = tf.stack([rows_cast, tf.cast(y_pred, tf.int32)], axis=2)
     satisfied_at_rank = tf.gather_nd(satisfied_probs, full_indices)
 
-    not_satisfied_n_times = tf.cumprod(1 - satisfied_at_rank, axis=1, exclusive=True)
+    not_satisfied_n_times = tf.math.cumprod(1 - satisfied_at_rank, axis=1, exclusive=True)
 
     # And from the positions predicted in y_pred we can further derive
     # the utilities of each object given their position:
@@ -328,6 +328,6 @@ def err(y_true, y_pred, utility_function=None, probability_mapping=None):
 
     discount_at_rank = tf.cast(not_satisfied_n_times, tf.float64) * tf.reshape(utilities, (1, -1))
     discounted_document_values = tf.cast(satisfied_at_rank, tf.float64) * discount_at_rank
-    results = tf.reduce_sum(discounted_document_values, axis=1)
+    results = tf.reduce_sum(input_tensor=discounted_document_values, axis=1)
 
     return K.mean(results)

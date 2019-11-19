@@ -171,7 +171,7 @@ class RankNetCore(Learner):
         if self.hash_file is not None:
             self.model.save_weights(self.hash_file)
             K.clear_session()
-            sess = tf.Session()
+            sess = tf.compat.v1.Session()
             K.set_session(sess)
 
             self._scoring_model = None

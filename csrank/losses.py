@@ -10,7 +10,7 @@ __all__ = ['hinged_rank_loss', 'make_smooth_ndcg_loss', 'smooth_rank_loss',
 def identifiable(loss_function):
     def wrap_loss(y_true, y_pred):
         alpha = 1e-4
-        ss = tf.reduce_sum(tf.square(y_pred), axis=1)
+        ss = tf.reduce_sum(input_tensor=tf.square(y_pred), axis=1)
         return alpha * ss + loss_function(y_true, y_pred)
 
     return wrap_loss
@@ -41,17 +41,17 @@ def smooth_rank_loss(y_true, y_pred):
 def plackett_luce_loss(y_true, s_pred):
     y_true = tf.cast(y_true, dtype='int32')
     s_pred = tf.cast(s_pred, dtype='float32')
-    m = tf.shape(y_true)[1]
-    raw_max = tf.reduce_max(s_pred, axis=1, keepdims=True)
-    max_elem = tf.stop_gradient(tf.where(
-        tf.is_finite(raw_max),
+    m = tf.shape(input=y_true)[1]
+    raw_max = tf.reduce_max(input_tensor=s_pred, axis=1, keepdims=True)
+    max_elem = tf.stop_gradient(tf.compat.v1.where(
+        tf.math.is_finite(raw_max),
         raw_max,
         tf.zeros_like(raw_max)))
     exped = tf.exp(tf.subtract(s_pred, max_elem))
     masks = tf.greater_equal(y_true, tf.range(m)[:, None, None])
     tri = exped * tf.cast(masks, tf.float32)
-    lse = tf.reduce_sum(tf.log(tf.reduce_sum(tri, axis=2)), axis=0)
-    return lse - tf.reduce_sum(s_pred, axis=1)
+    lse = tf.reduce_sum(input_tensor=tf.math.log(tf.reduce_sum(input_tensor=tri, axis=2)), axis=0)
+    return lse - tf.reduce_sum(input_tensor=s_pred, axis=1)
 
 
 def make_smooth_ndcg_loss(y_true, y_pred):

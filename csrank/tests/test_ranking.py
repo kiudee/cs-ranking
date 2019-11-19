@@ -59,7 +59,7 @@ def check_learner(ranker, params, rtol=1e-2, atol=1e-4):
     "ranker_name", list(object_rankers.keys())
 )
 def test_object_ranker_fixed(trivial_ranking_problem, ranker_name):
-    tf.set_random_seed(0)
+    tf.compat.v1.set_random_seed(0)
     os.environ["KERAS_BACKEND"] = "tensorflow"
     np.random.seed(123)
     x, y = trivial_ranking_problem
