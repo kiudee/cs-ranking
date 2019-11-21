@@ -106,7 +106,7 @@ class DeepSet(object):
             )
 
     def _create_model(self, shape):
-        n_objects, n_features = shape[1].value, shape[2].value
+        n_objects, n_features = shape[1], shape[2]
         if hasattr(self, 'n_features'):
             if self.n_features != n_features:
                 self.logger.error("Number of features is not consistent.")
@@ -130,7 +130,7 @@ class DeepSet(object):
 
     def __call__(self, x):
         shape = x.shape
-        n_objects = shape[1].value
+        n_objects = shape[1]
         if n_objects not in self.cached_models:
             self._create_model(shape)
         return self.cached_models[n_objects](x)

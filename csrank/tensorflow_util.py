@@ -38,22 +38,28 @@ def get_tensor_value(x):
 
 
 def configure_numpy_keras(seed=42):
-    tf.compat.v1.set_random_seed(seed)
+    tf.random.set_seed(seed)
     os.environ["KERAS_BACKEND"] = "tensorflow"
     devices = [x.name for x in device_lib.list_local_devices()]
     logger = logging.getLogger("ConfigureKeras")
     logger.info("Devices {}".format(devices))
     n_gpus = len([x.name for x in device_lib.list_local_devices() if x.device_type == 'GPU'])
+    tf.config.set_soft_device_placement(True)
     if n_gpus == 0:
-        config = tf.compat.v1.ConfigProto(intra_op_parallelism_threads=1, inter_op_parallelism_threads=1,
-                                allow_soft_placement=True, log_device_placement=False,
-                                device_count={'CPU': multiprocessing.cpu_count() - 2})
+        tf.config.threading.set_inter_op_parallelism_threads(1)
+        tf.config.threading.set_intra_op_parallelism_threads(1)
+
+        physical_devices = tf.config.experimental.list_physical_devices('CPU')
+        # Use all CPUs but 2
+        tf.config.experimental.set_visible_devices(physical_devices[:-2], 'CPU')
+        logical_devices = tf.config.experimental.list_logical_devices('GPU')
+        # Logical device was not created for first GPU
+        assert len(logical_devices) == len(physical_devices) - 2
     else:
-        config = tf.compat.v1.ConfigProto(allow_soft_placement=True,
-                                log_device_placement=True, intra_op_parallelism_threads=2,
-                                inter_op_parallelism_threads=2)  # , gpu_options = gpu_options)
-    sess = tf.compat.v1.Session(config=config)
-    K.set_session(sess)
+        tf.config.threading.set_inter_op_parallelism_threads(2)
+        tf.config.threading.set_intra_op_parallelism_threads(2)
+        tf.debugging.set_log_device_placement(True)
+
     np.random.seed(seed)
     logger.info("Number of GPUS {}".format(n_gpus))
 

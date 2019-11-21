@@ -234,20 +234,7 @@ class ListNet(Learner, ObjectRanker):
             **kwargs :
                 Keyword arguments for the function
         """
-        if self.hash_file is not None:
-            self.model.save_weights(self.hash_file)
-            K.clear_session()
-            sess = tf.compat.v1.Session()
-            K.set_session(sess)
-            self._scoring_model = None
-            self.optimizer = self.optimizer.from_config(self._optimizer_config)
-            self._construct_layers(kernel_regularizer=self.kernel_regularizer,
-                                   kernel_initializer=self.kernel_initializer,
-                                   activation=self.activation, **self.kwargs)
-            self.model = self.construct_model()
-            self.model.load_weights(self.hash_file)
-        else:
-            self.logger.info("Cannot clear the memory")
+        pass
 
     def set_tunable_parameters(self, n_hidden=32, n_units=2, reg_strength=1e-4, learning_rate=1e-3, batch_size=128,
                                **point):

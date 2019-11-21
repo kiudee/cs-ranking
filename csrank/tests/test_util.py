@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-import tensorflow as tf
+import tensorflow.compat.v2 as tf
 from keras import backend as K
 
 from csrank import SyntheticIterator
@@ -15,7 +15,8 @@ def test_tensorify():
 
     b = K.zeros((5, 3))
     out = tensorify(b)
-    assert b == out
+    # comparison is element-wise, we want all elements to match
+    assert tf.reduce_all(b == out)
 
 
 def test_synthetic_iterator():

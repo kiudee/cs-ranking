@@ -515,20 +515,7 @@ class FATENetwork(FATENetworkCore):
             **kwargs :
                 Keyword arguments for the function
         """
-        if self.hash_file is not None:
-            self.model.save_weights(self.hash_file)
-            K.clear_session()
-            sess = tf.compat.v1.Session()
-            K.set_session(sess)
-            self.optimizer = self.optimizer.from_config(self._optimizer_config)
-            self._construct_layers(activation=self.activation, kernel_initializer=self.kernel_initializer,
-                                   kernel_regularizer=self.kernel_regularizer, **self.kwargs)
-            self._create_set_layers(activation=self.activation, kernel_initializer=self.kernel_initializer,
-                                    kernel_regularizer=self.kernel_regularizer, **self.kwargs)
-            self.model = self.construct_model(self.n_object_features, n_objects)
-            self.model.load_weights(self.hash_file)
-        else:
-            self.logger.info("Cannot clear the memory")
+        pass
 
     def set_tunable_parameters(self, n_hidden_set_units=32, n_hidden_set_layers=2, n_hidden_joint_units=32,
                                n_hidden_joint_layers=2, reg_strength=1e-4, learning_rate=1e-3, batch_size=128, **point):
