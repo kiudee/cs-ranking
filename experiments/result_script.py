@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+
 from csrank.constants import CHOICE_FUNCTION, DISCRETE_CHOICE, OBJECT_RANKING
 from csrank.experiments.constants import OR_MODELS, DCMS, CHOICE_MODELS, OBJECT_RANKERS, DCFS, CHOICE_FUNCTIONS, PCL, \
     RANDOM_DC, RANDOM_RANKER, RANDOM_CHOICE, MNL, GLM_CHOICE, GEV, NLM, MLM, RANKSVM_CHOICE, RANKSVM_DC
@@ -18,7 +19,7 @@ plt.style.use('default')
 
 __all__ = ['learners_map', 'get_dataset_name', 'get_results_for_dataset', 'get_combined_results', 'MNIST', 'LETOR',
            'get_combined_results_plot', 'create_df', 'metric_name_dict', 'learning_models_dict', 'bar_plot_for_problem',
-           'get_ranges_dataset', 'learning_functions_dict', 'create_final_result']
+           'bar_plot_for_problem2', 'get_ranges_dataset', 'learning_functions_dict', 'create_final_result']
 DIR_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 config_file_path = os.path.join(DIR_PATH, 'config', 'clusterdb.json')
 learners_map = {CHOICE_FUNCTION: "ChoiceModel", OBJECT_RANKING: "Ranker", DISCRETE_CHOICE: "DiscreteChoiceModel"}
@@ -384,8 +385,7 @@ def bar_plot_for_problem(df, learning_problem, start, params, extension):
     opacity = 0.6
     learning_model = learners_map[learning_problem]
     col = metric_name_dict[learning_problem]
-    FOLDER = "journalresults"
-    fname = os.path.join(DIR_PATH, FOLDER, "{}_{}.{}")
+    fname = os.path.join(DIR_PATH, "journalresults", "{}_{}.{}")
     colse = col + 'Se'
     u_models = [m for m in learning_models_dict[learning_problem] if m in df[learning_model].unique()]
     u_datasets = np.array(df.Dataset.unique())
@@ -439,8 +439,7 @@ def bar_plot_for_problem2(df, learning_problem, start, params, extension):
     opacity = 0.6
     learning_model = learners_map[learning_problem]
     col = metric_name_dict[learning_problem]
-    FOLDER = "journalresults"
-    fname = os.path.join(DIR_PATH, FOLDER, "{}.{}")
+    fname = os.path.join(DIR_PATH, "journalresults", "{}.{}")
     colse = col + 'Se'
     u_models = [m for m in learning_models_dict[learning_problem] if m in df[learning_model].unique()]
     u_datasets = np.array(df.Dataset.unique())
@@ -451,7 +450,8 @@ def bar_plot_for_problem2(df, learning_problem, start, params, extension):
         df1 = df[df.Dataset.str.contains('|'.join(u_datasets[0:mid]))]
         df2 = df[df.Dataset.str.contains('|'.join(u_datasets[mid:]))]
         dfs = [df1, df2]
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(5.63, 5.3), frameon=True, edgecolor='k', facecolor='white')
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(5.63, 5.2), frameon=True, edgecolor='k', facecolor='white')
+        fig.subplots_adjust(wspace=0.0, hspace=0.0)
         subps = [ax1, ax2]
     else:
         dfs = [df]
@@ -463,15 +463,11 @@ def bar_plot_for_problem2(df, learning_problem, start, params, extension):
         index = init_index
         init_index = init_index + bar_width * (len(u_models)) / 2.0
         end = 1.01
-        handels = []
-        labels = []
         for model in u_models:
             acc = sub_df[sub_df[learning_model] == model][col].values
             errors = sub_df[sub_df[learning_model] == model][colse].values
-            handle = ax.bar(x=index, height=acc, yerr=errors, width=bar_width, alpha=opacity, label=model)
+            ax.bar(x=index, height=acc, yerr=errors, width=bar_width, alpha=opacity, label=model)
             index = index + bar_width
-            handels.append(handle)
-            labels.append(model)
         ax.spines['right'].set_visible(False)
         ax.spines['top'].set_visible(False)
         ax.tick_params(labelsize=7)
@@ -481,7 +477,6 @@ def bar_plot_for_problem2(df, learning_problem, start, params, extension):
         ax.set_xticklabels(uds)
         col = col.replace("$0/1$ Ranking Accuracy", "$0/1$ Ranking \n Accuracy")
         ax.set_ylabel(col, fontsize=8)
-
     plt.legend(**params)
     plt.tight_layout()
     f_path = fname.format(learning_problem, extension)
