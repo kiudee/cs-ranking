@@ -47,7 +47,9 @@ def check_params_tunable(tunable_obj, params, rtol=1e-2, atol=1e-4):
             else:
                 assert value == expected
         elif key == "learning_rate" and "optimizer" in tunable_obj.__dict__.keys():
-            assert np.isclose(tunable_obj.optimizer.get_config()['lr'], value, rtol=rtol, atol=atol, equal_nan=False)
+            key = "learning_rate" if "learning_rate" in tunable_obj.optimizer.get_config().keys() else "lr"
+            learning_rate = tunable_obj.optimizer.get_config().get(key, 0.0)
+            assert np.isclose(learning_rate, value, rtol=rtol, atol=atol, equal_nan=False)
         elif key == "reg_strength" and "kernel_regularizer" in tunable_obj.__dict__.keys():
             config = tunable_obj.kernel_regularizer.get_config()
             val1 = np.isclose(config["l1"], value, rtol=rtol, atol=atol, equal_nan=False)

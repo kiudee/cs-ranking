@@ -52,8 +52,9 @@ def test_callbacks(trivial_classification_problem, name):
         epochs_drop, drop = params['epochs_drop'], params['drop']
         step = math.floor(epochs / epochs_drop)
         actual_lr = init_lr * math.pow(drop, step)
-        n_lr = model.optimizer.get_config()['lr']
-        assert np.isclose(actual_lr, n_lr, rtol=rtol, atol=atol, equal_nan=False)
+        key = "learning_rate" if "learning_rate" in model.optimizer.get_config().keys() else "lr"
+        learning_rate = model.optimizer.get_config().get(key, 0.0)
+        assert np.isclose(actual_lr, learning_rate, rtol=rtol, atol=atol, equal_nan=False)
     elif name == "EarlyStopping":
         assert callback.stopped_epoch == 6
     params = {"epochs_drop": 100, "drop": 0.5, "patience": 10, "min_delta": 1e-5}
