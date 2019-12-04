@@ -1,8 +1,9 @@
 from os.path import realpath, dirname, join
 
 from setuptools import setup, find_packages
+import versioneer
 
-DISTNAME = 'csrank'
+DISTNAME = 'csrank' # TODO
 DESCRIPTION = 'Context-sensitive ranking'
 MAINTAINER = 'Karlson Pfannschmidt'
 MAINTAINER_EMAIL = 'kiudee@mail.upb.de'
@@ -16,7 +17,8 @@ with open(REQUIREMENTS_FILE) as f:
 
 if __name__ == "__main__":
     setup(name=DISTNAME,
-          version=VERSION,
+          version=versioneer.get_version(),
+          cmdclass=versioneer.get_cmdclass(),
           maintainer=MAINTAINER,
           maintainer_email=MAINTAINER_EMAIL,
           description=DESCRIPTION,
