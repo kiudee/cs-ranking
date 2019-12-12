@@ -129,7 +129,7 @@ class ExpectedRankRegression(ObjectRanker, Learner):
 
     def set_tunable_parameters(self, alpha=0.0, l1_ratio=0.5, tol=1e-4, **point):
         """
-            Set tunable parameters of the PairwiseSVM model to the values provided.
+            Set tunable parameters of the ExpectedRankRegression model to the values provided.
 
             Parameters
             ----------
