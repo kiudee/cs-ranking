@@ -1,9 +1,5 @@
 language: python
 
-cache:
-  directories:
-    - $HOME/miniconda3
-
 addons:
   apt_packages:
     - pandoc
