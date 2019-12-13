@@ -181,7 +181,7 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
     def _predict_scores_fixed(self, X, **kwargs):
         d = dict(pm.summary(self.trace)['mean'])
         intercept = 0.0
-        weights = np.array([d['weights__{}'.format(i)] for i in range(self.n_object_features)])
+        weights = np.array([d['weights[{}]'.format(i)] for i in range(self.n_object_features)])
         if 'intercept' in d:
             intercept = intercept + d['intercept']
         return np.dot(X, weights) + intercept

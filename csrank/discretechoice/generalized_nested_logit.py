@@ -283,11 +283,11 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
 
     def _predict_scores_fixed(self, X, **kwargs):
         mean_trace = dict(pm.summary(self.trace)['mean'])
-        weights = np.array([mean_trace['weights__{}'.format(i)] for i in range(self.n_object_features)])
-        lambda_k = np.array([mean_trace['lambda_k__{}'.format(i)] for i in range(self.n_nests)])
+        weights = np.array([mean_trace['weights[{}]'.format(i)] for i in range(self.n_object_features)])
+        lambda_k = np.array([mean_trace['lambda_k[{}]'.format(i)] for i in range(self.n_nests)])
         weights_ik = np.zeros((self.n_object_features, self.n_nests))
         for i, k in product(range(self.n_object_features), range(self.n_nests)):
-            weights_ik[i][k] = mean_trace['weights_ik__{}_{}'.format(i, k)]
+            weights_ik[i][k] = mean_trace['weights_ik[{},{}]'.format(i, k)]
         alpha_ik = np.dot(X, weights_ik)
         alpha_ik = npu.softmax(alpha_ik, axis=2)
         utility = np.dot(X, weights)
