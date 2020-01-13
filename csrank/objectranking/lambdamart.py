@@ -133,7 +133,7 @@ class LambdaMART(ObjectRanker,Learner):
         result = list(map(np.array, result))
         return result
     
-    def fit(self, X, y, **kwargs ):
+    def fit(self, X, y):
         """
             Fit a LambdaMART algorithm to the provided X and y arrays where X contains the features and y being the relevance scores.
 
@@ -286,20 +286,6 @@ class LambdaMART(ObjectRanker,Learner):
         self.min_impurity_decrease = min_impurity_decrease
         self.min_impurity_split = min_impurity_split
 
-    def _query_lambdas(self, data, k=10):
-        """
-            This is used by the LambdaMART learner to compute the lambda values that are to be used as the target variable for the learner.
-            
-            Parameters
-            ----------
-            data : This contains the training data and the predictions from the previous iteration of the learning loop to calculate the lambda values
-
-            Returns
-            -------
-            Returns the lambda values calculated for the current iteration
-        """
-        true_data, model_data = data
-        worst_order = np.argsort(true_data)
 
     def _query_lambdas(self, data, k=10):
         """
