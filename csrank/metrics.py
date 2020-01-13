@@ -329,17 +329,7 @@ def err(y_true, y_pred, utility_function=None, probability_mapping=None):
     results = tf.reduce_sum(discounted_document_values, axis=1)
 
     return K.mean(results)
-def dcg_at_k(r, k): #required for LambdaMART
-        r = np.asfarray(r)[:k]
-        if r.size:
-            return np.sum(np.subtract(np.power(2, r), 1) / np.log2(np.arange(2, r.size + 2)))
-        return 0.
 
-def ndcg_at_k(r, k):#required for LambdaMART
-    idcg = dcg_at_k(sorted(r, reverse=True), k)
-    if not idcg:
-        return 0.
-    return (dcg_at_k(r, k) / idcg)
 def point_dcg(self, args):
     """
         Point DCG calculation function. Calculates the DCG for a given list. This list is assumed to be consisting of the rankings of documents belonging to the same query 
