@@ -11,7 +11,7 @@ from csrank.metrics import point_dcg, dcg, ndcg
 from csrank.objectranking.object_ranker import ObjectRanker
 
 class LambdaMART(ObjectRanker,Learner):
-    def __init__(self, n_objects=None, n_object_features=None, number_of_trees=5, learning_rate=0.1,
+    def __init__(self, n_objects=None, n_object_features=None, number_of_trees=5, learning_rate=1e-3,
                  min_samples_split=2, max_depth=50, min_samples_leaf=1, max_leaf_nodes=None, random_state=9, 
                  criterion="mse", splitter="best", min_weight_fraction_leaf=None, max_features=None, random_state=None, 
                  min_impurity_decrease=None, min_impurity_split=None, **kwargs):
@@ -252,7 +252,7 @@ class LambdaMART(ObjectRanker,Learner):
         return sum(total_ndcg) / len(total_ndcg)
 
     def set_tunable_parameters(self, min_samples_split, max_depth, min_samples_leaf, max_leaf_nodes,
-                               learning_rate=1e-3, number_of_trees, criterion, splitter, min_weight_fraction_leaf, 
+                               learning_rate, number_of_trees, criterion, splitter, min_weight_fraction_leaf, 
                                max_features, random_state, min_impurity_decrease, min_impurity_split, **kwargs):
         """
             Set the tunable hyperparameters of the DecisionTree model used in LambdaMART
