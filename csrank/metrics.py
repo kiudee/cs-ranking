@@ -333,8 +333,8 @@ def point_dcg(self, args):
     """
         Point DCG calculation function. Calculates the DCG for a given list. This list is assumed to be consisting of the rankings of documents belonging to the same query 
     """
-        pos, label = args
-        return (2 ** label - 1) / math.log(pos + 2, 2)
+    pos, label = args
+    return (2 ** label - 1) / math.log(pos + 2, 2)
 
 def dcg(self, preds):
     """
