@@ -52,7 +52,7 @@ from csrank.tensorflow_util import scores_to_rankings, get_instances_objects, te
 
 __all__ = ['zero_one_rank_loss', 'zero_one_rank_loss_for_scores', 'zero_one_rank_loss_for_scores_ties',
            'make_ndcg_at_k_loss', 'kendalls_tau_for_scores', 'spearman_correlation_for_scores', "zero_one_accuracy",
-           "zero_one_accuracy_for_scores", "topk_categorical_accuracy", "ndcg_at_k", "dcg_at_k"]
+           "zero_one_accuracy_for_scores", "topk_categorical_accuracy", "point_dcg", "dcg", "ndcg"]
 
 
 def zero_one_rank_loss(y_true, y_pred):
@@ -329,14 +329,31 @@ def err(y_true, y_pred, utility_function=None, probability_mapping=None):
     results = tf.reduce_sum(discounted_document_values, axis=1)
 
     return K.mean(results)
-def dcg_at_k(r, k): #required for LambdaMART
-        r = np.asfarray(r)[:k]
-        if r.size:
-            return np.sum(np.subtract(np.power(2, r), 1) / np.log2(np.arange(2, r.size + 2)))
-        return 0.
 
-def ndcg_at_k(r, k):#required for LambdaMART
-    idcg = dcg_at_k(sorted(r, reverse=True), k)
-    if not idcg:
-        return 0.
-    return (dcg_at_k(r, k) / idcg)
+def dcg(self, preds):
+    """
+        List DCG calculation function. This function turns the list of rankings into a form which is easier to be passed to the point DCG function
+    """
+    return sum(map(self.point_dcg, enumerate(preds)))
+
+def ndcg(self, preds, k=10):
+    """
+        NDCG calculation function that calculates the NDCG values with the help of the DCG calculation helper functions.
+    """
+    ideal_top = preds[:k]
+
+    true_top = np.array([])
+    if len(preds) > 10:
+        true_top = np.partition(preds, -10)[-k:]
+        true_top.sort()
+    else:
+        true_top = np.sort(preds)
+    true_top = true_top[::-1]
+    
+    max_dcg = self.dcg(true_top)
+    ideal_dcg = self.dcg(ideal_top)
+
+    if max_dcg == 0:
+        return 1
+
+    return ideal_dcg / max_dcg
