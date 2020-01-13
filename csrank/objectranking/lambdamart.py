@@ -12,7 +12,9 @@ from csrank.objectranking.object_ranker import ObjectRanker
 
 class LambdaMART(ObjectRanker,Learner):
     def __init__(self, n_objects=None, n_object_features=None, number_of_trees=5, learning_rate=0.1,
-                 min_samples_split=2, max_depth=50, min_samples_leaf=1, max_leaf_nodes=None):
+                 min_samples_split=2, max_depth=50, min_samples_leaf=1, max_leaf_nodes=None, random_state=9, 
+                 criterion="mse", splitter="best", min_weight_fraction_leaf=None, max_features=None, random_state=None, 
+                 min_impurity_decrease=None, min_impurity_split=None, **kwargs):
         """
         Create a LambdaMART based rank regression model. This model uses an ensemble of trees that learn to predict
         the relevance scores of the documents based on the features, which then can be turned into rankings.
@@ -49,6 +51,14 @@ class LambdaMART(ObjectRanker,Learner):
         self.min_samples_leaf = min_samples_leaf
         self.max_leaf_nodes = max_leaf_nodes
         self.ensemble = []
+        self.random_state = random_state
+        self.criterion = criterion
+        self.splitter = splitter
+        self.min_weight_fraction_leaf = min_weight_fraction_leaf
+        self.max_features = max_features
+        self.random_state = random_state
+        self.min_impurity_decrease = min_impurity_decrease
+        self.min_impurity_split = min_impurity_split
         self.logger = logging.getLogger(LambdaMART.__name__)
 
     def _prepare_train_data(self, X, Y, **kwargs):
@@ -123,7 +133,7 @@ class LambdaMART(ObjectRanker,Learner):
         result = list(map(np.array, result))
         return result
     
-    def fit(self, X, y, **kwargs ):
+    def fit(self, X, y):
         """
             Fit a LambdaMART algorithm to the provided X and y arrays where X contains the features and y being the relevance scores.
 
@@ -163,17 +173,17 @@ class LambdaMART(ObjectRanker,Learner):
             lambdas_draft = pool.map(self._query_lambdas, list(zip(true_data, model_data)))
             lambdas = list(chain(*lambdas_draft))
 
-            tree = DecisionTreeRegressor(criterion="mse",
-                                         splitter="best",
+            tree = DecisionTreeRegressor(criterion=self.criterion,
+                                         splitter=self.splitter,
                                          max_depth=self.max_depth,
                                          min_samples_split=self.min_samples_split,
                                          min_samples_leaf=self.min_samples_leaf,
-                                         min_weight_fraction_leaf=0.,
+                                         min_weight_fraction_leaf=self.min_weight_fraction_leaf,
                                          max_features=None,
-                                         random_state=9,
+                                         random_state=self.random_state,
                                          max_leaf_nodes=self.max_leaf_nodes,
-                                         min_impurity_decrease=0.,
-                                         min_impurity_split=None)
+                                         min_impurity_decrease=self.min_impurity_decrease,
+                                         min_impurity_split=self.min_impurity_split)
             tree.fit(features, lambdas)
 
             self.ensemble.append(tree)
@@ -241,8 +251,9 @@ class LambdaMART(ObjectRanker,Learner):
 
         return sum(total_ndcg) / len(total_ndcg)
 
-    def set_tunable_parameters(self, min_samples_split, max_depth, min_samples_leaf, max_leaf_nodes, number_of_trees=5,
-                               learning_rate=1e-4, **kwargs):
+    def set_tunable_parameters(self, min_samples_split, max_depth, min_samples_leaf, max_leaf_nodes,
+                               learning_rate=1e-3, number_of_trees, criterion, splitter, min_weight_fraction_leaf, 
+                               max_features, random_state, min_impurity_decrease, min_impurity_split, **kwargs):
         """
             Set the tunable hyperparameters of the DecisionTree model used in LambdaMART
 
@@ -267,6 +278,14 @@ class LambdaMART(ObjectRanker,Learner):
         self.max_leaf_nodes = max_leaf_nodes
         self.number_of_trees = number_of_trees
         self.learning_rate = learning_rate
+        self.criterion = criterion
+        self.splitter = splitter
+        self.min_weight_fraction_leaf = min_weight_fraction_leaf
+        self.max_features = max_features
+        self.random_state = random_state
+        self.min_impurity_decrease = min_impurity_decrease
+        self.min_impurity_split = min_impurity_split
+
 
     def _query_lambdas(self, data, k=10):
         """
