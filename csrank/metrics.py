@@ -329,6 +329,12 @@ def err(y_true, y_pred, utility_function=None, probability_mapping=None):
     results = tf.reduce_sum(discounted_document_values, axis=1)
 
     return K.mean(results)
+def point_dcg(self, args):
+    """
+        Point DCG calculation function. Calculates the DCG for a given list. This list is assumed to be consisting of the rankings of documents belonging to the same query 
+    """
+        pos, label = args
+        return (2 ** label - 1) / math.log(pos + 2, 2)
 
 def dcg(self, preds):
     """
