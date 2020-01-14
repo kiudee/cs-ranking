@@ -134,7 +134,7 @@ class LambdaMART(ObjectRanker,Learner):
         result = list(map(np.array, result))
         return result
     
-    def fit(self, X, y):
+    def fit(self, X, y, **kwargs):
         """
             Fit a LambdaMART algorithm to the provided X and y arrays where X contains the features and y being the relevance scores.
 
