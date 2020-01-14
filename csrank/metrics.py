@@ -47,6 +47,7 @@ from functools import partial
 import numpy as np
 import tensorflow as tf
 from keras import backend as K
+import math
 
 from csrank.tensorflow_util import scores_to_rankings, get_instances_objects, tensorify
 
@@ -330,20 +331,20 @@ def err(y_true, y_pred, utility_function=None, probability_mapping=None):
 
     return K.mean(results)
 
-def point_dcg(self, args):
+def point_dcg(args):
     """
         Point DCG calculation function. Calculates the DCG for a given list. This list is assumed to be consisting of the rankings of documents belonging to the same query 
     """
     pos, label = args
     return (2 ** label - 1) / math.log(pos + 2, 2)
 
-def dcg(self, preds):
+def dcg(preds):
     """
         List DCG calculation function. This function turns the list of rankings into a form which is easier to be passed to the point DCG function
     """
-    return sum(map(self.point_dcg, enumerate(preds)))
+    return sum(map(point_dcg, enumerate(preds)))
 
-def ndcg(self, preds, k=10):
+def ndcg(preds, k=10):
     """
         NDCG calculation function that calculates the NDCG values with the help of the DCG calculation helper functions.
     """
@@ -357,8 +358,8 @@ def ndcg(self, preds, k=10):
         true_top = np.sort(preds)
     true_top = true_top[::-1]
     
-    max_dcg = self.dcg(true_top)
-    ideal_dcg = self.dcg(ideal_top)
+    max_dcg = dcg(true_top)
+    ideal_dcg = dcg(ideal_top)
 
     if max_dcg == 0:
         return 1
