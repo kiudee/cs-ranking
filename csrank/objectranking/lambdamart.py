@@ -197,7 +197,7 @@ class LambdaMART(ObjectRanker,Learner):
         return self.ensemble
 
     def _predict_scores_fixed(self, X, **kwargs):
-         """
+        """
             Predict the scores for a given collection of sets of objects of same size.
 
             Parameters
