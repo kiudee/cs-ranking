@@ -12,7 +12,7 @@ from csrank.objectranking.object_ranker import ObjectRanker
 
 class LambdaMART(ObjectRanker,Learner):
     def __init__(self, n_objects=None, n_object_features=None, number_of_trees=5, learning_rate=1e-3,
-                 min_samples_split=2, max_depth=50, min_samples_leaf=1, max_leaf_nodes=None, 
+                 min_samples_split=2, max_depth=50, min_samples_leaf=1, max_leaf_nodes=None, num_process = None,
                  criterion="mse", splitter="best", min_weight_fraction_leaf=None, max_features=None, random_state=None, 
                  min_impurity_decrease=None, min_impurity_split=None, **kwargs):
         """
@@ -50,6 +50,7 @@ class LambdaMART(ObjectRanker,Learner):
         self.max_depth = max_depth
         self.min_samples_leaf = min_samples_leaf
         self.max_leaf_nodes = max_leaf_nodes
+        self.num_process = num_process
         self.ensemble = []
         self.random_state = random_state
         self.criterion = criterion
@@ -169,9 +170,9 @@ class LambdaMART(ObjectRanker,Learner):
             true_data = self._group_by_queries(scores, queries)
             model_data = self._group_by_queries(model_preds, queries)
 
-            pool = Pool()
-            lambdas_draft = pool.map(self._query_lambdas, list(zip(true_data, model_data)))
-            lambdas = list(chain(*lambdas_draft))
+            with Pool(self.num_process) as pool:
+                lambdas_draft = pool.map(self._query_lambdas, list(zip(true_data, model_data)))
+                lambdas = list(chain(*lambdas_draft))
 
             tree = DecisionTreeRegressor(criterion=self.criterion,
                                          splitter=self.splitter,
@@ -191,11 +192,24 @@ class LambdaMART(ObjectRanker,Learner):
             prediction = tree.predict(features)
             model_preds += self.learning_rate * prediction
             #TODO: Remove the next two statements after debugging
-            train_score = self._validate(model_preds, scores, queries, 10)
+            train_score = self._score(model_preds, scores, queries, 10)
             print("  --iteration train score " + str(train_score))
         return self.ensemble
 
     def _predict_scores_fixed(self, X, **kwargs):
+         """
+            Predict the scores for a given collection of sets of objects of same size.
+
+            Parameters
+            ----------
+            X : array-like, shape (n_samples, n_objects, n_features)
+
+
+            Returns
+            -------
+            Y : array-like, shape (n_samples, n_objects)
+                Returns the scores of each of the objects for each of the samples.
+        """
         n_instances, n_objects, n_features = X.shape
         self.logger.info("For Test instances {} objects {} features {}".format(*X.shape))
         X1 = X.reshape(n_instances * n_objects, n_features)
@@ -206,9 +220,24 @@ class LambdaMART(ObjectRanker,Learner):
         return scores
 
     def predict_scores(self, X, **kwargs):
+        """
+            Predict the utility scores for each object in the collection of set of objects called a query set.
+
+            Parameters
+            ----------
+            X : numpy array of size (n_instances, n_objects, n_features)
+
+            Returns
+            -------
+            Numpy array of size (n_instances, n_objects)
+        """
         return super().predict_scores(X, **kwargs)
 
     def predict_for_scores(self, scores, **kwargs):
+        """
+         Predict rankings for the scores for a given collection of sets of objects (query sets). Wrapper that calls the function of the same name 
+         belonging to the ObjectRanker super class.
+        """
         return ObjectRanker.predict_for_scores(self, scores, **kwargs)
 
     def predict(self, X, **kwargs):
@@ -216,7 +245,16 @@ class LambdaMART(ObjectRanker,Learner):
 
     def _predict(self, pred_vector):
         """
-            Predict the scorings for the data supplied. 
+            Predict the scores for the data supplied by iterating over the ensemble and returning the output.
+
+            Parameters
+            ----------
+            pred_vector: this is a numpy array of shape (n_objects,n_features)
+
+            Returns
+            -------
+            results: Predicted scores for each of the objects
+            queries: queries corresponding to the predictions that are made
         """        
         queries = pred_vector[:, 1]
         features = pred_vector[:, 2:]        
@@ -226,7 +264,7 @@ class LambdaMART(ObjectRanker,Learner):
             results += tree.predict(features) * self.learning_rate
         return results, queries
 
-    def _validate(self, prediction, true_score, query, k=10):
+    def _score(self, prediction, true_score, query, k=10):
         """
             Function that is used to score the performance of the model. 
 
