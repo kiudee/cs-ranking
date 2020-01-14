@@ -171,7 +171,7 @@ class LambdaMART(ObjectRanker,Learner):
             model_data = self._group_by_queries(model_preds, queries)
 
             with Pool(self.num_process) as pool:
-                lambdas_draft = pool.map(self._query_lambdas, list(zip(true_data, model_data)))
+                lambdas_draft = pool.map(query_lambdas, list(zip(true_data, model_data)))
                 lambdas = list(chain(*lambdas_draft))
 
             tree = DecisionTreeRegressor(criterion=self.criterion,
@@ -325,52 +325,52 @@ class LambdaMART(ObjectRanker,Learner):
         self.min_impurity_split = min_impurity_split
 
 
-    def _query_lambdas(self, data, k=10):
-        """
-            This is used by the LambdaMART learner to compute the lambda values that are to be used as the target variable for the learner.
-            
-            Parameters
-            ----------
-            data : This contains the training data and the predictions from the previous iteration of the learning loop to calculate the lambda values
+def query_lambdas(data, k=10):
+    """
+        This is used by the LambdaMART learner to compute the lambda values that are to be used as the target variable for the learner.
+        
+        Parameters
+        ----------
+        data : This contains the training data and the predictions from the previous iteration of the learning loop to calculate the lambda values
 
-            Returns
-            -------
-            Returns the lambda values calculated for the current iteration
-        """
-        true_data, model_data = data
-        worst_order = np.argsort(true_data)
+        Returns
+        -------
+        Returns the lambda values calculated for the current iteration
+    """
+    true_data, model_data = data
+    worst_order = np.argsort(true_data)
 
-        true_data = true_data[worst_order]
-        model_data = model_data[worst_order]
-    
+    true_data = true_data[worst_order]
+    model_data = model_data[worst_order]
 
-        model_order = np.argsort(model_data)
 
-        idcg = dcg(np.sort(true_data)[-10:][::-1])
+    model_order = np.argsort(model_data)
 
-        size = len(true_data)
-        position_score = np.zeros((size, size))
+    idcg = dcg(np.sort(true_data)[-10:][::-1])
 
-        for i in range(size):
-            for j in range(size):
-                position_score[model_order[i], model_order[j]] = \
-                    point_dcg((model_order[j], true_data[model_order[i]]))
+    size = len(true_data)
+    position_score = np.zeros((size, size))
 
-        lambdas = np.zeros(size)
+    for i in range(size):
+        for j in range(size):
+            position_score[model_order[i], model_order[j]] = \
+                point_dcg((model_order[j], true_data[model_order[i]]))
 
-        for i in range(size):
-            for j in range(size):
-                    if true_data[i] > true_data[j]:
+    lambdas = np.zeros(size)
 
-                        delta_dcg  = position_score[i][j] - position_score[i][i]
-                        delta_dcg += position_score[j][i] - position_score[j][j]
+    for i in range(size):
+        for j in range(size):
+                if true_data[i] > true_data[j]:
 
-                        delta_ndcg = abs(delta_dcg / idcg)
+                    delta_dcg  = position_score[i][j] - position_score[i][i]
+                    delta_dcg += position_score[j][i] - position_score[j][j]
 
-                        rho = 1 / (1 + math.exp(model_data[i] - model_data[j]))
+                    delta_ndcg = abs(delta_dcg / idcg)
 
-                        lam = rho * delta_ndcg
+                    rho = 1 / (1 + math.exp(model_data[i] - model_data[j]))
 
-                        lambdas[j] -= lam
-                        lambdas[i] += lam
-        return lambdas
+                    lam = rho * delta_ndcg
+
+                    lambdas[j] -= lam
+                    lambdas[i] += lam
+    return lambdas
