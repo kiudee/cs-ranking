@@ -22,7 +22,8 @@ then
 fi
 
 
-conda install --yes numpy scipy joblib pytest pytest-cov coverage pandas h5py seaborn mkl-service
+conda install --yes numpy scipy joblib pytest pytest-cov pandas h5py seaborn mkl-service
+conda install --yes -c conda-forge coverage=5.0.3
 pip install sphinx sphinx-autobuild nbsphinx pandoc ipykernel bottleneck sphinx_rtd_theme notebook sphinxcontrib-bibtex
 pip install --no-cache-dir --ignore-installed -r requirements.txt
 
