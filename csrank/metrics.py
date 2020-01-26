@@ -47,6 +47,7 @@ from functools import partial
 import numpy as np
 import tensorflow as tf
 from keras import backend as K
+import math
 
 from csrank.tensorflow_util import scores_to_rankings, get_instances_objects, tensorify
 
@@ -54,7 +55,8 @@ __all__ = ['zero_one_rank_loss', 'zero_one_rank_loss_for_scores',
            'zero_one_rank_loss_for_scores_ties',
            'make_ndcg_at_k_loss', 'kendalls_tau_for_scores',
            'spearman_correlation_for_scores', "zero_one_accuracy",
-           "zero_one_accuracy_for_scores", "topk_categorical_accuracy"]
+           "zero_one_accuracy_for_scores", "topk_categorical_accuracy",
+           "point_dcg", "dcg", "ndcg"]
 
 
 def zero_one_rank_loss(y_true, y_pred):
@@ -331,3 +333,38 @@ def err(y_true, y_pred, utility_function=None, probability_mapping=None):
     results = tf.reduce_sum(discounted_document_values, axis=1)
 
     return K.mean(results)
+
+def point_dcg(args):
+    """
+        Point DCG calculation function. Calculates the DCG for a given list. This list is assumed to be consisting of the rankings of documents belonging to the same query 
+    """
+    pos, label = args
+    return (2 ** label - 1) / math.log(pos + 2, 2)
+
+def dcg(preds):
+    """
+        List DCG calculation function. This function turns the list of rankings into a form which is easier to be passed to the point DCG function
+    """
+    return sum(map(point_dcg, enumerate(preds)))
+
+def ndcg(preds, k=10):
+    """
+        NDCG calculation function that calculates the NDCG values with the help of the DCG calculation helper functions.
+    """
+    ideal_top = preds[:k]
+
+    true_top = np.array([])
+    if len(preds) > 10:
+        true_top = np.partition(preds, -10)[-k:]
+        true_top.sort()
+    else:
+        true_top = np.sort(preds)
+    true_top = true_top[::-1]
+    
+    max_dcg = dcg(true_top)
+    ideal_dcg = dcg(ideal_top)
+
+    if max_dcg == 0:
+        return 1
+
+    return ideal_dcg / max_dcg
