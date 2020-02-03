@@ -342,9 +342,9 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
     def _predict_scores_fixed(self, X, **kwargs):
         y_nests = self.create_nests(X)
         mean_trace = dict(pm.summary(self.trace)['mean'])
-        weights = np.array([mean_trace['weights__{}'.format(i)] for i in range(self.n_object_features)])
-        weights_k = np.array([mean_trace['weights_k__{}'.format(i)] for i in range(self.n_object_features)])
-        lambda_k = np.array([mean_trace['lambda_k__{}'.format(i)] for i in range(self.n_nests)])
+        weights = np.array([mean_trace['weights[{}]'.format(i)] for i in range(self.n_object_features)])
+        weights_k = np.array([mean_trace['weights_k[{}]'.format(i)] for i in range(self.n_object_features)])
+        lambda_k = np.array([mean_trace['lambda_k[{}]'.format(i)] for i in range(self.n_nests)])
         weights = (weights / lambda_k[:, None])
         utility_k = np.dot(self.features_nests, weights_k)
         utility = self._eval_utility_np(X, y_nests, weights)

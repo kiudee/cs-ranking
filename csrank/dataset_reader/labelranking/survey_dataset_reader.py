@@ -3,7 +3,8 @@ import os
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import ShuffleSplit
-from sklearn.preprocessing import Imputer, StandardScaler
+from sklearn.preprocessing import StandardScaler
+from sklearn.impute import SimpleImputer
 from sklearn.utils import check_random_state
 
 from csrank.constants import LABEL_RANKING
@@ -28,7 +29,7 @@ class SurveyDatasetReader(DatasetReader):
             context_feature = [float(i) if i != '.' else np.NAN for i in row[13:33]]
             features.append(context_feature)
         X = np.array(features)
-        X = Imputer().fit_transform(X)
+        X = SimpleImputer().fit_transform(X)
         X = np.array([np.log(np.array(X[:, i]) + 1) for i in range(len(features[0]))])
         X = np.array(X.T)
         self.X = StandardScaler().fit_transform(X)
