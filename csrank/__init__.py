@@ -1,3 +1,5 @@
+__version__ = "1.0.0"
+
 from .choicefunction import *
 from .core import *
 from .dataset_reader import *
