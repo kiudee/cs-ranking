@@ -280,8 +280,8 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
 
     def _predict_scores_fixed(self, X, **kwargs):
         mean_trace = dict(pm.summary(self.trace)['mean'])
-        weights = np.array([mean_trace['weights__{}'.format(i)] for i in range(self.n_object_features)])
-        lambda_k = np.array([mean_trace['lambda_k__{}'.format(i)] for i in range(self.n_nests)])
+        weights = np.array([mean_trace['weights[{}]'.format(i)] for i in range(self.n_object_features)])
+        lambda_k = np.array([mean_trace['lambda_k[{}]'.format(i)] for i in range(self.n_nests)])
         utility = np.dot(X, weights)
         p = self._get_probabilities_np(utility, lambda_k)
         return p

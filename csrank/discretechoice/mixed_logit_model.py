@@ -187,7 +187,7 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
         summary = dict(pm.summary(self.trace)['mean'])
         weights = np.zeros((self.n_object_features, self.n_mixtures))
         for i, k in product(range(self.n_object_features), range(self.n_mixtures)):
-            weights[i][k] = summary['weights__{}_{}'.format(i, k)]
+            weights[i][k] = summary['weights[{},{}]'.format(i, k)]
         utility = np.dot(X, weights)
         p = np.mean(npu.softmax(utility, axis=1), axis=2)
         return p
