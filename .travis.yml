@@ -28,8 +28,8 @@ script:
   - travis-sphinx build -n --source=docs
 
 after_success:
-- coveralls
-- travis-sphinx deploy
+  - coveralls
+  - travis-sphinx deploy
 
 deploy:
   provider: pypi
