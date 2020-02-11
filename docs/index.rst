@@ -7,6 +7,7 @@ Welcome to CSRank's documentation!
    intro
    examples
    api
+   history
 
 
 Indices and tables
