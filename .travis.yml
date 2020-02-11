@@ -29,15 +29,20 @@ script:
 
 after_success:
   - coveralls
-  - travis-sphinx deploy
 
 deploy:
-  provider: pypi
-  distributions: sdist bdist_wheel
-  user: __token__
-  password:
-    secure: INa6/h17ejVh3vxAGc4V7uLY30tJON2n/PWV3y0x0DnAR+pH5LiR3ZIE8/CNu1NpH+R7I1u2m0PHLYh5H8XpuewHaToer4p41jIiGF6WXnUg6PQN7zuBk9tqgmJElr+aYp/oK/B6VHTfFwEk2QlXmcqVofpKQNWrzm6+EMWXJjSs3Z9XyGIJvzJ2ihaHvr4URlNfjX98Ij0uIzzEBzN7RSJISQQo672F0b+JvgR3nQYfa5Sp4ijBnEuTtU2BYiXcojaT283O49DL0LGQHApIu0Blf79FXA2QJET65ujIQDxKBZ+WhPEHupwIiBsJ1JLl5C0wBj0UAXyogypXhm9tXfOwB12MLsbT8pbH7YMY4vS8lKtXltWTw66JbruNxECCcvHMw6SnCX0D1H40LKCvQLLJ4L2IOkVcpLI702Tlf13OF4kic+OGfSBv0nRDTLzyvMU5NACoMLnBipbpN4qXKeJdoHWOKECiRYFqZLacxPSGXx/RteiEpi25Ghgk2x53Y6pNCpzW118qW/Ij2LvPffB9PT/BPe0MIjveDLJ3PI93xevDljyZHE8v7JGOPo4gX3YA4hYwMB6gZtO+bdIemGQIP5ymrIpKqSDw/CpFLUCUVzL8sOu5AE3pbDFUGdn5njSex7Leafs+px7IH6dLE2MQqCU1o9Qr4V4FTuxta60=
-  on:
-    tags: true
-    repo: kiudee/cs-ranking
-    python: 3.8
+  - provider: pypi
+    distributions: sdist bdist_wheel
+    user: __token__
+    password:
+      secure: INa6/h17ejVh3vxAGc4V7uLY30tJON2n/PWV3y0x0DnAR+pH5LiR3ZIE8/CNu1NpH+R7I1u2m0PHLYh5H8XpuewHaToer4p41jIiGF6WXnUg6PQN7zuBk9tqgmJElr+aYp/oK/B6VHTfFwEk2QlXmcqVofpKQNWrzm6+EMWXJjSs3Z9XyGIJvzJ2ihaHvr4URlNfjX98Ij0uIzzEBzN7RSJISQQo672F0b+JvgR3nQYfa5Sp4ijBnEuTtU2BYiXcojaT283O49DL0LGQHApIu0Blf79FXA2QJET65ujIQDxKBZ+WhPEHupwIiBsJ1JLl5C0wBj0UAXyogypXhm9tXfOwB12MLsbT8pbH7YMY4vS8lKtXltWTw66JbruNxECCcvHMw6SnCX0D1H40LKCvQLLJ4L2IOkVcpLI702Tlf13OF4kic+OGfSBv0nRDTLzyvMU5NACoMLnBipbpN4qXKeJdoHWOKECiRYFqZLacxPSGXx/RteiEpi25Ghgk2x53Y6pNCpzW118qW/Ij2LvPffB9PT/BPe0MIjveDLJ3PI93xevDljyZHE8v7JGOPo4gX3YA4hYwMB6gZtO+bdIemGQIP5ymrIpKqSDw/CpFLUCUVzL8sOu5AE3pbDFUGdn5njSex7Leafs+px7IH6dLE2MQqCU1o9Qr4V4FTuxta60=
+    on:
+      tags: true
+      repo: kiudee/cs-ranking
+      python: 3.8
+  - provider: pages
+    skip_cleanup: true
+    github_token: $GH_TOKEN
+    on:
+      branch: master
+      repo: kiudee/cs-ranking
