@@ -39,7 +39,6 @@ deploy:
     on:
       tags: true
       repo: kiudee/cs-ranking
-      python: 3.8
   - provider: pages
     skip_cleanup: true
     github_token: $GH_TOKEN
