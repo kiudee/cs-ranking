@@ -22,7 +22,7 @@ with open(REQUIREMENTS_FILE) as f:
 if __name__ == "__main__":
     setup(
         name=DISTNAME,
-        version="1.0.1",
+        version="1.0.2",
         maintainer=MAINTAINER,
         maintainer_email=MAINTAINER_EMAIL,
         description=DESCRIPTION,
