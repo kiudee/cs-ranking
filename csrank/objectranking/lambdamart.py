@@ -15,10 +15,12 @@ class LambdaMART(ObjectRanker,Learner):
                  criterion="mse", splitter="best", min_weight_fraction_leaf=None, max_features=None, random_state=None, 
                  min_impurity_decrease=None, min_impurity_split=None, **kwargs):
         """
-        Create a LambdaMART based rank regression model. This model uses an ensemble of trees that learn to predict
-        the relevance scores of the documents based on the features, which then can be turned into rankings.
-        The base learner used is the implementation of Decision Tree from the sklearn tree package. The learner
-        tries to indirectly optimize the nDCG metric by learning the lambdas.
+        Create a LambdaMART based rank regression model. This model uses an 
+        ensemble of trees that learn to predict the relevance scores of 
+        the documents based on the features, which then can be turned into 
+        rankings. The base learner used is the implementation of Decision 
+        Tree from the sklearn tree package. The learner tries to indirectly 
+        optimize the nDCG metric by learning the lambdas.
 
         Parameters
         ----------
@@ -63,8 +65,9 @@ class LambdaMART(ObjectRanker,Learner):
 
     def _prepare_train_data(self, X, Y, **kwargs):
         """
-            Transform the data provided in the form of X_train of shape (n_instances,n_objects,n_features) 
-            and y_train of shape (n_instances,n_documents) into (n_instances*n_objects,n_features). 
+            Transform the data provided in the form of X_train of shape 
+            (n_instances,n_objects,n_features) and y_train of shape 
+            (n_instances,n_documents) into (n_instances*n_objects,n_features).
             The output format is similar to the oneprovided by the cusrom dataset reader.
 
             Parameters
@@ -77,8 +80,8 @@ class LambdaMART(ObjectRanker,Learner):
                 Rankings of the given objects
             Returns
             ------
-            Returns an array of shape (n_instances*n_objects,n_features) with the features and relevance 
-            scores derived from the ranking provided in y_train
+            Returns an array of shape (n_instances*n_objects,n_features) with the 
+            features and relevance scores derived from the ranking provided in y_train
 
         """
         #prepare array like features and imaginary qids
@@ -123,7 +126,8 @@ class LambdaMART(ObjectRanker,Learner):
     
     def _group_by_queries(self, data, queries):
         """
-            Internal function which orders the data given as input based on the queries supplied.
+            Internal function which orders the data given as input based
+            on the queries supplied.
         """
         result = []
         curr_query = None
@@ -137,8 +141,8 @@ class LambdaMART(ObjectRanker,Learner):
     
     def fit(self, X, y, **kwargs):
         """
-           Fit a LambdaMART algorithm to the provided X and y arrays where X contains the features and y 
-           being the relevance scores.
+           Fit a LambdaMART algorithm to the provided X and y arrays where X 
+           contains the features and y being the relevance scores.
 
            Parameters
            ----------
@@ -153,11 +157,12 @@ class LambdaMART(ObjectRanker,Learner):
             
            Returns
            -------
-           Returns the model which is in turn just a list of all the trees that make up the MART model
+           Returns the model which is in turn just a list of all the trees that
+           make up the MART model
 
         """
-        #check the case if the ensemble already has some trees then clear the trees so that the trees 
-        #from the previous iteration are not used.
+        #check the case if the ensemble already has some trees then clear the trees
+        # so that the trees from the previous iteration are not used.
         if len(self.ensemble) > 0:
             self.ensemble.clear()
         
@@ -196,8 +201,8 @@ class LambdaMART(ObjectRanker,Learner):
             model_preds += self.learning_rate * prediction
             #TODO: Remove the next two statements after debugging
             train_score = self._score(model_preds, scores, queries, 10)
-            print("  --iteration train score " + str(train_score))
-        return self.ensemble
+            #print("  --iteration train score " + str(train_score))
+        #return self.ensemble
 
     def _predict_scores_fixed(self, X, **kwargs):
         """
@@ -224,7 +229,8 @@ class LambdaMART(ObjectRanker,Learner):
 
     def predict_scores(self, X, **kwargs):
         """
-            Predict the utility scores for each object in the collection of set of objects called a query set.
+            Predict the utility scores for each object in the collection of set
+            of objects called a query set.
 
             Parameters
             ----------
@@ -238,8 +244,9 @@ class LambdaMART(ObjectRanker,Learner):
 
     def predict_for_scores(self, scores, **kwargs):
         """
-         Predict rankings for the scores for a given collection of sets of objects (query sets). 
-         Wrapper that calls the function of the same name belonging to the ObjectRanker super class.
+         Predict rankings for the scores for a given collection of sets of objects
+         (query sets). Wrapper that calls the function of the same name belonging
+         to the ObjectRanker super class.
         """
         return ObjectRanker.predict_for_scores(self, scores, **kwargs)
 
@@ -248,7 +255,8 @@ class LambdaMART(ObjectRanker,Learner):
 
     def _predict(self, pred_vector):
         """
-            Predict the scores for the data supplied by iterating over the ensemble and returning the output.
+            Predict the scores for the data supplied by iterating over the
+            ensemble and returning the output.
 
             Parameters
             ----------
@@ -275,11 +283,13 @@ class LambdaMART(ObjectRanker,Learner):
             ----------
             prediction: Predictions of the model
             true_score: ground truth data of the predictions
-            query: queries accompanying the prediction data used to calculate the ndcg value
+            query: queries accompanying the prediction data used to calculate
+            the ndcg value
 
             Returns
             -------
-            Returns the average NDCG value calculated on the basis of the queries supplied, for the predictions
+            Returns the average NDCG value calculated on the basis of the 
+            queries supplied, for the predictions
         """
         true_data = self._group_by_queries(true_score, query)
         model_data = self._group_by_queries(prediction, query)
@@ -296,7 +306,8 @@ class LambdaMART(ObjectRanker,Learner):
                                learning_rate, number_of_trees, criterion, splitter, min_weight_fraction_leaf, 
                                max_features, random_state, min_impurity_decrease, min_impurity_split, **kwargs):
         """
-            Set the tunable hyperparameters of the DecisionTree model used in LambdaMART
+            Set the tunable hyperparameters of the DecisionTree model 
+            used in LambdaMART
 
             Parameters
             ----------
@@ -330,13 +341,13 @@ class LambdaMART(ObjectRanker,Learner):
 
 def query_lambdas(data, k=10):
     """
-        This is used by the LambdaMART learner to compute the lambda values that are to be used as the 
-        target variable for the learner.
+        This is used by the LambdaMART learner to compute the lambda values that 
+        are to be used as the target variable for the learner.
         
         Parameters
         ----------
-        data : This contains the training data and the predictions from the previous iteration of 
-        the learning loop to calculate the lambda values
+        data : This contains the training data and the predictions from the 
+        previous iteration of the learning loop to calculate the lambda values
 
         Returns
         -------
@@ -382,20 +393,24 @@ def query_lambdas(data, k=10):
 
 def point_dcg(args):
     """
-        Point DCG calculation function. Calculates the DCG for a given list. This list is assumed to be consisting of the rankings of documents belonging to the same query 
+        Point DCG calculation function. Calculates the DCG for a given list. This
+        list is assumed to be consisting of the rankings of documents belonging to
+        the same query 
     """
     pos, label = args
     return (2 ** label - 1) / np.log2(pos + 2)
 
 def dcg(preds):
     """
-        List DCG calculation function. This function turns the list of rankings into a form which is easier to be passed to the point DCG function
+        List DCG calculation function. This function turns the list of rankings 
+        into a form which is easier to be passed to the point DCG function
     """
     return sum(map(point_dcg, enumerate(preds)))
 
 def ndcg(preds, k=10):
     """
-        NDCG calculation function that calculates the NDCG values with the help of the DCG calculation helper functions.
+        NDCG calculation function that calculates the NDCG values with the help 
+        of the DCG calculation helper functions.
     """
     ideal_top = preds[:k]
 
