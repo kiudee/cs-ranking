@@ -7,7 +7,6 @@ import numpy as np
 from sklearn.tree import DecisionTreeRegressor
 
 from csrank.learner import Learner
-from csrank.metrics import point_dcg, dcg, ndcg
 from csrank.objectranking.object_ranker import ObjectRanker
 
 class LambdaMART(ObjectRanker,Learner):
@@ -64,7 +63,9 @@ class LambdaMART(ObjectRanker,Learner):
 
     def _prepare_train_data(self, X, Y, **kwargs):
         """
-            Transform the data provided in the form of X_train of shape (n_instances,n_objects,n_features) and y_train of shape (n_instances,n_documents) into (n_instances*n_objects,n_features). The output format is similar to the oneprovided by the cusrom dataset reader.
+            Transform the data provided in the form of X_train of shape (n_instances,n_objects,n_features) 
+            and y_train of shape (n_instances,n_documents) into (n_instances*n_objects,n_features). 
+            The output format is similar to the oneprovided by the cusrom dataset reader.
 
             Parameters
             ---------
@@ -76,7 +77,8 @@ class LambdaMART(ObjectRanker,Learner):
                 Rankings of the given objects
             Returns
             ------
-            Returns an array of shape (n_instances*n_objects,n_features) with the features and relevance scores derived from the ranking provided in y_train
+            Returns an array of shape (n_instances*n_objects,n_features) with the features and relevance 
+            scores derived from the ranking provided in y_train
 
         """
         #prepare array like features and imaginary qids
@@ -120,7 +122,6 @@ class LambdaMART(ObjectRanker,Learner):
         return train_data
     
     def _group_by_queries(self, data, queries):
-
         """
             Internal function which orders the data given as input based on the queries supplied.
         """
@@ -136,25 +137,27 @@ class LambdaMART(ObjectRanker,Learner):
     
     def fit(self, X, y, **kwargs):
         """
-            Fit a LambdaMART algorithm to the provided X and y arrays where X contains the features and y being the relevance scores.
+           Fit a LambdaMART algorithm to the provided X and y arrays where X contains the features and y 
+           being the relevance scores.
 
-            Parameters
-            ----------
-            X : numpy array
-                (n_instances, n_objects, n_features)
-                Feature vectors of the objects
-            Y : numpy array
-                (n_instances, n_objects)
-                Rankings of the given objects
-            **kwargs
-                Keyword arguments for the fit function
+           Parameters
+           ----------
+           X : numpy array
+               (n_instances, n_objects, n_features)
+               Feature vectors of the objects
+           Y : numpy array
+               (n_instances, n_objects)
+               Rankings of the given objects
+           **kwargs
+               Keyword arguments for the fit function
             
-            Returns
-            -------
-            Returns the model which is in turn just a list of all the trees that make up the MART model
+           Returns
+           -------
+           Returns the model which is in turn just a list of all the trees that make up the MART model
 
         """
-        #check the case if the ensemble already has some trees then clear the trees so that the trees from the previous iteration are not used.
+        #check the case if the ensemble already has some trees then clear the trees so that the trees 
+        #from the previous iteration are not used.
         if len(self.ensemble) > 0:
             self.ensemble.clear()
         
@@ -235,8 +238,8 @@ class LambdaMART(ObjectRanker,Learner):
 
     def predict_for_scores(self, scores, **kwargs):
         """
-         Predict rankings for the scores for a given collection of sets of objects (query sets). Wrapper that calls the function of the same name 
-         belonging to the ObjectRanker super class.
+         Predict rankings for the scores for a given collection of sets of objects (query sets). 
+         Wrapper that calls the function of the same name belonging to the ObjectRanker super class.
         """
         return ObjectRanker.predict_for_scores(self, scores, **kwargs)
 
@@ -327,11 +330,13 @@ class LambdaMART(ObjectRanker,Learner):
 
 def query_lambdas(data, k=10):
     """
-        This is used by the LambdaMART learner to compute the lambda values that are to be used as the target variable for the learner.
+        This is used by the LambdaMART learner to compute the lambda values that are to be used as the 
+        target variable for the learner.
         
         Parameters
         ----------
-        data : This contains the training data and the predictions from the previous iteration of the learning loop to calculate the lambda values
+        data : This contains the training data and the predictions from the previous iteration of 
+        the learning loop to calculate the lambda values
 
         Returns
         -------
@@ -374,3 +379,38 @@ def query_lambdas(data, k=10):
                     lambdas[j] -= lam
                     lambdas[i] += lam
     return lambdas
+
+def point_dcg(args):
+    """
+        Point DCG calculation function. Calculates the DCG for a given list. This list is assumed to be consisting of the rankings of documents belonging to the same query 
+    """
+    pos, label = args
+    return (2 ** label - 1) / np.log2(pos + 2)
+
+def dcg(preds):
+    """
+        List DCG calculation function. This function turns the list of rankings into a form which is easier to be passed to the point DCG function
+    """
+    return sum(map(point_dcg, enumerate(preds)))
+
+def ndcg(preds, k=10):
+    """
+        NDCG calculation function that calculates the NDCG values with the help of the DCG calculation helper functions.
+    """
+    ideal_top = preds[:k]
+
+    true_top = np.array([])
+    if len(preds) > 10:
+        true_top = np.partition(preds, -10)[-k:]
+        true_top.sort()
+    else:
+        true_top = np.sort(preds)
+    true_top = true_top[::-1]
+    
+    max_dcg = dcg(true_top)
+    ideal_dcg = dcg(ideal_top)
+
+    if max_dcg == 0:
+        return 1
+
+    return ideal_dcg / max_dcg
