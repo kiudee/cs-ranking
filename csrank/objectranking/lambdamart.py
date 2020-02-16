@@ -171,7 +171,7 @@ class LambdaMART(ObjectRanker,Learner):
         train_file = self._prepare_train_data(X, y)
         scores = train_file[:, 0]
         queries = train_file[:, 1]
-        features = train_file[:, 3:]       
+        features = train_file[:, 2:]
 
         model_preds = np.zeros(len(features))
         
@@ -203,7 +203,7 @@ class LambdaMART(ObjectRanker,Learner):
             model_preds += self.learning_rate * prediction
             #TODO: Remove the next two statements after debugging
             #train_score = self._score(model_preds, scores, queries, 10)
-            #print("  --iteration train score " + str(train_score))
+            #print("  --iteration train score " + str(train_score), X.shape, " and ", y.shape)
         #return self.ensemble
 
     def _predict_scores_fixed(self, X, **kwargs):
