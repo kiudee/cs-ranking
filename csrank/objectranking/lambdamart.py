@@ -79,8 +79,6 @@ class LambdaMART(ObjectRanker, Learner):
         self.min_impurity_decrease = min_impurity_decrease
         self.min_impurity_split = min_impurity_split
         self.logger = logging.getLogger(LambdaMART.__name__)
-        # TODO: Used for Debugging, remove for production
-        # print("LambdaMART init 2")
 
     def _prepare_train_data(self, X, Y, **kwargs):
         """
@@ -193,7 +191,6 @@ class LambdaMART(ObjectRanker, Learner):
         model_preds = np.zeros(len(features))
 
         for i in range(self.number_of_trees):
-            # print(" Iteration: " + str(i + 1))
             true_data = self._group_by_queries(scores, queries)
             model_data = self._group_by_queries(model_preds, queries)
 
@@ -222,10 +219,8 @@ class LambdaMART(ObjectRanker, Learner):
 
             prediction = tree.predict(features)
             model_preds += self.learning_rate * prediction
-            # TODO: Remove the next two statements after debugging
             # train_score = self._score(model_preds, scores, queries, 10)
-            # print("  --iteration train score " + str(train_score), X.shape, " and ", y.shape)
-        # return self.ensemble
+            # print("iteration"+ i +" train score " + str(train_score)+" "+str(X.shape) + " and "+ str(y.shape))
 
     def _predict_scores_fixed(self, X, **kwargs):
         """
