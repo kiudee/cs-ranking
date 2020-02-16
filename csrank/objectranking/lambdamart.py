@@ -304,9 +304,9 @@ class LambdaMART(ObjectRanker,Learner):
 
         return sum(total_ndcg) / len(total_ndcg)
 
-    def set_tunable_parameters(self, min_samples_split, max_depth, min_samples_leaf, max_leaf_nodes,
-                               learning_rate, number_of_trees, criterion, splitter, min_weight_fraction_leaf, 
-                               max_features, random_state, min_impurity_decrease, min_impurity_split, **kwargs):
+    def set_tunable_parameters(self, min_samples_split=2, max_depth=50, min_samples_leaf=1, max_leaf_nodes=None,
+                               learning_rate=1e-3, number_of_trees=5, criterion="mse", splitter="best", min_weight_fraction_leaf=0.0, 
+                               max_features=None, random_state=None, min_impurity_decrease=0.0, min_impurity_split=1e-7, **kwargs):
         """
             Set the tunable hyperparameters of the DecisionTree model 
             used in LambdaMART
