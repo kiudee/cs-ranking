@@ -12,8 +12,8 @@ from csrank.objectranking.object_ranker import ObjectRanker
 class LambdaMART(ObjectRanker,Learner):
     def __init__(self, n_objects=None, n_object_features=None, number_of_trees=5, learning_rate=1e-3,
                  min_samples_split=2, max_depth=50, min_samples_leaf=1, max_leaf_nodes=None, num_process = None,
-                 criterion="mse", splitter="best", min_weight_fraction_leaf=None, max_features=None, random_state=None, 
-                 min_impurity_decrease=None, min_impurity_split=None, **kwargs):
+                 criterion="mse", splitter="best", min_weight_fraction_leaf=0.0, max_features=None, random_state=None, 
+                 min_impurity_decrease=0.0, min_impurity_split=1e-7, **kwargs):
         """
         Create a LambdaMART based rank regression model. This model uses an 
         ensemble of trees that learn to predict the relevance scores of 
@@ -62,6 +62,8 @@ class LambdaMART(ObjectRanker,Learner):
         self.min_impurity_decrease = min_impurity_decrease
         self.min_impurity_split = min_impurity_split
         self.logger = logging.getLogger(LambdaMART.__name__)
+        #TODO: Used for Debugging, remove for production
+        #print("LambdaMART init 2")
 
     def _prepare_train_data(self, X, Y, **kwargs):
         """
@@ -200,7 +202,7 @@ class LambdaMART(ObjectRanker,Learner):
             prediction = tree.predict(features)
             model_preds += self.learning_rate * prediction
             #TODO: Remove the next two statements after debugging
-            train_score = self._score(model_preds, scores, queries, 10)
+            #train_score = self._score(model_preds, scores, queries, 10)
             #print("  --iteration train score " + str(train_score))
         #return self.ensemble
 
