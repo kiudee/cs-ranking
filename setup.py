@@ -44,6 +44,7 @@ if __name__ == "__main__":
         extras_require={
             "data": [
                 "psycopg2-binary>=2.7",  # database access
+                "pandas>=0.22",
             ],
         },
         package_data={"notebooks": ["*"]},

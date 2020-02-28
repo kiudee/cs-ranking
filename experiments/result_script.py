@@ -3,7 +3,14 @@ import inspect
 import os
 
 import numpy as np
-import pandas as pd
+
+try:
+    import pandas as pd
+except ImportError:
+    from csrank.util import MissingExtraError
+
+    raise MissingExtraError("pandas", "data")
+
 
 from csrank.constants import CHOICE_FUNCTION, DISCRETE_CHOICE, OBJECT_RANKING
 from csrank.experiments import DBConnector, lp_metric_dict

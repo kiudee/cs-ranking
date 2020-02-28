@@ -21,7 +21,14 @@ import os
 from datetime import datetime
 
 import numpy as np
-import pandas as pd
+
+try:
+    import pandas as pd
+except ImportError:
+    from csrank.util import MissingExtraError
+
+    raise MissingExtraError("pandas", "data")
+
 import pymc3 as pm
 from docopt import docopt
 from sklearn.model_selection import ShuffleSplit

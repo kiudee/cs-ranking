@@ -3,7 +3,14 @@ import logging
 import os
 
 import numpy as np
-import pandas as pd
+
+try:
+    import pandas as pd
+except ImportError:
+    from csrank.util import MissingExtraError
+
+    raise MissingExtraError("pandas", "data")
+
 from sklearn.model_selection import ShuffleSplit
 from sklearn.utils import check_random_state
 
