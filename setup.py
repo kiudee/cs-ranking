@@ -14,10 +14,6 @@ MAINTAINER = "Karlson Pfannschmidt"
 MAINTAINER_EMAIL = "kiudee@mail.upb.de"
 
 PROJECT_ROOT = dirname(realpath(__file__))
-REQUIREMENTS_FILE = join(PROJECT_ROOT, "requirements.txt")
-
-with open(REQUIREMENTS_FILE) as f:
-    install_reqs = f.read().splitlines()
 
 if __name__ == "__main__":
     setup(
@@ -27,7 +23,25 @@ if __name__ == "__main__":
         maintainer_email=MAINTAINER_EMAIL,
         description=DESCRIPTION,
         packages=find_packages(),
-        install_requires=install_reqs,
+        install_requires=[
+            "numpy>=1.12.1",
+            "scipy>=0.19.0",
+            "scikit-learn>=0.18.2",
+            "scikit-optimize>=0.4",
+            "pandas>=0.22",
+            "h5py>=2.7",
+            "pygmo>=2.7",
+            "psycopg2-binary>=2.7",
+            "docopt>=0.6.0",
+            "joblib>=0.9.4",
+            "tqdm>=4.11.2",
+            "keras>=2.3",
+            "pymc3>=3.8",
+            "theano>=1.0",
+            # Pick either CPU or GPU version of tensorflow:
+            "tensorflow>=1.5,<2.0",
+            # tensorflow-gpu>=1.0.1"
+        ],
         package_data={"notebooks": ["*"]},
         include_package_data=True,
         long_description=readme + "\n\n" + history
