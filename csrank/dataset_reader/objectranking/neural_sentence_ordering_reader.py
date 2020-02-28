@@ -1,7 +1,13 @@
 import logging
 import os
 
-import h5py
+try:
+    import h5py
+except ImportError:
+    from csrank.util import MissingExtraError
+
+    raise MissingExtraError("h5py", "data")
+
 import numpy as np
 
 from csrank.constants import OBJECT_RANKING

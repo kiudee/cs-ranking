@@ -45,6 +45,7 @@ if __name__ == "__main__":
             "data": [
                 "psycopg2-binary>=2.7",  # database access
                 "pandas>=0.22",
+                "h5py>=2.7",
             ],
         },
         package_data={"notebooks": ["*"]},
