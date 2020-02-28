@@ -9,6 +9,14 @@ from pathlib import Path
 __all__ = ['create_dir_recursively', 'duration_till_now', 'print_dictionary', 'rename_file_if_exist', 'seconds_to_time',
            'time_from_now', 'get_duration_seconds', 'setup_logging', 'progress_bar']
 
+class MissingExtraError(ImportError):
+    """Indicates an ImportError that can be fixed by installing an extra"""
+
+    def __init__(self, package, extra):
+        super(MissingExtraError, self).__init__(
+            f"Could not import the optional dependency {package}. "
+            f'Please install it or specify the "{extra}" extra when installing this package.'
+        )
 
 def progress_bar(count, total, status=''):
     bar_len = 60
