@@ -31,7 +31,6 @@ if __name__ == "__main__":
             "pandas>=0.22",
             "h5py>=2.7",
             "pygmo>=2.7",
-            "psycopg2-binary>=2.7",
             "docopt>=0.6.0",
             "joblib>=0.9.4",
             "tqdm>=4.11.2",
@@ -42,6 +41,11 @@ if __name__ == "__main__":
             "tensorflow>=1.5,<2.0",
             # tensorflow-gpu>=1.0.1"
         ],
+        extras_require={
+            "data": [
+                "psycopg2-binary>=2.7",  # database access
+            ],
+        },
         package_data={"notebooks": ["*"]},
         include_package_data=True,
         long_description=readme + "\n\n" + history

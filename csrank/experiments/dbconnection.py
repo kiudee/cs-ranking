@@ -5,8 +5,13 @@ import os
 from abc import ABCMeta
 from datetime import timedelta, datetime
 
-import psycopg2
-from psycopg2.extras import DictCursor
+try:
+    import psycopg2
+    from psycopg2.extras import DictCursor
+except ImportError:
+    from csrank.util import MissingExtraError
+
+    raise MissingExtraError("psycopg2", "data")
 
 from csrank.util import get_duration_seconds, print_dictionary
 
