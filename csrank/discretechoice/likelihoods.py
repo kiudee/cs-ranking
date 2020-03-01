@@ -1,11 +1,17 @@
 import copy
 
-import pymc3 as pm
+try:
+    import pymc3 as pm
+    from pymc3 import Discrete
+    from pymc3.distributions.dist_math import bound
+    from pymc3.variational.callbacks import CheckParametersConvergence
+except ImportError:
+    from csrank.util import MissingExtraError
+
+    raise MissingExtraError("pymc3", "probabilistic")
+
 import theano
 import theano.tensor as tt
-from pymc3 import Discrete
-from pymc3.distributions.dist_math import bound
-from pymc3.variational.callbacks import CheckParametersConvergence
 
 from csrank.theano_util import normalize
 

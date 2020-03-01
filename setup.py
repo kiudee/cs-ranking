@@ -35,7 +35,6 @@ if __name__ == "__main__":
             "joblib>=0.9.4",
             "tqdm>=4.11.2",
             "keras>=2.3",
-            "pymc3>=3.8",
             "theano>=1.0",
             # Pick either CPU or GPU version of tensorflow:
             "tensorflow>=1.5,<2.0",
@@ -47,6 +46,9 @@ if __name__ == "__main__":
                 "pandas>=0.22",
                 "h5py>=2.7",
                 "pygmo>=2.7",
+            ],
+            "probabilistic": [
+                "pymc3>=3.8",
             ],
         },
         package_data={"notebooks": ["*"]},

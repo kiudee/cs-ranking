@@ -1,10 +1,17 @@
 import logging
 
 import numpy as np
-import pymc3 as pm
+
+try:
+    import pymc3 as pm
+    from pymc3.variational.callbacks import CheckParametersConvergence
+except ImportError:
+    from csrank.util import MissingExtraError
+
+    raise MissingExtraError("pymc3", "probabilistic")
+
 import theano
 import theano.tensor as tt
-from pymc3.variational.callbacks import CheckParametersConvergence
 
 import csrank.theano_util as ttu
 from csrank.learner import Learner
