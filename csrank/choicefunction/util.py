@@ -2,10 +2,17 @@ import copy
 from itertools import product
 
 import numpy as np
-import theano
+
+try:
+    import theano
+    from theano import tensor as tt
+except ImportError:
+    from csrank.util import MissingExtraError
+
+    raise MissingExtraError("theano", "probabilistic")
+
 from pymc3 import Discrete
 from pymc3.distributions.dist_math import bound
-from theano import tensor as tt
 
 from csrank import theano_util as ttu
 
