@@ -10,8 +10,14 @@ except ImportError:
 
     raise MissingExtraError("pymc3", "probabilistic")
 
-import theano
-import theano.tensor as tt
+try:
+    import theano
+    from theano import tensor as tt
+except ImportError:
+    from csrank.util import MissingExtraError
+
+    raise MissingExtraError("theano", "probabilistic")
+
 from sklearn.model_selection import train_test_split
 from sklearn.utils import check_random_state
 
