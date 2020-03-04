@@ -15,16 +15,10 @@ install:
   - . ./scripts/create_testenv.sh
   - conda install --yes sphinx ipython
   - pip install -I git+https://github.com/Syntaf/travis-sphinx.git
-  - pip install coveralls nbsphinx sphinx_rtd_theme
-
-env:
-  - TESTCMD="--cov-append csrank/tests/test_choice_functions.py"
-  - TESTCMD="--cov-append csrank/tests/test_discrete_choice.py"
-  - TESTCMD="--cov-append csrank/tests/test_ranking.py"
-  - TESTCMD="--cov-append csrank/tests/test_fate.py csrank/tests/test_losses.py csrank/tests/test_metrics.py csrank/tests/test_tuning.py csrank/tests/test_util.py"
+  - pip install coveralls nbsphinx sphinx_rtd_theme pytest pytest-xdist
 
 script:
-  - pytest -v --cov=csrank --ignore experiments $TESTCMD
+  - pytest -v --cov=csrank --ignore experiments --numprocesses=auto
   - travis-sphinx build -n --source=docs
 
 after_success:
