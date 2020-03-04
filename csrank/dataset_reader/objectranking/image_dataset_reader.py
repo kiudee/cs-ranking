@@ -4,9 +4,22 @@ import logging
 import os
 from itertools import combinations, product
 
-import h5py
+try:
+    import h5py
+except ImportError:
+    from csrank.util import MissingExtraError
+
+    raise MissingExtraError("h5py", "data")
+
 import numpy as np
-import pandas as pd
+
+try:
+    import pandas as pd
+except ImportError:
+    from csrank.util import MissingExtraError
+
+    raise MissingExtraError("pandas", "data")
+
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import check_random_state
 

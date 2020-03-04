@@ -1,6 +1,11 @@
 import sys
 
-import pymc3 as pm
+try:
+    import pymc3 as pm
+except ImportError:
+    from csrank.util import MissingExtraError
+
+    raise MissingExtraError("pymc3", "probabilistic")
 
 from csrank.callbacks import EarlyStoppingWithWeights, LRScheduler, DebugOutput
 from csrank.choicefunction import *

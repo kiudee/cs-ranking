@@ -1,10 +1,23 @@
 import logging
 
 import numpy as np
-import pymc3 as pm
-import theano
-import theano.tensor as tt
-from pymc3.variational.callbacks import CheckParametersConvergence
+
+try:
+    import pymc3 as pm
+    from pymc3.variational.callbacks import CheckParametersConvergence
+except ImportError:
+    from csrank.util import MissingExtraError
+
+    raise MissingExtraError("pymc3", "probabilistic")
+
+try:
+    import theano
+    from theano import tensor as tt
+except ImportError:
+    from csrank.util import MissingExtraError
+
+    raise MissingExtraError("theano", "probabilistic")
+
 from sklearn.cluster import MiniBatchKMeans
 from sklearn.utils import check_random_state
 

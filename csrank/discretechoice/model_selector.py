@@ -4,7 +4,13 @@ from abc import ABCMeta
 from itertools import product
 
 import numpy as np
-import pymc3 as pm
+
+try:
+    import pymc3 as pm
+except ImportError:
+    from csrank.util import MissingExtraError
+
+    raise MissingExtraError("pymc3", "probabilistic")
 
 
 class ModelSelector(metaclass=ABCMeta):

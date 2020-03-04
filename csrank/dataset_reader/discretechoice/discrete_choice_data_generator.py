@@ -1,5 +1,12 @@
 import numpy as np
-from pygmo import hypervolume
+
+try:
+    import pygmo
+except ImportError:
+    from csrank.util import MissingExtraError
+
+    raise MissingExtraError("pygmo", "data")
+
 from scipy.spatial.distance import squareform, pdist
 from sklearn.datasets import make_regression, make_blobs
 from sklearn.gaussian_process.kernels import Matern

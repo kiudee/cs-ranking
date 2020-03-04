@@ -2,7 +2,14 @@ import inspect
 import os
 
 import numpy as np
-import pandas as pd
+
+try:
+    import pandas as pd
+except ImportError:
+    from csrank.util import MissingExtraError
+
+    raise MissingExtraError("pandas", "data")
+
 import sklearn.preprocessing as sklearn_preprocessing
 
 DATASET_FOLDER = "university_dataset"

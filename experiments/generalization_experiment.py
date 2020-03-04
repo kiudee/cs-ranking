@@ -17,7 +17,14 @@ import logging
 import os
 
 import numpy as np
-import pandas as pd
+
+try:
+    import pandas as pd
+except ImportError:
+    from csrank.util import MissingExtraError
+
+    raise MissingExtraError("pandas", "data")
+
 from docopt import docopt
 
 from csrank import ObjectRankingDatasetGenerator, FETAObjectRanker, RankNet, ListNet, RankSVM, FATEObjectRanker, \
