@@ -3,9 +3,22 @@ import logging
 import os
 from abc import ABCMeta
 
-import h5py
+try:
+    import h5py
+except ImportError:
+    from csrank.util import MissingExtraError
+
+    raise MissingExtraError("h5py", "data")
+
 import numpy as np
-import pandas as pd
+
+try:
+    import pandas as pd
+except ImportError:
+    from csrank.util import MissingExtraError
+
+    raise MissingExtraError("pandas", "data")
+
 from pandas.api.types import is_numeric_dtype
 from sklearn.model_selection import ShuffleSplit
 

@@ -3,7 +3,14 @@ import os
 from abc import ABCMeta
 
 import numpy as np
-import pandas as pd
+
+try:
+    import pandas as pd
+except ImportError:
+    from csrank.util import MissingExtraError
+
+    raise MissingExtraError("pandas", "data")
+
 
 from csrank.constants import DYAD_RANKING
 from .dataset_reader import DatasetReader

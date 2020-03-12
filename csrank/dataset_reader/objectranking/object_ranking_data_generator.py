@@ -1,5 +1,12 @@
 import numpy as np
-from pygmo import hypervolume
+
+try:
+    import pygmo
+except ImportError:
+    from csrank.util import MissingExtraError
+
+    MissingExtraError("pygmo", "data")
+
 from scipy.spatial.distance import pdist, squareform
 from sklearn.datasets import make_regression
 from sklearn.datasets.samples_generator import make_blobs

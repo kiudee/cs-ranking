@@ -24,7 +24,13 @@ import sys
 import traceback
 from datetime import datetime
 
-import h5py
+try:
+    import h5py
+except ImportError:
+    from csrank.util import MissingExtraError
+
+    raise MissingExtraError("h5py", "data")
+
 import numpy as np
 from docopt import docopt
 from sklearn.model_selection import ShuffleSplit

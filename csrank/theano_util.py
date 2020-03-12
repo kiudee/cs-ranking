@@ -1,4 +1,9 @@
-from theano import tensor as tt
+try:
+    from theano import tensor as tt
+except ImportError:
+    from csrank.util import MissingExtraError
+
+    raise MissingExtraError("theano", "probabilistic")
 
 
 def replace_inf_theano(x):
