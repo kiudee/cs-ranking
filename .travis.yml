@@ -42,7 +42,7 @@ deploy:
   - provider: pages
     skip_cleanup: true
     github_token: $GH_TOKEN
-    local_dir: docs/_build/html/
+    local_dir: docs/_build/
     on:
       branch: master
       repo: kiudee/cs-ranking
