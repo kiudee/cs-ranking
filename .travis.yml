@@ -25,7 +25,7 @@ env:
 
 script:
   - pytest -v --cov=csrank --ignore experiments $TESTCMD
-  - travis-sphinx build -n --source=docs --outdir docs/_build
+  - travis-sphinx --outdir docs/_build build -n --source=docs
 
 after_success:
   - coveralls
