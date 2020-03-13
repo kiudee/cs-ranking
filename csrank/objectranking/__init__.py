@@ -8,3 +8,4 @@ from .list_net import ListNet
 from .rank_net import RankNet
 from .rank_svm import RankSVM
 from .baseline import RandomBaselineRanker
+from .lambdamart import LambdaMART

@@ -47,6 +47,7 @@ from functools import partial
 import numpy as np
 import tensorflow as tf
 from keras import backend as K
+import math
 
 from csrank.tensorflow_util import scores_to_rankings, get_instances_objects, tensorify
 
