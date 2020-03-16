@@ -101,7 +101,7 @@ License
 --------
 `Apache License, Version 2.0 <https://github.com/kiudee/cs-ranking/blob/master/LICENSE>`_
 
-.. |Binder| image:: https://mybinder.org/badge.svg
+.. |Binder| image:: https://mybinder.org/badge_logo.svg
    :target: https://mybinder.org/v2/gh/kiudee/cs-ranking/master?filepath=docs%2Fnotebooks
 
 .. |Build Status| image:: https://travis-ci.org/kiudee/cs-ranking.svg?branch=master
