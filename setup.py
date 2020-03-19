@@ -18,7 +18,7 @@ PROJECT_ROOT = dirname(realpath(__file__))
 if __name__ == "__main__":
     setup(
         name=DISTNAME,
-        version="1.0.2",
+        version="1.1.0",
         maintainer=MAINTAINER,
         maintainer_email=MAINTAINER_EMAIL,
         classifiers=[
