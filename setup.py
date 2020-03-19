@@ -64,4 +64,5 @@ if __name__ == "__main__":
         package_data={"notebooks": ["*"]},
         include_package_data=True,
         long_description=readme + "\n\n" + history,
+        url="https://github.com/kiudee/cs-ranking",
     )
