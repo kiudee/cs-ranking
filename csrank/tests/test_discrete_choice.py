@@ -8,7 +8,20 @@ from pymc3.variational.callbacks import CheckParametersConvergence
 
 from csrank.dataset_reader.discretechoice.util import convert_to_label_encoding
 from csrank.discretechoice import *
-from csrank.experiments.constants import *
+from csrank.constants import (
+    FETA_DC,
+    RANKNET_DC,
+    CMPNET_DC,
+    FATE_DC,
+    FATELINEAR_DC,
+    FETALINEAR_DC,
+    MNL,
+    NLM,
+    PCL,
+    GEV,
+    MLM,
+    RANKSVM_DC,
+)
 from csrank.util import metrics_on_predictions
 from csrank.metrics_np import categorical_accuracy_np, topk_categorical_accuracy_np, subset_01_loss
 from csrank.tests.test_ranking import check_params_tunable

@@ -6,7 +6,17 @@ import tensorflow as tf
 from keras.optimizers import SGD
 
 from csrank import PairedCombinatorialLogit
-from csrank.experiments.constants import *
+from csrank.constants import (
+    FATELINEAR_RANKER,
+    FETALINEAR_RANKER,
+    FETA_RANKER,
+    RANKNET,
+    CMPNET,
+    LISTNET,
+    ERR,
+    RANKSVM,
+    FATE_RANKER,
+)
 from csrank.metrics_np import zero_one_rank_loss_for_scores_ties_np, zero_one_accuracy_np
 from csrank.objectranking import *
 from csrank.objectranking.fate_object_ranker import FATEObjectRanker

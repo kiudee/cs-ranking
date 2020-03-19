@@ -7,7 +7,16 @@ from keras.optimizers import SGD
 from pymc3.variational.callbacks import CheckParametersConvergence
 
 from csrank.choicefunction import *
-from csrank.experiments.constants import *
+from csrank.constants import (
+    FETA_CHOICE,
+    FATE_CHOICE,
+    FATELINEAR_CHOICE,
+    FETALINEAR_CHOICE,
+    RANKNET_CHOICE,
+    CMPNET_CHOICE,
+    GLM_CHOICE,
+    RANKSVM_CHOICE,
+)
 from csrank.util import metrics_on_predictions
 from csrank.metrics_np import f1_measure, subset_01_loss, instance_informedness, auc_score
 from csrank.tests.test_ranking import check_params_tunable
