@@ -13,8 +13,6 @@ from csrank.constants import *
 from csrank.dataset_reader import *
 from csrank.discretechoice import *
 from csrank.experiments.constants import *
-from csrank.metrics import zero_one_rank_loss, zero_one_accuracy, make_ndcg_at_k_loss
-from csrank.metrics_np import *
 from csrank.objectranking import *
 
 __all__ = ['log_test_train_data', 'get_dataset_reader', 'create_optimizer_parameters', 'create_optimizer_parameters2',
@@ -72,9 +70,6 @@ lp_metric_dict = {
     DISCRETE_CHOICE: discrete_choice_metrics,
     CHOICE_FUNCTION: choice_metrics
 }
-metrics_on_predictions = [f1_measure, precision, recall, subset_01_loss, hamming, instance_informedness,
-                          zero_one_rank_loss, zero_one_accuracy, make_ndcg_at_k_loss, zero_one_accuracy_np]
-
 
 def log_test_train_data(X_train, X_test, logger):
     if isinstance(X_train, dict) and isinstance(X_test, dict):
