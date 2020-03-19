@@ -21,6 +21,19 @@ if __name__ == "__main__":
         version="1.0.2",
         maintainer=MAINTAINER,
         maintainer_email=MAINTAINER_EMAIL,
+        classifiers=[
+            "Development Status :: 4 - Beta",
+            "Intended Audience :: Developers",
+            "Intended Audience :: Science/Research",
+            "License :: OSI Approved :: Apache Software License",
+            "Natural Language :: English",
+            "Programming Language :: Python :: 3",
+            "Programming Language :: Python :: 3.6",
+            "Programming Language :: Python :: 3.7",
+            "Programming Language :: Python :: 3.8",
+            "Topic :: Scientific/Engineering",
+            "Topic :: Software Development",
+        ],
         description=DESCRIPTION,
         packages=find_packages(),
         install_requires=[
@@ -46,12 +59,9 @@ if __name__ == "__main__":
                 "h5py>=2.7",
                 "pygmo>=2.7",
             ],
-            "probabilistic": [
-                "pymc3>=3.8",
-                "theano>=1.0",
-            ],
+            "probabilistic": ["pymc3>=3.8", "theano>=1.0",],
         },
         package_data={"notebooks": ["*"]},
         include_package_data=True,
-        long_description=readme + "\n\n" + history
+        long_description=readme + "\n\n" + history,
     )
