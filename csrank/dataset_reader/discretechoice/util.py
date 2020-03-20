@@ -40,7 +40,12 @@ def sub_sampling_discrete_choices_from_relevance(Xt, Yt, n_objects=5):
             else:
                 idx = rs.choice(choices, size=bucket_size)
             if len(zeros) > n_objects - 1:
-                idys = np.array([rs.choice(zeros, size=(n_objects - 1), replace=False) for i in range(len(idx))])
+                idys = np.array(
+                    [
+                        rs.choice(zeros, size=(n_objects - 1), replace=False)
+                        for i in range(len(idx))
+                    ]
+                )
             else:
                 idys = rs.choice(zeros, size=(len(idx), (n_objects - 1)), replace=True)
             idx = np.append(idys, idx[:, None], axis=1)

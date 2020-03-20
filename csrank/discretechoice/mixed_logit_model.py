@@ -24,11 +24,23 @@ import csrank.theano_util as ttu
 from csrank.learner import Learner
 from csrank.util import print_dictionary
 from .discrete_choice import DiscreteObjectChooser
-from .likelihoods import likelihood_dict, LogLikelihood, create_weight_dictionary, fit_pymc3_model
+from .likelihoods import (
+    likelihood_dict,
+    LogLikelihood,
+    create_weight_dictionary,
+    fit_pymc3_model,
+)
 
 
 class MixedLogitModel(DiscreteObjectChooser, Learner):
-    def __init__(self, n_object_features, n_mixtures=4, loss_function='', regularization='l2', **kwargs):
+    def __init__(
+        self,
+        n_object_features,
+        n_mixtures=4,
+        loss_function="",
+        regularization="l2",
+        **kwargs
+    ):
         """
             Create an instance of the Mixed Logit model for learning the discrete choice function. In this model we
             assume weights of this model to be random due to which this model can learn different variations in choices
@@ -73,10 +85,10 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
         self.logger = logging.getLogger(MixedLogitModel.__name__)
         self.n_object_features = n_object_features
         self.loss_function = likelihood_dict.get(loss_function, None)
-        if regularization in ['l1', 'l2']:
+        if regularization in ["l1", "l2"]:
             self.regularization = regularization
         else:
-            self.regularization = 'l2'
+            self.regularization = "l2"
         self._config = None
         self.n_mixtures = n_mixtures
         self.model = None
@@ -110,15 +122,24 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
                 \\text{weights} \\sim \\text{Normal}(\\text{mu}=\\text{mu}_w, \\text{sd}=\\text{sd}_w)
         """
         if self._config is None:
-            if self.regularization == 'l2':
+            if self.regularization == "l2":
                 weight = pm.Normal
-                prior = 'sd'
-            elif self.regularization == 'l1':
+                prior = "sd"
+            elif self.regularization == "l1":
                 weight = pm.Laplace
-                prior = 'b'
+                prior = "b"
             self._config = {
-                'weights': [weight, {'mu': (pm.Normal, {'mu': 0, 'sd': 5}), prior: (pm.HalfCauchy, {'beta': 1})}]}
-            self.logger.info('Creating model with config {}'.format(print_dictionary(self._config)))
+                "weights": [
+                    weight,
+                    {
+                        "mu": (pm.Normal, {"mu": 0, "sd": 5}),
+                        prior: (pm.HalfCauchy, {"beta": 1}),
+                    },
+                ]
+            }
+            self.logger.info(
+                "Creating model with config {}".format(print_dictionary(self._config))
+            )
         return self._config
 
     def construct_model(self, X, Y):
@@ -147,15 +168,29 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
         with pm.Model() as self.model:
             self.Xt = theano.shared(X)
             self.Yt = theano.shared(Y)
-            shapes = {'weights': (self.n_object_features, self.n_mixtures)}
+            shapes = {"weights": (self.n_object_features, self.n_mixtures)}
             weights_dict = create_weight_dictionary(self.model_configuration, shapes)
-            utility = tt.dot(self.Xt, weights_dict['weights'])
+            utility = tt.dot(self.Xt, weights_dict["weights"])
             self.p = tt.mean(ttu.softmax(utility, axis=1), axis=2)
-            yl = LogLikelihood('yl', loss_func=self.loss_function, p=self.p, observed=self.Yt)
+            yl = LogLikelihood(
+                "yl", loss_func=self.loss_function, p=self.p, observed=self.Yt
+            )
         self.logger.info("Model construction completed")
 
-    def fit(self, X, Y, sampler='variational', tune=500, draws=500,
-            vi_params={"n": 20000, "method": "advi", "callbacks": [CheckParametersConvergence()]}, **kwargs):
+    def fit(
+        self,
+        X,
+        Y,
+        sampler="variational",
+        tune=500,
+        draws=500,
+        vi_params={
+            "n": 20000,
+            "method": "advi",
+            "callbacks": [CheckParametersConvergence()],
+        },
+        **kwargs
+    ):
         """
             Fit a mixed logit model on the provided set of queries X and choices Y of those objects. The provided
             queries and corresponding preferences are of a fixed size (numpy arrays). For learning this network
@@ -196,10 +231,10 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
         fit_pymc3_model(self, sampler, draws, tune, vi_params, **kwargs)
 
     def _predict_scores_fixed(self, X, **kwargs):
-        summary = dict(pm.summary(self.trace)['mean'])
+        summary = dict(pm.summary(self.trace)["mean"])
         weights = np.zeros((self.n_object_features, self.n_mixtures))
         for i, k in product(range(self.n_object_features), range(self.n_mixtures)):
-            weights[i][k] = summary['weights[{},{}]'.format(i, k)]
+            weights[i][k] = summary["weights[{},{}]".format(i, k)]
         utility = np.dot(X, weights)
         p = np.mean(npu.softmax(utility, axis=1), axis=2)
         return p
@@ -213,7 +248,9 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
     def predict_for_scores(self, scores, **kwargs):
         return DiscreteObjectChooser.predict_for_scores(self, scores, **kwargs)
 
-    def set_tunable_parameters(self, n_mixtures=4, loss_function='', regularization="l1", **point):
+    def set_tunable_parameters(
+        self, n_mixtures=4, loss_function="", regularization="l1", **point
+    ):
         """
             Set tunable parameters of the Mixed Logit model to the values provided.
 
@@ -240,5 +277,7 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
         self.p = None
         self._config = None
         if len(point) > 0:
-            self.logger.warning('This ranking algorithm does not support'
-                                ' tunable parameters called: {}'.format(print_dictionary(point)))
+            self.logger.warning(
+                "This ranking algorithm does not support"
+                " tunable parameters called: {}".format(print_dictionary(point))
+            )

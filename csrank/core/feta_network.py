@@ -18,11 +18,26 @@ from csrank.util import print_dictionary
 
 
 class FETANetwork(Learner):
-    def __init__(self, n_objects, n_object_features, n_hidden=2, n_units=8, add_zeroth_order_model=False,
-                 max_number_of_objects=5, num_subsample=5, loss_function=hinged_rank_loss, batch_normalization=False,
-                 kernel_regularizer=l2(l=1e-4), kernel_initializer='lecun_normal', activation='selu',
-                 optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9), metrics=None, batch_size=256, random_state=None,
-                 **kwargs):
+    def __init__(
+        self,
+        n_objects,
+        n_object_features,
+        n_hidden=2,
+        n_units=8,
+        add_zeroth_order_model=False,
+        max_number_of_objects=5,
+        num_subsample=5,
+        loss_function=hinged_rank_loss,
+        batch_normalization=False,
+        kernel_regularizer=l2(l=1e-4),
+        kernel_initializer="lecun_normal",
+        activation="selu",
+        optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
+        metrics=None,
+        batch_size=256,
+        random_state=None,
+        **kwargs
+    ):
         self.logger = logging.getLogger(FETANetwork.__name__)
         self.random_state = check_random_state(random_state)
         self.kernel_regularizer = kernel_regularizer
@@ -47,8 +62,12 @@ class FETANetwork(Learner):
             if key not in allowed_dense_kwargs:
                 del kwargs[key]
         self.kwargs = kwargs
-        self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
-                               activation=self.activation, **self.kwargs)
+        self._construct_layers(
+            kernel_regularizer=self.kernel_regularizer,
+            kernel_initializer=self.kernel_initializer,
+            activation=self.activation,
+            **self.kwargs
+        )
         self._pairwise_model = None
         self.model = None
         self._zero_order_model = None
@@ -66,25 +85,39 @@ class FETANetwork(Learner):
         self.logger.info("n_hidden {}, n_units {}".format(self.n_hidden, self.n_units))
         if self.batch_normalization:
             if self._use_zeroth_model:
-                self.hidden_layers_zeroth = [NormalizedDense(self.n_units, name="hidden_zeroth_{}".format(x), **kwargs)
-                                             for x in range(self.n_hidden)]
-            self.hidden_layers = [NormalizedDense(self.n_units, name="hidden_{}".format(x), **kwargs) for x in
-                                  range(self.n_hidden)]
+                self.hidden_layers_zeroth = [
+                    NormalizedDense(
+                        self.n_units, name="hidden_zeroth_{}".format(x), **kwargs
+                    )
+                    for x in range(self.n_hidden)
+                ]
+            self.hidden_layers = [
+                NormalizedDense(self.n_units, name="hidden_{}".format(x), **kwargs)
+                for x in range(self.n_hidden)
+            ]
         else:
             if self._use_zeroth_model:
-                self.hidden_layers_zeroth = [Dense(self.n_units, name="hidden_zeroth_{}".format(x), **kwargs) for x in
-                                             range(self.n_hidden)]
-            self.hidden_layers = [Dense(self.n_units, name="hidden_{}".format(x), **kwargs) for x in
-                                  range(self.n_hidden)]
+                self.hidden_layers_zeroth = [
+                    Dense(self.n_units, name="hidden_zeroth_{}".format(x), **kwargs)
+                    for x in range(self.n_hidden)
+                ]
+            self.hidden_layers = [
+                Dense(self.n_units, name="hidden_{}".format(x), **kwargs)
+                for x in range(self.n_hidden)
+            ]
         assert len(self.hidden_layers) == self.n_hidden
-        self.output_node = Dense(1, activation="sigmoid", kernel_regularizer=self.kernel_regularizer)
+        self.output_node = Dense(
+            1, activation="sigmoid", kernel_regularizer=self.kernel_regularizer
+        )
         if self._use_zeroth_model:
-            self.output_node_zeroth = Dense(1, activation="sigmoid", kernel_regularizer=self.kernel_regularizer)
+            self.output_node_zeroth = Dense(
+                1, activation="sigmoid", kernel_regularizer=self.kernel_regularizer
+            )
 
     @property
     def zero_order_model(self):
         if self._zero_order_model is None and self._use_zeroth_model:
-            self.logger.info('Creating zeroth model')
+            self.logger.info("Creating zeroth model")
             inp = Input(shape=(self.n_object_features,))
 
             x = inp
@@ -93,13 +126,13 @@ class FETANetwork(Learner):
             zeroth_output = self.output_node_zeroth(x)
 
             self._zero_order_model = Model(inputs=[inp], outputs=zeroth_output)
-            self.logger.info('Done creating zeroth model')
+            self.logger.info("Done creating zeroth model")
         return self._zero_order_model
 
     @property
     def pairwise_model(self):
         if self._pairwise_model is None:
-            self.logger.info('Creating pairwise model')
+            self.logger.info("Creating pairwise model")
             x1 = Input(shape=(self.n_object_features,))
             x2 = Input(shape=(self.n_object_features,))
 
@@ -118,7 +151,7 @@ class FETANetwork(Learner):
 
             merged_output = concatenate([n_g, n_l])
             self._pairwise_model = Model(inputs=[x1, x2], outputs=merged_output)
-            self.logger.info('Done creating pairwise model')
+            self.logger.info("Done creating pairwise model")
         return self._pairwise_model
 
     def _predict_pair(self, a, b, only_pairwise=False, **kwargs):
@@ -138,7 +171,9 @@ class FETANetwork(Learner):
         for n in range(n_instances):
             for k, (i, j) in enumerate(permutations(range(n_objects), 2)):
                 pairs[k] = (X[n, i], X[n, j])
-            result = self._predict_pair(pairs[:, 0], pairs[:, 1], only_pairwise=True, **kwd)[:, 0]
+            result = self._predict_pair(
+                pairs[:, 0], pairs[:, 1], only_pairwise=True, **kwd
+            )[:, 0]
             scores[n] += result.reshape(n_objects, n_objects - 1).mean(axis=1)
             del result
         del pairs
@@ -169,7 +204,7 @@ class FETANetwork(Learner):
             return Lambda(lambda x: x[:, i])
 
         if self._use_zeroth_model:
-            self.logger.debug('Create 0th order model')
+            self.logger.debug("Create 0th order model")
             zeroth_order_outputs = []
             inputs = []
             for i in range(self.n_objects):
@@ -179,8 +214,8 @@ class FETANetwork(Learner):
                     x = hidden(x)
                 zeroth_order_outputs.append(self.output_node_zeroth(x))
             zeroth_order_scores = concatenate(zeroth_order_outputs)
-            self.logger.debug('0th order model finished')
-        self.logger.debug('Create 1st order model')
+            self.logger.debug("0th order model finished")
+        self.logger.debug("Create 1st order model")
         outputs = [list() for _ in range(self.n_objects)]
         for i, j in combinations(range(self.n_objects), 2):
             if self._use_zeroth_model:
@@ -210,15 +245,19 @@ class FETANetwork(Learner):
         sum_func = lambda s: K.mean(s, axis=1, keepdims=True)
         scores = [Lambda(sum_func)(x) for x in outputs]
         scores = concatenate(scores)
-        self.logger.debug('1st order model finished')
+        self.logger.debug("1st order model finished")
         if self._use_zeroth_model:
             scores = add([scores, zeroth_order_scores])
         model = Model(inputs=self.input_layer, outputs=scores)
-        self.logger.debug('Compiling complete model...')
-        model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
+        self.logger.debug("Compiling complete model...")
+        model.compile(
+            loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics
+        )
         return model
 
-    def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
+    def fit(
+        self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd
+    ):
         """
             Fit a generic preference learning model on a provided set of queries.
             The provided queries can be of a fixed size (numpy arrays).
@@ -242,25 +281,33 @@ class FETANetwork(Learner):
             **kwd :
                 Keyword arguments for the fit function
         """
-        self.logger.debug('Enter fit function...')
+        self.logger.debug("Enter fit function...")
 
         X, Y = self.sub_sampling(X, Y)
         self.model = self.construct_model()
-        self.logger.debug('Starting gradient descent...')
+        self.logger.debug("Starting gradient descent...")
 
-        self.model.fit(x=X, y=Y, batch_size=self.batch_size, epochs=epochs, callbacks=callbacks,
-                       validation_split=validation_split, verbose=verbose, **kwd)
+        self.model.fit(
+            x=X,
+            y=Y,
+            batch_size=self.batch_size,
+            epochs=epochs,
+            callbacks=callbacks,
+            validation_split=validation_split,
+            verbose=verbose,
+            **kwd
+        )
         if self.hash_file is not None:
             self.model.save_weights(self.hash_file)
 
     def sub_sampling(self, X, Y):
         if self._n_objects > self.max_number_of_objects:
             bucket_size = int(self._n_objects / self.max_number_of_objects)
-            idx = self.random_state.randint(bucket_size,
-                                            size=(len(X), self.n_objects))
+            idx = self.random_state.randint(bucket_size, size=(len(X), self.n_objects))
             # TODO: subsampling multiple rankings
             idx += np.arange(start=0, stop=self._n_objects, step=bucket_size)[
-                   :self.n_objects]
+                : self.n_objects
+            ]
             X = X[np.arange(X.shape[0])[:, None], idx]
             Y = Y[np.arange(X.shape[0])[:, None], idx]
             tmp_sort = Y.argsort(axis=-1)
@@ -270,7 +317,9 @@ class FETANetwork(Learner):
 
     def _predict_scores_fixed(self, X, **kwargs):
         n_objects = X.shape[-2]
-        self.logger.info("For Test instances {} objects {} features {}".format(*X.shape))
+        self.logger.info(
+            "For Test instances {} objects {} features {}".format(*X.shape)
+        )
         if self.n_objects != n_objects:
             scores = self._predict_scores_using_pairs(X, **kwargs)
         else:
@@ -278,8 +327,15 @@ class FETANetwork(Learner):
         self.logger.info("Done predicting scores")
         return scores
 
-    def set_tunable_parameters(self, n_hidden=32, n_units=2, reg_strength=1e-4, learning_rate=1e-3,
-                               batch_size=128, **point):
+    def set_tunable_parameters(
+        self,
+        n_hidden=32,
+        n_units=2,
+        reg_strength=1e-4,
+        learning_rate=1e-3,
+        batch_size=128,
+        **point
+    ):
         """
             Set tunable parameters of the FETA-network to the values provided.
 
@@ -306,11 +362,17 @@ class FETANetwork(Learner):
         K.set_value(self.optimizer.lr, learning_rate)
         self._pairwise_model = None
         self._zero_order_model = None
-        self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
-                               activation=self.activation, **self.kwargs)
+        self._construct_layers(
+            kernel_regularizer=self.kernel_regularizer,
+            kernel_initializer=self.kernel_initializer,
+            activation=self.activation,
+            **self.kwargs
+        )
         if len(point) > 0:
-            self.logger.warning('This ranking algorithm does not support tunable parameters'
-                                ' called: {}'.format(print_dictionary(point)))
+            self.logger.warning(
+                "This ranking algorithm does not support tunable parameters"
+                " called: {}".format(print_dictionary(point))
+            )
 
     def clear_memory(self, **kwargs):
         """
@@ -330,9 +392,12 @@ class FETANetwork(Learner):
             self._pairwise_model = None
             self._zero_order_model = None
             self.optimizer = self.optimizer.from_config(self._optimizer_config)
-            self._construct_layers(kernel_regularizer=self.kernel_regularizer,
-                                   kernel_initializer=self.kernel_initializer,
-                                   activation=self.activation, **self.kwargs)
+            self._construct_layers(
+                kernel_regularizer=self.kernel_regularizer,
+                kernel_initializer=self.kernel_initializer,
+                activation=self.activation,
+                **self.kwargs
+            )
             self.model = self.construct_model()
             self.model.load_weights(self.hash_file)
         else:

@@ -16,10 +16,22 @@ from csrank.util import print_dictionary
 
 
 class CmpNetCore(Learner):
-    def __init__(self, n_object_features, n_hidden=2, n_units=8, loss_function='binary_crossentropy',
-                 batch_normalization=True, kernel_regularizer=l2(l=1e-4), kernel_initializer='lecun_normal',
-                 activation='relu', optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9), metrics=['binary_accuracy'],
-                 batch_size=256, random_state=None, **kwargs):
+    def __init__(
+        self,
+        n_object_features,
+        n_hidden=2,
+        n_units=8,
+        loss_function="binary_crossentropy",
+        batch_normalization=True,
+        kernel_regularizer=l2(l=1e-4),
+        kernel_initializer="lecun_normal",
+        activation="relu",
+        optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
+        metrics=["binary_accuracy"],
+        batch_size=256,
+        random_state=None,
+        **kwargs
+    ):
         self.logger = logging.getLogger("CmpNet")
         self.n_object_features = n_object_features
         self.batch_normalization = batch_normalization
@@ -46,20 +58,30 @@ class CmpNetCore(Learner):
         self.threshold_instances = int(1e10)
         self.random_state = check_random_state(random_state)
         self.model = None
-        self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
-                               activation=self.activation, **self.kwargs)
+        self._construct_layers(
+            kernel_regularizer=self.kernel_regularizer,
+            kernel_initializer=self.kernel_initializer,
+            activation=self.activation,
+            **self.kwargs
+        )
 
     def _construct_layers(self, **kwargs):
 
-        self.output_node = Dense(1, activation='sigmoid', kernel_regularizer=self.kernel_regularizer)
+        self.output_node = Dense(
+            1, activation="sigmoid", kernel_regularizer=self.kernel_regularizer
+        )
         self.x1 = Input(shape=(self.n_object_features,))
         self.x2 = Input(shape=(self.n_object_features,))
         if self.batch_normalization:
-            self.hidden_layers = [NormalizedDense(self.n_units, name="hidden_{}".format(x), **kwargs) for x in
-                                  range(self.n_hidden)]
+            self.hidden_layers = [
+                NormalizedDense(self.n_units, name="hidden_{}".format(x), **kwargs)
+                for x in range(self.n_hidden)
+            ]
         else:
-            self.hidden_layers = [Dense(self.n_units, name="hidden_{}".format(x), **kwargs) for x in
-                                  range(self.n_hidden)]
+            self.hidden_layers = [
+                Dense(self.n_units, name="hidden_{}".format(x), **kwargs)
+                for x in range(self.n_hidden)
+            ]
         assert len(self.hidden_layers) == self.n_hidden
 
     def _convert_instances_(self, X, Y):
@@ -80,7 +102,7 @@ class CmpNetCore(Learner):
         """
         x1x2 = concatenate([self.x1, self.x2])
         x2x1 = concatenate([self.x2, self.x1])
-        self.logger.debug('Creating the model')
+        self.logger.debug("Creating the model")
         for hidden in self.hidden_layers:
             x1x2 = hidden(x1x2)
             x2x1 = hidden(x2x1)
@@ -90,10 +112,14 @@ class CmpNetCore(Learner):
         N_l = self.output_node(merged_right)
         merged_output = concatenate([N_g, N_l])
         model = Model(inputs=[self.x1, self.x2], outputs=merged_output)
-        model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
+        model.compile(
+            loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics
+        )
         return model
 
-    def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
+    def fit(
+        self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd
+    ):
         """
             Fit a generic preference learning CmptNet on the provided set of queries X and preferences Y of those
             objects. The provided queries and corresponding preferences are of a fixed size (numpy arrays).
@@ -131,17 +157,27 @@ class CmpNetCore(Learner):
         self.logger.debug("Instances created {}".format(x1.shape[0]))
         self.model = self.construct_model()
 
-        self.logger.debug('Finished Creating the model, now fitting started')
-        self.model.fit([x1, x2], y_double, batch_size=self.batch_size, epochs=epochs, callbacks=callbacks,
-                       validation_split=validation_split, verbose=verbose, **kwd)
-        self.logger.debug('Fitting Complete')
+        self.logger.debug("Finished Creating the model, now fitting started")
+        self.model.fit(
+            [x1, x2],
+            y_double,
+            batch_size=self.batch_size,
+            epochs=epochs,
+            callbacks=callbacks,
+            validation_split=validation_split,
+            verbose=verbose,
+            **kwd
+        )
+        self.logger.debug("Fitting Complete")
 
     def predict_pair(self, a, b, **kwargs):
         return self.model.predict([a, b], **kwargs)
 
     def _predict_scores_fixed(self, X, **kwargs):
         n_instances, n_objects, n_features = X.shape
-        self.logger.info("Test Set instances {} objects {} features {}".format(*X.shape))
+        self.logger.info(
+            "Test Set instances {} objects {} features {}".format(*X.shape)
+        )
         n2 = n_objects * (n_objects - 1)
         pairs = np.empty((n2, 2, n_features))
         scores = np.empty((n_instances, n_objects))
@@ -172,16 +208,26 @@ class CmpNetCore(Learner):
             K.set_session(sess)
 
             self.optimizer = self.optimizer.from_config(self._optimizer_config)
-            self._construct_layers(kernel_regularizer=self.kernel_regularizer,
-                                   kernel_initializer=self.kernel_initializer,
-                                   activation=self.activation, **self.kwargs)
+            self._construct_layers(
+                kernel_regularizer=self.kernel_regularizer,
+                kernel_initializer=self.kernel_initializer,
+                activation=self.activation,
+                **self.kwargs
+            )
             self.model = self.construct_model()
             self.model.load_weights(self.hash_file)
         else:
             self.logger.info("Cannot clear the memory")
 
-    def set_tunable_parameters(self, n_hidden=32, n_units=2, reg_strength=1e-4, learning_rate=1e-3, batch_size=128,
-                               **point):
+    def set_tunable_parameters(
+        self,
+        n_hidden=32,
+        n_units=2,
+        reg_strength=1e-4,
+        learning_rate=1e-3,
+        batch_size=128,
+        **point
+    ):
         """
             Set tunable parameters of the CmpNet network to the values provided.
 
@@ -206,8 +252,14 @@ class CmpNetCore(Learner):
         self.batch_size = batch_size
         self.optimizer = self.optimizer.from_config(self._optimizer_config)
         K.set_value(self.optimizer.lr, learning_rate)
-        self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
-                               activation=self.activation, **self.kwargs)
+        self._construct_layers(
+            kernel_regularizer=self.kernel_regularizer,
+            kernel_initializer=self.kernel_initializer,
+            activation=self.activation,
+            **self.kwargs
+        )
         if len(point) > 0:
-            self.logger.warning('This ranking algorithm does not support'
-                                ' tunable parameters called: {}'.format(print_dictionary(point)))
+            self.logger.warning(
+                "This ranking algorithm does not support"
+                " tunable parameters called: {}".format(print_dictionary(point))
+            )

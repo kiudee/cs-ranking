@@ -60,10 +60,10 @@ def create_weight_dictionary(model_args, shapes):
         prior, params = copy.deepcopy(value)
         for k in params.keys():
             if isinstance(params[k], tuple):
-                params[k][1]['name'] = '{}_{}'.format(key, k)
+                params[k][1]["name"] = "{}_{}".format(key, k)
                 params[k] = params[k][0](**params[k][1])
-        params['name'] = key
-        params['shape'] = shapes[key]
+        params["name"] = key
+        params["shape"] = shapes[key]
         weights_dict[key] = prior(**params)
     return weights_dict
 
@@ -82,8 +82,8 @@ def categorical_crossentropy(p, y_true):
 
 def categorical_hinge(p, y_true):
     pos = tt.sum(y_true * p, axis=-1)
-    neg = tt.max((1. - y_true) * p, axis=-1)
-    return -tt.maximum(0., neg - pos + 1.)
+    neg = tt.max((1.0 - y_true) * p, axis=-1)
+    return -tt.maximum(0.0, neg - pos + 1.0)
 
 
 class BinaryCrossEntropyLikelihood(Discrete):
@@ -123,8 +123,7 @@ class BinaryCrossEntropyLikelihood(Discrete):
         k = self.k
         a = self.loss_func(p, value)
         p = ttu.normalize(p)
-        sum_to1 = theano.gradient.zero_grad(
-            tt.le(abs(tt.sum(p, axis=-1) - 1), 1e-5))
+        sum_to1 = theano.gradient.zero_grad(tt.le(abs(tt.sum(p, axis=-1) - 1), 1e-5))
 
         value_k = tt.argmax(value, axis=1)
         return bound(a, value_k >= 0, value_k <= (k - 1), sum_to1)

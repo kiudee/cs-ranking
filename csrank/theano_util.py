@@ -8,8 +8,8 @@ except ImportError:
 
 def replace_inf_theano(x):
     if tt.any(tt.isinf(x)):
-        x = tt.switch(tt.isinf(x), 2e+300, x)
-        x = tt.switch(tt.isnan(x), 2e+300, x)
+        x = tt.switch(tt.isinf(x), 2e300, x)
+        x = tt.switch(tt.isnan(x), 2e300, x)
     return x
 
 

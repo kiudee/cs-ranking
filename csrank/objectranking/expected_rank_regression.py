@@ -8,15 +8,23 @@ from csrank.learner import Learner
 from csrank.numpy_util import normalize
 from csrank.objectranking.object_ranker import ObjectRanker
 from csrank.util import print_dictionary
-from ..dataset_reader.objectranking.util import \
-    complete_linear_regression_dataset
+from ..dataset_reader.objectranking.util import complete_linear_regression_dataset
 
-__all__ = ['ExpectedRankRegression']
+__all__ = ["ExpectedRankRegression"]
 
 
 class ExpectedRankRegression(ObjectRanker, Learner):
-    def __init__(self, n_object_features, alpha=0.0, l1_ratio=0.5, tol=1e-4, normalize=True, fit_intercept=True,
-                 random_state=None, **kwargs):
+    def __init__(
+        self,
+        n_object_features,
+        alpha=0.0,
+        l1_ratio=0.5,
+        tol=1e-4,
+        normalize=True,
+        fit_intercept=True,
+        random_state=None,
+        **kwargs
+    ):
         """
             Create an expected rank regression model.
             This model normalizes the ranks to [0, 1] and treats them as regression target. For ``α = 0`` we employ
@@ -83,34 +91,47 @@ class ExpectedRankRegression(ObjectRanker, Learner):
             **kwargs
                 Keyword arguments for the fit function
         """
-        self.logger.debug('Creating the Dataset')
+        self.logger.debug("Creating the Dataset")
         x_train, y_train = complete_linear_regression_dataset(X, Y)
         assert x_train.shape[1] == self.n_object_features
-        self.logger.debug('Finished the Dataset')
+        self.logger.debug("Finished the Dataset")
         if self.alpha < 1e-3:
-            self.model = LinearRegression(normalize=self.normalize, fit_intercept=self.fit_intercept)
+            self.model = LinearRegression(
+                normalize=self.normalize, fit_intercept=self.fit_intercept
+            )
             self.logger.info("LinearRegression")
         else:
             if self.l1_ratio >= 0.01:
-                self.model = ElasticNet(alpha=self.alpha, l1_ratio=self.l1_ratio, normalize=self.normalize,
-                                        tol=self.tol, fit_intercept=self.fit_intercept, random_state=self.random_state)
+                self.model = ElasticNet(
+                    alpha=self.alpha,
+                    l1_ratio=self.l1_ratio,
+                    normalize=self.normalize,
+                    tol=self.tol,
+                    fit_intercept=self.fit_intercept,
+                    random_state=self.random_state,
+                )
                 self.logger.info("Elastic Net")
             else:
-                self.model = Ridge(alpha=self.alpha, normalize=self.normalize,
-                                   tol=self.tol,
-                                   fit_intercept=self.fit_intercept,
-                                   random_state=self.random_state)
+                self.model = Ridge(
+                    alpha=self.alpha,
+                    normalize=self.normalize,
+                    tol=self.tol,
+                    fit_intercept=self.fit_intercept,
+                    random_state=self.random_state,
+                )
                 self.logger.info("Ridge")
-        self.logger.debug('Finished Creating the model, now fitting started')
+        self.logger.debug("Finished Creating the model, now fitting started")
         self.model.fit(x_train, y_train)
         self.weights = self.model.coef_.flatten()
         if self.fit_intercept:
             self.weights = np.append(self.weights, self.model.intercept_)
-        self.logger.debug('Fitting Complete')
+        self.logger.debug("Fitting Complete")
 
     def _predict_scores_fixed(self, X, **kwargs):
         n_instances, n_objects, n_features = X.shape
-        self.logger.info("For Test instances {} objects {} features {}".format(*X.shape))
+        self.logger.info(
+            "For Test instances {} objects {} features {}".format(*X.shape)
+        )
         X1 = X.reshape(n_instances * n_objects, n_features)
         scores = n_objects - self.model.predict(X1)
         scores = scores.reshape(n_instances, n_objects)
@@ -146,6 +167,8 @@ class ExpectedRankRegression(ObjectRanker, Learner):
         self.alpha = alpha
         self.l1_ratio = l1_ratio
         if len(point) > 0:
-            self.logger.warning('This ranking algorithm does not support'
-                                ' tunable parameters'
-                                ' called: {}'.format(print_dictionary(point)))
+            self.logger.warning(
+                "This ranking algorithm does not support"
+                " tunable parameters"
+                " called: {}".format(print_dictionary(point))
+            )

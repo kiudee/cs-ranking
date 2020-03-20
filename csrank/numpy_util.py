@@ -4,8 +4,8 @@ from scipy.stats import rankdata
 
 def replace_inf_np(x):
     if np.any(np.isinf(x)):
-        x[np.isinf(x)] = 2e+300
-        x[np.isnan(x)] = 2e+300
+        x[np.isinf(x)] = 2e300
+        x[np.isnan(x)] = 2e300
     return x
 
 
@@ -34,7 +34,7 @@ def softmax(x, axis=1):
 
 
 def sigmoid(x):
-    x = 1. / (1. + np.exp(-x))
+    x = 1.0 / (1.0 + np.exp(-x))
     return x
 
 

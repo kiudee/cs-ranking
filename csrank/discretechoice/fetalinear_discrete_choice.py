@@ -7,8 +7,16 @@ from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 
 
 class FETALinearDiscreteChoiceFunction(FETALinearCore, DiscreteObjectChooser):
-    def __init__(self, n_object_features, n_objects, loss_function=categorical_hinge,
-                 learning_rate=5e-3, batch_size=256, random_state=None, **kwargs):
+    def __init__(
+        self,
+        n_object_features,
+        n_objects,
+        loss_function=categorical_hinge,
+        learning_rate=5e-3,
+        batch_size=256,
+        random_state=None,
+        **kwargs
+    ):
         """
             Create a FATELinear-network architecture for leaning discrete choice function. The first-aggregate-then-evaluate
             approach learns an embedding of each object and then aggregates that into a context representation
@@ -46,8 +54,15 @@ class FETALinearDiscreteChoiceFunction(FETALinearCore, DiscreteObjectChooser):
             **kwargs
                 Keyword arguments for the @FATENetwork
         """
-        super().__init__(n_object_features=n_object_features, n_objects=n_objects, learning_rate=learning_rate,
-                         batch_size=batch_size, loss_function=loss_function, random_state=random_state, **kwargs)
+        super().__init__(
+            n_object_features=n_object_features,
+            n_objects=n_objects,
+            learning_rate=learning_rate,
+            batch_size=batch_size,
+            loss_function=loss_function,
+            random_state=random_state,
+            **kwargs
+        )
         self.logger = logging.getLogger(FETALinearDiscreteChoiceFunction.__name__)
 
     def fit(self, X, Y, **kwd):
@@ -65,6 +80,13 @@ class FETALinearDiscreteChoiceFunction(FETALinearCore, DiscreteObjectChooser):
     def predict(self, X, **kwargs):
         return super().predict(X, **kwargs)
 
-    def set_tunable_parameters(self, learning_rate=1e-3, batch_size=128, epochs_drop=300, drop=0.1, **point):
-        super().set_tunable_parameters(learning_rate=learning_rate, batch_size=batch_size, epochs_drop=epochs_drop,
-                                       drop=drop, **point)
+    def set_tunable_parameters(
+        self, learning_rate=1e-3, batch_size=128, epochs_drop=300, drop=0.1, **point
+    ):
+        super().set_tunable_parameters(
+            learning_rate=learning_rate,
+            batch_size=batch_size,
+            epochs_drop=epochs_drop,
+            drop=drop,
+            **point
+        )

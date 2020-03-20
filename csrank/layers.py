@@ -4,7 +4,7 @@ from keras.layers import BatchNormalization, Dense, Activation, Input, Lambda
 from keras.layers.merge import average
 from keras.models import Model
 
-__all__ = ['NormalizedDense', 'DeepSet', 'create_input_lambda']
+__all__ = ["NormalizedDense", "DeepSet", "create_input_lambda"]
 
 
 class NormalizedDense(object):
@@ -19,9 +19,10 @@ class NormalizedDense(object):
         False if activation is applied before Bach Normalization
         """
 
-    def __init__(self, units, activation='relu',
-                 normalize_before_activation=False, **kwd):
-        self.dense = Dense(units, activation='linear', **kwd)
+    def __init__(
+        self, units, activation="relu", normalize_before_activation=False, **kwd
+    ):
+        self.dense = Dense(units, activation="linear", **kwd)
         self.activation = Activation(activation=activation)
         self.batchnorm = BatchNormalization()
         self.norm_layer = None
@@ -73,18 +74,23 @@ class DeepSet(object):
         List of densely connected hidden layers
     """
 
-    def __init__(self, units,
-                 layers=1,
-                 activation='selu',
-                 kernel_initializer='lecun_normal',
-                 kernel_regularizer=None,
-                 input_shape=None,
-                 **kwargs):
+    def __init__(
+        self,
+        units,
+        layers=1,
+        activation="selu",
+        kernel_initializer="lecun_normal",
+        kernel_regularizer=None,
+        input_shape=None,
+        **kwargs
+    ):
         self.logger = logging.getLogger("DeepSets")
         self.n_units = units
         if input_shape is not None:
-            self.logger.warning("input_shape is deprecated, since the number "
-                                "of objects is now inferred")
+            self.logger.warning(
+                "input_shape is deprecated, since the number "
+                "of objects is now inferred"
+            )
             self.n_features = input_shape[1]
         self.n_layers = layers
         self.activation = activation
@@ -92,10 +98,12 @@ class DeepSet(object):
         self.kernel_regularizer = kernel_regularizer
 
         self.cached_models = dict()
-        self._construct_layers(kernel_initializer=kernel_initializer,
-                               kernel_regularizer=kernel_regularizer,
-                               activation=activation,
-                               **kwargs)
+        self._construct_layers(
+            kernel_initializer=kernel_initializer,
+            kernel_regularizer=kernel_regularizer,
+            activation=activation,
+            **kwargs
+        )
 
     def _construct_layers(self, **kwargs):
         # Create set representation layers:
@@ -107,12 +115,11 @@ class DeepSet(object):
 
     def _create_model(self, shape):
         n_objects, n_features = shape[1].value, shape[2].value
-        if hasattr(self, 'n_features'):
+        if hasattr(self, "n_features"):
             if self.n_features != n_features:
                 self.logger.error("Number of features is not consistent.")
         input_layer = Input(shape=(n_objects, n_features))
-        inputs = [create_input_lambda(i)(input_layer) for i in
-                  range(n_objects)]
+        inputs = [create_input_lambda(i)(input_layer) for i in range(n_objects)]
 
         # Connect input tensors with set mapping layer:
         set_mappings = []
@@ -125,8 +132,7 @@ class DeepSet(object):
         # TODO: is feature_repr used outside?
         feature_repr = average([x for (j, x) in set_mappings])
 
-        self.cached_models[n_objects] = Model(inputs=input_layer,
-                                              outputs=feature_repr)
+        self.cached_models[n_objects] = Model(inputs=input_layer, outputs=feature_repr)
 
     def __call__(self, x):
         shape = x.shape

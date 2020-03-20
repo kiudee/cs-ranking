@@ -11,15 +11,19 @@ from ..expedia_dataset_reader import ExpediaDatasetReader
 
 class ExpediaDiscreteChoiceDatasetReader(ExpediaDatasetReader):
     def __init__(self, random_state=None, n_objects=5, **kwargs):
-        super(ExpediaDiscreteChoiceDatasetReader, self).__init__(learning_problem=DISCRETE_CHOICE, **kwargs)
+        super(ExpediaDiscreteChoiceDatasetReader, self).__init__(
+            learning_problem=DISCRETE_CHOICE, **kwargs
+        )
         self.logger = logging.getLogger(ExpediaDiscreteChoiceDatasetReader.__name__)
         self.random_state = check_random_state(random_state)
         self.n_objects = n_objects
-        self.hdf5file_path = os.path.join(self.dirname, 'exp_dc.h5')
+        self.hdf5file_path = os.path.join(self.dirname, "exp_dc.h5")
         self.__load_dataset__()
 
     def sub_sampling_function(self, X, Y):
-        return sub_sampling_discrete_choices_from_relevance(Xt=X, Yt=Y, n_objects=self.n_objects)
+        return sub_sampling_discrete_choices_from_relevance(
+            Xt=X, Yt=Y, n_objects=self.n_objects
+        )
 
     def get_train_test_datasets(self, n_datasets):
         pass

@@ -26,13 +26,25 @@ import csrank.theano_util as ttu
 from csrank.learner import Learner
 from csrank.util import print_dictionary
 from .discrete_choice import DiscreteObjectChooser
-from .likelihoods import likelihood_dict, LogLikelihood, create_weight_dictionary, fit_pymc3_model
+from .likelihoods import (
+    likelihood_dict,
+    LogLikelihood,
+    create_weight_dictionary,
+    fit_pymc3_model,
+)
 
 
 class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
-
-    def __init__(self, n_object_features, n_objects, loss_function='', regularization='l2', alpha=5e-2,
-                 random_state=None, **kwd):
+    def __init__(
+        self,
+        n_object_features,
+        n_objects,
+        loss_function="",
+        regularization="l2",
+        alpha=5e-2,
+        random_state=None,
+        **kwd
+    ):
         """
             Create an instance of the Paired Combinatorial Logit model for learning the discrete choice function. This
             model considering each pair of objects as a different nest allowing unique covariances for each pair of objects,
@@ -91,10 +103,10 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         self.alpha = alpha
         self.random_state = check_random_state(random_state)
         self.loss_function = likelihood_dict.get(loss_function, None)
-        if regularization in ['l1', 'l2']:
+        if regularization in ["l1", "l2"]:
             self.regularization = regularization
         else:
-            self.regularization = 'l2'
+            self.regularization = "l2"
         self._config = None
         self.model = None
         self.trace = None
@@ -132,15 +144,24 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
                     Dictionary containing the priors applies on the weights
         """
         if self._config is None:
-            if self.regularization == 'l2':
+            if self.regularization == "l2":
                 weight = pm.Normal
-                prior = 'sd'
-            elif self.regularization == 'l1':
+                prior = "sd"
+            elif self.regularization == "l1":
                 weight = pm.Laplace
-                prior = 'b'
+                prior = "b"
             self._config = {
-                'weights': [weight, {'mu': (pm.Normal, {'mu': 0, 'sd': 5}), prior: (pm.HalfCauchy, {'beta': 1})}]}
-            self.logger.info('Creating model with config {}'.format(print_dictionary(self._config)))
+                "weights": [
+                    weight,
+                    {
+                        "mu": (pm.Normal, {"mu": 0, "sd": 5}),
+                        prior: (pm.HalfCauchy, {"beta": 1}),
+                    },
+                ]
+            }
+            self.logger.info(
+                "Creating model with config {}".format(print_dictionary(self._config))
+            )
         return self._config
 
     #
@@ -189,7 +210,9 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         ind = ind.reshape(2 * n_nests, 2)
         x = uti_per_nest[:, ind[:, 0], ind[:, 1]].reshape((-1, 2))
         log_sum_exp_nest = ttu.logsumexp(x).reshape((-1, n_nests))
-        pnk = tt.exp(log_sum_exp_nest * lambda_k - ttu.logsumexp(log_sum_exp_nest * lambda_k))
+        pnk = tt.exp(
+            log_sum_exp_nest * lambda_k - ttu.logsumexp(log_sum_exp_nest * lambda_k)
+        )
         p = tt.zeros(tuple(utility.shape), dtype=float)
         for i in range(n_nests):
             i1, i2 = nests_indices[i]
@@ -205,18 +228,25 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         n_nests = self.n_nests
         temp_lambdas = np.ones((n_objects, n_objects), lambda_k.dtype)
         temp_lambdas[nests_indices[:, 0], nests_indices[:, 1]] = temp_lambdas.T[
-            nests_indices[:, 0], nests_indices[:, 1]] = lambda_k
+            nests_indices[:, 0], nests_indices[:, 1]
+        ] = lambda_k
         uti_per_nest = np.transpose((utility[:, None] / temp_lambdas), (0, 2, 1))
         ind = np.array([[[i1, i2], [i2, i1]] for i1, i2 in nests_indices])
         ind = ind.reshape(2 * n_nests, 2)
         x = uti_per_nest[:, ind[:, 0], ind[:, 1]].reshape(-1, 2)
         log_sum_exp_nest = npu.logsumexp(x).reshape(-1, n_nests)
-        pnk = np.exp(log_sum_exp_nest * lambda_k - npu.logsumexp(log_sum_exp_nest * lambda_k))
+        pnk = np.exp(
+            log_sum_exp_nest * lambda_k - npu.logsumexp(log_sum_exp_nest * lambda_k)
+        )
         p = np.zeros(tuple(utility.shape), dtype=float)
         for i in range(n_nests):
             i1, i2 = nests_indices[i]
-            p[:, i1] += np.exp(uti_per_nest[:, i1, i2] - log_sum_exp_nest[:, i]) * pnk[:, i]
-            p[:, i2] += np.exp(uti_per_nest[:, i2, i1] - log_sum_exp_nest[:, i]) * pnk[:, i]
+            p[:, i1] += (
+                np.exp(uti_per_nest[:, i1, i2] - log_sum_exp_nest[:, i]) * pnk[:, i]
+            )
+            p[:, i2] += (
+                np.exp(uti_per_nest[:, i2, i1] - log_sum_exp_nest[:, i]) * pnk[:, i]
+            )
         return p
 
     def construct_model(self, X, Y):
@@ -242,16 +272,30 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         with pm.Model() as self.model:
             self.Xt = theano.shared(X)
             self.Yt = theano.shared(Y)
-            shapes = {'weights': self.n_object_features}
+            shapes = {"weights": self.n_object_features}
             weights_dict = create_weight_dictionary(self.model_configuration, shapes)
-            lambda_k = pm.Uniform('lambda_k', self.alpha, 1.0, shape=self.n_nests)
-            utility = tt.dot(self.Xt, weights_dict['weights'])
+            lambda_k = pm.Uniform("lambda_k", self.alpha, 1.0, shape=self.n_nests)
+            utility = tt.dot(self.Xt, weights_dict["weights"])
             self.p = self.get_probabilities(utility, lambda_k)
-            yl = LogLikelihood('yl', loss_func=self.loss_function, p=self.p, observed=self.Yt)
+            yl = LogLikelihood(
+                "yl", loss_func=self.loss_function, p=self.p, observed=self.Yt
+            )
         self.logger.info("Model construction completed")
 
-    def fit(self, X, Y, sampler='variational', tune=500, draws=500,
-            vi_params={"n": 20000, "method": "advi", "callbacks": [CheckParametersConvergence()]}, **kwargs):
+    def fit(
+        self,
+        X,
+        Y,
+        sampler="variational",
+        tune=500,
+        draws=500,
+        vi_params={
+            "n": 20000,
+            "method": "advi",
+            "callbacks": [CheckParametersConvergence()],
+        },
+        **kwargs
+    ):
         """
            Fit a paired combinatorial logit  model on the provided set of queries X and choices Y of those objects. The
            provided queries and corresponding preferences are of a fixed size (numpy arrays). For learning this network
@@ -292,9 +336,13 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         fit_pymc3_model(self, sampler, draws, tune, vi_params, **kwargs)
 
     def _predict_scores_fixed(self, X, **kwargs):
-        mean_trace = dict(pm.summary(self.trace)['mean'])
-        weights = np.array([mean_trace['weights[{}]'.format(i)] for i in range(self.n_object_features)])
-        lambda_k = np.array([mean_trace['lambda_k[{}]'.format(i)] for i in range(self.n_nests)])
+        mean_trace = dict(pm.summary(self.trace)["mean"])
+        weights = np.array(
+            [mean_trace["weights[{}]".format(i)] for i in range(self.n_object_features)]
+        )
+        lambda_k = np.array(
+            [mean_trace["lambda_k[{}]".format(i)] for i in range(self.n_nests)]
+        )
         utility = np.dot(X, weights)
         p = self._get_probabilities_np(utility, lambda_k)
         return p
@@ -308,7 +356,9 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
     def predict_for_scores(self, scores, **kwargs):
         return DiscreteObjectChooser.predict_for_scores(self, scores, **kwargs)
 
-    def set_tunable_parameters(self, alpha=5e-2, loss_function='', regularization='l2', **point):
+    def set_tunable_parameters(
+        self, alpha=5e-2, loss_function="", regularization="l2", **point
+    ):
         """
             Set tunable parameters of the Paired Combinatorial logit model to the values provided.
 
@@ -336,5 +386,7 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         self.p = None
         self._config = None
         if len(point) > 0:
-            self.logger.warning('This ranking algorithm does not support tunable parameters'
-                                ' called: {}'.format(print_dictionary(point)))
+            self.logger.warning(
+                "This ranking algorithm does not support tunable parameters"
+                " called: {}".format(print_dictionary(point))
+            )

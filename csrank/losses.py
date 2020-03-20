@@ -3,8 +3,12 @@ from keras import backend as K
 
 from csrank.tensorflow_util import tensorify
 
-__all__ = ['hinged_rank_loss', 'make_smooth_ndcg_loss', 'smooth_rank_loss',
-           'plackett_luce_loss']
+__all__ = [
+    "hinged_rank_loss",
+    "make_smooth_ndcg_loss",
+    "smooth_rank_loss",
+    "plackett_luce_loss",
+]
 
 
 def identifiable(loss_function):
@@ -19,8 +23,7 @@ def identifiable(loss_function):
 @identifiable
 def hinged_rank_loss(y_true, y_pred):
     y_true, y_pred = tensorify(y_true), tensorify(y_pred)
-    mask = K.cast(K.greater(y_true[:, None] - y_true[:, :, None], 0),
-                  dtype='float32')
+    mask = K.cast(K.greater(y_true[:, None] - y_true[:, :, None], 0), dtype="float32")
     diff = y_pred[:, :, None] - y_pred[:, None]
     hinge = K.maximum(mask * (1 - diff), 0)
     n = K.sum(mask, axis=(1, 2))
@@ -30,8 +33,7 @@ def hinged_rank_loss(y_true, y_pred):
 @identifiable
 def smooth_rank_loss(y_true, y_pred):
     y_true, y_pred = tensorify(y_true), tensorify(y_pred)
-    mask = K.cast(K.greater(y_true[:, None] - y_true[:, :, None], 0),
-                  dtype='float32')
+    mask = K.cast(K.greater(y_true[:, None] - y_true[:, :, None], 0), dtype="float32")
     exped = K.exp(y_pred[:, None] - y_pred[:, :, None])
     result = K.sum(exped * mask, axis=[1, 2])
     return result / K.sum(mask, axis=(1, 2))
@@ -39,14 +41,13 @@ def smooth_rank_loss(y_true, y_pred):
 
 @identifiable
 def plackett_luce_loss(y_true, s_pred):
-    y_true = tf.cast(y_true, dtype='int32')
-    s_pred = tf.cast(s_pred, dtype='float32')
+    y_true = tf.cast(y_true, dtype="int32")
+    s_pred = tf.cast(s_pred, dtype="float32")
     m = tf.shape(y_true)[1]
     raw_max = tf.reduce_max(s_pred, axis=1, keepdims=True)
-    max_elem = tf.stop_gradient(tf.where(
-        tf.is_finite(raw_max),
-        raw_max,
-        tf.zeros_like(raw_max)))
+    max_elem = tf.stop_gradient(
+        tf.where(tf.is_finite(raw_max), raw_max, tf.zeros_like(raw_max))
+    )
     exped = tf.exp(tf.subtract(s_pred, max_elem))
     masks = tf.greater_equal(y_true, tf.range(m)[:, None, None])
     tri = exped * tf.cast(masks, tf.float32)
@@ -56,11 +57,11 @@ def plackett_luce_loss(y_true, s_pred):
 
 def make_smooth_ndcg_loss(y_true, y_pred):
     y_true, y_pred = tensorify(y_true), tensorify(y_pred)
-    n_objects = K.max(y_true) + 1.
-    y_true_f = K.cast(y_true, 'float32')
-    relevance = n_objects - y_true_f - 1.
-    log_term = K.log(relevance + 2.) / K.log(2.)
-    exp_relevance = K.pow(2., relevance) - 1.
+    n_objects = K.max(y_true) + 1.0
+    y_true_f = K.cast(y_true, "float32")
+    relevance = n_objects - y_true_f - 1.0
+    log_term = K.log(relevance + 2.0) / K.log(2.0)
+    exp_relevance = K.pow(2.0, relevance) - 1.0
     gains = exp_relevance / log_term
 
     # Calculate ideal dcg:

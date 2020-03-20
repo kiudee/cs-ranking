@@ -20,11 +20,23 @@ __all__ = ["ListNet"]
 
 
 class ListNet(Learner, ObjectRanker):
-
-    def __init__(self, n_object_features, n_top, n_hidden=2, n_units=8, loss_function=plackett_luce_loss,
-                 batch_normalization=False, kernel_regularizer=l2(l=1e-4), activation="selu",
-                 kernel_initializer='lecun_normal', optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
-                 metrics=[zero_one_rank_loss_for_scores_ties], batch_size=256, random_state=None, **kwargs):
+    def __init__(
+        self,
+        n_object_features,
+        n_top,
+        n_hidden=2,
+        n_units=8,
+        loss_function=plackett_luce_loss,
+        batch_normalization=False,
+        kernel_regularizer=l2(l=1e-4),
+        activation="selu",
+        kernel_initializer="lecun_normal",
+        optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
+        metrics=[zero_one_rank_loss_for_scores_ties],
+        batch_size=256,
+        random_state=None,
+        **kwargs
+    ):
         """ Create an instance of the ListNet architecture. ListNet trains a latent utility model based on
             top-k-subrankings of the objects. This network learns a latent utility score for each object in the given
             query set :math:`Q = \\{x_1, \\ldots ,x_n\\}` using the equation :math:`U(x) = F(x, w)` where :math:`w` is the
@@ -92,8 +104,12 @@ class ListNet(Learner, ObjectRanker):
             if key not in allowed_dense_kwargs:
                 del kwargs[key]
         self.kwargs = kwargs
-        self._construct_layers(kernel_regularizer=self.kernel_regularizer, kernel_initializer=self.kernel_initializer,
-                               activation=self.activation, **self.kwargs)
+        self._construct_layers(
+            kernel_regularizer=self.kernel_regularizer,
+            kernel_initializer=self.kernel_initializer,
+            activation=self.activation,
+            **self.kwargs
+        )
 
         self.threshold_instances = int(1e10)
         self.batch_size = batch_size
@@ -104,15 +120,19 @@ class ListNet(Learner, ObjectRanker):
 
     def _construct_layers(self, **kwargs):
         self.input_layer = Input(shape=(self.n_top, self.n_object_features))
-        self.output_node = Dense(1, activation="linear", kernel_regularizer=self.kernel_regularizer)
+        self.output_node = Dense(
+            1, activation="linear", kernel_regularizer=self.kernel_regularizer
+        )
         if self.batch_normalization:
             self.hidden_layers = [
                 NormalizedDense(self.n_units, name="hidden_{}".format(x), **kwargs)
-                for x in range(self.n_hidden)]
+                for x in range(self.n_hidden)
+            ]
         else:
             self.hidden_layers = [
                 Dense(self.n_units, name="hidden_{}".format(x), **kwargs)
-                for x in range(self.n_hidden)]
+                for x in range(self.n_hidden)
+            ]
         assert len(self.hidden_layers) == self.n_hidden
 
     def _create_topk(self, X, Y):
@@ -122,7 +142,9 @@ class ListNet(Learner, ObjectRanker):
         Y_topk = Y[mask].reshape(n_inst, self.n_top)
         return X_topk, Y_topk
 
-    def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
+    def fit(
+        self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd
+    ):
         """
             Fit an object ranking learning ListNet on the top-k-subrankings in the provided set of queries. The provided
             queries can be of a fixed size (numpy arrays). For fitting the model we maximize the Plackett-Luce
@@ -161,8 +183,16 @@ class ListNet(Learner, ObjectRanker):
         self.logger.debug("Creating the model")
         self.model = self.construct_model()
         self.logger.debug("Finished creating the model, now fitting...")
-        self.model.fit(X, Y, batch_size=self.batch_size, epochs=epochs, callbacks=callbacks,
-                       validation_split=validation_split, verbose=verbose, **kwd)
+        self.model.fit(
+            X,
+            Y,
+            batch_size=self.batch_size,
+            epochs=epochs,
+            callbacks=callbacks,
+            validation_split=validation_split,
+            verbose=verbose,
+            **kwd
+        )
         self.logger.debug("Fitting Complete")
 
     def construct_model(self):
@@ -182,7 +212,9 @@ class ListNet(Learner, ObjectRanker):
         outputs = [self.output_node(x) for x in hid]
         merged = concatenate(outputs)
         model = Model(inputs=self.input_layer, outputs=merged)
-        model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
+        model.compile(
+            loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics
+        )
         return model
 
     @property
@@ -198,7 +230,7 @@ class ListNet(Learner, ObjectRanker):
                 scoring model used to predict utility score for each object
         """
         if self._scoring_model is None:
-            self.logger.info('Creating scoring model')
+            self.logger.info("Creating scoring model")
             inp = Input(shape=(self.n_object_features,))
             x = inp
             for hidden_layer in self.hidden_layers:
@@ -209,7 +241,9 @@ class ListNet(Learner, ObjectRanker):
 
     def _predict_scores_fixed(self, X, **kwargs):
         n_inst, n_obj, n_feat = X.shape
-        self.logger.info("For Test instances {} objects {} features {}".format(*X.shape))
+        self.logger.info(
+            "For Test instances {} objects {} features {}".format(*X.shape)
+        )
         inp = Input(shape=(n_obj, n_feat))
         lambdas = [create_input_lambda(i)(inp) for i in range(n_obj)]
         scores = concatenate([self.scoring_model(lam) for lam in lambdas])
@@ -241,16 +275,26 @@ class ListNet(Learner, ObjectRanker):
             K.set_session(sess)
             self._scoring_model = None
             self.optimizer = self.optimizer.from_config(self._optimizer_config)
-            self._construct_layers(kernel_regularizer=self.kernel_regularizer,
-                                   kernel_initializer=self.kernel_initializer,
-                                   activation=self.activation, **self.kwargs)
+            self._construct_layers(
+                kernel_regularizer=self.kernel_regularizer,
+                kernel_initializer=self.kernel_initializer,
+                activation=self.activation,
+                **self.kwargs
+            )
             self.model = self.construct_model()
             self.model.load_weights(self.hash_file)
         else:
             self.logger.info("Cannot clear the memory")
 
-    def set_tunable_parameters(self, n_hidden=32, n_units=2, reg_strength=1e-4, learning_rate=1e-3, batch_size=128,
-                               **point):
+    def set_tunable_parameters(
+        self,
+        n_hidden=32,
+        n_units=2,
+        reg_strength=1e-4,
+        learning_rate=1e-3,
+        batch_size=128,
+        **point
+    ):
         """
             Set tunable parameters of the ListNet network to the values provided.
 
@@ -275,11 +319,16 @@ class ListNet(Learner, ObjectRanker):
         self.batch_size = batch_size
         self.optimizer = self.optimizer.from_config(self._optimizer_config)
         K.set_value(self.optimizer.lr, learning_rate)
-        self._construct_layers(kernel_regularizer=self.kernel_regularizer,
-                               kernel_initializer=self.kernel_initializer,
-                               activation=self.activation, **self.kwargs)
+        self._construct_layers(
+            kernel_regularizer=self.kernel_regularizer,
+            kernel_initializer=self.kernel_initializer,
+            activation=self.activation,
+            **self.kwargs
+        )
 
         self._scoring_model = None
         if len(point) > 0:
-            self.logger.warning("This ranking algorithm does not support "
-                                "tunable parameters called: {}".format(print_dictionary(point)))
+            self.logger.warning(
+                "This ranking algorithm does not support "
+                "tunable parameters called: {}".format(print_dictionary(point))
+            )

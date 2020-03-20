@@ -7,14 +7,26 @@ from csrank.core.cmpnet_core import CmpNetCore
 from csrank.dataset_reader.objectranking.util import generate_complete_pairwise_dataset
 from csrank.objectranking.object_ranker import ObjectRanker
 
-__all__ = ['CmpNet']
+__all__ = ["CmpNet"]
 
 
 class CmpNet(CmpNetCore, ObjectRanker):
-    def __init__(self, n_object_features, n_hidden=2, n_units=8, loss_function='binary_crossentropy',
-                 batch_normalization=True, kernel_regularizer=l2(l=1e-4), kernel_initializer='lecun_normal',
-                 activation='relu', optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9), metrics=['binary_accuracy'],
-                 batch_size=256, random_state=None, **kwargs):
+    def __init__(
+        self,
+        n_object_features,
+        n_hidden=2,
+        n_units=8,
+        loss_function="binary_crossentropy",
+        batch_normalization=True,
+        kernel_regularizer=l2(l=1e-4),
+        kernel_initializer="lecun_normal",
+        activation="relu",
+        optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
+        metrics=["binary_accuracy"],
+        batch_size=256,
+        random_state=None,
+        **kwargs
+    ):
         """
             Create an instance of the :class:`CmpNetCore` architecture for learning a object ranking function.
             CmpNet breaks the preferences in form of rankings into pairwise comparisons and learns a pairwise model for
@@ -70,30 +82,48 @@ class CmpNet(CmpNetCore, ObjectRanker):
            ----------
                 [1] Leonardo Rigutini, Tiziano Papini, Marco Maggini, and Franco Scarselli. 2011. SortNet: Learning to Rank by a Neural Preference Function. IEEE Trans. Neural Networks 22, 9 (2011), 1368–1380. https://doi.org/10.1109/TNN.2011.2160875
         """
-        super().__init__(n_object_features=n_object_features, n_hidden=n_hidden, n_units=n_units,
-                         loss_function=loss_function, batch_normalization=batch_normalization,
-                         kernel_regularizer=kernel_regularizer, kernel_initializer=kernel_initializer,
-                         activation=activation, optimizer=optimizer, metrics=metrics, batch_size=batch_size,
-                         random_state=random_state, **kwargs)
+        super().__init__(
+            n_object_features=n_object_features,
+            n_hidden=n_hidden,
+            n_units=n_units,
+            loss_function=loss_function,
+            batch_normalization=batch_normalization,
+            kernel_regularizer=kernel_regularizer,
+            kernel_initializer=kernel_initializer,
+            activation=activation,
+            optimizer=optimizer,
+            metrics=metrics,
+            batch_size=batch_size,
+            random_state=random_state,
+            **kwargs
+        )
         self.logger = logging.getLogger(CmpNet.__name__)
-        self.logger.info("Initializing network with object features {}".format(self.n_object_features))
+        self.logger.info(
+            "Initializing network with object features {}".format(
+                self.n_object_features
+            )
+        )
 
     def _convert_instances_(self, X, Y):
-        self.logger.debug('Creating the Dataset')
+        self.logger.debug("Creating the Dataset")
         garbage, x1, x2, y_double, garbage = generate_complete_pairwise_dataset(X, Y)
         del garbage
         if x1.shape[0] > self.threshold_instances:
-            indices = self.random_state.choice(x1.shape[0], self.threshold_instances, replace=False)
+            indices = self.random_state.choice(
+                x1.shape[0], self.threshold_instances, replace=False
+            )
             x1 = x1[indices, :]
             x2 = x2[indices, :]
             y_double = y_double[indices, :]
-        self.logger.debug('Finished the Dataset instances {}'.format(x1.shape[0]))
+        self.logger.debug("Finished the Dataset instances {}".format(x1.shape[0]))
         return x1, x2, y_double
 
     def construct_model(self):
         return super().construct_model()
 
-    def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
+    def fit(
+        self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd
+    ):
         """
             Fit an object ranking learning CmpNet model on a provided set of queries. The provided queries can be of a
             fixed size (numpy arrays). For learning this network the binary cross entropy loss function for a pair of
@@ -125,7 +155,15 @@ class CmpNet(CmpNetCore, ObjectRanker):
             **kwd
                 Keyword arguments for the fit function
         """
-        super().fit(X, Y, epochs=epochs, callbacks=callbacks, validation_split=validation_split, verbose=verbose, **kwd)
+        super().fit(
+            X,
+            Y,
+            epochs=epochs,
+            callbacks=callbacks,
+            validation_split=validation_split,
+            verbose=verbose,
+            **kwd
+        )
 
     def _predict_scores_fixed(self, X, **kwargs):
         return super()._predict_scores_fixed(X, **kwargs)
@@ -142,7 +180,20 @@ class CmpNet(CmpNetCore, ObjectRanker):
     def clear_memory(self, **kwargs):
         super().clear_memory(**kwargs)
 
-    def set_tunable_parameters(self, n_hidden=32, n_units=2, reg_strength=1e-4, learning_rate=1e-3, batch_size=128,
-                               **point):
-        super().set_tunable_parameters(n_hidden=n_hidden, n_units=n_units, reg_strength=reg_strength,
-                                       learning_rate=learning_rate, batch_size=batch_size, **point)
+    def set_tunable_parameters(
+        self,
+        n_hidden=32,
+        n_units=2,
+        reg_strength=1e-4,
+        learning_rate=1e-3,
+        batch_size=128,
+        **point
+    ):
+        super().set_tunable_parameters(
+            n_hidden=n_hidden,
+            n_units=n_units,
+            reg_strength=reg_strength,
+            learning_rate=learning_rate,
+            batch_size=batch_size,
+            **point
+        )

@@ -23,10 +23,17 @@ from csrank.constants import (
     RANKSVM_DC,
 )
 from csrank.util import metrics_on_predictions
-from csrank.metrics_np import categorical_accuracy_np, topk_categorical_accuracy_np, subset_01_loss
+from csrank.metrics_np import (
+    categorical_accuracy_np,
+    topk_categorical_accuracy_np,
+    subset_01_loss,
+)
 from csrank.tests.test_ranking import check_params_tunable
 
-metrics = {'CategoricalAccuracy': categorical_accuracy_np, 'CategoricalTopK2': topk_categorical_accuracy_np(k=2)}
+metrics = {
+    "CategoricalAccuracy": categorical_accuracy_np,
+    "CategoricalTopK2": topk_categorical_accuracy_np(k=2),
+}
 optimizer = SGD(lr=1e-3, momentum=0.9, nesterov=True)
 
 
@@ -35,21 +42,44 @@ def get_vals(values=[1.0, 1.0]):
 
 
 discrete_choice_functions = {
-    FETA_DC: (FETADiscreteChoiceFunction, {"n_hidden": 1, "optimizer": optimizer}, get_vals([0.978, 1.0])),
-    RANKNET_DC: (RankNetDiscreteChoiceFunction, {"optimizer": optimizer}, get_vals([0.97, 0.996])),
-    CMPNET_DC: (CmpNetDiscreteChoiceFunction, {"optimizer": optimizer}, get_vals([0.994, 1.0])),
-    FATE_DC: (FATEDiscreteChoiceFunction, {"n_hidden_joint_layers": 1, "n_hidden_set_layers": 1,
-                                           "n_hidden_joint_units": 5, "n_hidden_set_units": 5, "optimizer": optimizer},
-              get_vals([0.95, 0.998])),
-    FATELINEAR_DC: (FATELinearDiscreteChoiceFunction, {"n_hidden_set_units": 1, "learning_rate": 5e-3,
-                                                       "batch_size": 32}, get_vals([0.74, 0.934])),
+    FETA_DC: (
+        FETADiscreteChoiceFunction,
+        {"n_hidden": 1, "optimizer": optimizer},
+        get_vals([0.978, 1.0]),
+    ),
+    RANKNET_DC: (
+        RankNetDiscreteChoiceFunction,
+        {"optimizer": optimizer},
+        get_vals([0.97, 0.996]),
+    ),
+    CMPNET_DC: (
+        CmpNetDiscreteChoiceFunction,
+        {"optimizer": optimizer},
+        get_vals([0.994, 1.0]),
+    ),
+    FATE_DC: (
+        FATEDiscreteChoiceFunction,
+        {
+            "n_hidden_joint_layers": 1,
+            "n_hidden_set_layers": 1,
+            "n_hidden_joint_units": 5,
+            "n_hidden_set_units": 5,
+            "optimizer": optimizer,
+        },
+        get_vals([0.95, 0.998]),
+    ),
+    FATELINEAR_DC: (
+        FATELinearDiscreteChoiceFunction,
+        {"n_hidden_set_units": 1, "learning_rate": 5e-3, "batch_size": 32},
+        get_vals([0.74, 0.934]),
+    ),
     FETALINEAR_DC: (FETALinearDiscreteChoiceFunction, {}, get_vals([0.976, 0.9998])),
     MNL: (MultinomialLogitModel, {}, get_vals([0.998, 1.0])),
     NLM: (NestedLogitModel, {}, get_vals()),
     PCL: (PairedCombinatorialLogit, {}, get_vals()),
     GEV: (GeneralizedNestedLogitModel, {}, get_vals()),
     MLM: (MixedLogitModel, {}, get_vals()),
-    RANKSVM_DC: (PairwiseSVMDiscreteChoiceFunction, {}, get_vals([0.982, 0.982]))
+    RANKSVM_DC: (PairwiseSVMDiscreteChoiceFunction, {}, get_vals([0.982, 0.982])),
 }
 
 
@@ -70,11 +100,22 @@ def test_discrete_choice_function_fixed(trivial_discrete_choice_problem, name):
     np.random.seed(123)
     x, y = trivial_discrete_choice_problem
     choice_function = discrete_choice_functions[name][0]
-    params, accuracies = discrete_choice_functions[name][1], discrete_choice_functions[name][2]
+    params, accuracies = (
+        discrete_choice_functions[name][1],
+        discrete_choice_functions[name][2],
+    )
     params["n_objects"], params["n_object_features"] = tuple(x.shape[1:])
     learner = choice_function(**params)
     if name in [MNL, NLM, GEV, PCL, MLM]:
-        learner.fit(x, y, vi_params={"n": 100, "method": "advi", "callbacks": [CheckParametersConvergence()]})
+        learner.fit(
+            x,
+            y,
+            vi_params={
+                "n": 100,
+                "method": "advi",
+                "callbacks": [CheckParametersConvergence()],
+            },
+        )
     elif "linear" in name:
         learner.fit(x, y, epochs=10, validation_split=0, verbose=False)
     else:
@@ -84,7 +125,9 @@ def test_discrete_choice_function_fixed(trivial_discrete_choice_problem, name):
     y_pred_2 = learner.predict(x)
     rtol = 1e-2
     atol = 5e-2
-    assert np.isclose(0.0, subset_01_loss(y_pred, y_pred_2), rtol=rtol, atol=atol, equal_nan=False)
+    assert np.isclose(
+        0.0, subset_01_loss(y_pred, y_pred_2), rtol=rtol, atol=atol, equal_nan=False
+    )
     for key, value in accuracies.items():
         metric = metrics[key]
         if metric in metrics_on_predictions:
@@ -93,9 +136,23 @@ def test_discrete_choice_function_fixed(trivial_discrete_choice_problem, name):
             pred_loss = metric(y, s_pred)
         assert np.isclose(value, pred_loss, rtol=rtol, atol=atol, equal_nan=False)
 
-    params = {"n_hidden": 20, "n_units": 20, "n_hidden_set_units": 2, "n_hidden_set_layers": 10,
-              "n_hidden_joint_units": 2, "n_hidden_joint_layers": 10, "reg_strength": 1e-3, "learning_rate": 1e-1,
-              "batch_size": 32, "alpha": 0.5, "l1_ratio": 0.7, "tol": 1e-2, "C": 10, "n_mixtures": 10, "n_nests": 5,
-              "regularization": "l2"}
+    params = {
+        "n_hidden": 20,
+        "n_units": 20,
+        "n_hidden_set_units": 2,
+        "n_hidden_set_layers": 10,
+        "n_hidden_joint_units": 2,
+        "n_hidden_joint_layers": 10,
+        "reg_strength": 1e-3,
+        "learning_rate": 1e-1,
+        "batch_size": 32,
+        "alpha": 0.5,
+        "l1_ratio": 0.7,
+        "tol": 1e-2,
+        "C": 10,
+        "n_mixtures": 10,
+        "n_nests": 5,
+        "regularization": "l2",
+    }
     learner.set_tunable_parameters(**params)
     check_params_tunable(learner, params, rtol, atol)

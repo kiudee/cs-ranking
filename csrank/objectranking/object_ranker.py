@@ -3,11 +3,10 @@ from abc import ABCMeta
 from csrank.constants import OBJECT_RANKING
 from csrank.numpy_util import scores_to_rankings
 
-__all__ = ['ObjectRanker']
+__all__ = ["ObjectRanker"]
 
 
 class ObjectRanker(metaclass=ABCMeta):
-
     @property
     def learning_problem(self):
         return OBJECT_RANKING

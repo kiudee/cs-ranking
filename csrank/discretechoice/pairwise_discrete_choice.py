@@ -6,8 +6,16 @@ from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 
 
 class PairwiseSVMDiscreteChoiceFunction(PairwiseSVM, DiscreteObjectChooser):
-    def __init__(self, n_object_features, C=1.0, tol=1e-4, normalize=True,
-                 fit_intercept=True, random_state=None, **kwargs):
+    def __init__(
+        self,
+        n_object_features,
+        C=1.0,
+        tol=1e-4,
+        normalize=True,
+        fit_intercept=True,
+        random_state=None,
+        **kwargs
+    ):
         """
             Create an instance of the :class:`PairwiseSVM` model for learning a discrete choice function.
             It learns a linear deterministic utility function of the form :math:`U(x) = w \\cdot x`, where :math:`w` is
@@ -42,18 +50,36 @@ class PairwiseSVMDiscreteChoiceFunction(PairwiseSVM, DiscreteObjectChooser):
 
                 [2] Sebastián Maldonado, Ricardo Montoya, and Richard Weber. „Advanced conjoint analysis using feature selection via support vector machines“. In: European Journal of Operational Research 241.2 (2015), pp. 564 –574.
         """
-        super().__init__(n_object_features=n_object_features, C=C, tol=tol, normalize=normalize,
-                         fit_intercept=fit_intercept,
-                         random_state=random_state, **kwargs)
+        super().__init__(
+            n_object_features=n_object_features,
+            C=C,
+            tol=tol,
+            normalize=normalize,
+            fit_intercept=fit_intercept,
+            random_state=random_state,
+            **kwargs
+        )
         self.logger = logging.getLogger(PairwiseSVMDiscreteChoiceFunction.__name__)
-        self.logger.info("Initializing network with object features {}".format(self.n_object_features))
+        self.logger.info(
+            "Initializing network with object features {}".format(
+                self.n_object_features
+            )
+        )
 
     def _convert_instances_(self, X, Y):
-        self.logger.debug('Creating the Dataset')
-        garbage, garbage, x_train, garbage, y_single = generate_complete_pairwise_dataset(X, Y)
+        self.logger.debug("Creating the Dataset")
+        (
+            garbage,
+            garbage,
+            x_train,
+            garbage,
+            y_single,
+        ) = generate_complete_pairwise_dataset(X, Y)
         del garbage
         assert x_train.shape[1] == self.n_object_features
-        self.logger.debug('Finished the Dataset with instances {}'.format(x_train.shape[0]))
+        self.logger.debug(
+            "Finished the Dataset with instances {}".format(x_train.shape[0])
+        )
         return x_train, y_single
 
     def fit(self, X, Y, **kwd):
