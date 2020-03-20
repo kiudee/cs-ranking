@@ -9,7 +9,9 @@ from ..letor_ranking_dataset_reader import LetorRankingDatasetReader
 
 class LetorRankingChoiceDatasetReader(LetorRankingDatasetReader):
     def __init__(self, random_state=None, n_objects=5, **kwargs):
-        super(LetorRankingChoiceDatasetReader, self).__init__(learning_problem=CHOICE_FUNCTION, **kwargs)
+        super(LetorRankingChoiceDatasetReader, self).__init__(
+            learning_problem=CHOICE_FUNCTION, **kwargs
+        )
         self.logger = logging.getLogger(LetorRankingChoiceDatasetReader.__name__)
         self.random_state = check_random_state(random_state)
         self.n_objects = n_objects

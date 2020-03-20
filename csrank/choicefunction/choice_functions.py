@@ -6,11 +6,10 @@ from csrank.constants import CHOICE_FUNCTION
 from csrank.metrics_np import f1_measure
 from csrank.util import progress_bar
 
-__all__ = ['ChoiceFunctions']
+__all__ = ["ChoiceFunctions"]
 
 
 class ChoiceFunctions(metaclass=ABCMeta):
-
     @property
     def learning_problem(self):
         return CHOICE_FUNCTION
@@ -60,9 +59,11 @@ class ChoiceFunctions(metaclass=ABCMeta):
                     threshold = p
                     best = f1
                 if verbose == 1:
-                    progress_bar(i, len(probabilities), status='Tuning threshold')
+                    progress_bar(i, len(probabilities), status="Tuning threshold")
         except KeyboardInterrupt:
             self.logger.info("Keyboard interrupted")
-        self.logger.info('Tuned threshold, obtained {:.2f} which achieved'
-                         ' a micro F1-measure of {:.2f}'.format(threshold, best))
+        self.logger.info(
+            "Tuned threshold, obtained {:.2f} which achieved"
+            " a micro F1-measure of {:.2f}".format(threshold, best)
+        )
         return threshold

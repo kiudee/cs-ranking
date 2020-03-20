@@ -16,13 +16,22 @@ from csrank.layers import DeepSet, create_input_lambda
 from csrank.learner import Learner
 from csrank.util import print_dictionary
 
-__all__ = ['FATENetwork', 'FATENetworkCore']
+__all__ = ["FATENetwork", "FATENetworkCore"]
 
 
 class FATENetworkCore(Learner):
-    def __init__(self, n_hidden_joint_layers=32, n_hidden_joint_units=32, activation='selu',
-                 kernel_initializer='lecun_normal', kernel_regularizer=l2(l=0.01),
-                 optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9), batch_size=256, random_state=None, **kwargs):
+    def __init__(
+        self,
+        n_hidden_joint_layers=32,
+        n_hidden_joint_units=32,
+        activation="selu",
+        kernel_initializer="lecun_normal",
+        kernel_regularizer=l2(l=0.01),
+        optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
+        batch_size=256,
+        random_state=None,
+        **kwargs
+    ):
         """
             Create a FATE-network architecture.
             Training and prediction complexity is linear in the number of objects.
@@ -67,8 +76,12 @@ class FATENetworkCore(Learner):
             if key not in allowed_dense_kwargs:
                 del kwargs[key]
         self.kwargs = kwargs
-        self._construct_layers(activation=self.activation, kernel_initializer=self.kernel_initializer,
-                               kernel_regularizer=self.kernel_regularizer, **self.kwargs)
+        self._construct_layers(
+            activation=self.activation,
+            kernel_initializer=self.kernel_initializer,
+            kernel_regularizer=self.kernel_regularizer,
+            **self.kwargs
+        )
 
     def _construct_layers(self, **kwargs):
         """
@@ -83,15 +96,27 @@ class FATENetworkCore(Learner):
             **kwargs
                 Keyword arguments passed into the joint layers
         """
-        self.logger.info("Construct joint layers hidden units {} and layers {} ".format(self.n_hidden_joint_units,
-                                                                                        self.n_hidden_joint_layers))
+        self.logger.info(
+            "Construct joint layers hidden units {} and layers {} ".format(
+                self.n_hidden_joint_units, self.n_hidden_joint_layers
+            )
+        )
         # Create joint hidden layers:
         self.joint_layers = []
         for i in range(self.n_hidden_joint_layers):
-            self.joint_layers.append(Dense(self.n_hidden_joint_units, name="joint_layer_{}".format(i), **kwargs))
+            self.joint_layers.append(
+                Dense(
+                    self.n_hidden_joint_units, name="joint_layer_{}".format(i), **kwargs
+                )
+            )
 
-        self.logger.info('Construct output score node')
-        self.scorer = Dense(1, name="output_node", activation='linear', kernel_regularizer=self.kernel_regularizer)
+        self.logger.info("Construct output score node")
+        self.scorer = Dense(
+            1,
+            name="output_node",
+            activation="linear",
+            kernel_regularizer=self.kernel_regularizer,
+        )
 
     def join_input_layers(self, input_layer, *layers, n_layers, n_objects):
         """
@@ -111,8 +136,7 @@ class FATENetworkCore(Learner):
         self.logger.debug("Joining set representation and joint layers")
         scores = []
 
-        inputs = [create_input_lambda(i)(input_layer) for i in
-                  range(n_objects)]
+        inputs = [create_input_lambda(i)(input_layer) for i in range(n_objects)]
 
         for i in range(n_objects):
             if n_layers >= 1:
@@ -127,8 +151,15 @@ class FATENetworkCore(Learner):
 
         return scores
 
-    def set_tunable_parameters(self, n_hidden_joint_units=32, n_hidden_joint_layers=2, reg_strength=1e-4,
-                               learning_rate=1e-3, batch_size=128, **point):
+    def set_tunable_parameters(
+        self,
+        n_hidden_joint_units=32,
+        n_hidden_joint_layers=2,
+        reg_strength=1e-4,
+        learning_rate=1e-3,
+        batch_size=128,
+        **point
+    ):
         self.n_hidden_joint_layers = n_hidden_joint_layers
         self.n_hidden_joint_units = n_hidden_joint_units
         self.kernel_regularizer = l2(reg_strength)
@@ -137,17 +168,25 @@ class FATENetworkCore(Learner):
         self.optimizer = self.optimizer.from_config(self._optimizer_config)
         K.set_value(self.optimizer.lr, learning_rate)
 
-        self._construct_layers(activation=self.activation, kernel_initializer=self.kernel_initializer,
-                               kernel_regularizer=self.kernel_regularizer, **self.kwargs)
+        self._construct_layers(
+            activation=self.activation,
+            kernel_initializer=self.kernel_initializer,
+            kernel_regularizer=self.kernel_regularizer,
+            **self.kwargs
+        )
 
         if len(point) > 0:
-            self.logger.warning('This ranking algorithm does not support'
-                                ' tunable parameters'
-                                ' called: {}'.format(print_dictionary(point)))
+            self.logger.warning(
+                "This ranking algorithm does not support"
+                " tunable parameters"
+                " called: {}".format(print_dictionary(point))
+            )
 
 
 class FATENetwork(FATENetworkCore):
-    def __init__(self, n_object_features, n_hidden_set_layers=1, n_hidden_set_units=1, **kwargs):
+    def __init__(
+        self, n_object_features, n_hidden_set_layers=1, n_hidden_set_units=1, **kwargs
+    ):
         """
             Create a FATE-network architecture.
             Training and prediction complexity is linear in the number of objects.
@@ -171,9 +210,11 @@ class FATENetwork(FATENetworkCore):
         self.n_object_features = n_object_features
         self.model = None
         self.set_layer = None
-        self._create_set_layers(activation=self.activation,
-                                kernel_initializer=self.kernel_initializer,
-                                kernel_regularizer=self.kernel_regularizer)
+        self._create_set_layers(
+            activation=self.activation,
+            kernel_initializer=self.kernel_initializer,
+            kernel_regularizer=self.kernel_regularizer,
+        )
         self.is_variadic = True
         self.hash_file = None
 
@@ -182,10 +223,15 @@ class FATENetwork(FATENetworkCore):
             Create layers for learning the representation of the query set. The actual connection of the layers is done
             during fitting, since we do not know the size(s) of the set(s) in advance.
         """
-        self.logger_gorc.info("Creating set layers with set units {} set layer {} ".format(self.n_hidden_set_units,
-                                                                                           self.n_hidden_set_layers))
+        self.logger_gorc.info(
+            "Creating set layers with set units {} set layer {} ".format(
+                self.n_hidden_set_units, self.n_hidden_set_layers
+            )
+        )
         if self.n_hidden_set_layers >= 1:
-            self.set_layer = DeepSet(units=self.n_hidden_set_units, layers=self.n_hidden_set_layers, **kwargs)
+            self.set_layer = DeepSet(
+                units=self.n_hidden_set_units, layers=self.n_hidden_set_layers, **kwargs
+            )
         else:
             self.set_layer = None
 
@@ -249,8 +295,23 @@ class FATENetwork(FATENetworkCore):
         else:
             self.model.set_weights(weights)
 
-    def _fit(self, X=None, Y=None, generator=None, epochs=35, inner_epochs=1, callbacks=None, validation_split=0.1,
-             verbose=0, global_lr=1.0, global_momentum=0.9, min_bucket_size=500, refit=False, optimizer=None, **kwargs):
+    def _fit(
+        self,
+        X=None,
+        Y=None,
+        generator=None,
+        epochs=35,
+        inner_epochs=1,
+        callbacks=None,
+        validation_split=0.1,
+        verbose=0,
+        global_lr=1.0,
+        global_momentum=0.9,
+        min_bucket_size=500,
+        refit=False,
+        optimizer=None,
+        **kwargs
+    ):
         if optimizer is not None:
             self.optimizer = optimizer
         if isinstance(X, dict):
@@ -266,13 +327,15 @@ class FATENetwork(FATENetworkCore):
             #  Create models which need to be trained
             #  Note, that the models share all their weights, the only
             #  difference is the compute graph constructed for back propagation.
-            if not hasattr(self, 'models_') or refit:
+            if not hasattr(self, "models_") or refit:
                 self.models_ = self._construct_models(X)
 
             #  Iterate training
             for epoch in range(epochs):
 
-                self.logger.info("Epoch: {}, Learning rate: {}".format(epoch, learning_rate))
+                self.logger.info(
+                    "Epoch: {}, Learning rate: {}".format(epoch, learning_rate)
+                )
 
                 # In the spirit of mini-batch SGD we also shuffle the buckets
                 # each epoch:
@@ -294,13 +357,21 @@ class FATENetwork(FATENetworkCore):
                     # Save weight vector for momentum:
                     w_old = w_before
                     w_before = np.array(self.get_weights())
-                    self.models_[bucket_id].fit(x=x, y=y, epochs=inner_epochs, batch_size=self.batch_size,
-                                                validation_split=validation_split, verbose=verbose, **kwargs)
+                    self.models_[bucket_id].fit(
+                        x=x,
+                        y=y,
+                        epochs=inner_epochs,
+                        batch_size=self.batch_size,
+                        validation_split=validation_split,
+                        verbose=verbose,
+                        **kwargs
+                    )
                     w_after = np.array(self.get_weights())
-                    self.set_weights(w_before
-                                     + learning_rate * freq[bucket_id]
-                                     * (w_after - w_before)
-                                     + global_momentum * (w_before - w_old))
+                    self.set_weights(
+                        w_before
+                        + learning_rate * freq[bucket_id] * (w_after - w_before)
+                        + global_momentum * (w_before - w_old)
+                    )
                 learning_rate /= 1 + decay_rate * epoch
         else:
             self.is_variadic = False
@@ -314,11 +385,24 @@ class FATENetwork(FATENetworkCore):
                 self.model = self.construct_model(n_features, n_objects)
             self.logger.info("Fitting started")
             if generator is None:
-                self.model.fit(x=X, y=Y, callbacks=callbacks, epochs=epochs, validation_split=validation_split,
-                               batch_size=self.batch_size, verbose=verbose, **kwargs)
+                self.model.fit(
+                    x=X,
+                    y=Y,
+                    callbacks=callbacks,
+                    epochs=epochs,
+                    validation_split=validation_split,
+                    batch_size=self.batch_size,
+                    verbose=verbose,
+                    **kwargs
+                )
             else:
-                self.model.fit_generator(generator=generator, callbacks=callbacks, epochs=epochs, verbose=verbose,
-                                         **kwargs)
+                self.model.fit_generator(
+                    generator=generator,
+                    callbacks=callbacks,
+                    epochs=epochs,
+                    verbose=verbose,
+                    **kwargs
+                )
             self.logger.info("Fitting complete")
 
     def construct_model(self, n_features, n_objects):
@@ -345,14 +429,34 @@ class FATENetwork(FATENetworkCore):
         """
         input_layer = Input(shape=(n_objects, n_features), name="input_node")
         set_repr = self.set_layer(input_layer)
-        scores = self.join_input_layers(input_layer, set_repr, n_objects=n_objects, n_layers=self.n_hidden_set_layers)
+        scores = self.join_input_layers(
+            input_layer,
+            set_repr,
+            n_objects=n_objects,
+            n_layers=self.n_hidden_set_layers,
+        )
         model = Model(inputs=input_layer, outputs=scores)
 
-        model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
+        model.compile(
+            loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics
+        )
         return model
 
-    def fit(self, X, Y, epochs=35, inner_epochs=1, callbacks=None, validation_split=0.1, verbose=0, global_lr=1.0,
-            global_momentum=0.9, min_bucket_size=500, refit=False, **kwargs):
+    def fit(
+        self,
+        X,
+        Y,
+        epochs=35,
+        inner_epochs=1,
+        callbacks=None,
+        validation_split=0.1,
+        verbose=0,
+        global_lr=1.0,
+        global_momentum=0.9,
+        min_bucket_size=500,
+        refit=False,
+        **kwargs
+    ):
         """
             Fit a generic preference learning FATE-network model on a provided set of queries.
 
@@ -394,12 +498,35 @@ class FATENetwork(FATENetworkCore):
             **kwargs :
                 Keyword arguments for the fit function
         """
-        self._fit(X=X, Y=Y, epochs=epochs, inner_epochs=inner_epochs, callbacks=callbacks,
-                  validation_split=validation_split, verbose=verbose, global_lr=global_lr,
-                  global_momentum=global_momentum, min_bucket_size=min_bucket_size, refit=refit, **kwargs)
+        self._fit(
+            X=X,
+            Y=Y,
+            epochs=epochs,
+            inner_epochs=inner_epochs,
+            callbacks=callbacks,
+            validation_split=validation_split,
+            verbose=verbose,
+            global_lr=global_lr,
+            global_momentum=global_momentum,
+            min_bucket_size=min_bucket_size,
+            refit=refit,
+            **kwargs
+        )
 
-    def fit_generator(self, generator, epochs=35, steps_per_epoch=10, inner_epochs=1, callbacks=None, verbose=0,
-                      global_lr=1.0, global_momentum=0.9, min_bucket_size=500, refit=False, **kwargs):
+    def fit_generator(
+        self,
+        generator,
+        epochs=35,
+        steps_per_epoch=10,
+        inner_epochs=1,
+        callbacks=None,
+        verbose=0,
+        global_lr=1.0,
+        global_momentum=0.9,
+        min_bucket_size=500,
+        refit=False,
+        **kwargs
+    ):
         """
             Fit a generic object ranking FATE-network on a set of queries provided by
             a generator.
@@ -448,21 +575,36 @@ class FATENetwork(FATENetworkCore):
             **kwargs:
                 Keyword arguments for the fit function
         """
-        self._fit(generator=generator, epochs=epochs, steps_per_epoch=steps_per_epoch, inner_epochs=inner_epochs,
-                  callbacks=callbacks, verbose=verbose, global_lr=global_lr, global_momentum=global_momentum,
-                  min_bucket_size=min_bucket_size, refit=refit, **kwargs)
+        self._fit(
+            generator=generator,
+            epochs=epochs,
+            steps_per_epoch=steps_per_epoch,
+            inner_epochs=inner_epochs,
+            callbacks=callbacks,
+            verbose=verbose,
+            global_lr=global_lr,
+            global_momentum=global_momentum,
+            min_bucket_size=min_bucket_size,
+            refit=refit,
+            **kwargs
+        )
 
     def _get_context_representation(self, X, kwargs):
         n_objects = X.shape[-2]
-        self.logger.info("Test Set instances {} objects {} features {}".format(*X.shape))
-        input_layer_scorer = Input(shape=(n_objects, self.n_object_features), name="input_node")
+        self.logger.info(
+            "Test Set instances {} objects {} features {}".format(*X.shape)
+        )
+        input_layer_scorer = Input(
+            shape=(n_objects, self.n_object_features), name="input_node"
+        )
         if self.n_hidden_set_layers >= 1:
             self.set_layer(input_layer_scorer)
             fr = self.set_layer.cached_models[n_objects].predict(X, **kwargs)
             del self.set_layer.cached_models[n_objects]
-            X_n = np.empty((fr.shape[0], n_objects,
-                            fr.shape[1] + self.n_object_features),
-                           dtype="float")
+            X_n = np.empty(
+                (fr.shape[0], n_objects, fr.shape[1] + self.n_object_features),
+                dtype="float",
+            )
             for i in range(n_objects):
                 X_n[:, i] = np.concatenate((X[:, i], fr), axis=1)
             X = np.copy(X_n)
@@ -486,12 +628,15 @@ class FATENetwork(FATENetworkCore):
         # model = self._construct_scoring_model(n_objects)
         X = self._get_context_representation(X, kwargs)
         n_instances, n_objects, n_features = X.shape
-        self.logger.info("After applying the set representations features {}".format(n_features))
-        input_layer_joint = Input(shape=(n_objects, n_features), name="input_joint_model")
+        self.logger.info(
+            "After applying the set representations features {}".format(n_features)
+        )
+        input_layer_joint = Input(
+            shape=(n_objects, n_features), name="input_joint_model"
+        )
         scores = []
 
-        inputs = [create_input_lambda(i)(input_layer_joint) for i in
-                  range(n_objects)]
+        inputs = [create_input_lambda(i)(input_layer_joint) for i in range(n_objects)]
 
         for i in range(n_objects):
             joint = inputs[i]
@@ -521,17 +666,34 @@ class FATENetwork(FATENetworkCore):
             sess = tf.Session()
             K.set_session(sess)
             self.optimizer = self.optimizer.from_config(self._optimizer_config)
-            self._construct_layers(activation=self.activation, kernel_initializer=self.kernel_initializer,
-                                   kernel_regularizer=self.kernel_regularizer, **self.kwargs)
-            self._create_set_layers(activation=self.activation, kernel_initializer=self.kernel_initializer,
-                                    kernel_regularizer=self.kernel_regularizer, **self.kwargs)
+            self._construct_layers(
+                activation=self.activation,
+                kernel_initializer=self.kernel_initializer,
+                kernel_regularizer=self.kernel_regularizer,
+                **self.kwargs
+            )
+            self._create_set_layers(
+                activation=self.activation,
+                kernel_initializer=self.kernel_initializer,
+                kernel_regularizer=self.kernel_regularizer,
+                **self.kwargs
+            )
             self.model = self.construct_model(self.n_object_features, n_objects)
             self.model.load_weights(self.hash_file)
         else:
             self.logger.info("Cannot clear the memory")
 
-    def set_tunable_parameters(self, n_hidden_set_units=32, n_hidden_set_layers=2, n_hidden_joint_units=32,
-                               n_hidden_joint_layers=2, reg_strength=1e-4, learning_rate=1e-3, batch_size=128, **point):
+    def set_tunable_parameters(
+        self,
+        n_hidden_set_units=32,
+        n_hidden_set_layers=2,
+        n_hidden_joint_units=32,
+        n_hidden_joint_layers=2,
+        reg_strength=1e-4,
+        learning_rate=1e-3,
+        batch_size=128,
+        **point
+    ):
         """
             Set tunable parameters of the FATE-network to the values provided.
 
@@ -554,16 +716,26 @@ class FATENetwork(FATENetworkCore):
             point: dict
                 Dictionary containing parameter values which are not tuned for the network
         """
-        FATENetworkCore.set_tunable_parameters(self, n_hidden_joint_units=n_hidden_joint_units,
-                                               n_hidden_joint_layers=n_hidden_joint_layers, reg_strength=reg_strength,
-                                               learning_rate=learning_rate, batch_size=batch_size, **point)
+        FATENetworkCore.set_tunable_parameters(
+            self,
+            n_hidden_joint_units=n_hidden_joint_units,
+            n_hidden_joint_layers=n_hidden_joint_layers,
+            reg_strength=reg_strength,
+            learning_rate=learning_rate,
+            batch_size=batch_size,
+            **point
+        )
 
         self.n_hidden_set_units = n_hidden_set_units
         self.n_hidden_set_layers = n_hidden_set_layers
 
-        self._create_set_layers(activation=self.activation, kernel_initializer=self.kernel_initializer,
-                                kernel_regularizer=self.kernel_regularizer, **self.kwargs)
-        if hasattr(self, 'model'):
+        self._create_set_layers(
+            activation=self.activation,
+            kernel_initializer=self.kernel_initializer,
+            kernel_regularizer=self.kernel_regularizer,
+            **self.kwargs
+        )
+        if hasattr(self, "model"):
             self.model = None
-        if hasattr(self, 'models'):
+        if hasattr(self, "models"):
             self.models = None

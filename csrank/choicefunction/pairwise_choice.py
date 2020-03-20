@@ -8,8 +8,16 @@ from .util import generate_complete_pairwise_dataset
 
 
 class PairwiseSVMChoiceFunction(PairwiseSVM, ChoiceFunctions):
-    def __init__(self, n_object_features, C=1.0, tol=1e-4, normalize=True,
-                 fit_intercept=True, random_state=None, **kwargs):
+    def __init__(
+        self,
+        n_object_features,
+        C=1.0,
+        tol=1e-4,
+        normalize=True,
+        fit_intercept=True,
+        random_state=None,
+        **kwargs
+    ):
         """
             Create an instance of the :class:`PairwiseSVM` model for learning a choice function.
             It learns a linear deterministic utility function of the form :math:`U(x) = w \\cdot x`, where :math:`w` is
@@ -45,19 +53,37 @@ class PairwiseSVMChoiceFunction(PairwiseSVM, ChoiceFunctions):
                 [2] Sebastián Maldonado, Ricardo Montoya, and Richard Weber. „Advanced conjoint analysis using feature selection via support vector machines“. In: European Journal of Operational Research 241.2 (2015), pp. 564 –574.
 
         """
-        super().__init__(n_object_features=n_object_features, C=C, tol=tol, normalize=normalize,
-                         fit_intercept=fit_intercept,
-                         random_state=random_state, **kwargs)
+        super().__init__(
+            n_object_features=n_object_features,
+            C=C,
+            tol=tol,
+            normalize=normalize,
+            fit_intercept=fit_intercept,
+            random_state=random_state,
+            **kwargs
+        )
         self.logger = logging.getLogger(PairwiseSVMChoiceFunction.__name__)
-        self.logger.info("Initializing network with object features {}".format(self.n_object_features))
+        self.logger.info(
+            "Initializing network with object features {}".format(
+                self.n_object_features
+            )
+        )
         self.threshold = 0.5
 
     def _convert_instances_(self, X, Y):
-        self.logger.debug('Creating the Dataset')
-        garbage, garbage, x_train, garbage, y_single = generate_complete_pairwise_dataset(X, Y)
+        self.logger.debug("Creating the Dataset")
+        (
+            garbage,
+            garbage,
+            x_train,
+            garbage,
+            y_single,
+        ) = generate_complete_pairwise_dataset(X, Y)
         del garbage
         assert x_train.shape[1] == self.n_object_features
-        self.logger.debug('Finished the Dataset with instances {}'.format(x_train.shape[0]))
+        self.logger.debug(
+            "Finished the Dataset with instances {}".format(x_train.shape[0])
+        )
         return x_train, y_single
 
     def fit(self, X, Y, tune_size=0.1, thin_thresholds=1, verbose=0, **kwd):
@@ -82,12 +108,18 @@ class PairwiseSVMChoiceFunction(PairwiseSVM, ChoiceFunctions):
 
         """
         if tune_size > 0:
-            X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=tune_size, random_state=self.random_state)
+            X_train, X_val, Y_train, Y_val = train_test_split(
+                X, Y, test_size=tune_size, random_state=self.random_state
+            )
             try:
                 super().fit(X_train, Y_train, **kwd)
             finally:
-                self.logger.info('Fitting utility function finished. Start tuning threshold.')
-                self.threshold = self._tune_threshold(X_val, Y_val, thin_thresholds=thin_thresholds, verbose=verbose)
+                self.logger.info(
+                    "Fitting utility function finished. Start tuning threshold."
+                )
+                self.threshold = self._tune_threshold(
+                    X_val, Y_val, thin_thresholds=thin_thresholds, verbose=verbose
+                )
         else:
             super().fit(X, Y, **kwd)
             self.threshold = 0.5

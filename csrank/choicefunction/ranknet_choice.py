@@ -10,10 +10,22 @@ from .util import generate_complete_pairwise_dataset
 
 
 class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
-    def __init__(self, n_object_features, n_hidden=2, n_units=8, loss_function='binary_crossentropy',
-                 batch_normalization=True, kernel_regularizer=l2(l=1e-4), kernel_initializer='lecun_normal',
-                 activation='relu', optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9), metrics=['binary_accuracy'],
-                 batch_size=256, random_state=None, **kwargs):
+    def __init__(
+        self,
+        n_object_features,
+        n_hidden=2,
+        n_units=8,
+        loss_function="binary_crossentropy",
+        batch_normalization=True,
+        kernel_regularizer=l2(l=1e-4),
+        kernel_initializer="lecun_normal",
+        activation="relu",
+        optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
+        metrics=["binary_accuracy"],
+        batch_size=256,
+        random_state=None,
+        **kwargs
+    ):
         """
             Create an instance of the :class:`RankNetCore` architecture for learning a object ranking function.
             It breaks the preferences into pairwise comparisons and learns a latent utility model for the objects.
@@ -61,33 +73,59 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
 
                 [2] Burges, C. J. (2010). "From ranknet to lambdarank to lambdamart: An overview.", Learning, 11(23-581).
         """
-        super().__init__(n_object_features=n_object_features, n_hidden=n_hidden, n_units=n_units,
-                         loss_function=loss_function, batch_normalization=batch_normalization,
-                         kernel_regularizer=kernel_regularizer, kernel_initializer=kernel_initializer,
-                         activation=activation, optimizer=optimizer, metrics=metrics, batch_size=batch_size,
-                         random_state=random_state, **kwargs)
+        super().__init__(
+            n_object_features=n_object_features,
+            n_hidden=n_hidden,
+            n_units=n_units,
+            loss_function=loss_function,
+            batch_normalization=batch_normalization,
+            kernel_regularizer=kernel_regularizer,
+            kernel_initializer=kernel_initializer,
+            activation=activation,
+            optimizer=optimizer,
+            metrics=metrics,
+            batch_size=batch_size,
+            random_state=random_state,
+            **kwargs
+        )
         self.logger = logging.getLogger(RankNetChoiceFunction.__name__)
-        self.logger.info("Initializing network with object features {}".format(self.n_object_features))
+        self.logger.info(
+            "Initializing network with object features {}".format(
+                self.n_object_features
+            )
+        )
         self.threshold = 0.5
 
     def construct_model(self):
         return super().construct_model()
 
     def _convert_instances_(self, X, Y):
-        self.logger.debug('Creating the Dataset')
+        self.logger.debug("Creating the Dataset")
         x1, x2, garbage, garbage, y_single = generate_complete_pairwise_dataset(X, Y)
         del garbage
         if x1.shape[0] > self.threshold_instances:
-            indices = self.random_state.choice(x1.shape[0], self.threshold_instances, replace=False)
+            indices = self.random_state.choice(
+                x1.shape[0], self.threshold_instances, replace=False
+            )
             x1 = x1[indices, :]
             x2 = x2[indices, :]
             y_single = y_single[indices]
             self.logger.debug("Sampling instances")
-        self.logger.debug('Finished the Dataset instances {}'.format(x1.shape[0]))
+        self.logger.debug("Finished the Dataset instances {}".format(x1.shape[0]))
         return x1, x2, y_single
 
-    def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, tune_size=0.1, thin_thresholds=1, verbose=0,
-            **kwd):
+    def fit(
+        self,
+        X,
+        Y,
+        epochs=10,
+        callbacks=None,
+        validation_split=0.1,
+        tune_size=0.1,
+        thin_thresholds=1,
+        verbose=0,
+        **kwd
+    ):
         """
             Fit RankNet model for learning choice function on a provided set of queries. The provided queries can be of 
             a fixed size (numpy arrays). For learning this network the binary cross entropy loss function for a pair of
@@ -122,12 +160,26 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
                 Keyword arguments for the fit function
         """
         if tune_size > 0:
-            X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=tune_size, random_state=self.random_state)
+            X_train, X_val, Y_train, Y_val = train_test_split(
+                X, Y, test_size=tune_size, random_state=self.random_state
+            )
             try:
-                super().fit(X_train, Y_train, epochs, callbacks, validation_split, verbose, **kwd)
+                super().fit(
+                    X_train,
+                    Y_train,
+                    epochs,
+                    callbacks,
+                    validation_split,
+                    verbose,
+                    **kwd
+                )
             finally:
-                self.logger.info('Fitting utility function finished. Start tuning threshold.')
-                self.threshold = self._tune_threshold(X_val, Y_val, thin_thresholds=thin_thresholds, verbose=verbose)
+                self.logger.info(
+                    "Fitting utility function finished. Start tuning threshold."
+                )
+                self.threshold = self._tune_threshold(
+                    X_val, Y_val, thin_thresholds=thin_thresholds, verbose=verbose
+                )
         else:
             super().fit(X, Y, epochs, callbacks, validation_split, verbose, **kwd)
             self.threshold = 0.5
@@ -148,7 +200,20 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
         self.logger.info("Clearing memory")
         super().clear_memory(**kwargs)
 
-    def set_tunable_parameters(self, n_hidden=32, n_units=2, reg_strength=1e-4, learning_rate=1e-3, batch_size=128,
-                               **point):
-        super().set_tunable_parameters(n_hidden=n_hidden, n_units=n_units, reg_strength=reg_strength,
-                                       learning_rate=learning_rate, batch_size=batch_size, **point)
+    def set_tunable_parameters(
+        self,
+        n_hidden=32,
+        n_units=2,
+        reg_strength=1e-4,
+        learning_rate=1e-3,
+        batch_size=128,
+        **point
+    ):
+        super().set_tunable_parameters(
+            n_hidden=n_hidden,
+            n_units=n_units,
+            reg_strength=reg_strength,
+            learning_rate=learning_rate,
+            batch_size=batch_size,
+            **point
+        )

@@ -20,9 +20,11 @@ from .dataset_reader import DatasetReader
 
 class LetorRankingDatasetReader(DatasetReader, metaclass=ABCMeta):
     def __init__(self, year=2007, fold_id=0, exclude_qf=False, **kwargs):
-        super(LetorRankingDatasetReader, self).__init__(dataset_folder='letor', **kwargs)
-        self.DATASET_FOLDER_2007 = 'MQ{}'.format(year)
-        self.DATASET_FOLDER_2008 = 'MQ{}'.format(year)
+        super(LetorRankingDatasetReader, self).__init__(
+            dataset_folder="letor", **kwargs
+        )
+        self.DATASET_FOLDER_2007 = "MQ{}".format(year)
+        self.DATASET_FOLDER_2008 = "MQ{}".format(year)
         self.logger = logging.getLogger(LetorRankingDatasetReader.__name__)
 
         if year not in [2007, 2008]:
@@ -31,8 +33,12 @@ class LetorRankingDatasetReader(DatasetReader, metaclass=ABCMeta):
             self.year = year
         self.exclude_qf = exclude_qf
         self.query_feature_indices = [4, 5, 6, 19, 20, 21, 34, 35, 36]
-        self.query_document_feature_indices = np.delete(np.arange(0, 46), self.query_feature_indices)
-        self.logger.info("For Year {} excluding query features {}".format(self.year, self.exclude_qf))
+        self.query_document_feature_indices = np.delete(
+            np.arange(0, 46), self.query_feature_indices
+        )
+        self.logger.info(
+            "For Year {} excluding query features {}".format(self.year, self.exclude_qf)
+        )
 
         self.dataset_indices = np.arange(5)
         self.condition = np.zeros(5, dtype=bool)
@@ -44,7 +50,9 @@ class LetorRankingDatasetReader(DatasetReader, metaclass=ABCMeta):
             self.condition[i] = os.path.isfile(h5py_file_pth)
             if not os.path.isfile(h5py_file_pth):
                 self.logger.info("File {} not created".format(h5py_file_pth))
-        assert fold_id in self.dataset_indices, "For fold {} no test dataset present".format(fold_id + 1)
+        assert (
+            fold_id in self.dataset_indices
+        ), "For fold {} no test dataset present".format(fold_id + 1)
         self.logger.info("Test dataset is S{}".format(fold_id + 1))
         self.fold_id = fold_id
 
@@ -52,15 +60,25 @@ class LetorRankingDatasetReader(DatasetReader, metaclass=ABCMeta):
         if not (self.condition.all()):
             self.logger.info("HDF5 datasets not created.....")
             self.logger.info("Query features {}".format(self.query_feature_indices))
-            self.logger.info("Query Document features {}".format(self.query_document_feature_indices))
+            self.logger.info(
+                "Query Document features {}".format(self.query_document_feature_indices)
+            )
             if self.year == "2007":
-                mq_2007_files = glob.glob(os.path.join(self.dirname, self.DATASET_FOLDER_2007, "S*.txt"))
-                self.dataset_dictionaries = self.create_dataset_dictionary(mq_2007_files)
+                mq_2007_files = glob.glob(
+                    os.path.join(self.dirname, self.DATASET_FOLDER_2007, "S*.txt")
+                )
+                self.dataset_dictionaries = self.create_dataset_dictionary(
+                    mq_2007_files
+                )
             else:
-                mq_2008_files = glob.glob(os.path.join(self.dirname, self.DATASET_FOLDER_2008, "S*.txt"))
-                self.dataset_dictionaries = self.create_dataset_dictionary(mq_2008_files)
+                mq_2008_files = glob.glob(
+                    os.path.join(self.dirname, self.DATASET_FOLDER_2008, "S*.txt")
+                )
+                self.dataset_dictionaries = self.create_dataset_dictionary(
+                    mq_2008_files
+                )
             for key, dataset in self.dataset_dictionaries.items():
-                hdf5file_path = self.file_format.format(key.split('S')[-1])
+                hdf5file_path = self.file_format.format(key.split("S")[-1])
                 self.create_choices_dataset(dataset, hdf5file_path)
         self.X_train = dict()
         self.Y_train = dict()
@@ -77,19 +95,25 @@ class LetorRankingDatasetReader(DatasetReader, metaclass=ABCMeta):
         self.logger.info("Writing in hd5 {}".format(hdf5file_path))
         X, scores = self.create_instances(dataset)
         result, freq = self._build_training_buckets(X, scores)
-        h5f = h5py.File(hdf5file_path, 'w')
+        h5f = h5py.File(hdf5file_path, "w")
         self.logger.info("Frequencies of rankings: {}".format(print_dictionary(freq)))
 
         for key, value in result.items():
             x, s = value
-            h5f.create_dataset('X_' + str(key), data=x, compression='gzip', compression_opts=9)
-            h5f.create_dataset('score_' + str(key), data=s, compression='gzip', compression_opts=9)
+            h5f.create_dataset(
+                "X_" + str(key), data=x, compression="gzip", compression_opts=9
+            )
+            h5f.create_dataset(
+                "score_" + str(key), data=s, compression="gzip", compression_opts=9
+            )
         lengths = np.array(list(result.keys()))
-        h5f.create_dataset('lengths', data=lengths, compression='gzip', compression_opts=9)
+        h5f.create_dataset(
+            "lengths", data=lengths, compression="gzip", compression_opts=9
+        )
         h5f.close()
 
     def get_choices_dict(self, h5py_file_path):
-        file = h5py.File(h5py_file_path, 'r')
+        file = h5py.File(h5py_file_path, "r")
         lengths = file["lengths"]
         X = dict()
         Y = dict()
@@ -134,7 +158,9 @@ class LetorRankingDatasetReader(DatasetReader, metaclass=ABCMeta):
                     else:
                         X = np.concatenate([X, x], axis=0)
                         Y = np.concatenate([Y, y], axis=0)
-        self.logger.info("Sampled instances {} objects {}".format(X.shape[0], X.shape[1]))
+        self.logger.info(
+            "Sampled instances {} objects {}".format(X.shape[0], X.shape[1])
+        )
         return X, Y
 
     def create_instances(self, dataset):
@@ -178,13 +204,15 @@ class LetorRankingDatasetReader(DatasetReader, metaclass=ABCMeta):
         dataset_dictionaries = dict()
         for file in files:
             dataset = dict()
-            key = os.path.basename(file).split('.txt')[0]
-            self.logger.info('File name {}'.format(key))
+            key = os.path.basename(file).split(".txt")[0]
+            self.logger.info("File name {}".format(key))
             for line in open(file):
-                information = line.split('#')[0].split(" qid:")
+                information = line.split("#")[0].split(" qid:")
                 rel_deg = int(information[0])
-                qid = information[1].split(' ')[0]
-                x = np.array([float(l.split(':')[1]) for l in information[1].split(' ')[1:-1]])
+                qid = information[1].split(" ")[0]
+                x = np.array(
+                    [float(l.split(":")[1]) for l in information[1].split(" ")[1:-1]]
+                )
                 x = np.insert(x, len(x), rel_deg)
                 if qid not in dataset.keys():
                     dataset[qid] = [x]
@@ -192,7 +220,7 @@ class LetorRankingDatasetReader(DatasetReader, metaclass=ABCMeta):
                     dataset[qid].append(x)
             array = np.array([len(i) for i in dataset.values()])
             dataset_dictionaries[key] = dataset
-            self.logger.info('Maximum length of ranking: {}'.format(np.max(array)))
+            self.logger.info("Maximum length of ranking: {}".format(np.max(array)))
         return dataset_dictionaries
 
     def sub_sampling_function(self, Xt, Yt):

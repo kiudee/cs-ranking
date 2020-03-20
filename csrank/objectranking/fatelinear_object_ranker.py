@@ -6,8 +6,17 @@ from .object_ranker import ObjectRanker
 
 
 class FATELinearObjectRanker(FATELinearCore, ObjectRanker):
-    def __init__(self, n_object_features, n_objects, n_hidden_set_units=2, loss_function=hinged_rank_loss,
-                 learning_rate=1e-3, batch_size=256, random_state=None, **kwargs):
+    def __init__(
+        self,
+        n_object_features,
+        n_objects,
+        n_hidden_set_units=2,
+        loss_function=hinged_rank_loss,
+        learning_rate=1e-3,
+        batch_size=256,
+        random_state=None,
+        **kwargs
+    ):
         """
             Create a FATELinear-network architecture for leaning discrete choice function. The first-aggregate-then-evaluate
             approach learns an embedding of each object and then aggregates that into a context representation
@@ -45,12 +54,21 @@ class FATELinearObjectRanker(FATELinearCore, ObjectRanker):
             **kwargs
                 Keyword arguments for the @FATENetwork
         """
-        super().__init__(n_object_features=n_object_features, n_objects=n_objects,
-                         n_hidden_set_units=n_hidden_set_units, learning_rate=learning_rate, batch_size=batch_size,
-                         loss_function=loss_function, random_state=random_state, **kwargs)
+        super().__init__(
+            n_object_features=n_object_features,
+            n_objects=n_objects,
+            n_hidden_set_units=n_hidden_set_units,
+            learning_rate=learning_rate,
+            batch_size=batch_size,
+            loss_function=loss_function,
+            random_state=random_state,
+            **kwargs
+        )
         self.logger = logging.getLogger(FATELinearObjectRanker.__name__)
 
-    def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd):
+    def fit(
+        self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd
+    ):
         """
                     Fit an object ranking learning model on a provided set of queries.
                     The provided queries are of a fixed size (numpy arrays).
@@ -74,7 +92,15 @@ class FATELinearObjectRanker(FATELinearCore, ObjectRanker):
                     **kwd
                         Keyword arguments for the fit function
                 """
-        super().fit(X, Y, epochs=epochs, callbacks=callbacks, validation_split=validation_split, verbose=verbose, **kwd)
+        super().fit(
+            X,
+            Y,
+            epochs=epochs,
+            callbacks=callbacks,
+            validation_split=validation_split,
+            verbose=verbose,
+            **kwd
+        )
 
     def _predict_scores_fixed(self, X, **kwargs):
         return super()._predict_scores_fixed(X, **kwargs)
@@ -88,7 +114,20 @@ class FATELinearObjectRanker(FATELinearCore, ObjectRanker):
     def predict(self, X, **kwargs):
         return super().predict(X, **kwargs)
 
-    def set_tunable_parameters(self, n_hidden_set_units=32, learning_rate=1e-3, batch_size=128, epochs_drop=300,
-                               drop=0.1, **point):
-        super().set_tunable_parameters(n_hidden_set_units=n_hidden_set_units, learning_rate=learning_rate,
-                                       batch_size=batch_size, epochs_drop=epochs_drop, drop=drop, **point)
+    def set_tunable_parameters(
+        self,
+        n_hidden_set_units=32,
+        learning_rate=1e-3,
+        batch_size=128,
+        epochs_drop=300,
+        drop=0.1,
+        **point
+    ):
+        super().set_tunable_parameters(
+            n_hidden_set_units=n_hidden_set_units,
+            learning_rate=learning_rate,
+            batch_size=batch_size,
+            epochs_drop=epochs_drop,
+            drop=drop,
+            **point
+        )

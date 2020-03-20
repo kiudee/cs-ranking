@@ -47,7 +47,9 @@ class AllPositive(ChoiceFunctions, Learner):
         if isinstance(X, dict):
             scores = dict()
             for ranking_size, x in X.items():
-                scores[ranking_size] = self._predict_scores_fixed(x, Y[ranking_size], **kwargs)
+                scores[ranking_size] = self._predict_scores_fixed(
+                    x, Y[ranking_size], **kwargs
+                )
 
         else:
             scores = self._predict_scores_fixed(X, **kwargs)

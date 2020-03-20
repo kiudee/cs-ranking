@@ -22,7 +22,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import check_random_state
 
 import csrank.theano_util as ttu
-from csrank.choicefunction.util import create_weight_dictionary, BinaryCrossEntropyLikelihood
+from csrank.choicefunction.util import (
+    create_weight_dictionary,
+    BinaryCrossEntropyLikelihood,
+)
 from csrank.discretechoice.likelihoods import fit_pymc3_model
 from csrank.learner import Learner
 from csrank.util import print_dictionary
@@ -30,7 +33,9 @@ from .choice_functions import ChoiceFunctions
 
 
 class GeneralizedLinearModel(ChoiceFunctions, Learner):
-    def __init__(self, n_object_features, regularization='l2', random_state=None, **kwargs):
+    def __init__(
+        self, n_object_features, regularization="l2", random_state=None, **kwargs
+    ):
         """
             Create an instance of the GeneralizedLinearModel model for learning the choice function. This model is
             adapted from the multinomial logit model :class:`csrank.discretechoice.multinomial_logit_model.MultinomialLogitModel`.
@@ -67,10 +72,10 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
         """
         self.logger = logging.getLogger(GeneralizedLinearModel.__name__)
         self.n_object_features = n_object_features
-        if regularization in ['l1', 'l2']:
+        if regularization in ["l1", "l2"]:
             self.regularization = regularization
         else:
-            self.regularization = 'l2'
+            self.regularization = "l2"
         self.random_state = check_random_state(random_state)
         self.model = None
         self.trace = None
@@ -103,15 +108,24 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
                 \\text{sd}_w \\sim \\text{HalfCauchy}(\\beta=1.0) \\\\
                 \\text{weights} \\sim \\text{Normal}(\\text{mu}=\\text{mu}_w, \\text{sd}=\\text{sd}_w)
         """
-        if self.regularization == 'l2':
+        if self.regularization == "l2":
             weight = pm.Normal
-            prior = 'sd'
-        elif self.regularization == 'l1':
+            prior = "sd"
+        elif self.regularization == "l1":
             weight = pm.Laplace
-            prior = 'b'
+            prior = "b"
         configuration = {
-            'weights': [weight, {'mu': (pm.Normal, {'mu': 0, 'sd': 10}), prior: (pm.HalfCauchy, {'beta': 1})}]}
-        self.logger.info('Creating default config {}'.format(print_dictionary(configuration)))
+            "weights": [
+                weight,
+                {
+                    "mu": (pm.Normal, {"mu": 0, "sd": 10}),
+                    prior: (pm.HalfCauchy, {"beta": 1}),
+                },
+            ]
+        }
+        self.logger.info(
+            "Creating default config {}".format(print_dictionary(configuration))
+        )
         return configuration
 
     def construct_model(self, X, Y):
@@ -137,21 +151,40 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
             -------
              model : pymc3 Model :class:`pm.Model`
         """
-        self.logger.info('Creating model_args config {}'.format(print_dictionary(self.model_configuration)))
+        self.logger.info(
+            "Creating model_args config {}".format(
+                print_dictionary(self.model_configuration)
+            )
+        )
         with pm.Model() as self.model:
             self.Xt = theano.shared(X)
             self.Yt = theano.shared(Y)
-            shapes = {'weights': self.n_object_features}
+            shapes = {"weights": self.n_object_features}
             # shapes = {'weights': (self.n_object_features, 3)}
             weights_dict = create_weight_dictionary(self.model_configuration, shapes)
-            intercept = pm.Normal('intercept', mu=0, sd=10)
-            utility = tt.dot(self.Xt, weights_dict['weights']) + intercept
+            intercept = pm.Normal("intercept", mu=0, sd=10)
+            utility = tt.dot(self.Xt, weights_dict["weights"]) + intercept
             self.p = ttu.sigmoid(utility)
-            yl = BinaryCrossEntropyLikelihood('yl', p=self.p, observed=self.Yt)
+            yl = BinaryCrossEntropyLikelihood("yl", p=self.p, observed=self.Yt)
         self.logger.info("Model construction completed")
 
-    def fit(self, X, Y, sampler='variational', tune=500, draws=500, tune_size=0.1, thin_thresholds=1,
-            vi_params={"n": 20000, "method": "advi", "callbacks": [CheckParametersConvergence()]}, verbose=0, **kwargs):
+    def fit(
+        self,
+        X,
+        Y,
+        sampler="variational",
+        tune=500,
+        draws=500,
+        tune_size=0.1,
+        thin_thresholds=1,
+        vi_params={
+            "n": 20000,
+            "method": "advi",
+            "callbacks": [CheckParametersConvergence()],
+        },
+        verbose=0,
+        **kwargs
+    ):
         """
             Fit a generalized logit model on the provided set of queries X and choices Y of those objects. The
             provided queries and corresponding preferences are of a fixed size (numpy arrays). For learning this network
@@ -195,30 +228,65 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
                 Keyword arguments for the fit function
         """
         if tune_size > 0:
-            X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=tune_size, random_state=self.random_state)
+            X_train, X_val, Y_train, Y_val = train_test_split(
+                X, Y, test_size=tune_size, random_state=self.random_state
+            )
             try:
-                self._fit(X_train, Y_train, sampler=sampler, vi_params=vi_params, **kwargs)
+                self._fit(
+                    X_train, Y_train, sampler=sampler, vi_params=vi_params, **kwargs
+                )
             finally:
-                self.logger.info('Fitting utility function finished. Start tuning threshold.')
-                self.threshold = self._tune_threshold(X_val, Y_val, thin_thresholds=thin_thresholds, verbose=verbose)
+                self.logger.info(
+                    "Fitting utility function finished. Start tuning threshold."
+                )
+                self.threshold = self._tune_threshold(
+                    X_val, Y_val, thin_thresholds=thin_thresholds, verbose=verbose
+                )
         else:
-            self._fit(X, Y, sampler=sampler, sample_params={"tune": 2, "draws": 2, "chains": 4, "njobs": 8},
-                      vi_params={"n": 20000, "method": "advi", "callbacks": [
-                          pm.callbacks.CheckParametersConvergence(diff="absolute", tolerance=0.01, every=50)],
-                                 "draws": 500}, **kwargs)
+            self._fit(
+                X,
+                Y,
+                sampler=sampler,
+                sample_params={"tune": 2, "draws": 2, "chains": 4, "njobs": 8},
+                vi_params={
+                    "n": 20000,
+                    "method": "advi",
+                    "callbacks": [
+                        pm.callbacks.CheckParametersConvergence(
+                            diff="absolute", tolerance=0.01, every=50
+                        )
+                    ],
+                    "draws": 500,
+                },
+                **kwargs
+            )
             self.threshold = 0.5
 
-    def _fit(self, X, Y, sampler='variational', tune=500, draws=500,
-             vi_params={"n": 20000, "method": "advi", "callbacks": [CheckParametersConvergence()]}, **kwargs):
+    def _fit(
+        self,
+        X,
+        Y,
+        sampler="variational",
+        tune=500,
+        draws=500,
+        vi_params={
+            "n": 20000,
+            "method": "advi",
+            "callbacks": [CheckParametersConvergence()],
+        },
+        **kwargs
+    ):
         self.construct_model(X, Y)
         fit_pymc3_model(self, sampler, draws, tune, vi_params, **kwargs)
 
     def _predict_scores_fixed(self, X, **kwargs):
-        d = dict(pm.summary(self.trace)['mean'])
+        d = dict(pm.summary(self.trace)["mean"])
         intercept = 0.0
-        weights = np.array([d['weights[{}]'.format(i)] for i in range(self.n_object_features)])
-        if 'intercept' in d:
-            intercept = intercept + d['intercept']
+        weights = np.array(
+            [d["weights[{}]".format(i)] for i in range(self.n_object_features)]
+        )
+        if "intercept" in d:
+            intercept = intercept + d["intercept"]
         return np.dot(X, weights) + intercept
 
     def predict(self, X, **kwargs):
@@ -249,5 +317,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
         self.Yt = None
         self.p = None
         if len(point) > 0:
-            self.logger.warning('This ranking algorithm does not support'
-                                ' tunable parameters called: {}'.format(print_dictionary(point)))
+            self.logger.warning(
+                "This ranking algorithm does not support"
+                " tunable parameters called: {}".format(print_dictionary(point))
+            )

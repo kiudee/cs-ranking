@@ -5,8 +5,12 @@ import numpy as np
 
 from csrank.numpy_util import ranking_ordering_conversion
 
-__all__ = ['generate_complete_pairwise_dataset', 'complete_linear_regression_dataset',
-           'complete_linear_regression_dataset', "sub_sampling_rankings"]
+__all__ = [
+    "generate_complete_pairwise_dataset",
+    "complete_linear_regression_dataset",
+    "complete_linear_regression_dataset",
+    "sub_sampling_rankings",
+]
 
 
 def generate_pairwise_instances(features):

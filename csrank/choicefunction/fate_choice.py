@@ -11,11 +11,23 @@ from .choice_functions import ChoiceFunctions
 
 
 class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
-    def __init__(self, n_object_features, n_hidden_set_layers=2, n_hidden_set_units=2, n_hidden_joint_layers=32,
-                 n_hidden_joint_units=32, loss_function=binary_crossentropy, activation='selu',
-                 kernel_initializer='lecun_normal', kernel_regularizer=l2(l=0.01),
-                 optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9), batch_size=256, metrics=None, random_state=None,
-                 **kwargs):
+    def __init__(
+        self,
+        n_object_features,
+        n_hidden_set_layers=2,
+        n_hidden_set_units=2,
+        n_hidden_joint_layers=32,
+        n_hidden_joint_units=32,
+        loss_function=binary_crossentropy,
+        activation="selu",
+        kernel_initializer="lecun_normal",
+        kernel_regularizer=l2(l=0.01),
+        optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
+        batch_size=256,
+        metrics=None,
+        random_state=None,
+        **kwargs
+    ):
         """
             Create a FATE-network architecture for leaning discrete choice function. The first-aggregate-then-evaluate
             approach learns an embedding of each object and then aggregates that into a context representation
@@ -69,11 +81,20 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
         """
         self.loss_function = loss_function
         self.metrics = metrics
-        super().__init__(n_object_features=n_object_features, n_hidden_set_layers=n_hidden_set_layers,
-                         n_hidden_set_units=n_hidden_set_units, n_hidden_joint_layers=n_hidden_joint_layers,
-                         n_hidden_joint_units=n_hidden_joint_units, activation=activation,
-                         kernel_initializer=kernel_initializer, kernel_regularizer=kernel_regularizer,
-                         optimizer=optimizer, batch_size=batch_size, random_state=random_state, **kwargs)
+        super().__init__(
+            n_object_features=n_object_features,
+            n_hidden_set_layers=n_hidden_set_layers,
+            n_hidden_set_units=n_hidden_set_units,
+            n_hidden_joint_layers=n_hidden_joint_layers,
+            n_hidden_joint_units=n_hidden_joint_units,
+            activation=activation,
+            kernel_initializer=kernel_initializer,
+            kernel_regularizer=kernel_regularizer,
+            optimizer=optimizer,
+            batch_size=batch_size,
+            random_state=random_state,
+            **kwargs
+        )
         self.logger = logging.getLogger(FATEChoiceFunction.__name__)
         self.threshold = 0.5
 
@@ -90,20 +111,47 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
             **kwargs
                 Keyword arguments passed into the joint layers
         """
-        self.logger.info("Construct joint layers hidden units {} and layers {} ".format(self.n_hidden_joint_units,
-                                                                                        self.n_hidden_joint_layers))
+        self.logger.info(
+            "Construct joint layers hidden units {} and layers {} ".format(
+                self.n_hidden_joint_units, self.n_hidden_joint_layers
+            )
+        )
         # Create joint hidden layers:
         self.joint_layers = []
         for i in range(self.n_hidden_joint_layers):
-            self.joint_layers.append(Dense(self.n_hidden_joint_units, name="joint_layer_{}".format(i), **kwargs))
-        self.logger.info('Construct output score node')
-        self.scorer = Dense(1, name="output_node", activation='sigmoid', kernel_regularizer=self.kernel_regularizer)
+            self.joint_layers.append(
+                Dense(
+                    self.n_hidden_joint_units, name="joint_layer_{}".format(i), **kwargs
+                )
+            )
+        self.logger.info("Construct output score node")
+        self.scorer = Dense(
+            1,
+            name="output_node",
+            activation="sigmoid",
+            kernel_regularizer=self.kernel_regularizer,
+        )
 
     def construct_model(self, n_features, n_objects):
         return super().construct_model(n_features, n_objects)
 
-    def fit(self, X, Y, epochs=35, inner_epochs=1, callbacks=None, validation_split=0.1, verbose=0, global_lr=1.0,
-            global_momentum=0.9, min_bucket_size=500, refit=False, tune_size=0.1, thin_thresholds=1, **kwargs):
+    def fit(
+        self,
+        X,
+        Y,
+        epochs=35,
+        inner_epochs=1,
+        callbacks=None,
+        validation_split=0.1,
+        verbose=0,
+        global_lr=1.0,
+        global_momentum=0.9,
+        min_bucket_size=500,
+        refit=False,
+        tune_size=0.1,
+        thin_thresholds=1,
+        **kwargs
+    ):
         """
             Fit a generic FATE-network model for learning a choice function on a provided set of queries.
 
@@ -148,12 +196,18 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
                 Keyword arguments for the fit function
         """
         if tune_size > 0:
-            X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=tune_size, random_state=self.random_state)
+            X_train, X_val, Y_train, Y_val = train_test_split(
+                X, Y, test_size=tune_size, random_state=self.random_state
+            )
             try:
                 super().fit(X_train, Y_train, **kwargs)
             finally:
-                self.logger.info('Fitting utility function finished. Start tuning threshold.')
-                self.threshold = self._tune_threshold(X_val, Y_val, thin_thresholds=thin_thresholds, verbose=verbose)
+                self.logger.info(
+                    "Fitting utility function finished. Start tuning threshold."
+                )
+                self.threshold = self._tune_threshold(
+                    X_val, Y_val, thin_thresholds=thin_thresholds, verbose=verbose
+                )
         else:
             super().fit(X, Y, **kwargs)
             self.threshold = 0.5
@@ -174,9 +228,24 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
         self.logger.info("Clearing memory")
         super().clear_memory(**kwargs)
 
-    def set_tunable_parameters(self, n_hidden_set_units=32, n_hidden_set_layers=2, n_hidden_joint_units=32,
-                               n_hidden_joint_layers=2, reg_strength=1e-4, learning_rate=1e-3, batch_size=128, **point):
-        super().set_tunable_parameters(n_hidden_set_units=n_hidden_set_units, n_hidden_set_layers=n_hidden_set_layers,
-                                       n_hidden_joint_units=n_hidden_joint_units,
-                                       n_hidden_joint_layers=n_hidden_joint_layers, reg_strength=reg_strength,
-                                       learning_rate=learning_rate, batch_size=batch_size, **point)
+    def set_tunable_parameters(
+        self,
+        n_hidden_set_units=32,
+        n_hidden_set_layers=2,
+        n_hidden_joint_units=32,
+        n_hidden_joint_layers=2,
+        reg_strength=1e-4,
+        learning_rate=1e-3,
+        batch_size=128,
+        **point
+    ):
+        super().set_tunable_parameters(
+            n_hidden_set_units=n_hidden_set_units,
+            n_hidden_set_layers=n_hidden_set_layers,
+            n_hidden_joint_units=n_hidden_joint_units,
+            n_hidden_joint_layers=n_hidden_joint_layers,
+            reg_strength=reg_strength,
+            learning_rate=learning_rate,
+            batch_size=batch_size,
+            **point
+        )

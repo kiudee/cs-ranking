@@ -9,11 +9,23 @@ from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 
 
 class FATEDiscreteChoiceFunction(FATENetwork, DiscreteObjectChooser):
-    def __init__(self, n_object_features, n_hidden_set_layers=2, n_hidden_set_units=2, loss_function='categorical_hinge'
-                 , metrics=['categorical_accuracy'], n_hidden_joint_layers=32,
-                 n_hidden_joint_units=32, activation='selu', kernel_initializer='lecun_normal',
-                 kernel_regularizer=l2(l=0.01), optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9), batch_size=256,
-                 random_state=None, **kwargs):
+    def __init__(
+        self,
+        n_object_features,
+        n_hidden_set_layers=2,
+        n_hidden_set_units=2,
+        loss_function="categorical_hinge",
+        metrics=["categorical_accuracy"],
+        n_hidden_joint_layers=32,
+        n_hidden_joint_units=32,
+        activation="selu",
+        kernel_initializer="lecun_normal",
+        kernel_regularizer=l2(l=0.01),
+        optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
+        batch_size=256,
+        random_state=None,
+        **kwargs
+    ):
         """
             Create a FATE-network architecture for leaning discrete choice function. The first-aggregate-then-evaluate
             approach learns an embedding of each object and then aggregates that into a context representation
@@ -67,11 +79,20 @@ class FATEDiscreteChoiceFunction(FATENetwork, DiscreteObjectChooser):
         """
         self.loss_function = loss_function
         self.metrics = metrics
-        super().__init__(n_object_features=n_object_features, n_hidden_set_layers=n_hidden_set_layers,
-                         n_hidden_set_units=n_hidden_set_units, n_hidden_joint_layers=n_hidden_joint_layers,
-                         n_hidden_joint_units=n_hidden_joint_units, activation=activation,
-                         kernel_initializer=kernel_initializer, kernel_regularizer=kernel_regularizer,
-                         optimizer=optimizer, batch_size=batch_size, random_state=random_state, **kwargs)
+        super().__init__(
+            n_object_features=n_object_features,
+            n_hidden_set_layers=n_hidden_set_layers,
+            n_hidden_set_units=n_hidden_set_units,
+            n_hidden_joint_layers=n_hidden_joint_layers,
+            n_hidden_joint_units=n_hidden_joint_units,
+            activation=activation,
+            kernel_initializer=kernel_initializer,
+            kernel_regularizer=kernel_regularizer,
+            optimizer=optimizer,
+            batch_size=batch_size,
+            random_state=random_state,
+            **kwargs
+        )
         self.logger = logging.getLogger(FATEDiscreteChoiceFunction.__name__)
 
     def _construct_layers(self, **kwargs):
@@ -87,15 +108,27 @@ class FATEDiscreteChoiceFunction(FATENetwork, DiscreteObjectChooser):
             **kwargs
                 Keyword arguments passed into the joint layers
         """
-        self.logger.info("Construct joint layers hidden units {} and layers {} ".format(self.n_hidden_joint_units,
-                                                                                        self.n_hidden_joint_layers))
+        self.logger.info(
+            "Construct joint layers hidden units {} and layers {} ".format(
+                self.n_hidden_joint_units, self.n_hidden_joint_layers
+            )
+        )
         # Create joint hidden layers:
         self.joint_layers = []
         for i in range(self.n_hidden_joint_layers):
-            self.joint_layers.append(Dense(self.n_hidden_joint_units, name="joint_layer_{}".format(i), **kwargs))
+            self.joint_layers.append(
+                Dense(
+                    self.n_hidden_joint_units, name="joint_layer_{}".format(i), **kwargs
+                )
+            )
 
-        self.logger.info('Construct output score node')
-        self.scorer = Dense(1, name="output_node", activation='sigmoid', kernel_regularizer=self.kernel_regularizer)
+        self.logger.info("Construct output score node")
+        self.scorer = Dense(
+            1,
+            name="output_node",
+            activation="sigmoid",
+            kernel_regularizer=self.kernel_regularizer,
+        )
 
     def construct_model(self, n_features, n_objects):
         return super().construct_model(n_features, n_objects)
@@ -119,9 +152,24 @@ class FATEDiscreteChoiceFunction(FATENetwork, DiscreteObjectChooser):
         self.logger.info("Clearing memory")
         super().clear_memory(**kwargs)
 
-    def set_tunable_parameters(self, n_hidden_set_units=32, n_hidden_set_layers=2, n_hidden_joint_units=32,
-                               n_hidden_joint_layers=2, reg_strength=1e-4, learning_rate=1e-3, batch_size=128, **point):
-        super().set_tunable_parameters(n_hidden_set_units=n_hidden_set_units, n_hidden_set_layers=n_hidden_set_layers,
-                                       n_hidden_joint_units=n_hidden_joint_units,
-                                       n_hidden_joint_layers=n_hidden_joint_layers, reg_strength=reg_strength,
-                                       learning_rate=learning_rate, batch_size=batch_size, **point)
+    def set_tunable_parameters(
+        self,
+        n_hidden_set_units=32,
+        n_hidden_set_layers=2,
+        n_hidden_joint_units=32,
+        n_hidden_joint_layers=2,
+        reg_strength=1e-4,
+        learning_rate=1e-3,
+        batch_size=128,
+        **point
+    ):
+        super().set_tunable_parameters(
+            n_hidden_set_units=n_hidden_set_units,
+            n_hidden_set_layers=n_hidden_set_layers,
+            n_hidden_joint_units=n_hidden_joint_units,
+            n_hidden_joint_layers=n_hidden_joint_layers,
+            reg_strength=reg_strength,
+            learning_rate=learning_rate,
+            batch_size=batch_size,
+            **point
+        )

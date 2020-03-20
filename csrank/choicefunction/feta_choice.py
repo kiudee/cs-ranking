@@ -16,12 +16,26 @@ from .choice_functions import ChoiceFunctions
 
 
 class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
-    def __init__(self, n_objects, n_object_features, n_hidden=2, n_units=8, add_zeroth_order_model=False,
-                 max_number_of_objects=10, num_subsample=5, loss_function=binary_crossentropy,
-                 batch_normalization=False, kernel_regularizer=l2(l=1e-4), kernel_initializer='lecun_normal',
-                 activation='selu', optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
-                 metrics=['binary_accuracy'], batch_size=256, random_state=None,
-                 **kwargs):
+    def __init__(
+        self,
+        n_objects,
+        n_object_features,
+        n_hidden=2,
+        n_units=8,
+        add_zeroth_order_model=False,
+        max_number_of_objects=10,
+        num_subsample=5,
+        loss_function=binary_crossentropy,
+        batch_normalization=False,
+        kernel_regularizer=l2(l=1e-4),
+        kernel_initializer="lecun_normal",
+        activation="selu",
+        optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
+        metrics=["binary_accuracy"],
+        batch_size=256,
+        random_state=None,
+        **kwargs
+    ):
         """
             Create a FETA-network architecture for learning choice functions.
             The first-evaluate-then-aggregate approach approximates the context-dependent utility function using the
@@ -76,12 +90,25 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
             **kwargs
                 Keyword arguments for the hidden units
         """
-        super().__init__(n_objects=n_objects, n_object_features=n_object_features, n_hidden=n_hidden, n_units=n_units,
-                         add_zeroth_order_model=add_zeroth_order_model, max_number_of_objects=max_number_of_objects,
-                         num_subsample=num_subsample, loss_function=loss_function,
-                         batch_normalization=batch_normalization, kernel_regularizer=kernel_regularizer,
-                         kernel_initializer=kernel_initializer, activation=activation, optimizer=optimizer,
-                         metrics=metrics, batch_size=batch_size, random_state=random_state, **kwargs)
+        super().__init__(
+            n_objects=n_objects,
+            n_object_features=n_object_features,
+            n_hidden=n_hidden,
+            n_units=n_units,
+            add_zeroth_order_model=add_zeroth_order_model,
+            max_number_of_objects=max_number_of_objects,
+            num_subsample=num_subsample,
+            loss_function=loss_function,
+            batch_normalization=batch_normalization,
+            kernel_regularizer=kernel_regularizer,
+            kernel_initializer=kernel_initializer,
+            activation=activation,
+            optimizer=optimizer,
+            metrics=metrics,
+            batch_size=batch_size,
+            random_state=random_state,
+            **kwargs
+        )
         self.threshold = 0.5
         self.logger = logging.getLogger(FETAChoiceFunction.__name__)
 
@@ -91,20 +118,34 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
         # X = Input(shape=(None, n_features))
         if self.batch_normalization:
             if self._use_zeroth_model:
-                self.hidden_layers_zeroth = [NormalizedDense(self.n_units, name="hidden_zeroth_{}".format(x), *kwargs)
-                                             for x in range(self.n_hidden)]
-            self.hidden_layers = [NormalizedDense(self.n_units, name="hidden_{}".format(x), **kwargs)
-                                  for x in range(self.n_hidden)]
+                self.hidden_layers_zeroth = [
+                    NormalizedDense(
+                        self.n_units, name="hidden_zeroth_{}".format(x), *kwargs
+                    )
+                    for x in range(self.n_hidden)
+                ]
+            self.hidden_layers = [
+                NormalizedDense(self.n_units, name="hidden_{}".format(x), **kwargs)
+                for x in range(self.n_hidden)
+            ]
         else:
             if self._use_zeroth_model:
-                self.hidden_layers_zeroth = [Dense(self.n_units, name="hidden_zeroth_{}".format(x), **kwargs)
-                                             for x in range(self.n_hidden)]
-            self.hidden_layers = [Dense(self.n_units, name="hidden_{}".format(x), **kwargs)
-                                  for x in range(self.n_hidden)]
+                self.hidden_layers_zeroth = [
+                    Dense(self.n_units, name="hidden_zeroth_{}".format(x), **kwargs)
+                    for x in range(self.n_hidden)
+                ]
+            self.hidden_layers = [
+                Dense(self.n_units, name="hidden_{}".format(x), **kwargs)
+                for x in range(self.n_hidden)
+            ]
         assert len(self.hidden_layers) == self.n_hidden
-        self.output_node = Dense(1, activation="linear", kernel_regularizer=self.kernel_regularizer)
+        self.output_node = Dense(
+            1, activation="linear", kernel_regularizer=self.kernel_regularizer
+        )
         if self._use_zeroth_model:
-            self.output_node_zeroth = Dense(1, activation="linear", kernel_regularizer=self.kernel_regularizer)
+            self.output_node_zeroth = Dense(
+                1, activation="linear", kernel_regularizer=self.kernel_regularizer
+            )
 
     def construct_model(self):
         """
@@ -127,7 +168,7 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
             return Lambda(lambda x: x[:, i])
 
         if self._use_zeroth_model:
-            self.logger.debug('Create 0th order model')
+            self.logger.debug("Create 0th order model")
             zeroth_order_outputs = []
             inputs = []
             for i in range(self.n_objects):
@@ -137,8 +178,8 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
                     x = hidden(x)
                 zeroth_order_outputs.append(self.output_node_zeroth(x))
             zeroth_order_scores = concatenate(zeroth_order_outputs)
-            self.logger.debug('0th order model finished')
-        self.logger.debug('Create 1st order model')
+            self.logger.debug("0th order model finished")
+        self.logger.debug("Create 1st order model")
         outputs = [list() for _ in range(self.n_objects)]
         for i, j in combinations(range(self.n_objects), 2):
             if self._use_zeroth_model:
@@ -168,13 +209,15 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
         sum_fun = lambda s: K.mean(s, axis=1, keepdims=True)
         scores = [Lambda(sum_fun)(x) for x in outputs]
         scores = concatenate(scores)
-        self.logger.debug('1st order model finished')
+        self.logger.debug("1st order model finished")
         if self._use_zeroth_model:
             scores = add([scores, zeroth_order_scores])
-        scores = Activation('sigmoid')(scores)
+        scores = Activation("sigmoid")(scores)
         model = Model(inputs=self.input_layer, outputs=scores)
-        self.logger.debug('Compiling complete model...')
-        model.compile(loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics)
+        self.logger.debug("Compiling complete model...")
+        model.compile(
+            loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics
+        )
         return model
 
     def _predict_scores_using_pairs(self, X, **kwd):
@@ -182,8 +225,18 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
         scores = sigmoid(scores)
         return scores
 
-    def fit(self, X, Y, epochs=10, callbacks=None, validation_split=0.1, tune_size=0.1, thin_thresholds=1, verbose=0,
-            **kwd):
+    def fit(
+        self,
+        X,
+        Y,
+        epochs=10,
+        callbacks=None,
+        validation_split=0.1,
+        tune_size=0.1,
+        thin_thresholds=1,
+        verbose=0,
+        **kwd
+    ):
         """
             Fit a FETA-Network for learning a choice function on the provided set of queries X and preferences Y of
             those objects. The provided queries and corresponding preferences are of a fixed size (numpy arrays).
@@ -210,16 +263,28 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
                 Keyword arguments for the fit function
         """
         if tune_size > 0:
-            X_train, X_val, Y_train, Y_val = train_test_split(X, Y, test_size=tune_size, random_state=self.random_state)
+            X_train, X_val, Y_train, Y_val = train_test_split(
+                X, Y, test_size=tune_size, random_state=self.random_state
+            )
             try:
-                super().fit(X_train, Y_train, epochs, callbacks,
-                            validation_split, verbose, **kwd)
+                super().fit(
+                    X_train,
+                    Y_train,
+                    epochs,
+                    callbacks,
+                    validation_split,
+                    verbose,
+                    **kwd
+                )
             finally:
-                self.logger.info('Fitting utility function finished. Start tuning threshold.')
-                self.threshold = self._tune_threshold(X_val, Y_val, thin_thresholds=thin_thresholds, verbose=verbose)
+                self.logger.info(
+                    "Fitting utility function finished. Start tuning threshold."
+                )
+                self.threshold = self._tune_threshold(
+                    X_val, Y_val, thin_thresholds=thin_thresholds, verbose=verbose
+                )
         else:
-            super().fit(X, Y, epochs, callbacks, validation_split, verbose,
-                        **kwd)
+            super().fit(X, Y, epochs, callbacks, validation_split, verbose, **kwd)
             self.threshold = 0.5
 
     def sub_sampling(self, X, Y):
@@ -235,26 +300,29 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
             if (y == 1).sum() < n_objects:
                 ind_0 = np.where(y == 0)[0]
                 p_0 = np.zeros(len(ind_0)) + 1 / len(ind_0)
-                positives = (y == 1).sum() if n_objects > (
-                        y == 1).sum() else n_objects
+                positives = (y == 1).sum() if n_objects > (y == 1).sum() else n_objects
                 if positives > bucket_size:
-                    cp = self.random_state.choice(positives, size=bucket_size,
-                                                  replace=False) + 1
+                    cp = (
+                        self.random_state.choice(
+                            positives, size=bucket_size, replace=False
+                        )
+                        + 1
+                    )
                 else:
-                    cp = self.random_state.choice(positives,
-                                                  size=bucket_size) + 1
+                    cp = self.random_state.choice(positives, size=bucket_size) + 1
                 idx = []
                 for c in cp:
-                    pos = self.random_state.choice(len(ind_1), size=c,
-                                                   replace=False, p=p_1)
+                    pos = self.random_state.choice(
+                        len(ind_1), size=c, replace=False, p=p_1
+                    )
                     if n_objects - c > len(ind_0):
-                        neg = self.random_state.choice(len(ind_0),
-                                                       size=n_objects - c,
-                                                       p=p_0)
+                        neg = self.random_state.choice(
+                            len(ind_0), size=n_objects - c, p=p_0
+                        )
                     else:
-                        neg = self.random_state.choice(len(ind_0),
-                                                       size=n_objects - c,
-                                                       replace=False, p=p_0)
+                        neg = self.random_state.choice(
+                            len(ind_0), size=n_objects - c, replace=False, p=p_0
+                        )
                     p_0[neg] = 0.2 * p_0[neg]
                     p_0 = p_0 / p_0.sum()
                     i = np.concatenate((ind_1[pos], ind_0[neg]))
@@ -266,8 +334,7 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
                     idx.append(i)
                 idx = np.array(idx)
             else:
-                idx = self.random_state.choice(ind_1,
-                                               size=(bucket_size, n_objects))
+                idx = self.random_state.choice(ind_1, size=(bucket_size, n_objects))
                 idx = np.array(idx)
             if len(X_train) == 0:
                 X_train = x[idx]
@@ -275,7 +342,9 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
             else:
                 Y_train = np.concatenate([Y_train, y[idx]], axis=0)
                 X_train = np.concatenate([X_train, x[idx]], axis=0)
-        self.logger.info("Sampled instances {} objects {}".format(X_train.shape[0], X_train.shape[1]))
+        self.logger.info(
+            "Sampled instances {} objects {}".format(X_train.shape[0], X_train.shape[1])
+        )
         return X_train, Y_train
 
     def _predict_scores_fixed(self, X, **kwargs):
@@ -294,7 +363,20 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
         self.logger.info("Clearing memory")
         super().clear_memory(**kwargs)
 
-    def set_tunable_parameters(self, n_hidden=32, n_units=2, reg_strength=1e-4, learning_rate=1e-3, batch_size=128,
-                               **point):
-        super().set_tunable_parameters(n_hidden=n_hidden, n_units=n_units, reg_strength=reg_strength,
-                                       learning_rate=learning_rate, batch_size=batch_size, **point)
+    def set_tunable_parameters(
+        self,
+        n_hidden=32,
+        n_units=2,
+        reg_strength=1e-4,
+        learning_rate=1e-3,
+        batch_size=128,
+        **point
+    ):
+        super().set_tunable_parameters(
+            n_hidden=n_hidden,
+            n_units=n_units,
+            reg_strength=reg_strength,
+            learning_rate=learning_rate,
+            batch_size=batch_size,
+            **point
+        )
