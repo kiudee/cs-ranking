@@ -47,3 +47,6 @@ deploy:
     on:
       branch: master
       repo: kiudee/cs-ranking
+
+notifications:
+  webhooks: https://coveralls.io/webhook
