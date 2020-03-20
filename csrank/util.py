@@ -6,8 +6,34 @@ import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
+from csrank.metrics import zero_one_rank_loss, zero_one_accuracy, make_ndcg_at_k_loss
+from csrank.metrics_np import (
+    f1_measure,
+    precision,
+    recall,
+    subset_01_loss,
+    hamming,
+    instance_informedness,
+    zero_one_accuracy_np,
+)
+
 __all__ = ['create_dir_recursively', 'duration_till_now', 'print_dictionary', 'rename_file_if_exist', 'seconds_to_time',
            'time_from_now', 'get_duration_seconds', 'setup_logging', 'progress_bar']
+
+
+metrics_on_predictions = [
+    f1_measure,
+    precision,
+    recall,
+    subset_01_loss,
+    hamming,
+    instance_informedness,
+    zero_one_rank_loss,
+    zero_one_accuracy,
+    make_ndcg_at_k_loss,
+    zero_one_accuracy_np,
+]
+
 
 class MissingExtraError(ImportError):
     """Indicates an ImportError that can be fixed by installing an extra"""
