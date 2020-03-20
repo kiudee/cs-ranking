@@ -3,6 +3,7 @@ language: python
 cache:
   directories:
     - $HOME/miniconda3
+    - $HOME/.cache/pre-commit
 
 addons:
   apt_packages:
@@ -24,6 +25,7 @@ env:
   - TESTCMD="--cov-append csrank/tests/test_fate.py csrank/tests/test_losses.py csrank/tests/test_metrics.py csrank/tests/test_tuning.py csrank/tests/test_util.py csrank/tests/test_tuning.py csrank/tests/test_callbacks.py"
 
 script:
+  - pre-commit run --all-files # https://pre-commit.com/#usage-in-continuous-integration
   - pytest -v --cov=csrank --ignore experiments $TESTCMD
   - travis-sphinx --outdir docs/_build build -n --source=docs
 
