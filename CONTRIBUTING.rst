@@ -77,7 +77,23 @@ __ https://virtualenvwrapper.readthedocs.io/en/latest/
        $ cd cs-ranking/
        $ pip install -r requirements-dev.txt
 
-3. Install cs-ranking `for local development`__:
+4. Set up `pre-commit`__ for this repository, which was installed in the
+   previous step. This will make sure that the changes you make adhere to our
+   coding standards by checking formatting with `black`.
+
+   .. code-block:: bash
+
+       $ pre-commit install
+
+   You can run all pre-commit hooks on all files using
+
+   .. code-block:: bash
+
+       $ pre-commit run --all-files
+
+   The hooks will be run automatically when you run `git commit`.
+
+5. Install cs-ranking `for local development`__:
 
 __ https://stackoverflow.com/questions/19048732/python-setup-py-develop-vs-install
 
@@ -85,7 +101,7 @@ __ https://stackoverflow.com/questions/19048732/python-setup-py-develop-vs-insta
 
        $ python setup.py develop
 
-4. Create a branch for your modifications:
+6. Create a branch for your modifications:
 
    .. code-block:: bash
 
@@ -93,7 +109,7 @@ __ https://stackoverflow.com/questions/19048732/python-setup-py-develop-vs-insta
 
    Now you can make your changes locally.
 
-5. When you're done making changes, check that the test suite still passes:
+7. When you're done making changes, check that the test suite still passes:
 
    .. code-block:: bash
 
@@ -102,7 +118,7 @@ __ https://stackoverflow.com/questions/19048732/python-setup-py-develop-vs-insta
    Fetch some coffee.
    This might take several minutes.
 
-6. Commit your changes and push your branch to GitHub:
+8. Commit your changes and push your branch to GitHub:
 
    .. code-block:: bash
 
@@ -110,12 +126,26 @@ __ https://stackoverflow.com/questions/19048732/python-setup-py-develop-vs-insta
        $ git commit
        $ git push origin some-name-for-the-branch
 
-   Note that the second command will open an editor window in which you can write a commit message.
-   Take care to use a `good, descriptive commit message`__.
+   Note that the second command will open an editor window in which you can
+   write a commit message. Take care to use a `good, descriptive commit
+   message`__. If one of the `pre-commit` hooks fails, read the error output
+   and make the necessary fixes. The fixes may already have been made before
+   you (as is the case with `black` formatting), you just need to `git add`
+   them.
+
+   If you do not understand why the hook fails, feel free to skip the hook for
+   now:
+
+   .. code-block:: bash
+
+       $ git commit --no-verify
+
+   And mention the problem in the pull request. We will happily help you figure
+   out the source of the problem.
 
 __ https://chris.beams.io/posts/git-commit/
 
-7. Submit__ a pull request through the GitHub website.
+9. Submit__ a pull request through the GitHub website.
    Keep the guidelines in the next section in mind.
 
 __ https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request
