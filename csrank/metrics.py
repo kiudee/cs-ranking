@@ -116,24 +116,99 @@ def zero_one_rank_loss_for_scores_ties(y_true, s_pred):
 
 
 def make_ndcg_at_k_loss(k=5):
+    r"""Computes the Normalized Discounted Cumulative Gain
+
+    The Discounted Cumulative Gain is the sum of the document's relevancies,
+    logarithmically discounted by their rank. That means the DCG is higher when
+    the more relevant documents are highly ranked, lower otherwise.
+
+    Concretely:
+
+    .. math::
+        \mathrm{DCG}_p = \sum_{i = 1}^p \frac{\mathit{rel}_i}{\log_2(i + 1)}
+
+    Where :math:`\mathit{rel}_i` is the relevance of the document that is
+    ranked at :math:`i`. Since this library deals with ranks, not relevances,
+    it is necessary to define a conversion between the two. We define the
+    relevance of an item as :math:`2^{\mathit{inv}}` where :math:`\mathit{inv}`
+    is the negative rank normalized to :math:`[0, 1]`. An alternative way to
+    view this is that :math:`\mathit{inv}` is the relevancy and our definition
+    of ndcg exponentially discounts relevancies.
+
+    To make the DCG comparable across different rankings (particularly rankings
+    of different length), it is normalized by the ideal DCG. The resulting nDCG
+    can be described as
+
+    .. math::
+        \mathrm{nDCG}_p = \frac{\mathrm{DCG}_p}{\mathrm{IDCG}_p}
+
+    with
+
+    .. math::
+        \mathrm{IDCG}_p
+        = \sum_{i = 1}^{\lvert \mathit{REL}_p \rvert} \frac{\mathit{rel}}{\log_2(i + 1)}
+
+    where :math:`\mathit{REL}_p` is the list of relevant documents and
+    :math:`\mathit{rel_i}` are the document relevancies in decreasing order.
+
+    It follows that the nDCG is always a value in :math:`(0, 1]`, with
+    :math:`1` being the best value.
+
+    Parameters
+    ----------
+    k: int
+        The length of the ranking for evaluation purposes. If the actual
+        ranking is longer than `k`, only the (true) top `k` entries are
+        considered. This is often more useful than considering the full
+        ranking, for example when only a subset of the elements will actually
+        be presented to a user.
+    """
+
     def ndcg(y_true, y_pred):
         y_true, y_pred = tensorify(y_true), tensorify(y_pred)
-        n_objects = K.cast(K.int_shape(y_pred)[1], "float32")
-        relevance = K.pow(2.0, ((n_objects - y_true) * 60) / n_objects) - 1.0
-        relevance_pred = K.pow(2.0, ((n_objects - y_pred) * 60) / n_objects) - 1.0
+
+        max_rank = K.max(y_true)
+
+        def rank_to_relevance(rank):
+            # Convert a rank to a relevance, which is (somewhat arbitrarily)
+            # defined to be inversely proportional to the rank and normalized
+            # to [0, 1]. Other conversion functions are possible.
+            normalized_inverse = (max_rank - rank) / max_rank
+            # define the relevance as 2**a
+            return K.pow(2.0, normalized_inverse) - 1.0
+
+        relevance_true = rank_to_relevance(y_true)
+        relevance_pred = rank_to_relevance(y_pred)
 
         # Calculate ideal dcg:
-        toprel, toprel_ind = tf.nn.top_k(relevance, k)
-        log_term = K.log(K.arange(k, dtype="float32") + 2.0) / K.log(2.0)
-        idcg = K.sum(toprel / log_term, axis=-1, keepdims=True)
+        most_relevant_items, most_relevant_idx = tf.math.top_k(relevance_true, k)
+        # arange starts at 0, but ranks start at 1 and the log term starts at 2
+        log_term = K.log(K.arange(k, dtype="float32") + 2.0)
+        # keras only natively supports the natural logarithm, have to switch base
+        log2_term = log_term / K.log(2.0)
+        idcg = K.sum(most_relevant_items / log2_term, axis=-1, keepdims=True)
+
         # Calculate actual dcg:
-        toppred, toppred_ind = tf.nn.top_k(relevance_pred, k)
-        row_ind = K.cumsum(K.ones_like(toppred_ind), axis=0) - 1
-        ind = K.stack([row_ind, toppred_ind], axis=-1)
-        pred_rel = K.sum(
-            tf.gather_nd(relevance, ind) / log_term, axis=-1, keepdims=True
-        )
-        gain = pred_rel / idcg
+
+        # The index of the row of every element in toppred_ind, i.e.
+        # [[0, 0],
+        #  [1, 1]]
+        row_ind = K.cumsum(K.ones_like(most_relevant_idx, dtype="int32"), axis=0) - 1
+
+        # Indices of the k truly most relevant items, sorted by relevance. We
+        # want to sort the predictions based on those indices, since that is
+        # what we're trying to match.
+        full_indices = K.stack([row_ind, most_relevant_idx], axis=-1)
+
+        # Predicted relevances for the items that *should* have the top k
+        # slots, ordered by the relevance rank they *should* have (so the
+        # log2_term from the true predictions still has the right oder)
+        top_k_preds = tf.gather_nd(relevance_pred, full_indices)
+
+        weighted = top_k_preds / log2_term
+        dcg = K.sum(weighted, axis=-1, keepdims=True)
+
+        gain = dcg / idcg
         return gain
 
     return ndcg
