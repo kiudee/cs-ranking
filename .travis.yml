@@ -14,6 +14,7 @@ before_install:
 
 install:
   - . ./scripts/create_testenv.sh
+  - pip install codecov
   - conda install --yes sphinx ipython
   - pip install -I git+https://github.com/Syntaf/travis-sphinx.git
   - pip install nbsphinx sphinx_rtd_theme
@@ -28,6 +29,9 @@ script:
   - pre-commit run --all-files # https://pre-commit.com/#usage-in-continuous-integration
   - pytest -v --cov=csrank --ignore experiments $TESTCMD
   - travis-sphinx --outdir docs/_build build -n --source=docs
+
+after_success:
+  - codecov
 
 deploy:
   - provider: pypi
