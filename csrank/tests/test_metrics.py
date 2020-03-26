@@ -106,19 +106,36 @@ def test_zero_one_accuracy(problem_for_pred):
     assert_almost_equal(actual=real_score, desired=np.array([0.0]))
 
 
-@pytest.mark.skip("Current code had numeric problems and needs to be rewritten")
 def test_ndcg(problem_for_pred):
-    y_true, y_pred, ties = problem_for_pred
+    # ties don't matter here because it doesn't change the two highest predictions
+    y_true, y_pred, _ties = problem_for_pred
+    # We have:
+    # y_true = [0, 1, 2, 3, 4]
+    # y_pred = [0, 2, 1, 2, 3]
+
+    # Inverted (with max_rank = 4) that is
+    # y_true_inv = [4, 3, 2, 1, 0]
+    # y_pred_inv = [4, 2, 3, 2, 1]
+
+    # And normalized to [0, 1] this gives us the relevance:
+    # rel_true = [1, 3/4, 1/2, 1/4, 0]
+    # rel_pred = [1, 1/2, 3/4, 1/2, 1/4]
+
+    # With this we can first compute the ideal dcg, considering only the first
+    # k=2 elements (all logs are base 2, equality is approximate):
+    idcg = (2 ** 1 - 1) / np.log2(2) + (2 ** (3 / 4) - 1) / np.log2(3)  # = 1.43
+
+    # And the dcg of the predictions at the same positions as the elements we
+    # considered for the idcg (i.e. the "true" best elements):
+    dcg = (2 ** 1 - 1) / np.log2(2) + (2 ** (1 / 2) - 1) / np.log2(3)  # = 1.26
+
+    # Now the gain is:
+    expected_gain = dcg / idcg  # = 0.882
 
     ndcg = make_ndcg_at_k_loss(k=2)
-    gain = ndcg(y_true, y_pred)
-    real_gain = K.eval(gain)
+    real_gain = K.eval(ndcg(y_true, y_pred))
 
-    expected_dcg = 15.0 + 3.0 / np.log2(3.0)
-    expected_idcg = 15.0 + 7.0 / np.log2(3.0)
-    assert_almost_equal(
-        actual=real_gain, desired=np.array([[expected_dcg / expected_idcg]]), decimal=5
-    )
+    assert_almost_equal(actual=real_gain, desired=expected_gain, decimal=5)
 
 
 def test_kendalls_tau_for_scores(problem_for_scores):
