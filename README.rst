@@ -1,4 +1,4 @@
-|Build Status| |Coverage| |Binder|
+|Build Status| |Binder|
 
 *******
 CS-Rank
@@ -107,9 +107,6 @@ License
 
 .. |Build Status| image:: https://travis-ci.org/kiudee/cs-ranking.svg?branch=master
    :target: https://travis-ci.org/kiudee/cs-ranking
-
-.. |Coverage| image:: https://coveralls.io/repos/github/kiudee/cs-ranking/badge.svg?branch=master
-   :target: https://coveralls.io/github/kiudee/cs-ranking?branch=master
 
 
 .. _interactive notebooks: https://mybinder.org/v2/gh/kiudee/cs-ranking/master?filepath=docs%2Fnotebooks
