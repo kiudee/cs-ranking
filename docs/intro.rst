@@ -105,11 +105,11 @@ License
 .. |Binder| image:: https://mybinder.org/badge.svg
    :target: https://mybinder.org/v2/gh/kiudee/cs-ranking/master?filepath=docs%2Fnotebooks
 
+.. |Coverage| image:: https://codecov.io/gh/kiudee/cs-ranking/branch/master/graph/badge.svg
+  :target: https://codecov.io/gh/kiudee/cs-ranking
+
 .. |Build Status| image:: https://travis-ci.org/kiudee/cs-ranking.svg?branch=master
    :target: https://travis-ci.org/kiudee/cs-ranking
-
-.. |Coverage| image:: https://coveralls.io/repos/github/kiudee/cs-ranking/badge.svg
-   :target: https://coveralls.io/github/kiudee/cs-ranking
 
 .. _interactive notebooks: https://mybinder.org/v2/gh/kiudee/cs-ranking/master?filepath=docs%2Fnotebooks
 .. _arXiv papers: https://arxiv.org/search/cs?searchtype=author&query=Pfannschmidt%2C+K

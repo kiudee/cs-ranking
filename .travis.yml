@@ -14,9 +14,10 @@ before_install:
 
 install:
   - . ./scripts/create_testenv.sh
+  - pip install codecov
   - conda install --yes sphinx ipython
   - pip install -I git+https://github.com/Syntaf/travis-sphinx.git
-  - pip install coveralls nbsphinx sphinx_rtd_theme
+  - pip install nbsphinx sphinx_rtd_theme
 
 env:
   - TESTCMD="--cov-append csrank/tests/test_choice_functions.py"
@@ -30,7 +31,7 @@ script:
   - travis-sphinx --outdir docs/_build build -n --source=docs
 
 after_success:
-  - coveralls
+  - codecov
 
 deploy:
   - provider: pypi
@@ -49,6 +50,3 @@ deploy:
     on:
       branch: master
       repo: kiudee/cs-ranking
-
-notifications:
-  webhooks: https://coveralls.io/webhook
