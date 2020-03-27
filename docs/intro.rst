@@ -5,7 +5,8 @@
 ************
 Introduction
 ************
-CS-Rank is a Python package for context-sensitive ranking and choice algorithms.
+CS-Rank is a Python package for context-sensitive ranking and choice
+algorithms.
 
 We implement the following new object ranking/choice architectures:
 
@@ -18,7 +19,8 @@ In addition, we also implement these algorithms for choice functions:
 * GeneralizedLinearModel
 * PairwiseSVMChoiceFunction
 
-These are the state-of-the-art approaches implemented for the discrete choice setting:
+These are the state-of-the-art approaches implemented for the discrete choice
+setting:
 
 * GeneralizedNestedLogitModel
 * MixedLogitModel
@@ -27,7 +29,8 @@ These are the state-of-the-art approaches implemented for the discrete choice se
 * RankNetDiscreteChoiceFunction
 * PairwiseSVMDiscreteChoiceFunction
 
-Check out our `interactive notebooks`_ to quickly find out what our package can do.
+Check out our `interactive notebooks`_ to quickly find out what our package can
+do.
 
 
 Getting started
@@ -42,8 +45,9 @@ As a simple "Hello World!"-example we will try to learn the Pareto problem:
                                    n_objects=30,
                                    n_features=2)
    X_train, Y_train, X_test, Y_test = gen.get_single_train_test_split()                     
-All our learning algorithms are implemented using the scikit-learn estimator API.
-Fitting our FATENet architecture is as simple as calling the ``fit`` method:
+All our learning algorithms are implemented using the scikit-learn estimator
+API. Fitting our FATENet architecture is as simple as calling the ``fit``
+method:
 
 .. code-block:: python
 
@@ -70,8 +74,9 @@ Another option is to clone the repository and install CS-Rank using::
 
 Dependencies
 ------------
-CS-Rank depends on Tensorflow, Keras, NumPy, SciPy, matplotlib, scikit-learn, scikit-optimize, joblib and tqdm.
-For data processing and generation you will also need PyGMO, H5Py and pandas.
+CS-Rank depends on Tensorflow, Keras, NumPy, SciPy, matplotlib, scikit-learn,
+scikit-optimize, joblib and tqdm. For data processing and generation you will
+also need PyGMO, H5Py and pandas.
 
 
 Citing CS-Rank
