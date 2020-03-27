@@ -83,6 +83,8 @@ __ https://virtualenvwrapper.readthedocs.io/en/latest/
    previous step. This will make sure that the changes you make adhere to our
    coding standards by checking formatting with `black`.
 
+__ https://pre-commit.com/
+
    .. code-block:: bash
 
        $ pre-commit install
