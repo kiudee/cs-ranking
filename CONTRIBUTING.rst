@@ -2,10 +2,9 @@
 Contributing
 ============
 
-Contributions are welcome, and they are greatly appreciated!
-Every little bit helps.
-Contributions do not have to be source code.
-There are many ways to contribute:
+Contributions are welcome, and they are greatly appreciated! Every little bit
+helps. Contributions do not have to be source code. There are many ways to
+contribute:
 
 Report Bugs
 ===========
@@ -37,13 +36,16 @@ If you are proposing a feature:
 
 * Explain in detail how it would work and why you would want it.
 * Keep the scope as narrow as possible, to make it easier to implement.
-* Remember that this is a volunteer-driven project, and that code contributions are welcome :)
+* Remember that this is a volunteer-driven project, and that code contributions
+  are welcome :)
 
 Write Documentation
 ===================
 
-This project could always use more documentation, whether as part of the official cs-ranking docs, in docstrings, or even on the web in blog posts, articles, and such.
-For writing in-project documentation, the setup is similar to contributing code.
+This project could always use more documentation, whether as part of the
+official cs-ranking docs, in docstrings, or even on the web in blog posts,
+articles, and such. For writing in-project documentation, the setup is similar
+to contributing code.
 
 Contribute Code
 ===============
@@ -80,6 +82,8 @@ __ https://virtualenvwrapper.readthedocs.io/en/latest/
 4. Set up `pre-commit`__ for this repository, which was installed in the
    previous step. This will make sure that the changes you make adhere to our
    coding standards by checking formatting with `black`.
+
+__ https://pre-commit.com/
 
    .. code-block:: bash
 
@@ -155,8 +159,9 @@ Pull Request Guidelines
 
 Before you submit a pull request, check that it meets these guidelines:
 
-1. If you're adding new functionality, you should also include *tests* and *documentation* for that functionality.
-   Put your new functionality into a function with a docstring, and add the feature to the list in README.rst.
+1. If you're adding new functionality, you should also include *tests* and
+   *documentation* for that functionality. Put your new functionality into
+   a function with a docstring, and add the feature to the list in README.rst.
    You can also add tests to the docstring:
 
    .. code-block:: python
@@ -176,7 +181,8 @@ Before you submit a pull request, check that it meets these guidelines:
            """
            return input_number + 1
 
-3. After submitting the pull request, keep an eye on travis_ and make sure that the tests pass for all supported Python versions.
+3. After submitting the pull request, keep an eye on travis_ and make sure that
+   the tests pass for all supported Python versions.
 
 .. _travis: https://travis-ci.org/github/kiudee/cs-ranking/pull_requests
 
@@ -192,9 +198,9 @@ To run a subset of tests:
 Help Wanted
 ~~~~~~~~~~~
 
-Look through the GitHub issues.
-Anything tagged with `"bug"`__ and `"help wanted"`__ are particularly good places to get started.
-If you prefer to implement new features, the `"enhancement"`__ tag might be interesting as well.
+Look through the GitHub issues. Anything tagged with `"bug"`__ and `"help
+wanted"`__ are particularly good places to get started. If you prefer to
+implement new features, the `"enhancement"`__ tag might be interesting as well.
 
 __ https://github.com/kiudee/cs-ranking/issues?q=is%3Aissue+is%3Aopen+label%3Abug
 __ https://github.com/kiudee/cs-ranking/issues?q=is%3Aissue+is%3Aopen+label%3A%22help%20wanted%22
@@ -203,8 +209,9 @@ __ https://github.com/kiudee/cs-ranking/issues?q=is%3Aissue+is%3Aopen+label%3Aen
 Do Maintenance
 ==============
 
-These tasks are mostly done by project maintainers, though if you think they need to be done you can of course open an issue and ask for it.
-A pull request is even better.
+These tasks are mostly done by project maintainers, though if you think they
+need to be done you can of course open an issue and ask for it. A pull request
+is even better.
 
 Deploying
 ~~~~~~~~~

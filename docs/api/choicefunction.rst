@@ -11,7 +11,7 @@ Choice Functions
    RankNetChoiceFunction
    GeneralizedLinearModel
    PairwiseSVMChoiceFunction
-   
+
 
 .. automodule:: csrank.choicefunctions
    :members: FATEChoiceFunction, FETAChoiceFunction, CmpNetChoiceFunction, RankNetChoiceFunction, GeneralizedLinearModel, PairwiseSVMChoiceFunction

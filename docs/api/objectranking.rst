@@ -4,7 +4,7 @@ Object Ranking
 
 .. currentmodule:: csrank.objectranking
 .. autosummary::
-   
+
    FATEObjectRanker
    FETAObjectRanker
    CmpNet

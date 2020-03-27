@@ -10,4 +10,3 @@ API Reference
    api/objectranking
    api/choicefunction
    api/discretechoice
-   
