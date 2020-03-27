@@ -9,8 +9,8 @@ algorithms.
 We implement the following new object ranking/choice architectures:
 
 * FATE (First aggregate then evaluate)
-* FETA (First evaluate then aggregate)   
- 
+* FETA (First evaluate then aggregate)
+
 In addition, we also implement these algorithms for choice functions:
 
 * RankNetChoiceFunction
@@ -51,7 +51,7 @@ method:
 .. code-block:: python
 
    fate = cs.FATEChoiceFunction(n_object_features=2)
-   fate.fit(X_train, Y_train) 
+   fate.fit(X_train, Y_train)
 
 Predictions can then be obtained using:
 
