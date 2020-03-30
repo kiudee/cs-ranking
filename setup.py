@@ -1,4 +1,4 @@
-from os.path import realpath, dirname, join
+from os.path import realpath, dirname
 
 from setuptools import setup, find_packages
 

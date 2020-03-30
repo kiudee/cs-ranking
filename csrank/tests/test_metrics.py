@@ -3,7 +3,6 @@ import pytest
 import itertools
 from keras import backend as K
 from numpy.testing import assert_almost_equal
-from functools import partial
 from pytest import approx
 
 from csrank.metrics import (
