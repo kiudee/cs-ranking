@@ -43,7 +43,6 @@ if __name__ == "__main__":
             "scikit-optimize>=0.4",
             "pandas>=0.22",
             "h5py>=2.7",
-            "pygmo>=2.7",
             "docopt>=0.6.0",
             "joblib>=0.9.4",
             "tqdm>=4.11.2",
@@ -57,7 +56,6 @@ if __name__ == "__main__":
                 "psycopg2-binary>=2.7",  # database access
                 "pandas>=0.22",
                 "h5py>=2.7",
-                "pygmo>=2.7",
             ],
             "probabilistic": ["pymc3>=3.8", "theano>=1.0",],
         },
