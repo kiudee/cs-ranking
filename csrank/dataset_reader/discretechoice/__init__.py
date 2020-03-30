@@ -11,3 +11,13 @@ from .sushi_discrete_choice_dataset_reader import SushiDiscreteChoiceDatasetRead
 from .tag_genome_discrete_choice_dataset_reader import (
     TagGenomeDiscreteChoiceDatasetReader,
 )
+
+__all__ = [
+    "DiscreteChoiceDatasetGenerator",
+    "ExpediaDiscreteChoiceDatasetReader",
+    "LetorListwiseDiscreteChoiceDatasetReader",
+    "LetorRankingDiscreteChoiceDatasetReader",
+    "MNISTDiscreteChoiceDatasetReader",
+    "SushiDiscreteChoiceDatasetReader",
+    "TagGenomeDiscreteChoiceDatasetReader",
+]

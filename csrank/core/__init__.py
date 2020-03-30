@@ -5,3 +5,14 @@ from .feta_linear import FETALinearCore
 from .feta_network import FETANetwork
 from .pairwise_svm import PairwiseSVM
 from .ranknet_core import RankNetCore
+
+__all__ = [
+    "CmpNetCore",
+    "FATELinearCore",
+    "FATENetwork",
+    "FATENetworkCore",
+    "FETALinearCore",
+    "FETANetwork",
+    "PairwiseSVM",
+    "RankNetCore",
+]
