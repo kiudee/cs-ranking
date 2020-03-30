@@ -3,5 +3,5 @@
 ; flake8. The remaining errors are currently raised and will be fixed in the
 ; future. For now flake8 can at least make sure the quality doesn't
 ; deteriorate.
-ignore = E501, F401, E741, F841, W291, W503, F405, E731, F403, W293, E231, E722, F901, E203, F821, F811, E712
+ignore = E501, E741, F841, W291, W503, F405, E731, F403, W293, E231, E722, F901, E203, F821, F811, E712
 exclude = build
