@@ -26,11 +26,8 @@ def categorical_crossentropy(p, y_true):
 
 
 def binary_crossentropy(p, y_true):
-    if p.ndim > 1:
-        l = tt.nnet.binary_crossentropy(p, y_true).mean(axis=1)
-    else:
-        l = tt.nnet.binary_crossentropy(p, y_true).mean(axis=0)
-    return -l
+    axis = 1 if p.ndim > 1 else 0
+    return -tt.nnet.binary_crossentropy(p, y_true).mean(axis=axis)
 
 
 def categorical_hinge(p, y_true):

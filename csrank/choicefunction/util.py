@@ -69,11 +69,8 @@ def create_weight_dictionary(model_args, shapes):
 
 
 def binary_crossentropy(p, y_true):
-    if p.ndim > 1:
-        l = (tt.nnet.binary_crossentropy(p, y_true).sum(axis=1)).mean()
-    else:
-        l = tt.nnet.binary_crossentropy(p, y_true).mean(axis=0)
-    return -l
+    axis = 1 if p.ndim > 1 else 0
+    return -tt.nnet.binary_crossentropy(p, y_true).mean(axis=axis)
 
 
 def categorical_crossentropy(p, y_true):
