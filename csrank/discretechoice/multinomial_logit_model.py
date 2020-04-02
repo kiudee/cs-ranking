@@ -166,7 +166,7 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
             utility = tt.dot(self.Xt, weights_dict["weights"]) + intercept
             self.p = ttu.softmax(utility, axis=1)
 
-            yl = LogLikelihood(
+            LogLikelihood(
                 "yl", loss_func=self.loss_function, p=self.p, observed=self.Yt
             )
         self.logger.info("Model construction completed")

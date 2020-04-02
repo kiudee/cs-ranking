@@ -172,7 +172,7 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
             weights_dict = create_weight_dictionary(self.model_configuration, shapes)
             utility = tt.dot(self.Xt, weights_dict["weights"])
             self.p = tt.mean(ttu.softmax(utility, axis=1), axis=2)
-            yl = LogLikelihood(
+            LogLikelihood(
                 "yl", loss_func=self.loss_function, p=self.p, observed=self.Yt
             )
         self.logger.info("Model construction completed")

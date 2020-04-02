@@ -286,7 +286,7 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
             utility = tt.dot(self.Xt, weights_dict["weights"])
             lambda_k = pm.Uniform("lambda_k", self.alpha, 1.0, shape=self.n_nests)
             self.p = self.get_probabilities(utility, lambda_k, alpha_ik)
-            yl = LogLikelihood(
+            LogLikelihood(
                 "yl", loss_func=self.loss_function, p=self.p, observed=self.Yt
             )
         self.logger.info("Model construction completed")

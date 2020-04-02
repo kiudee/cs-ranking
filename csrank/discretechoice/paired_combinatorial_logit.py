@@ -277,7 +277,7 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
             lambda_k = pm.Uniform("lambda_k", self.alpha, 1.0, shape=self.n_nests)
             utility = tt.dot(self.Xt, weights_dict["weights"])
             self.p = self.get_probabilities(utility, lambda_k)
-            yl = LogLikelihood(
+            LogLikelihood(
                 "yl", loss_func=self.loss_function, p=self.p, observed=self.Yt
             )
         self.logger.info("Model construction completed")

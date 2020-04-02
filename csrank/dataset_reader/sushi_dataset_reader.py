@@ -52,13 +52,10 @@ class SushiDatasetReader(DatasetReader, metaclass=ABCMeta):
         Xc = []
         i = 0
         for ranking1, ranking2 in zip(rankings_a, rankings_b):
-            user_f = np.array([feature_users[i] for _ in range(len(ranking1))])
-
             objects = feature_objects[ranking1, :]
             ranking = np.arange(len(ranking1))
             np.random.shuffle(ranking)
             objects = objects[ranking, :]
-            # objects = np.hstack((user_f, objects))
             X.append(objects)
             rankings.append(ranking)
 
@@ -66,7 +63,6 @@ class SushiDatasetReader(DatasetReader, metaclass=ABCMeta):
             ranking = np.arange(len(ranking2))
             np.random.shuffle(ranking)
             objects = objects[ranking, :]
-            # objects = np.hstack((user_f, objects))
             X.append(objects)
             rankings.append(ranking)
 
