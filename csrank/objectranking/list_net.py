@@ -28,7 +28,7 @@ class ListNet(Learner, ObjectRanker):
         n_units=8,
         loss_function=plackett_luce_loss,
         batch_normalization=False,
-        kernel_regularizer=l2(l=1e-4),
+        kernel_regularizer=l2(1e-4),
         activation="selu",
         kernel_initializer="lecun_normal",
         optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
