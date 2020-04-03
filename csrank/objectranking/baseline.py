@@ -34,8 +34,5 @@ class RandomBaselineRanker(ObjectRanker, Learner):
     def predict(self, X, **kwargs):
         return super().predict(X, **kwargs)
 
-    def predict(self, X, **kwargs):
-        return super().predict(X, **kwargs)
-
     def set_tunable_parameters(self, **point):
         pass
