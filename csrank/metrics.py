@@ -386,8 +386,11 @@ def err(y_true, y_pred, utility_function=None, probability_mapping=None):
         max_grade = tf.reduce_max(y_true)
         probability_mapping = partial(relevance_gain, max_grade=max_grade)
     if utility_function is None:
-        # reciprocal rank
-        utility_function = lambda r: 1 / r
+
+        def reciprocal_rank(rank):
+            return 1 / rank
+
+        utility_function = reciprocal_rank
     y_true, y_pred = tensorify(y_true), tensorify(y_pred)
 
     ninstances = tf.shape(y_pred)[0]

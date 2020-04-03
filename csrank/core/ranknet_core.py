@@ -109,7 +109,7 @@ class RankNetCore(Learner):
         return model
 
     def _convert_instances_(self, X, Y):
-        raise NotImplemented
+        raise NotImplementedError
 
     def fit(
         self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd

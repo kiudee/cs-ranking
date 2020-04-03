@@ -56,8 +56,9 @@ if __name__ == "__main__":
                 "psycopg2-binary>=2.7",  # database access
                 "pandas>=0.22",
                 "h5py>=2.7",
+                "pygmo>=2.7",
             ],
-            "probabilistic": ["pymc3>=3.8", "theano>=1.0",],
+            "probabilistic": ["pymc3>=3.8", "theano>=1.0"],
         },
         package_data={"notebooks": ["*"]},
         include_package_data=True,

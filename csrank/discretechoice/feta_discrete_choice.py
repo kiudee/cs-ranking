@@ -216,9 +216,11 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
             outputs[j].append(N_l)
         # convert rows of pairwise matrix to keras layers:
         outputs = [concatenate(x) for x in outputs]
+
         # compute utility scores:
-        sum_fun = lambda s: K.mean(s, axis=1, keepdims=True)
-        scores = [Lambda(sum_fun)(x) for x in outputs]
+        scores = [
+            Lambda(lambda s: K.mean(s, axis=1, keepdims=True))(x) for x in outputs
+        ]
         scores = concatenate(scores)
         self.logger.debug("1st order model finished")
         if self._use_zeroth_model:

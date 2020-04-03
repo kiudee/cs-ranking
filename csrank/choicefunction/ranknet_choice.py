@@ -127,7 +127,7 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
         **kwd
     ):
         """
-            Fit RankNet model for learning choice function on a provided set of queries. The provided queries can be of 
+            Fit RankNet model for learning choice function on a provided set of queries. The provided queries can be of
             a fixed size (numpy arrays). For learning this network the binary cross entropy loss function for a pair of
             objects :math:`x_i, x_j \\in Q` is defined as:
 

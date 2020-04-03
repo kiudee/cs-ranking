@@ -219,7 +219,7 @@ class ParameterOptimizer(Learner):
             ypred = self.learner(xtest)
             loss = get_mean_loss(self.validation_loss, ytest, ypred)
             time_taken = duration_till_now(start)
-        except:
+        except Exception:
             self.logger.error(traceback.format_exc())
             self.logger.info(
                 "For current parameter error occurred so taking loss as maximum value"

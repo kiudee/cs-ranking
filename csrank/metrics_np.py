@@ -201,8 +201,11 @@ def err_np(y_true, y_pred, utility_function=None, probability_mapping=None):
         max_grade = np.max(y_true)
         probability_mapping = partial(relevance_gain_np, max_grade=max_grade)
     if utility_function is None:
-        # reciprocal rank
-        utility_function = lambda r: 1 / r
+
+        def reciprocal_rank(rank):
+            return 1 / rank
+
+        utility_function = reciprocal_rank
 
     ninstances, nobjects = np.shape(y_pred)
 

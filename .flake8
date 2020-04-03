@@ -1,7 +1,12 @@
 [flake8]
 ; Line length (E501) is handled by black, which has a different opinion than
-; flake8. The remaining errors are currently raised and will be fixed in the
-; future. For now flake8 can at least make sure the quality doesn't
-; deteriorate.
-ignore = E501, W291, W503, F405, E731, F403, W293, E231, E722, F901, E203, F821, F811, E712
+; flake8.
+; The line-break-before-binary-operator check (W503) is outdated and will soon
+; be inverted: https://www.flake8rules.com/rules/W503.html
+; F403 "unable to detect undefined names" will need to stay disabled until we
+; have re-organized our imports and public APIs.
+; The same is true for F405 "may be undefined, or defined from star imports".
+; E203 gets triggered by a bug and is covered by black:
+; https://github.com/PyCQA/pycodestyle/issues/373
+ignore = E501, W503, F405, F403, E203
 exclude = build

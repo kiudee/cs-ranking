@@ -78,7 +78,6 @@ def generate_complete_pairwise_dataset(X, Y):
         Y = Y.astype(int)
         Y -= np.min(Y)
         orderings = ranking_ordering_conversion(Y)
-        del Y
         x_sorted = [X[i, orderings[i], :] for i in range(n_instances)]
         del orderings
     except ValueError:
@@ -86,6 +85,7 @@ def generate_complete_pairwise_dataset(X, Y):
         logger = logging.getLogger("generate_complete_pairwise_dataset")
         logger.error("Value Error: {}, {} ".format(X[0], Y[0]))
         x_sorted = X
+    del Y
     y_double = []
     x_train1 = []
     x_train2 = []

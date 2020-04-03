@@ -112,7 +112,7 @@ class PairwiseSVM(Learner):
         return np.array(scores)
 
     def _convert_instances_(self, X, Y):
-        raise NotImplemented
+        raise NotImplementedError
 
     def set_tunable_parameters(self, C=1.0, tol=1e-4, **point):
         """
