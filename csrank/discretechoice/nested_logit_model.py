@@ -343,7 +343,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
             utility_k = tt.dot(self.features_nests, weights_dict["weights_k"])
             self.p = self.get_probabilities(utility, lambda_k, utility_k)
 
-            yl = LogLikelihood(
+            LogLikelihood(
                 "yl", loss_func=self.loss_function, p=self.p, observed=self.Yt
             )
         self.logger.info("Model construction completed")

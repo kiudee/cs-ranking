@@ -165,7 +165,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
             intercept = pm.Normal("intercept", mu=0, sd=10)
             utility = tt.dot(self.Xt, weights_dict["weights"]) + intercept
             self.p = ttu.sigmoid(utility)
-            yl = BinaryCrossEntropyLikelihood("yl", p=self.p, observed=self.Yt)
+            BinaryCrossEntropyLikelihood("yl", p=self.p, observed=self.Yt)
         self.logger.info("Model construction completed")
 
     def fit(
