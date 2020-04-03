@@ -1,6 +1,9 @@
 [flake8]
 ; Line length (E501) is handled by black, which has a different opinion than
-; flake8. The remaining errors are currently raised and will be fixed in the
+; flake8.
+; The line-break-before-binary-operator check (W503) is outdated and will soon
+; be inverted: https://www.flake8rules.com/rules/W503.html
+; The remaining errors are currently raised and will be fixed in the
 ; future. For now flake8 can at least make sure the quality doesn't
 ; deteriorate.
 ignore = E501, W503, F405, E731, F403, W293, E231, E722, F901, E203, F821, F811, E712
