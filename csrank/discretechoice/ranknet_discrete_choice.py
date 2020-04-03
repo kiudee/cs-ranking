@@ -16,7 +16,7 @@ class RankNetDiscreteChoiceFunction(RankNetCore, DiscreteObjectChooser):
         n_units=8,
         loss_function="binary_crossentropy",
         batch_normalization=True,
-        kernel_regularizer=l2(l=1e-4),
+        kernel_regularizer=l2(1e-4),
         kernel_initializer="lecun_normal",
         activation="relu",
         optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),

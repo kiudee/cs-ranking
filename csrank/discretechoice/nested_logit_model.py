@@ -319,8 +319,8 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
              model : pymc3 Model :class:`pm.Model`
         """
         if np.prod(X.shape) > self.threshold:
-            l = int(self.threshold / np.prod(X.shape[1:]))
-            indices = self.random_state.choice(X.shape[0], l, replace=False)
+            upper_bound = int(self.threshold / np.prod(X.shape[1:]))
+            indices = self.random_state.choice(X.shape[0], upper_bound, replace=False)
             X = X[indices, :, :]
             Y = Y[indices, :]
         self.logger.info(
