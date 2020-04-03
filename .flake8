@@ -3,6 +3,8 @@
 ; flake8.
 ; The line-break-before-binary-operator check (W503) is outdated and will soon
 ; be inverted: https://www.flake8rules.com/rules/W503.html
+; F403 "unable to detect undefined names" will need to stay disabled until we
+; have re-organized our imports and public APIs.
 ; The remaining errors are currently raised and will be fixed in the
 ; future. For now flake8 can at least make sure the quality doesn't
 ; deteriorate.
