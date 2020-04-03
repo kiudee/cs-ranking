@@ -31,7 +31,7 @@ class RCVDatasetReader(DatasetReader):
         if n_objects not in [5, 10]:
             raise ValueError("The number of objects should be in %s", str([5, 10]))
 
-        if query_based == False:
+        if not query_based:
             file_name = "rcv1_{}inst_{}obj.pkl".format(n_instances, n_objects)
         else:
             file_name = "rcv1_query-based_{}inst_{}obj.pkl".format(
