@@ -57,7 +57,7 @@ if __name__ == "__main__":
                 "pandas>=0.22",
                 "h5py>=2.7",
             ],
-            "probabilistic": ["pymc3>=3.8", "theano>=1.0",],
+            "probabilistic": ["pymc3>=3.8", "theano>=1.0"],
         },
         package_data={"notebooks": ["*"]},
         include_package_data=True,
