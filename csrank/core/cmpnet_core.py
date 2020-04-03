@@ -85,7 +85,7 @@ class CmpNetCore(Learner):
         assert len(self.hidden_layers) == self.n_hidden
 
     def _convert_instances_(self, X, Y):
-        raise NotImplemented
+        raise NotImplementedError
 
     def construct_model(self):
         """

@@ -188,10 +188,10 @@ class ExpediaDatasetReader(DatasetReader, metaclass=ABCMeta):
         return self.X, self.Y, self.X_test, self.Y_test
 
     def sub_sampling_function(self, Xt, Yt):
-        raise NotImplemented
+        raise NotImplementedError
 
     def _parse_dataset(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     def get_dataset_dictionaries(self):
         self.X_test, self.X_test = standardize_features(self.X, self.X_test)
