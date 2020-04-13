@@ -2,11 +2,12 @@ import logging
 import math
 import warnings
 
-import numpy as np
-from csrank.tunable import Tunable
-from csrank.util import print_dictionary
 from keras import backend as K
 from keras.callbacks import Callback
+import numpy as np
+
+from csrank.tunable import Tunable
+from csrank.util import print_dictionary
 
 
 class EarlyStoppingWithWeights(Callback, Tunable):

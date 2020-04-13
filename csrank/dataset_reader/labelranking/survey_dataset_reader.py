@@ -1,6 +1,14 @@
 import os
 
 import numpy as np
+from sklearn.impute import SimpleImputer
+from sklearn.model_selection import ShuffleSplit
+from sklearn.preprocessing import StandardScaler
+from sklearn.utils import check_random_state
+
+from csrank.constants import LABEL_RANKING
+from csrank.numpy_util import ranking_ordering_conversion
+from ..dataset_reader import DatasetReader
 
 try:
     import pandas as pd
@@ -8,15 +16,6 @@ except ImportError:
     from csrank.util import MissingExtraError
 
     raise MissingExtraError("pandas", "data")
-
-from sklearn.model_selection import ShuffleSplit
-from sklearn.preprocessing import StandardScaler
-from sklearn.impute import SimpleImputer
-from sklearn.utils import check_random_state
-
-from csrank.constants import LABEL_RANKING
-from csrank.numpy_util import ranking_ordering_conversion
-from ..dataset_reader import DatasetReader
 
 
 class SurveyDatasetReader(DatasetReader):

@@ -1,15 +1,19 @@
 import logging
 
-import tensorflow as tf
-from keras import Input, backend as K, optimizers
-from keras.layers import Dense, concatenate
+from keras import backend as K
+from keras import Input
+from keras import optimizers
+from keras.layers import concatenate
+from keras.layers import Dense
 from keras.models import Model
 from keras.optimizers import SGD
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
+import tensorflow as tf
 
 from csrank.constants import allowed_dense_kwargs
-from csrank.layers import NormalizedDense, create_input_lambda
+from csrank.layers import create_input_lambda
+from csrank.layers import NormalizedDense
 from csrank.learner import Learner
 from csrank.losses import plackett_luce_loss
 from csrank.metrics import zero_one_rank_loss_for_scores_ties

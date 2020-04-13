@@ -1,8 +1,8 @@
 import logging
 import os
 
-import numpy as np
 from joblib import load
+import numpy as np
 from sklearn.model_selection import ShuffleSplit
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import check_random_state

@@ -1,8 +1,20 @@
 import collections
 import glob
+from itertools import combinations
+from itertools import product
 import logging
 import os
-from itertools import combinations, product
+
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+from sklearn.utils import check_random_state
+
+from csrank.constants import OBJECT_RANKING
+from csrank.numpy_util import scores_to_rankings
+from ..dataset_reader import DatasetReader
+from ..util import distance_metric_multilabel
+from ..util import get_key_for_indices
+from ..util import get_similarity_matrix
 
 try:
     import h5py
@@ -11,26 +23,12 @@ except ImportError:
 
     raise MissingExtraError("h5py", "data")
 
-import numpy as np
-
 try:
     import pandas as pd
 except ImportError:
     from csrank.util import MissingExtraError
 
     raise MissingExtraError("pandas", "data")
-
-from sklearn.preprocessing import StandardScaler
-from sklearn.utils import check_random_state
-
-from csrank.constants import OBJECT_RANKING
-from csrank.numpy_util import scores_to_rankings
-from ..dataset_reader import DatasetReader
-from ..util import (
-    get_similarity_matrix,
-    get_key_for_indices,
-    distance_metric_multilabel,
-)
 
 
 class ImageDatasetReader(DatasetReader):

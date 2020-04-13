@@ -1,6 +1,8 @@
-from os.path import realpath, dirname
+from os.path import dirname
+from os.path import realpath
 
-from setuptools import setup, find_packages
+from setuptools import find_packages
+from setuptools import setup
 
 with open("README.rst") as readme_file:
     readme = readme_file.read()

@@ -1,7 +1,18 @@
-import logging
 from itertools import combinations
+import logging
 
 import numpy as np
+from sklearn.utils import check_random_state
+
+from csrank.learner import Learner
+import csrank.numpy_util as npu
+import csrank.theano_util as ttu
+from csrank.util import print_dictionary
+from .discrete_choice import DiscreteObjectChooser
+from .likelihoods import create_weight_dictionary
+from .likelihoods import fit_pymc3_model
+from .likelihoods import likelihood_dict
+from .likelihoods import LogLikelihood
 
 try:
     import pymc3 as pm
@@ -18,20 +29,6 @@ except ImportError:
     from csrank.util import MissingExtraError
 
     raise MissingExtraError("theano", "probabilistic")
-
-from sklearn.utils import check_random_state
-
-import csrank.numpy_util as npu
-import csrank.theano_util as ttu
-from csrank.learner import Learner
-from csrank.util import print_dictionary
-from .discrete_choice import DiscreteObjectChooser
-from .likelihoods import (
-    likelihood_dict,
-    LogLikelihood,
-    create_weight_dictionary,
-    fit_pymc3_model,
-)
 
 
 class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):

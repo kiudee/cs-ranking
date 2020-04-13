@@ -1,8 +1,11 @@
+from abc import ABCMeta
 import logging
 import os
-from abc import ABCMeta
 
 import numpy as np
+
+from csrank.constants import DYAD_RANKING
+from .dataset_reader import DatasetReader
 
 try:
     import pandas as pd
@@ -10,10 +13,6 @@ except ImportError:
     from csrank.util import MissingExtraError
 
     raise MissingExtraError("pandas", "data")
-
-
-from csrank.constants import DYAD_RANKING
-from .dataset_reader import DatasetReader
 
 
 class SushiDatasetReader(DatasetReader, metaclass=ABCMeta):

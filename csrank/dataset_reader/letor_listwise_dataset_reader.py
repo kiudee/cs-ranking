@@ -1,8 +1,18 @@
+from abc import ABCMeta
 import collections
 import glob
 import logging
 import os
-from abc import ABCMeta
+
+import numpy as np
+from scipy.stats import rankdata
+
+from csrank.constants import DISCRETE_CHOICE
+from csrank.constants import OBJECT_RANKING
+from csrank.dataset_reader.util import standardize_features
+from csrank.util import create_dir_recursively
+from csrank.util import print_dictionary
+from .dataset_reader import DatasetReader
 
 try:
     import h5py
@@ -10,14 +20,6 @@ except ImportError:
     from csrank.util import MissingExtraError
 
     raise MissingExtraError("h5py", "data")
-
-import numpy as np
-from scipy.stats import rankdata
-
-from csrank.constants import OBJECT_RANKING, DISCRETE_CHOICE
-from csrank.dataset_reader.util import standardize_features
-from csrank.util import print_dictionary, create_dir_recursively
-from .dataset_reader import DatasetReader
 
 
 class LetorListwiseDatasetReader(DatasetReader, metaclass=ABCMeta):

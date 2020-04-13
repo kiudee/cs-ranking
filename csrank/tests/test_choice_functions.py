@@ -1,30 +1,26 @@
 import os
 
+from keras.optimizers import SGD
 import numpy as np
+from pymc3.variational.callbacks import CheckParametersConvergence
 import pytest
 import tensorflow as tf
-from keras.optimizers import SGD
-from pymc3.variational.callbacks import CheckParametersConvergence
 
 from csrank.choicefunction import *
-from csrank.constants import (
-    FETA_CHOICE,
-    FATE_CHOICE,
-    FATELINEAR_CHOICE,
-    FETALINEAR_CHOICE,
-    RANKNET_CHOICE,
-    CMPNET_CHOICE,
-    GLM_CHOICE,
-    RANKSVM_CHOICE,
-)
-from csrank.util import metrics_on_predictions
-from csrank.metrics_np import (
-    f1_measure,
-    subset_01_loss,
-    instance_informedness,
-    auc_score,
-)
+from csrank.constants import CMPNET_CHOICE
+from csrank.constants import FATE_CHOICE
+from csrank.constants import FATELINEAR_CHOICE
+from csrank.constants import FETA_CHOICE
+from csrank.constants import FETALINEAR_CHOICE
+from csrank.constants import GLM_CHOICE
+from csrank.constants import RANKNET_CHOICE
+from csrank.constants import RANKSVM_CHOICE
+from csrank.metrics_np import auc_score
+from csrank.metrics_np import f1_measure
+from csrank.metrics_np import instance_informedness
+from csrank.metrics_np import subset_01_loss
 from csrank.tests.test_ranking import check_params_tunable
+from csrank.util import metrics_on_predictions
 
 choice_metrics = {
     "F1Score": f1_measure,

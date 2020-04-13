@@ -1,6 +1,16 @@
 import logging
 
 import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.utils import check_random_state
+
+from csrank.choicefunction.util import BinaryCrossEntropyLikelihood
+from csrank.choicefunction.util import create_weight_dictionary
+from csrank.discretechoice.likelihoods import fit_pymc3_model
+from csrank.learner import Learner
+import csrank.theano_util as ttu
+from csrank.util import print_dictionary
+from .choice_functions import ChoiceFunctions
 
 try:
     import pymc3 as pm
@@ -17,19 +27,6 @@ except ImportError:
     from csrank.util import MissingExtraError
 
     raise MissingExtraError("theano", "probabilistic")
-
-from sklearn.model_selection import train_test_split
-from sklearn.utils import check_random_state
-
-import csrank.theano_util as ttu
-from csrank.choicefunction.util import (
-    create_weight_dictionary,
-    BinaryCrossEntropyLikelihood,
-)
-from csrank.discretechoice.likelihoods import fit_pymc3_model
-from csrank.learner import Learner
-from csrank.util import print_dictionary
-from .choice_functions import ChoiceFunctions
 
 
 class GeneralizedLinearModel(ChoiceFunctions, Learner):

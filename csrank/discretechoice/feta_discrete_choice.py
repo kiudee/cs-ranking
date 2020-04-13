@@ -1,13 +1,17 @@
-import logging
 from itertools import combinations
 from itertools import permutations
+import logging
 
-import numpy as np
-from keras import Input, Model
 from keras import backend as K
-from keras.layers import Dense, Lambda, concatenate, Activation
+from keras import Input
+from keras import Model
+from keras.layers import Activation
+from keras.layers import concatenate
+from keras.layers import Dense
+from keras.layers import Lambda
 from keras.optimizers import SGD
 from keras.regularizers import l2
+import numpy as np
 
 from csrank.core.feta_network import FETANetwork
 from csrank.layers import NormalizedDense

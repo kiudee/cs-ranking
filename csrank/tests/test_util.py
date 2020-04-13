@@ -1,7 +1,7 @@
+from keras import backend as K
 import numpy as np
 import pytest
 import tensorflow as tf
-from keras import backend as K
 
 from csrank import SyntheticIterator
 from csrank.tensorflow_util import tensorify

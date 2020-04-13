@@ -1,5 +1,5 @@
-import tensorflow as tf
 from keras import backend as K
+import tensorflow as tf
 
 from csrank.tensorflow_util import tensorify
 

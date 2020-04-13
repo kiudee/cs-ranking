@@ -1,15 +1,14 @@
 from functools import partial
+
 import numpy as np
 from scipy.stats import spearmanr
-from sklearn.metrics import (
-    f1_score,
-    precision_score,
-    recall_score,
-    roc_auc_score,
-    average_precision_score,
-    zero_one_loss,
-    hamming_loss,
-)
+from sklearn.metrics import average_precision_score
+from sklearn.metrics import f1_score
+from sklearn.metrics import hamming_loss
+from sklearn.metrics import precision_score
+from sklearn.metrics import recall_score
+from sklearn.metrics import roc_auc_score
+from sklearn.metrics import zero_one_loss
 
 from csrank.numpy_util import scores_to_rankings
 

@@ -1,6 +1,10 @@
 import logging
 
-from keras.layers import BatchNormalization, Dense, Activation, Input, Lambda
+from keras.layers import Activation
+from keras.layers import BatchNormalization
+from keras.layers import Dense
+from keras.layers import Input
+from keras.layers import Lambda
 from keras.layers.merge import average
 from keras.models import Model
 

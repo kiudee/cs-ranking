@@ -1,13 +1,20 @@
+from itertools import combinations
+from itertools import permutations
 import logging
-from itertools import permutations, combinations
 
-import numpy as np
-import tensorflow as tf
-from keras import optimizers, Input, Model, backend as K
-from keras.layers import Dense, concatenate, Lambda, add
+from keras import backend as K
+from keras import Input
+from keras import Model
+from keras import optimizers
+from keras.layers import add
+from keras.layers import concatenate
+from keras.layers import Dense
+from keras.layers import Lambda
 from keras.optimizers import SGD
 from keras.regularizers import l2
+import numpy as np
 from sklearn.utils import check_random_state
+import tensorflow as tf
 
 from csrank.constants import allowed_dense_kwargs
 from csrank.layers import NormalizedDense

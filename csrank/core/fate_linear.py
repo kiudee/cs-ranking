@@ -1,13 +1,14 @@
 import math
 
-import numpy as np
-import tensorflow as tf
 from keras.losses import binary_crossentropy
+import numpy as np
 from sklearn.utils import check_random_state
+import tensorflow as tf
 
 from csrank.learner import Learner
 from csrank.numpy_util import sigmoid
-from csrank.util import progress_bar, print_dictionary
+from csrank.util import print_dictionary
+from csrank.util import progress_bar
 
 
 class FATELinearCore(Learner):

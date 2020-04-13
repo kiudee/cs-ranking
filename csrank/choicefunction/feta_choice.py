@@ -1,12 +1,18 @@
-import logging
 from itertools import combinations
+import logging
 
-import numpy as np
-from keras import Input, backend as K, Model
-from keras.layers import Dense, concatenate, Lambda, add, Activation
+from keras import backend as K
+from keras import Input
+from keras import Model
+from keras.layers import Activation
+from keras.layers import add
+from keras.layers import concatenate
+from keras.layers import Dense
+from keras.layers import Lambda
 from keras.losses import binary_crossentropy
 from keras.optimizers import SGD
 from keras.regularizers import l2
+import numpy as np
 from sklearn.model_selection import train_test_split
 
 from csrank.core.feta_network import FETANetwork

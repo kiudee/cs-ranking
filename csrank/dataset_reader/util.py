@@ -2,6 +2,8 @@ import itertools as iter
 import sys
 
 import numpy as np
+from sklearn.metrics import f1_score
+from sklearn.preprocessing import StandardScaler
 
 try:
     import pandas as pd
@@ -9,9 +11,6 @@ except ImportError:
     from csrank.util import MissingExtraError
 
     raise MissingExtraError("pandas", "data")
-
-from sklearn.metrics import f1_score
-from sklearn.preprocessing import StandardScaler
 
 
 def strongly_connected_components(graph):
