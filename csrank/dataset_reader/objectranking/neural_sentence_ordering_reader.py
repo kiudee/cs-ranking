@@ -1,18 +1,18 @@
 import logging
 import os
 
+import numpy as np
+
+from csrank.constants import OBJECT_RANKING
+from .util import sub_sampling_rankings
+from ..dataset_reader import DatasetReader
+
 try:
     import h5py
 except ImportError:
     from csrank.util import MissingExtraError
 
     raise MissingExtraError("h5py", "data")
-
-import numpy as np
-
-from csrank.constants import OBJECT_RANKING
-from .util import sub_sampling_rankings
-from ..dataset_reader import DatasetReader
 
 
 class SentenceOrderingDatasetReader(DatasetReader):

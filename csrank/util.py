@@ -1,21 +1,22 @@
+from datetime import datetime
+from datetime import timedelta
 import inspect
 import logging
 import os
+from pathlib import Path
 import re
 import sys
-from datetime import datetime, timedelta
-from pathlib import Path
 
-from csrank.metrics import zero_one_rank_loss, zero_one_accuracy, make_ndcg_at_k_loss
-from csrank.metrics_np import (
-    f1_measure,
-    precision,
-    recall,
-    subset_01_loss,
-    hamming,
-    instance_informedness,
-    zero_one_accuracy_np,
-)
+from csrank.metrics import make_ndcg_at_k_loss
+from csrank.metrics import zero_one_accuracy
+from csrank.metrics import zero_one_rank_loss
+from csrank.metrics_np import f1_measure
+from csrank.metrics_np import hamming
+from csrank.metrics_np import instance_informedness
+from csrank.metrics_np import precision
+from csrank.metrics_np import recall
+from csrank.metrics_np import subset_01_loss
+from csrank.metrics_np import zero_one_accuracy_np
 
 __all__ = [
     "create_dir_recursively",

@@ -3,6 +3,8 @@ import inspect
 import os
 
 import numpy as np
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import StandardScaler
 
 try:
     import pandas as pd
@@ -10,8 +12,6 @@ except ImportError:
     from csrank.util import MissingExtraError
 
     raise MissingExtraError("pandas", "data")
-
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 # Get hotel_dataset for each city in a dictionary
 POPINDEX = "popindex"

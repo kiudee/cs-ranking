@@ -1,30 +1,27 @@
-import numpy as np
-import pytest
 import itertools
+
 from keras import backend as K
+import numpy as np
 from numpy.testing import assert_almost_equal
+import pytest
 from pytest import approx
 
-from csrank.metrics import (
-    zero_one_rank_loss,
-    zero_one_rank_loss_for_scores,
-    zero_one_rank_loss_for_scores_ties,
-    zero_one_accuracy,
-    make_ndcg_at_k_loss,
-    kendalls_tau_for_scores,
-    spearman_correlation_for_scores,
-    zero_one_accuracy_for_scores,
-    err,
-)
-from csrank.metrics_np import (
-    zero_one_rank_loss_for_scores_np,
-    zero_one_rank_loss_for_scores_ties_np,
-    spearman_correlation_for_scores_np,
-    spearman_correlation_for_scores_scipy,
-    kendalls_tau_for_scores_np,
-    zero_one_accuracy_for_scores_np,
-    err_np,
-)
+from csrank.metrics import err
+from csrank.metrics import kendalls_tau_for_scores
+from csrank.metrics import make_ndcg_at_k_loss
+from csrank.metrics import spearman_correlation_for_scores
+from csrank.metrics import zero_one_accuracy
+from csrank.metrics import zero_one_accuracy_for_scores
+from csrank.metrics import zero_one_rank_loss
+from csrank.metrics import zero_one_rank_loss_for_scores
+from csrank.metrics import zero_one_rank_loss_for_scores_ties
+from csrank.metrics_np import err_np
+from csrank.metrics_np import kendalls_tau_for_scores_np
+from csrank.metrics_np import spearman_correlation_for_scores_np
+from csrank.metrics_np import spearman_correlation_for_scores_scipy
+from csrank.metrics_np import zero_one_accuracy_for_scores_np
+from csrank.metrics_np import zero_one_rank_loss_for_scores_np
+from csrank.metrics_np import zero_one_rank_loss_for_scores_ties_np
 from csrank.numpy_util import ranking_ordering_conversion
 
 

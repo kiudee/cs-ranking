@@ -2,6 +2,10 @@ import copy
 from itertools import product
 
 import numpy as np
+from pymc3 import Discrete
+from pymc3.distributions.dist_math import bound
+
+from csrank import theano_util as ttu
 
 try:
     import theano
@@ -10,11 +14,6 @@ except ImportError:
     from csrank.util import MissingExtraError
 
     raise MissingExtraError("theano", "probabilistic")
-
-from pymc3 import Discrete
-from pymc3.distributions.dist_math import bound
-
-from csrank import theano_util as ttu
 
 
 def generate_pairwise_instances(x, choice):

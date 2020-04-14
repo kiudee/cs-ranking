@@ -1,6 +1,6 @@
+from collections import namedtuple
 import os
 import re
-from collections import namedtuple
 
 import numpy as np
 from scipy.stats import rankdata

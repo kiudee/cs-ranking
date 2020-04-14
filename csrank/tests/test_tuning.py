@@ -1,8 +1,8 @@
 import os
 
+from keras.metrics import binary_accuracy
 import numpy as np
 import pytest
-from keras.metrics import binary_accuracy
 
 from csrank.tuning import check_learner_class
 from ..tuning import ParameterOptimizer

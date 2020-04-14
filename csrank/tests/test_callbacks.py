@@ -1,14 +1,16 @@
 import math
 import os
 
-import numpy as np
-import pytest
-import tensorflow as tf
-from csrank.callbacks import LRScheduler, EarlyStoppingWithWeights
-from csrank.tests.test_ranking import check_params_tunable
 from keras import Sequential
 from keras.layers import Dense
 from keras.optimizers import SGD
+import numpy as np
+import pytest
+import tensorflow as tf
+
+from csrank.callbacks import EarlyStoppingWithWeights
+from csrank.callbacks import LRScheduler
+from csrank.tests.test_ranking import check_params_tunable
 
 callbacks_dict = {
     "EarlyStopping": (EarlyStoppingWithWeights, {"patience": 5, "min_delta": 5e-2}),

@@ -1,5 +1,6 @@
 import numpy as np
-from sklearn.model_selection import StratifiedKFold, ShuffleSplit
+from sklearn.model_selection import ShuffleSplit
+from sklearn.model_selection import StratifiedKFold
 from sklearn.utils import check_random_state
 
 from csrank.constants import DISCRETE_CHOICE

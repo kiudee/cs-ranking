@@ -1,7 +1,7 @@
-import logging
-import pickle as pk
 from abc import ABCMeta
 from itertools import product
+import logging
+import pickle as pk
 
 import numpy as np
 

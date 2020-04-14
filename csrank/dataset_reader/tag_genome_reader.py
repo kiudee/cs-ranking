@@ -1,9 +1,17 @@
+from abc import ABCMeta
+from abc import abstractmethod
+from itertools import combinations
 import logging
 import os
-from abc import ABCMeta, abstractmethod
-from itertools import combinations
 
 import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.utils import check_random_state
+
+from csrank.dataset_reader.dataset_reader import DatasetReader
+from .util import get_key_for_indices
+from .util import get_similarity_matrix
+from .util import standardize_features
 
 try:
     import pandas as pd
@@ -11,12 +19,6 @@ except ImportError:
     from csrank.util import MissingExtraError
 
     raise MissingExtraError("pandas", "data")
-
-from sklearn.model_selection import train_test_split
-from sklearn.utils import check_random_state
-
-from csrank.dataset_reader.dataset_reader import DatasetReader
-from .util import get_key_for_indices, get_similarity_matrix, standardize_features
 
 MOVIE_ID = "movieId"
 TAG_ID = "tagId"

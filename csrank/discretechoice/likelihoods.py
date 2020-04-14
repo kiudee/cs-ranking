@@ -1,5 +1,7 @@
 import copy
 
+from csrank.theano_util import normalize
+
 try:
     import pymc3 as pm
     from pymc3 import Discrete
@@ -17,8 +19,6 @@ except ImportError:
     from csrank.util import MissingExtraError
 
     raise MissingExtraError("theano", "probabilistic")
-
-from csrank.theano_util import normalize
 
 
 def categorical_crossentropy(p, y_true):

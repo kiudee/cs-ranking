@@ -1,15 +1,8 @@
 import numpy as np
-
-try:
-    from pygmo import hypervolume
-except ImportError:
-    from csrank.util import MissingExtraError
-
-    raise MissingExtraError("pygmo", "data")
-
-
-from scipy.spatial.distance import squareform, pdist
-from sklearn.datasets import make_regression, make_blobs
+from scipy.spatial.distance import pdist
+from scipy.spatial.distance import squareform
+from sklearn.datasets import make_blobs
+from sklearn.datasets import make_regression
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.utils import check_random_state
 
@@ -17,6 +10,13 @@ from csrank.constants import DISCRETE_CHOICE
 from .util import convert_to_label_encoding
 from ..synthetic_dataset_generator import SyntheticDatasetGenerator
 from ..util import create_pairwise_prob_matrix
+
+try:
+    from pygmo import hypervolume
+except ImportError:
+    from csrank.util import MissingExtraError
+
+    raise MissingExtraError("pygmo", "data")
 
 
 class DiscreteChoiceDatasetGenerator(SyntheticDatasetGenerator):

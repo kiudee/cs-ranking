@@ -1,5 +1,5 @@
-import logging
 from itertools import combinations
+import logging
 
 import numpy as np
 

@@ -44,11 +44,14 @@ expected reciprocal rank instead:
 0.6365559895833333
 """
 from functools import partial
+
+from keras import backend as K
 import numpy as np
 import tensorflow as tf
-from keras import backend as K
 
-from csrank.tensorflow_util import scores_to_rankings, get_instances_objects, tensorify
+from csrank.tensorflow_util import get_instances_objects
+from csrank.tensorflow_util import scores_to_rankings
+from csrank.tensorflow_util import tensorify
 
 __all__ = [
     "zero_one_rank_loss",

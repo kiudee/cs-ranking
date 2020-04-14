@@ -1,36 +1,37 @@
 import copy
+from datetime import datetime
 import logging
 import traceback
-from datetime import datetime
 
-import numpy as np
-import tensorflow as tf
 from keras import backend as K
 from keras.metrics import categorical_accuracy
+import numpy as np
 from sklearn.model_selection import ShuffleSplit
 from sklearn.utils import check_random_state
 from skopt import Optimizer
-from skopt.space import check_dimension, Categorical, Integer
-from skopt.utils import cook_estimator, normalize_dimensions, dump, load
+from skopt.space import Categorical
+from skopt.space import check_dimension
+from skopt.space import Integer
+from skopt.utils import cook_estimator
+from skopt.utils import dump
+from skopt.utils import load
+from skopt.utils import normalize_dimensions
+import tensorflow as tf
 
-from csrank.constants import (
-    OBJECT_RANKING,
-    LABEL_RANKING,
-    DISCRETE_CHOICE,
-    DYAD_RANKING,
-    CHOICE_FUNCTION,
-)
+from csrank.constants import CHOICE_FUNCTION
+from csrank.constants import DISCRETE_CHOICE
+from csrank.constants import DYAD_RANKING
+from csrank.constants import LABEL_RANKING
+from csrank.constants import OBJECT_RANKING
 from csrank.learner import Learner
 from csrank.metrics import *
 from csrank.metrics_np import *
 from csrank.tensorflow_util import get_mean_loss
 from csrank.tunable import Tunable
-from csrank.util import (
-    duration_till_now,
-    create_dir_recursively,
-    seconds_to_time,
-    convert_to_loss,
-)
+from csrank.util import convert_to_loss
+from csrank.util import create_dir_recursively
+from csrank.util import duration_till_now
+from csrank.util import seconds_to_time
 
 PARAMETER_OPTIMIZER = "ParameterOptimizer"
 

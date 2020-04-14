@@ -1,7 +1,15 @@
+from abc import ABCMeta
 import collections
 import logging
 import os
-from abc import ABCMeta
+
+import numpy as np
+from pandas.api.types import is_numeric_dtype
+from sklearn.model_selection import ShuffleSplit
+
+from csrank.dataset_reader.dataset_reader import DatasetReader
+from csrank.dataset_reader.util import standardize_features
+from csrank.util import print_dictionary
 
 try:
     import h5py
@@ -10,21 +18,12 @@ except ImportError:
 
     raise MissingExtraError("h5py", "data")
 
-import numpy as np
-
 try:
     import pandas as pd
 except ImportError:
     from csrank.util import MissingExtraError
 
     raise MissingExtraError("pandas", "data")
-
-from pandas.api.types import is_numeric_dtype
-from sklearn.model_selection import ShuffleSplit
-
-from csrank.dataset_reader.dataset_reader import DatasetReader
-from csrank.dataset_reader.util import standardize_features
-from csrank.util import print_dictionary
 
 
 class ExpediaDatasetReader(DatasetReader, metaclass=ABCMeta):

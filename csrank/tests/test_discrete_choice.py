@@ -1,34 +1,30 @@
 import os
 
+from keras.optimizers import SGD
 import numpy as np
+from pymc3.variational.callbacks import CheckParametersConvergence
 import pytest
 import tensorflow as tf
-from keras.optimizers import SGD
-from pymc3.variational.callbacks import CheckParametersConvergence
 
+from csrank.constants import CMPNET_DC
+from csrank.constants import FATE_DC
+from csrank.constants import FATELINEAR_DC
+from csrank.constants import FETA_DC
+from csrank.constants import FETALINEAR_DC
+from csrank.constants import GEV
+from csrank.constants import MLM
+from csrank.constants import MNL
+from csrank.constants import NLM
+from csrank.constants import PCL
+from csrank.constants import RANKNET_DC
+from csrank.constants import RANKSVM_DC
 from csrank.dataset_reader.discretechoice.util import convert_to_label_encoding
 from csrank.discretechoice import *
-from csrank.constants import (
-    FETA_DC,
-    RANKNET_DC,
-    CMPNET_DC,
-    FATE_DC,
-    FATELINEAR_DC,
-    FETALINEAR_DC,
-    MNL,
-    NLM,
-    PCL,
-    GEV,
-    MLM,
-    RANKSVM_DC,
-)
-from csrank.util import metrics_on_predictions
-from csrank.metrics_np import (
-    categorical_accuracy_np,
-    topk_categorical_accuracy_np,
-    subset_01_loss,
-)
+from csrank.metrics_np import categorical_accuracy_np
+from csrank.metrics_np import subset_01_loss
+from csrank.metrics_np import topk_categorical_accuracy_np
 from csrank.tests.test_ranking import check_params_tunable
+from csrank.util import metrics_on_predictions
 
 metrics = {
     "CategoricalAccuracy": categorical_accuracy_np,

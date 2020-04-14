@@ -2,9 +2,9 @@ import logging
 import multiprocessing
 import os
 
+from keras import backend as K
 import numpy as np
 import tensorflow as tf
-from keras import backend as K
 from tensorflow.python.client import device_lib
 
 

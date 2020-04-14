@@ -1,23 +1,22 @@
+from abc import ABCMeta
+from abc import abstractmethod
 import inspect
 import logging
 import os
-from abc import ABCMeta, abstractmethod
 
 import numpy as np
 
-from csrank.constants import (
-    OBJECT_RANKING,
-    DYAD_RANKING,
-    EXCEPTION_OBJECT_ARRAY_SHAPE,
-    EXCEPTION_OUTPUT_FEATURES_INSTANCES,
-    EXCEPTION_RANKINGS_FEATURES_NO_OF_OBJECTS,
-    EXCEPTION_UNWANTED_CONTEXT_FEATURES,
-    LABEL_RANKING,
-    DISCRETE_CHOICE,
-    EXCEPTION_CONTEXT_ARRAY_SHAPE,
-    CHOICE_FUNCTION,
-    EXCEPTION_SET_INCLUSION,
-)
+from csrank.constants import CHOICE_FUNCTION
+from csrank.constants import DISCRETE_CHOICE
+from csrank.constants import DYAD_RANKING
+from csrank.constants import EXCEPTION_CONTEXT_ARRAY_SHAPE
+from csrank.constants import EXCEPTION_OBJECT_ARRAY_SHAPE
+from csrank.constants import EXCEPTION_OUTPUT_FEATURES_INSTANCES
+from csrank.constants import EXCEPTION_RANKINGS_FEATURES_NO_OF_OBJECTS
+from csrank.constants import EXCEPTION_SET_INCLUSION
+from csrank.constants import EXCEPTION_UNWANTED_CONTEXT_FEATURES
+from csrank.constants import LABEL_RANKING
+from csrank.constants import OBJECT_RANKING
 
 
 class DatasetReader(metaclass=ABCMeta):

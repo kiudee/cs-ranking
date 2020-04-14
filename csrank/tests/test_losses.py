@@ -1,8 +1,10 @@
-import numpy as np
 from keras import backend as K
+import numpy as np
 from numpy.testing import assert_almost_equal
 
-from csrank.losses import hinged_rank_loss, smooth_rank_loss, plackett_luce_loss
+from csrank.losses import hinged_rank_loss
+from csrank.losses import plackett_luce_loss
+from csrank.losses import smooth_rank_loss
 
 decimal = 3
 
