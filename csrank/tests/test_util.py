@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 import tensorflow as tf
 
-from csrank import SyntheticIterator
+from csrank.dataset_reader import SyntheticIterator
 from csrank.tensorflow_util import tensorify
 from csrank.tuning import check_learner_class
 

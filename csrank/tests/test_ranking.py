@@ -5,7 +5,6 @@ import numpy as np
 import pytest
 import tensorflow as tf
 
-from csrank import PairedCombinatorialLogit
 from csrank.constants import CMPNET
 from csrank.constants import ERR
 from csrank.constants import FATE_RANKER
@@ -15,6 +14,7 @@ from csrank.constants import FETALINEAR_RANKER
 from csrank.constants import LISTNET
 from csrank.constants import RANKNET
 from csrank.constants import RANKSVM
+from csrank.discretechoice import PairedCombinatorialLogit
 from csrank.metrics_np import zero_one_accuracy_np
 from csrank.metrics_np import zero_one_rank_loss_for_scores_ties_np
 from csrank.objectranking import *
