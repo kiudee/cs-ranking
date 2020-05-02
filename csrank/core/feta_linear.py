@@ -15,8 +15,6 @@ from csrank.util import progress_bar
 class FETALinearCore(Learner):
     def __init__(
         self,
-        n_object_features,
-        n_objects,
         learning_rate=1e-3,
         batch_size=256,
         loss_function=binary_crossentropy,
@@ -28,9 +26,7 @@ class FETALinearCore(Learner):
         self.learning_rate = learning_rate
         self.batch_size = batch_size
         self.random_state = random_state
-        self.n_object_features = n_object_features
         self.loss_function = loss_function
-        self.n_objects = n_objects
         self.epochs_drop = epochs_drop
         self.drop = drop
         self.current_lr = None
@@ -43,20 +39,24 @@ class FETALinearCore(Learner):
         self.W_last = None
 
     def _construct_model_(self, n_objects):
-        self.X = tf.placeholder("float32", [None, n_objects, self.n_object_features])
+        self.X = tf.placeholder(
+            "float32", [None, n_objects, self.n_object_features_fit_]
+        )
         self.Y = tf.placeholder("float32", [None, n_objects])
-        std = 1 / np.sqrt(self.n_object_features)
+        std = 1 / np.sqrt(self.n_object_features_fit_)
         self.b1 = tf.Variable(
             self.random_state_.normal(loc=0, scale=std, size=1), dtype=tf.float32
         )
         self.W1 = tf.Variable(
             self.random_state_.normal(
-                loc=0, scale=std, size=2 * self.n_object_features
+                loc=0, scale=std, size=2 * self.n_object_features_fit_
             ),
             dtype=tf.float32,
         )
         self.W2 = tf.Variable(
-            self.random_state_.normal(loc=0, scale=std, size=self.n_object_features),
+            self.random_state_.normal(
+                loc=0, scale=std, size=self.n_object_features_fit_
+            ),
             dtype=tf.float32,
         )
         self.b2 = tf.Variable(
@@ -101,9 +101,8 @@ class FETALinearCore(Learner):
     ):
         self.random_state_ = check_random_state(self.random_state)
         # Global Variables Initializer
-        n_instances, n_objects, n_features = X.shape
-        assert n_features == self.n_object_features
-        self._construct_model_(n_objects)
+        n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
+        self._construct_model_(self.n_objects_fit_)
         init = tf.global_variables_initializer()
 
         with tf.Session() as tf_session:
@@ -148,7 +147,7 @@ class FETALinearCore(Learner):
 
     def _predict_scores_fixed(self, X, **kwargs):
         n_instances, n_objects, n_features = X.shape
-        assert n_features == self.n_object_features
+        assert n_features == self.n_object_features_fit_
         outputs = [list() for _ in range(n_objects)]
         for i, j in combinations(range(n_objects), 2):
             x1 = X[:, i]
