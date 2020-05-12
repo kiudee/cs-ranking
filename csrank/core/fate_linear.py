@@ -178,7 +178,6 @@ class FATELinearCore(Learner):
         self.n_hidden_set_units = n_hidden_set_units
         self.batch_size = batch_size
         self.learning_rate = learning_rate
-        self._construct_model_(self.n_objects)
         self.epochs_drop = epochs_drop
         self.drop = drop
         if len(point) > 0:
