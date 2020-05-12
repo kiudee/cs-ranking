@@ -57,7 +57,7 @@ class RankNetCore(Learner):
         self._scoring_model = None
         self.model = None
         self.hash_file = None
-        self.random_state = check_random_state(random_state)
+        self.random_state = random_state
         self._construct_layers(
             kernel_regularizer=self.kernel_regularizer,
             kernel_initializer=self.kernel_initializer,
@@ -148,6 +148,7 @@ class RankNetCore(Learner):
             **kwd :
                 Keyword arguments for the fit function
         """
+        self.random_state_ = check_random_state(self.random_state)
         X1, X2, Y_single = self._convert_instances_(X, Y)
 
         self.logger.debug("Instances created {}".format(X1.shape[0]))

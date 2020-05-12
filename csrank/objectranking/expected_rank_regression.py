@@ -74,7 +74,7 @@ class ExpectedRankRegression(ObjectRanker, Learner):
         self.tol = tol
         self.logger = logging.getLogger(ExpectedRankRegression.__name__)
         self.fit_intercept = fit_intercept
-        self.random_state = check_random_state(random_state)
+        self.random_state = random_state
         self.weights = None
 
     def fit(self, X, Y, **kwargs):
@@ -93,6 +93,7 @@ class ExpectedRankRegression(ObjectRanker, Learner):
             **kwargs
                 Keyword arguments for the fit function
         """
+        self.random_state_ = check_random_state(self.random_state)
         self.logger.debug("Creating the Dataset")
         x_train, y_train = complete_linear_regression_dataset(X, Y)
         assert x_train.shape[1] == self.n_object_features
@@ -110,7 +111,7 @@ class ExpectedRankRegression(ObjectRanker, Learner):
                     normalize=self.normalize,
                     tol=self.tol,
                     fit_intercept=self.fit_intercept,
-                    random_state=self.random_state,
+                    random_state=self.random_state_,
                 )
                 self.logger.info("Elastic Net")
             else:
@@ -119,7 +120,7 @@ class ExpectedRankRegression(ObjectRanker, Learner):
                     normalize=self.normalize,
                     tol=self.tol,
                     fit_intercept=self.fit_intercept,
-                    random_state=self.random_state,
+                    random_state=self.random_state_,
                 )
                 self.logger.info("Ridge")
         self.logger.debug("Finished Creating the model, now fitting started")

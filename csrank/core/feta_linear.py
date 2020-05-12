@@ -27,7 +27,7 @@ class FETALinearCore(Learner):
     ):
         self.learning_rate = learning_rate
         self.batch_size = batch_size
-        self.random_state = check_random_state(random_state)
+        self.random_state = random_state
         self.n_object_features = n_object_features
         self.loss_function = loss_function
         self.n_objects = n_objects
@@ -47,21 +47,23 @@ class FETALinearCore(Learner):
         self.Y = tf.placeholder("float32", [None, n_objects])
         std = 1 / np.sqrt(self.n_object_features)
         self.b1 = tf.Variable(
-            self.random_state.normal(loc=0, scale=std, size=1), dtype=tf.float32
+            self.random_state_.normal(loc=0, scale=std, size=1), dtype=tf.float32
         )
         self.W1 = tf.Variable(
-            self.random_state.normal(loc=0, scale=std, size=2 * self.n_object_features),
+            self.random_state_.normal(
+                loc=0, scale=std, size=2 * self.n_object_features
+            ),
             dtype=tf.float32,
         )
         self.W2 = tf.Variable(
-            self.random_state.normal(loc=0, scale=std, size=self.n_object_features),
+            self.random_state_.normal(loc=0, scale=std, size=self.n_object_features),
             dtype=tf.float32,
         )
         self.b2 = tf.Variable(
-            self.random_state.normal(loc=0, scale=std, size=1), dtype=tf.float32
+            self.random_state_.normal(loc=0, scale=std, size=1), dtype=tf.float32
         )
         self.W_out = tf.Variable(
-            self.random_state.normal(loc=0, scale=std, size=2),
+            self.random_state_.normal(loc=0, scale=std, size=2),
             dtype=tf.float32,
             name="W_out",
         )
@@ -97,6 +99,7 @@ class FETALinearCore(Learner):
     def fit(
         self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd
     ):
+        self.random_state_ = check_random_state(self.random_state)
         # Global Variables Initializer
         n_instances, n_objects, n_features = X.shape
         assert n_features == self.n_object_features

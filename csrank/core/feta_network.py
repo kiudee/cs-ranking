@@ -45,7 +45,7 @@ class FETANetwork(Learner):
         **kwargs
     ):
         self.logger = logging.getLogger(FETANetwork.__name__)
-        self.random_state = check_random_state(random_state)
+        self.random_state = random_state
         self.kernel_regularizer = kernel_regularizer
         self.kernel_initializer = kernel_initializer
         self.batch_normalization = batch_normalization
@@ -290,6 +290,7 @@ class FETANetwork(Learner):
                 Keyword arguments for the fit function
         """
         self.logger.debug("Enter fit function...")
+        self.random_state_ = check_random_state(self.random_state)
 
         X, Y = self.sub_sampling(X, Y)
         self.model = self.construct_model()
@@ -311,7 +312,7 @@ class FETANetwork(Learner):
     def sub_sampling(self, X, Y):
         if self._n_objects > self.max_number_of_objects:
             bucket_size = int(self._n_objects / self.max_number_of_objects)
-            idx = self.random_state.randint(bucket_size, size=(len(X), self.n_objects))
+            idx = self.random_state_.randint(bucket_size, size=(len(X), self.n_objects))
             # TODO: subsampling multiple rankings
             idx += np.arange(start=0, stop=self._n_objects, step=bucket_size)[
                 : self.n_objects

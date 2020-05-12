@@ -99,7 +99,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         else:
             self.n_nests = n_nests
         self.alpha = alpha
-        self.random_state = check_random_state(random_state)
+        self.random_state = random_state
         self.loss_function = likelihood_dict.get(loss_function, None)
         if regularization in ["l1", "l2"]:
             self.regularization = regularization
@@ -192,11 +192,12 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
                 (n_instances, n_objects) Values for each object implying the nest it belongs to. For example for :math:`2` nests the value 0 implies that object is allocated to nest 1 and value 1 implies it is allocated to nest 2.
 
         """
+        self.random_state_ = self.random_state_
         n, n_obj, n_dim = X.shape
         objects = X.reshape(n * n_obj, n_dim)
         if self.cluster_model is None:
             self.cluster_model = MiniBatchKMeans(
-                n_clusters=self.n_nests, random_state=self.random_state
+                n_clusters=self.n_nests, random_state=self.random_state_
             ).fit(objects)
             self.features_nests = self.cluster_model.cluster_centers_
             prediction = self.cluster_model.labels_
@@ -321,7 +322,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         """
         if np.prod(X.shape) > self.threshold:
             upper_bound = int(self.threshold / np.prod(X.shape[1:]))
-            indices = self.random_state.choice(X.shape[0], upper_bound, replace=False)
+            indices = self.random_state_.choice(X.shape[0], upper_bound, replace=False)
             X = X[indices, :, :]
             Y = Y[indices, :]
         self.logger.info(
@@ -399,6 +400,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
             **kwargs :
                 Keyword arguments for the fit function of :meth:`pymc3.fit`or :meth:`pymc3.sample`
         """
+        self.random_state_ = check_random_state(self.random_state)
         self.construct_model(X, Y)
         fit_pymc3_model(self, sampler, draws, tune, vi_params, **kwargs)
 

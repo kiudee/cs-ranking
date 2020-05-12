@@ -49,7 +49,7 @@ class PairwiseSVM(Learner):
         self.C = C
         self.tol = tol
         self.logger = logging.getLogger("RankSVM")
-        self.random_state = check_random_state(random_state)
+        self.random_state = random_state
         self.threshold_instances = int(1e10)
         self.fit_intercept = fit_intercept
         self.weights = None
@@ -70,13 +70,14 @@ class PairwiseSVM(Learner):
                 Keyword arguments for the fit function
 
         """
+        self.random_state_ = check_random_state(self.random_state)
         x_train, y_single = self._convert_instances_(X, Y)
         if x_train.shape[0] > self.threshold_instances:
             self.model = LogisticRegression(
                 C=self.C,
                 tol=self.tol,
                 fit_intercept=self.fit_intercept,
-                random_state=self.random_state,
+                random_state=self.random_state_,
             )
             self.logger.info("Logistic Regression model ")
         else:
@@ -84,7 +85,7 @@ class PairwiseSVM(Learner):
                 C=self.C,
                 tol=self.tol,
                 fit_intercept=self.fit_intercept,
-                random_state=self.random_state,
+                random_state=self.random_state_,
             )
             self.logger.info("Linear SVC model ")
 

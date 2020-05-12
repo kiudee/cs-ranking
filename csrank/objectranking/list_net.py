@@ -117,7 +117,7 @@ class ListNet(Learner, ObjectRanker):
 
         self.threshold_instances = int(1e10)
         self.batch_size = batch_size
-        self.random_state = check_random_state(random_state)
+        self.random_state = random_state
         self.hash_file = None
         self.model = None
         self._scoring_model = None
@@ -179,6 +179,7 @@ class ListNet(Learner, ObjectRanker):
             **kwd
                 Keyword arguments for the fit function
         """
+        self.random_state_ = check_random_state(self.random_state)
         self.n_objects = X.shape[1]
         self.logger.debug("Creating top-k dataset")
         X, Y = self._create_topk(X, Y)
