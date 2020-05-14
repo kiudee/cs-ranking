@@ -70,8 +70,8 @@ def check_params_tunable(tunable_obj, params, rtol=1e-2, atol=1e-4):
                     isinstance(tunable_obj, PairedCombinatorialLogit)
                     and key == "n_nests"
                 ):
-                    tunable_obj.n_nests == tunable_obj.n_objects * (
-                        tunable_obj.n_objects - 1
+                    tunable_obj.n_nests == tunable_obj.n_objects_fit_ * (
+                        tunable_obj.n_objects_fit_ - 1
                     ) / 2
                 else:
                     assert np.isclose(
