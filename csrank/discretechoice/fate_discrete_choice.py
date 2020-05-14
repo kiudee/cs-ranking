@@ -11,7 +11,6 @@ from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 class FATEDiscreteChoiceFunction(FATENetwork, DiscreteObjectChooser):
     def __init__(
         self,
-        n_object_features,
         n_hidden_set_layers=2,
         n_hidden_set_units=2,
         loss_function="categorical_hinge",
@@ -48,8 +47,6 @@ class FATEDiscreteChoiceFunction(FATENetwork, DiscreteObjectChooser):
 
             Parameters
             ----------
-            n_object_features : int
-                Dimensionality of the feature space of each object
             n_hidden_set_layers : int
                 Number of set layers.
             n_hidden_set_units : int
@@ -80,7 +77,6 @@ class FATEDiscreteChoiceFunction(FATENetwork, DiscreteObjectChooser):
         self.loss_function = loss_function
         self.metrics = metrics
         super().__init__(
-            n_object_features=n_object_features,
             n_hidden_set_layers=n_hidden_set_layers,
             n_hidden_set_units=n_hidden_set_units,
             n_hidden_joint_layers=n_hidden_joint_layers,

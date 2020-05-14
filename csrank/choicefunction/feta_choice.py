@@ -24,8 +24,6 @@ from .choice_functions import ChoiceFunctions
 class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
     def __init__(
         self,
-        n_objects,
-        n_object_features,
         n_hidden=2,
         n_units=8,
         add_zeroth_order_model=False,
@@ -61,10 +59,6 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
 
             Parameters
             ----------
-            n_objects : int
-                Number of objects in each query set
-            n_object_features : int
-                Dimensionality of the feature space of each object
             n_hidden : int
                 Number of hidden layers
             n_units : int
@@ -97,8 +91,6 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
                 Keyword arguments for the hidden units
         """
         super().__init__(
-            n_objects=n_objects,
-            n_object_features=n_object_features,
             n_hidden=n_hidden,
             n_units=n_units,
             add_zeroth_order_model=add_zeroth_order_model,
@@ -119,7 +111,9 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
         self.logger = logging.getLogger(FETAChoiceFunction.__name__)
 
     def _construct_layers(self, **kwargs):
-        self.input_layer = Input(shape=(self.n_objects, self.n_object_features))
+        self.input_layer = Input(
+            shape=(self.n_objects_fit_, self.n_object_features_fit_)
+        )
         # Todo: Variable sized input
         # X = Input(shape=(None, n_features))
         if self.batch_normalization:
@@ -177,7 +171,7 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
             self.logger.debug("Create 0th order model")
             zeroth_order_outputs = []
             inputs = []
-            for i in range(self.n_objects):
+            for i in range(self.n_objects_fit_):
                 x = create_input_lambda(i)(self.input_layer)
                 inputs.append(x)
                 for hidden in self.hidden_layers_zeroth:
@@ -186,8 +180,8 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
             zeroth_order_scores = concatenate(zeroth_order_outputs)
             self.logger.debug("0th order model finished")
         self.logger.debug("Create 1st order model")
-        outputs = [list() for _ in range(self.n_objects)]
-        for i, j in combinations(range(self.n_objects), 2):
+        outputs = [list() for _ in range(self.n_objects_fit_)]
+        for i, j in combinations(range(self.n_objects_fit_), 2):
             if self._use_zeroth_model:
                 x1 = inputs[i]
                 x2 = inputs[j]
@@ -296,7 +290,7 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
             self.threshold = 0.5
 
     def sub_sampling(self, X, Y):
-        if self._n_objects <= self.max_number_of_objects:
+        if self.n_objects_fit_ <= self.max_number_of_objects:
             return X, Y
         n_objects = self.max_number_of_objects
         bucket_size = int(X.shape[1] / n_objects)

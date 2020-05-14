@@ -22,8 +22,6 @@ from .discrete_choice import DiscreteObjectChooser
 class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
     def __init__(
         self,
-        n_objects,
-        n_object_features,
         n_hidden=2,
         n_units=8,
         add_zeroth_order_model=False,
@@ -59,10 +57,6 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
 
             Parameters
             ----------
-            n_objects : int
-                Number of objects in each query set
-            n_object_features : int
-                Dimensionality of the feature space of each object
             n_hidden : int
                 Number of hidden layers
             n_units : int
@@ -95,8 +89,6 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
                 Keyword arguments for the hidden units
         """
         super().__init__(
-            n_objects=n_objects,
-            n_object_features=n_object_features,
             n_hidden=n_hidden,
             n_units=n_units,
             add_zeroth_order_model=add_zeroth_order_model,
@@ -116,7 +108,9 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
         self.logger = logging.getLogger(FETADiscreteChoiceFunction.__name__)
 
     def _construct_layers(self, **kwargs):
-        self.input_layer = Input(shape=(self.n_objects, self.n_object_features))
+        self.input_layer = Input(
+            shape=(self.n_objects_fit_, self.n_object_features_fit_)
+        )
         # Todo: Variable sized input
         # X = Input(shape=(None, n_features))
         if self.batch_normalization:
@@ -186,7 +180,7 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
             self.logger.debug("Create 0th order model")
             zeroth_order_outputs = []
             inputs = []
-            for i in range(self.n_objects):
+            for i in range(self.n_objects_fit_):
                 x = create_input_lambda(i)(self.input_layer)
                 inputs.append(x)
                 for hidden in self.hidden_layers_zeroth:
@@ -195,8 +189,8 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
             zeroth_order_scores = concatenate(zeroth_order_outputs)
             self.logger.debug("0th order model finished")
         self.logger.debug("Create 1st order model")
-        outputs = [list() for _ in range(self.n_objects)]
-        for i, j in combinations(range(self.n_objects), 2):
+        outputs = [list() for _ in range(self.n_objects_fit_)]
+        for i, j in combinations(range(self.n_objects_fit_), 2):
             if self._use_zeroth_model:
                 x1 = inputs[i]
                 x2 = inputs[j]
@@ -239,10 +233,10 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
                         get_score_object(i)(zeroth_order_scores),
                     ]
                 )
-                for i in range(self.n_objects)
+                for i in range(self.n_objects_fit_)
             ]
             scores = []
-            for i in range(self.n_objects):
+            for i in range(self.n_objects_fit_):
                 scores.append(self.weighted_sum(concat_scores[i]))
             scores = concatenate(scores)
 
@@ -259,7 +253,7 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
         #     zeroth_order_scores = expand_dims()(zeroth_order_scores)
         #     concat_scores = concatenate([scores, zeroth_order_scores], axis=-1)
         #     weighted_sum = Conv1D(name='weighted_sum', filters=1, kernel_size=(1), strides=1, activation='linear',
-        #                          kernel_initializer=self.kernel_initializer, input_shape=(self.n_objects, 2),
+        #                          kernel_initializer=self.kernel_initializer, input_shape=(self.n_objects_fit_, 2),
         #                          kernel_regularizer=self.kernel_regularizer, use_bias=False)
         #     scores = weighted_sum(concat_scores)
         #     scores = squeeze_dims()(scores)
@@ -313,7 +307,7 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
         return scores
 
     def _create_zeroth_order_model(self):
-        inp = Input(shape=(self.n_object_features,))
+        inp = Input(shape=(self.n_object_features_fit_,))
 
         x = inp
         for hidden in self.hidden_layers_zeroth:
