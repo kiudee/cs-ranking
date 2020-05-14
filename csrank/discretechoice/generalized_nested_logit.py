@@ -34,8 +34,6 @@ except ImportError:
 class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
     def __init__(
         self,
-        n_object_features,
-        n_objects,
         n_nests=None,
         loss_function="None",
         regularization="l2",
@@ -64,12 +62,12 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
 
             Parameters
             ----------
-            n_object_features : int
-                Number of features of the object space
             n_objects: int
                 Number of objects in each query set
             n_nests : int range : [2,n_objects/2]
-                The number of nests/subsets in which the objects are divided
+                The number of nests/subsets in which the objects are divided.
+                This may not surpass half the amount of objects this model will
+                be trained on.
             loss_function : string , {‘categorical_crossentropy’, ‘binary_crossentropy’, ’categorical_hinge’}
                 Loss function to be used for the discrete choice decision from the query set
             regularization : string, {‘l1’, ‘l2’}, string
@@ -92,12 +90,7 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
         """
         self.logger = logging.getLogger(GeneralizedNestedLogitModel.__name__)
 
-        self.n_object_features = n_object_features
-        self.n_objects = n_objects
-        if n_nests is None:
-            self.n_nests = n_objects + int(n_objects / 2)
-        else:
-            self.n_nests = n_nests
+        self.n_nests = n_nests
         self.alpha = alpha
         self.loss_function = likelihood_dict.get(loss_function, None)
 
@@ -274,8 +267,8 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
             self.Xt = theano.shared(X)
             self.Yt = theano.shared(Y)
             shapes = {
-                "weights": self.n_object_features,
-                "weights_ik": (self.n_object_features, self.n_nests),
+                "weights": self.n_object_features_fit_,
+                "weights_ik": (self.n_object_features_fit_, self.n_nests),
             }
             weights_dict = create_weight_dictionary(self.model_configuration, shapes)
 
@@ -339,19 +332,28 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
             **kwargs :
                 Keyword arguments for the fit function of :meth:`pymc3.fit`or :meth:`pymc3.sample`
         """
+        _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
+        if self.n_nests is None:
+            # TODO this looks like a bug to me, but it was already done this way
+            # before (moved out of __init__). The `n_objects` summand probably
+            # should be removed.
+            self.n_nests = self.n_objects_fit_ + int(self.n_objects_fit_ / 2)
         self.construct_model(X, Y)
         fit_pymc3_model(self, sampler, draws, tune, vi_params, **kwargs)
 
     def _predict_scores_fixed(self, X, **kwargs):
         mean_trace = dict(pm.summary(self.trace)["mean"])
         weights = np.array(
-            [mean_trace["weights[{}]".format(i)] for i in range(self.n_object_features)]
+            [
+                mean_trace["weights[{}]".format(i)]
+                for i in range(self.n_object_features_fit_)
+            ]
         )
         lambda_k = np.array(
             [mean_trace["lambda_k[{}]".format(i)] for i in range(self.n_nests)]
         )
-        weights_ik = np.zeros((self.n_object_features, self.n_nests))
-        for i, k in product(range(self.n_object_features), range(self.n_nests)):
+        weights_ik = np.zeros((self.n_object_features_fit_, self.n_nests))
+        for i, k in product(range(self.n_object_features_fit_), range(self.n_nests)):
             weights_ik[i][k] = mean_trace["weights_ik[{},{}]".format(i, k)]
         alpha_ik = np.dot(X, weights_ik)
         alpha_ik = npu.softmax(alpha_ik, axis=2)
@@ -389,8 +391,9 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
         """
         if alpha is not None:
             self.alpha = alpha
+        # TODO see the comment for n_nests above
         if n_nests is None:
-            self.n_nests = self.n_objects + int(self.n_objects / 2)
+            self.n_nests = self.n_objects_fit + int(self.n_objects_fit / 2)
         else:
             self.n_nests = n_nests
         if loss_function in likelihood_dict.keys():
