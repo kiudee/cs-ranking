@@ -8,8 +8,6 @@ from .object_ranker import ObjectRanker
 class FATELinearObjectRanker(FATELinearCore, ObjectRanker):
     def __init__(
         self,
-        n_object_features,
-        n_objects,
         n_hidden_set_units=2,
         loss_function=hinged_rank_loss,
         learning_rate=1e-3,
@@ -39,10 +37,6 @@ class FATELinearObjectRanker(FATELinearCore, ObjectRanker):
 
             Parameters
             ----------
-            n_object_features : int
-                Dimensionality of the feature space of each object
-            n_objects : int
-                Number of objects in each choice set
             n_hidden_set_units : int
                 Number of hidden set units.
             batch_size : int
@@ -55,8 +49,6 @@ class FATELinearObjectRanker(FATELinearCore, ObjectRanker):
                 Keyword arguments for the @FATENetwork
         """
         super().__init__(
-            n_object_features=n_object_features,
-            n_objects=n_objects,
             n_hidden_set_units=n_hidden_set_units,
             learning_rate=learning_rate,
             batch_size=batch_size,
