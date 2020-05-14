@@ -15,15 +15,15 @@ class RandomBaselineRanker(ObjectRanker, Learner):
         """
 
         self.logger = logging.getLogger(RandomBaselineRanker.__name__)
-        self.random_state = check_random_state(random_state)
+        self.random_state = (random_state,)
         self.model = None
 
     def fit(self, X, Y, **kwd):
-        pass
+        self.random_state_ = check_random_state(self.random_state)
 
     def _predict_scores_fixed(self, X, **kwargs):
         n_instances, n_objects, n_features = X.shape
-        return self.random_state.rand(n_instances, n_objects)
+        return self.random_state_.rand(n_instances, n_objects)
 
     def predict_scores(self, X, **kwargs):
         return super().predict_scores(X, **kwargs)

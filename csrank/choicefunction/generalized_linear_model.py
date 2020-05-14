@@ -73,7 +73,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
             self.regularization = regularization
         else:
             self.regularization = "l2"
-        self.random_state = check_random_state(random_state)
+        self.random_state = random_state
         self.model = None
         self.trace = None
         self.trace_vi = None
@@ -224,9 +224,10 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
             **kwargs :
                 Keyword arguments for the fit function
         """
+        self.random_state_ = check_random_state(self.random_state)
         if tune_size > 0:
             X_train, X_val, Y_train, Y_val = train_test_split(
-                X, Y, test_size=tune_size, random_state=self.random_state
+                X, Y, test_size=tune_size, random_state=self.random_state_
             )
             try:
                 self._fit(

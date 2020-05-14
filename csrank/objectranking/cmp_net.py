@@ -109,7 +109,7 @@ class CmpNet(CmpNetCore, ObjectRanker):
         garbage, x1, x2, y_double, garbage = generate_complete_pairwise_dataset(X, Y)
         del garbage
         if x1.shape[0] > self.threshold_instances:
-            indices = self.random_state.choice(
+            indices = self.random_state_.choice(
                 x1.shape[0], self.threshold_instances, replace=False
             )
             x1 = x1[indices, :]

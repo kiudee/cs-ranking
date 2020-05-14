@@ -160,7 +160,7 @@ class ParameterOptimizer(Learner):
         else:
             self._fit_params = fit_params
 
-        self.random_state = check_random_state(random_state)
+        self.random_state = random_state
         self.model = None
         self.opt = None
 
@@ -240,6 +240,7 @@ class ParameterOptimizer(Learner):
         **kwargs
     ):
         start = datetime.now()
+        self.random_state_ = check_random_state(self.random_state)
 
         def splitter(itr):
             for train_idx, test_idx in itr:
@@ -263,7 +264,7 @@ class ParameterOptimizer(Learner):
 
         if cv_iter is None:
             cv_iter = ShuffleSplit(
-                n_splits=3, test_size=0.1, random_state=self.random_state
+                n_splits=3, test_size=0.1, random_state=self.random_state_,
             )
         if isinstance(X, dict):
             splits = dict()
@@ -278,11 +279,11 @@ class ParameterOptimizer(Learner):
         # Here we fix a random seed for all simulations to correlate the random
         # streams:
 
-        seed = self.random_state.randint(2 ** 32, dtype="uint32")
+        seed = self.random_state_.randint(2 ** 32, dtype="uint32")
         self.logger.debug("Random seed for the ranking algorithm: {}".format(seed))
-        opt_seed = self.random_state.randint(2 ** 32, dtype="uint32")
+        opt_seed = self.random_state_.randint(2 ** 32, dtype="uint32")
         self.logger.debug("Random seed for the optimizer: {}".format(opt_seed))
-        gp_seed = self.random_state.randint(2 ** 32, dtype="uint32")
+        gp_seed = self.random_state_.randint(2 ** 32, dtype="uint32")
         self.logger.debug("Random seed for the GP surrogate: {}".format(gp_seed))
         n_iter = self.set_optimizer(n_iter, opt_seed, acq_func, gp_seed, **kwargs)
 

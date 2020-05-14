@@ -60,7 +60,7 @@ class CmpNetCore(Learner):
                 del kwargs[key]
         self.kwargs = kwargs
         self.threshold_instances = int(1e10)
-        self.random_state = check_random_state(random_state)
+        self.random_state = random_state
         self.model = None
         self._construct_layers(
             kernel_regularizer=self.kernel_regularizer,
@@ -156,6 +156,7 @@ class CmpNetCore(Learner):
             **kwd :
                 Keyword arguments for the fit function
         """
+        self.random_state_ = check_random_state(self.random_state)
         x1, x2, y_double = self._convert_instances_(X, Y)
 
         self.logger.debug("Instances created {}".format(x1.shape[0]))

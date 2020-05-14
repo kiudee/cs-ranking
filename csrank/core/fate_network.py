@@ -60,7 +60,7 @@ class FATENetworkCore(Learner):
                 Keyword arguments for the hidden units
         """
         self.logger = logging.getLogger(FATENetworkCore.__name__)
-        self.random_state = check_random_state(random_state)
+        self.random_state = random_state
 
         self.n_hidden_joint_layers = n_hidden_joint_layers
         self.n_hidden_joint_units = n_hidden_joint_units
@@ -500,6 +500,7 @@ class FATENetwork(FATENetworkCore):
             **kwargs :
                 Keyword arguments for the fit function
         """
+        self.random_state_ = check_random_state(self.random_state)
         self._fit(
             X=X,
             Y=Y,

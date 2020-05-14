@@ -101,7 +101,7 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
         self.alpha = alpha
         self.loss_function = likelihood_dict.get(loss_function, None)
 
-        self.random_state = check_random_state(random_state)
+        self.random_state = random_state
         if regularization in ["l1", "l2"]:
             self.regularization = regularization
         else:
@@ -261,9 +261,10 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
             -------
              model : pymc3 Model :class:`pm.Model`
         """
+        self.random_state_ = check_random_state(self.random_state)
         if np.prod(X.shape) > self.threshold:
             upper_bound = int(self.threshold / np.prod(X.shape[1:]))
-            indices = self.random_state.choice(X.shape[0], upper_bound, replace=False)
+            indices = self.random_state_.choice(X.shape[0], upper_bound, replace=False)
             X = X[indices, :, :]
             Y = Y[indices, :]
         self.logger.info(

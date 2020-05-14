@@ -98,7 +98,7 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         self.nests_indices = np.array(list(combinations(np.arange(n_objects), 2)))
         self.n_nests = len(self.nests_indices)
         self.alpha = alpha
-        self.random_state = check_random_state(random_state)
+        self.random_state = random_state
         self.loss_function = likelihood_dict.get(loss_function, None)
         if regularization in ["l1", "l2"]:
             self.regularization = regularization
@@ -329,6 +329,7 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
            **kwargs :
                Keyword arguments for the fit function of :meth:`pymc3.fit`or :meth:`pymc3.sample`
        """
+        self.random_state_ = check_random_state(self.random_state)
         self.construct_model(X, Y)
         fit_pymc3_model(self, sampler, draws, tune, vi_params, **kwargs)
 
