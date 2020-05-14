@@ -26,8 +26,7 @@ __all__ = ["ListNet"]
 class ListNet(Learner, ObjectRanker):
     def __init__(
         self,
-        n_object_features,
-        n_top,
+        n_top=1,
         n_hidden=2,
         n_units=8,
         loss_function=plackett_luce_loss,
@@ -53,8 +52,6 @@ class ListNet(Learner, ObjectRanker):
 
             Parameters
             ----------
-            n_object_features : int
-                Number of features of the object space
             n_top : int
                 Size of the top-k-subrankings to consider for training
             hash_file: str
@@ -90,8 +87,6 @@ class ListNet(Learner, ObjectRanker):
                 [1] Z. Cao, T. Qin, T. Liu, M. Tsai and H. Li. "Learning to Rank: From Pairwise Approach to Listwise Approach." ICML, 2007.
         """
         self.logger = logging.getLogger(ListNet.__name__)
-        self.n_object_features = n_object_features
-        self.n_objects = n_top
         self.n_top = n_top
         self.batch_normalization = batch_normalization
         self.activation = activation
@@ -108,12 +103,6 @@ class ListNet(Learner, ObjectRanker):
             if key not in allowed_dense_kwargs:
                 del kwargs[key]
         self.kwargs = kwargs
-        self._construct_layers(
-            kernel_regularizer=self.kernel_regularizer,
-            kernel_initializer=self.kernel_initializer,
-            activation=self.activation,
-            **self.kwargs
-        )
 
         self.threshold_instances = int(1e10)
         self.batch_size = batch_size
@@ -123,7 +112,7 @@ class ListNet(Learner, ObjectRanker):
         self._scoring_model = None
 
     def _construct_layers(self, **kwargs):
-        self.input_layer = Input(shape=(self.n_top, self.n_object_features))
+        self.input_layer = Input(shape=(self.n_top, self.n_object_features_fit_))
         self.output_node = Dense(
             1, activation="linear", kernel_regularizer=self.kernel_regularizer
         )
@@ -180,7 +169,13 @@ class ListNet(Learner, ObjectRanker):
                 Keyword arguments for the fit function
         """
         self.random_state_ = check_random_state(self.random_state)
-        self.n_objects = X.shape[1]
+        _n_instances, _n_objects, self.n_object_features_fit_ = X.shape
+        self._construct_layers(
+            kernel_regularizer=self.kernel_regularizer,
+            kernel_initializer=self.kernel_initializer,
+            activation=self.activation,
+            **self.kwargs
+        )
         self.logger.debug("Creating top-k dataset")
         X, Y = self._create_topk(X, Y)
         self.logger.debug("Finished creating the dataset")
@@ -236,7 +231,7 @@ class ListNet(Learner, ObjectRanker):
         """
         if self._scoring_model is None:
             self.logger.info("Creating scoring model")
-            inp = Input(shape=(self.n_object_features,))
+            inp = Input(shape=(self.n_object_features_fit_,))
             x = inp
             for hidden_layer in self.hidden_layers:
                 x = hidden_layer(x)
