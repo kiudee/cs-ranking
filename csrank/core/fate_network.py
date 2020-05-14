@@ -186,17 +186,13 @@ class FATENetworkCore(Learner):
 
 
 class FATENetwork(FATENetworkCore):
-    def __init__(
-        self, n_object_features, n_hidden_set_layers=1, n_hidden_set_units=1, **kwargs
-    ):
+    def __init__(self, n_hidden_set_layers=1, n_hidden_set_units=1, **kwargs):
         """
             Create a FATE-network architecture.
             Training and prediction complexity is linear in the number of objects.
 
             Parameters
             ----------
-            n_object_features : int
-                Dimensionality of the feature space of each object
             n_hidden_set_layers : int
                 Number of hidden set layers.
             n_hidden_set_units : int
@@ -209,7 +205,6 @@ class FATENetwork(FATENetworkCore):
 
         self.n_hidden_set_layers = n_hidden_set_layers
         self.n_hidden_set_units = n_hidden_set_units
-        self.n_object_features = n_object_features
         self.model = None
         self.set_layer = None
         self._create_set_layers(
@@ -271,7 +266,7 @@ class FATENetwork(FATENetworkCore):
 
     def _construct_models(self, buckets):
         models = dict()
-        n_features = self.n_object_features
+        n_features = self.n_object_features_fit_
 
         for n_objects in buckets.keys():
             model = self.construct_model(n_features, n_objects)
@@ -501,6 +496,7 @@ class FATENetwork(FATENetworkCore):
                 Keyword arguments for the fit function
         """
         self.random_state_ = check_random_state(self.random_state)
+        _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
         self._fit(
             X=X,
             Y=Y,
@@ -598,14 +594,14 @@ class FATENetwork(FATENetworkCore):
             "Test Set instances {} objects {} features {}".format(*X.shape)
         )
         input_layer_scorer = Input(
-            shape=(n_objects, self.n_object_features), name="input_node"
+            shape=(n_objects, self.n_object_features_fit_), name="input_node"
         )
         if self.n_hidden_set_layers >= 1:
             self.set_layer(input_layer_scorer)
             fr = self.set_layer.cached_models[n_objects].predict(X, **kwargs)
             del self.set_layer.cached_models[n_objects]
             X_n = np.empty(
-                (fr.shape[0], n_objects, fr.shape[1] + self.n_object_features),
+                (fr.shape[0], n_objects, fr.shape[1] + self.n_object_features_fit_),
                 dtype="float",
             )
             for i in range(n_objects):
@@ -681,7 +677,7 @@ class FATENetwork(FATENetworkCore):
                 kernel_regularizer=self.kernel_regularizer,
                 **self.kwargs
             )
-            self.model = self.construct_model(self.n_object_features, n_objects)
+            self.model = self.construct_model(self.n_object_features_fit_, n_objects)
             self.model.load_weights(self.hash_file)
         else:
             self.logger.info("Cannot clear the memory")
