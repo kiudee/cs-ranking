@@ -31,14 +31,7 @@ except ImportError:
 
 
 class MixedLogitModel(DiscreteObjectChooser, Learner):
-    def __init__(
-        self,
-        n_object_features,
-        n_mixtures=4,
-        loss_function="",
-        regularization="l2",
-        **kwargs
-    ):
+    def __init__(self, n_mixtures=4, loss_function="", regularization="l2", **kwargs):
         """
             Create an instance of the Mixed Logit model for learning the discrete choice function. In this model we
             assume weights of this model to be random due to which this model can learn different variations in choices
@@ -59,8 +52,6 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
 
             Parameters
             ----------
-            n_object_features : int
-                Number of features of the object space
             n_mixtures: int (range : [2, inf])
                 The number of logit models (:math:`R`) which are used to estimate the choice probability
             loss_function : string , {‘categorical_crossentropy’, ‘binary_crossentropy’, ’categorical_hinge’}
@@ -81,7 +72,6 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
                 [3] Daniel McFadden and Kenneth Train. „Mixed MNL models for discrete response“. In: Journal of applied Econometrics 15.5 (2000), pp. 447–470
         """
         self.logger = logging.getLogger(MixedLogitModel.__name__)
-        self.n_object_features = n_object_features
         self.loss_function = likelihood_dict.get(loss_function, None)
         if regularization in ["l1", "l2"]:
             self.regularization = regularization
@@ -166,7 +156,7 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
         with pm.Model() as self.model:
             self.Xt = theano.shared(X)
             self.Yt = theano.shared(Y)
-            shapes = {"weights": (self.n_object_features, self.n_mixtures)}
+            shapes = {"weights": (self.n_object_features_fit_, self.n_mixtures)}
             weights_dict = create_weight_dictionary(self.model_configuration, shapes)
             utility = tt.dot(self.Xt, weights_dict["weights"])
             self.p = tt.mean(ttu.softmax(utility, axis=1), axis=2)
@@ -225,13 +215,14 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
             **kwargs :
                 Keyword arguments for the fit function of :meth:`pymc3.fit`or :meth:`pymc3.sample`
         """
+        _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
         self.construct_model(X, Y)
         fit_pymc3_model(self, sampler, draws, tune, vi_params, **kwargs)
 
     def _predict_scores_fixed(self, X, **kwargs):
         summary = dict(pm.summary(self.trace)["mean"])
-        weights = np.zeros((self.n_object_features, self.n_mixtures))
-        for i, k in product(range(self.n_object_features), range(self.n_mixtures)):
+        weights = np.zeros((self.n_object_features_fit_, self.n_mixtures))
+        for i, k in product(range(self.n_object_features_fit_), range(self.n_mixtures)):
             weights[i][k] = summary["weights[{},{}]".format(i, k)]
         utility = np.dot(X, weights)
         p = np.mean(npu.softmax(utility, axis=1), axis=2)
