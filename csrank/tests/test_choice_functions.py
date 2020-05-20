@@ -92,7 +92,6 @@ def test_choice_function_fixed(trivial_choice_problem, name):
     x, y = trivial_choice_problem
     choice_function = choice_functions[name][0]
     params, accuracies = choice_functions[name][1], choice_functions[name][2]
-    params["n_objects"], params["n_object_features"] = tuple(x.shape[1:])
     learner = choice_function(**params)
     if name == GLM_CHOICE:
         learner.fit(

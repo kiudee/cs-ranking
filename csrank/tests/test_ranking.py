@@ -110,7 +110,6 @@ def test_object_ranker_fixed(trivial_ranking_problem, ranker_name):
     np.random.seed(123)
     x, y = trivial_ranking_problem
     ranker, params, (loss, acc) = object_rankers[ranker_name]
-    params["n_objects"], params["n_object_features"] = tuple(x.shape[1:])
     ranker = ranker(**params)
     if "linear" in ranker_name:
         ranker.fit(x, y, epochs=10, validation_split=0, verbose=False)
