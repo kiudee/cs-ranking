@@ -13,7 +13,6 @@ __all__ = ["RankNet"]
 class RankNet(RankNetCore, ObjectRanker):
     def __init__(
         self,
-        n_object_features,
         n_hidden=2,
         n_units=8,
         loss_function="binary_crossentropy",
@@ -40,8 +39,6 @@ class RankNet(RankNetCore, ObjectRanker):
 
             Parameters
             ----------
-            n_object_features : int
-                Number of features of the object space
             n_hidden : int
                 Number of hidden layers used in the scoring network
             n_units : int
@@ -76,7 +73,6 @@ class RankNet(RankNetCore, ObjectRanker):
 
         """
         super().__init__(
-            n_object_features=n_object_features,
             n_hidden=n_hidden,
             n_units=n_units,
             loss_function=loss_function,
@@ -91,11 +87,7 @@ class RankNet(RankNetCore, ObjectRanker):
             **kwargs
         )
         self.logger = logging.getLogger(RankNet.__name__)
-        self.logger.info(
-            "Initializing network with object features {}".format(
-                self.n_object_features
-            )
-        )
+        self.logger.info("Initializing network")
 
     def construct_model(self):
         return super().construct_model()
