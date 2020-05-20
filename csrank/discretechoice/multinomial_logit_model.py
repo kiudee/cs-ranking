@@ -29,9 +29,7 @@ except ImportError:
 
 
 class MultinomialLogitModel(DiscreteObjectChooser, Learner):
-    def __init__(
-        self, n_object_features, loss_function="", regularization="l2", **kwargs
-    ):
+    def __init__(self, loss_function="", regularization="l2", **kwargs):
         """
             Create an instance of the Multinomial Logit model for learning the discrete choice function. The utility
             score for each object in query set :math:`Q` is defined as :math:`U(x) = w \\cdot x`, where :math:`w` is
@@ -50,8 +48,6 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
 
             Parameters
             ----------
-            n_object_features : int
-                Number of features of the object space
             loss_function : string , {‘categorical_crossentropy’, ‘binary_crossentropy’, ’categorical_hinge’}
                 Loss function to be used for the discrete choice decision from the query set
             regularization : string, {‘l1’, ‘l2’}, string
@@ -68,7 +64,6 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
                 [2] Kenneth Train. Qualitative choice analysis. Cambridge, MA: MIT Press, 1986
         """
         self.logger = logging.getLogger(MultinomialLogitModel.__name__)
-        self.n_object_features = n_object_features
         self.loss_function = likelihood_dict.get(loss_function, None)
         if regularization in ["l1", "l2"]:
             self.regularization = regularization
@@ -157,8 +152,8 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
         with pm.Model() as self.model:
             self.Xt = theano.shared(X)
             self.Yt = theano.shared(Y)
-            shapes = {"weights": self.n_object_features}
-            # shapes = {'weights': (self.n_object_features, 3)}
+            shapes = {"weights": self.n_object_features_fit_}
+            # shapes = {'weights': (self.n_object_features_fit_, 3)}
             weights_dict = create_weight_dictionary(self.model_configuration, shapes)
             intercept = pm.Normal("intercept", mu=0, sd=10)
             utility = tt.dot(self.Xt, weights_dict["weights"]) + intercept
@@ -219,6 +214,7 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
             **kwargs :
                 Keyword arguments for the fit function of :meth:`pymc3.fit`or :meth:`pymc3.sample`
         """
+        _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
         self.construct_model(X, Y)
         fit_pymc3_model(self, sampler, draws, tune, vi_params, **kwargs)
 
@@ -226,7 +222,7 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
         d = dict(pm.summary(self.trace)["mean"])
         intercept = 0.0
         weights = np.array(
-            [d["weights[{}]".format(i)] for i in range(self.n_object_features)]
+            [d["weights[{}]".format(i)] for i in range(self.n_object_features_fit_)]
         )
         if "intercept" in d:
             intercept = intercept + d["intercept"]
