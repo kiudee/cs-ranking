@@ -22,7 +22,6 @@ from csrank.util import print_dictionary
 class CmpNetCore(Learner):
     def __init__(
         self,
-        n_object_features,
         n_hidden=2,
         n_units=8,
         loss_function="binary_crossentropy",
@@ -37,7 +36,6 @@ class CmpNetCore(Learner):
         **kwargs
     ):
         self.logger = logging.getLogger("CmpNet")
-        self.n_object_features = n_object_features
         self.batch_normalization = batch_normalization
         self.activation = activation
         self.hash_file = None
@@ -62,20 +60,15 @@ class CmpNetCore(Learner):
         self.threshold_instances = int(1e10)
         self.random_state = random_state
         self.model = None
-        self._construct_layers(
-            kernel_regularizer=self.kernel_regularizer,
-            kernel_initializer=self.kernel_initializer,
-            activation=self.activation,
-            **self.kwargs
-        )
 
     def _construct_layers(self, **kwargs):
 
         self.output_node = Dense(
             1, activation="sigmoid", kernel_regularizer=self.kernel_regularizer
         )
-        self.x1 = Input(shape=(self.n_object_features,))
-        self.x2 = Input(shape=(self.n_object_features,))
+
+        self.x1 = Input(shape=(self.n_object_features_fit_,))
+        self.x2 = Input(shape=(self.n_object_features_fit_,))
         if self.batch_normalization:
             self.hidden_layers = [
                 NormalizedDense(self.n_units, name="hidden_{}".format(x), **kwargs)
@@ -157,9 +150,16 @@ class CmpNetCore(Learner):
                 Keyword arguments for the fit function
         """
         self.random_state_ = check_random_state(self.random_state)
+        _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
         x1, x2, y_double = self._convert_instances_(X, Y)
 
         self.logger.debug("Instances created {}".format(x1.shape[0]))
+        self._construct_layers(
+            kernel_regularizer=self.kernel_regularizer,
+            kernel_initializer=self.kernel_initializer,
+            activation=self.activation,
+            **self.kwargs
+        )
         self.model = self.construct_model()
 
         self.logger.debug("Finished Creating the model, now fitting started")
