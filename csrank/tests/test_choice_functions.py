@@ -27,7 +27,12 @@ choice_metrics = {
     "Informedness": instance_informedness,
     "AucScore": auc_score,
 }
-optimizer = SGD(lr=1e-3, momentum=0.9, nesterov=True)
+optimizer_common_args = {
+    "optimizer": SGD,
+    "optimizer__lr": 1e-3,
+    "optimizer__momentum": 0.9,
+    "optimizer__nesterov": True,
+}
 
 
 def get_vals(values):
@@ -37,7 +42,7 @@ def get_vals(values):
 choice_functions = {
     FETA_CHOICE: (
         FETAChoiceFunction,
-        {"add_zeroth_order_model": True, "optimizer": optimizer},
+        {"add_zeroth_order_model": True, **optimizer_common_args},
         get_vals([0.946, 0.9684, 0.9998]),
     ),
     FATE_CHOICE: (
@@ -47,7 +52,7 @@ choice_functions = {
             "n_hidden_set_layers": 1,
             "n_hidden_joint_units": 5,
             "n_hidden_set_units": 5,
-            "optimizer": optimizer,
+            **optimizer_common_args,
         },
         get_vals([0.8185, 0.6070, 0.9924]),
     ),
@@ -63,12 +68,12 @@ choice_functions = {
     ),
     RANKNET_CHOICE: (
         RankNetChoiceFunction,
-        {"optimizer": optimizer},
+        optimizer_common_args.copy(),
         get_vals([0.9522, 0.9866, 1.0]),
     ),
     CMPNET_CHOICE: (
         CmpNetChoiceFunction,
-        {"optimizer": optimizer},
+        optimizer_common_args.copy(),
         get_vals([0.8554, 0.8649, 0.966]),
     ),
     GLM_CHOICE: (GeneralizedLinearModel, {}, get_vals([0.9567, 0.9955, 1.0])),

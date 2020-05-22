@@ -9,6 +9,10 @@ Unreleased
   particular, the parameters nesterov, momentum and lr are now set to the
   default values set by keras.
 
+* All optimizers must now be passed in uninitialized. Optimizer parameters can
+  be set by passing `optimizer__{kwarg}` parameters to the learner. This
+  follows the scikit-learn and skorch standard.
+
 1.2.1 (2020-06-08)
 ------------------
 

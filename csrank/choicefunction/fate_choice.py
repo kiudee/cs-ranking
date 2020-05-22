@@ -21,7 +21,7 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
         activation="selu",
         kernel_initializer="lecun_normal",
         kernel_regularizer=l2(0.01),
-        optimizer=SGD(),
+        optimizer=SGD,
         batch_size=256,
         metrics=None,
         random_state=None,
@@ -63,8 +63,10 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
                 Initialization function for the weights of each hidden layer
             kernel_regularizer : function or string
                 Regularizer to use in the hidden units
-            optimizer : string or function
-                Stochastic gradient optimizer
+            optimizer: Class
+                Uninitialized optimizer class following the keras optimizer interface.
+            optimizer__{kwarg}
+                Arguments to be passed to the optimizer on initialization, such as optimizer__lr.
             batch_size : int
                 Batch size to use for training
             loss_function : function

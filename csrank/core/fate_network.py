@@ -1,6 +1,5 @@
 import logging
 
-from keras import optimizers
 import keras.backend as K
 from keras.layers import Dense
 from keras.layers import Input
@@ -29,7 +28,7 @@ class FATENetworkCore(Learner):
         activation="selu",
         kernel_initializer="lecun_normal",
         kernel_regularizer=l2(0.01),
-        optimizer=SGD(),
+        optimizer=SGD,
         batch_size=256,
         random_state=None,
         **kwargs,
@@ -50,8 +49,10 @@ class FATENetworkCore(Learner):
                 Initialization function for the weights of each hidden layer
             kernel_regularizer : function or string
                 Regularizer to use in the hidden units
-            optimizer : string or function
-                Stochastic gradient optimizer
+            optimizer: Class
+                Uninitialized optimizer class following the keras optimizer interface.
+            optimizer__{kwarg}
+                Arguments to be passed to the optimizer on initialization, such as optimizer__lr.
             batch_size : int
                 Batch size to use for training
             random_state : int or object
@@ -69,8 +70,7 @@ class FATENetworkCore(Learner):
         self.kernel_initializer = kernel_initializer
         self.kernel_regularizer = kernel_regularizer
         self.batch_size = batch_size
-        self.optimizer = optimizers.get(optimizer)
-        self._optimizer_config = self.optimizer.get_config()
+        self.optimizer = optimizer
         self.joint_layers = None
         self.scorer = None
         keys = list(kwargs.keys())
@@ -78,6 +78,7 @@ class FATENetworkCore(Learner):
             if key not in allowed_dense_kwargs:
                 del kwargs[key]
         self.kwargs = kwargs
+        self._initialize_optimizer()
         self._construct_layers(
             activation=self.activation,
             kernel_initializer=self.kernel_initializer,
@@ -167,8 +168,8 @@ class FATENetworkCore(Learner):
         self.kernel_regularizer = l2(reg_strength)
         self.batch_size = batch_size
         # Hack to fix memory leak:
-        self.optimizer = self.optimizer.from_config(self._optimizer_config)
-        K.set_value(self.optimizer.lr, learning_rate)
+        self._initialize_optimizer()
+        K.set_value(self.optimizer_.lr, learning_rate)
 
         self._construct_layers(
             activation=self.activation,
@@ -474,7 +475,7 @@ class FATENetwork(FATENetworkCore):
         model = Model(inputs=input_layer, outputs=scores)
 
         model.compile(
-            loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics
+            loss=self.loss_function, optimizer=self.optimizer_, metrics=self.metrics
         )
         return model
 
@@ -536,6 +537,7 @@ class FATENetwork(FATENetworkCore):
         """
         self.random_state_ = check_random_state(self.random_state)
         _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
+        self._initialize_optimizer()
         self._fit(
             X=X,
             Y=Y,
@@ -703,7 +705,7 @@ class FATENetwork(FATENetworkCore):
             K.clear_session()
             sess = tf.Session()
             K.set_session(sess)
-            self.optimizer = self.optimizer.from_config(self._optimizer_config)
+            self._initialize_optimizer()
             self._construct_layers(
                 activation=self.activation,
                 kernel_initializer=self.kernel_initializer,

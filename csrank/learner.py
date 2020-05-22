@@ -4,7 +4,21 @@ from abc import abstractmethod
 from csrank.tunable import Tunable
 
 
+def filter_dict_by_prefix(source, prefix):
+    result = dict()
+    for key in source.keys():
+        if key.startswith(prefix):
+            key_stripped = key[len(prefix) :]
+            result[key_stripped] = source[key]
+    return result
+
+
 class Learner(Tunable, metaclass=ABCMeta):
+    def _initialize_optimizer(self):
+        optimizer_params = filter_dict_by_prefix(self.__dict__, "optimizer__")
+        optimizer_params.update(filter_dict_by_prefix(self.kwargs, "optimizer__"))
+        self.optimizer_ = self.optimizer(**optimizer_params)
+
     @abstractmethod
     def fit(self, X, Y, **kwargs):
         """

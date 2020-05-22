@@ -19,7 +19,7 @@ class FATEObjectRanker(FATENetwork, ObjectRanker):
         activation="selu",
         kernel_initializer="lecun_normal",
         kernel_regularizer=l2(0.01),
-        optimizer=SGD(),
+        optimizer=SGD,
         batch_size=256,
         loss_function=hinged_rank_loss,
         metrics=[zero_one_rank_loss_for_scores_ties],
@@ -61,8 +61,10 @@ class FATEObjectRanker(FATENetwork, ObjectRanker):
                 Initialization function for the weights of each hidden layer
             kernel_regularizer : function or string
                 Regularizer to use in the hidden units
-            optimizer : string or function
-                Stochastic gradient optimizer
+            optimizer: Class
+                Uninitialized optimizer class following the keras optimizer interface.
+            optimizer__{kwarg}
+                Arguments to be passed to the optimizer on initialization, such as optimizer__lr.
             batch_size : int
                 Batch size to use for training
             loss_function : function

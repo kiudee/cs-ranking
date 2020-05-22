@@ -3,7 +3,6 @@ import logging
 from keras import backend as K
 from keras import Input
 from keras import Model
-from keras import optimizers
 from keras.layers import add
 from keras.layers import Dense
 from keras.layers import Lambda
@@ -28,7 +27,7 @@ class RankNetCore(Learner):
         kernel_regularizer=l2(1e-4),
         kernel_initializer="lecun_normal",
         activation="relu",
-        optimizer=SGD(),
+        optimizer=SGD,
         metrics=["binary_accuracy"],
         batch_size=256,
         random_state=None,
@@ -41,8 +40,7 @@ class RankNetCore(Learner):
         self.kernel_regularizer = kernel_regularizer
         self.kernel_initializer = kernel_initializer
         self.loss_function = loss_function
-        self.optimizer = optimizers.get(optimizer)
-        self._optimizer_config = self.optimizer.get_config()
+        self.optimizer = optimizer
         self.n_hidden = n_hidden
         self.n_units = n_units
         keys = list(kwargs.keys())
@@ -101,7 +99,7 @@ class RankNetCore(Learner):
         output = self.output_node(merged_inputs)
         model = Model(inputs=[self.x1, self.x2], outputs=output)
         model.compile(
-            loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics
+            loss=self.loss_function, optimizer=self.optimizer_, metrics=self.metrics
         )
         return model
 
@@ -147,6 +145,7 @@ class RankNetCore(Learner):
         self.logger.debug("Instances created {}".format(X1.shape[0]))
         self.logger.debug("Creating the model")
 
+        self._initialize_optimizer()
         self._construct_layers(
             kernel_regularizer=self.kernel_regularizer,
             kernel_initializer=self.kernel_initializer,
@@ -217,7 +216,7 @@ class RankNetCore(Learner):
             K.set_session(sess)
 
             self._scoring_model = None
-            self.optimizer = self.optimizer.from_config(self._optimizer_config)
+            self._initialize_optimizer()
             self._construct_layers(
                 kernel_regularizer=self.kernel_regularizer,
                 kernel_initializer=self.kernel_initializer,
@@ -260,8 +259,8 @@ class RankNetCore(Learner):
         self.n_units = n_units
         self.kernel_regularizer = l2(reg_strength)
         self.batch_size = batch_size
-        self.optimizer = self.optimizer.from_config(self._optimizer_config)
-        K.set_value(self.optimizer.lr, learning_rate)
+        self._initialize_optimizer()
+        K.set_value(self.optimizer_.lr, learning_rate)
         self._scoring_model = None
         self._construct_layers(
             kernel_regularizer=self.kernel_regularizer,
