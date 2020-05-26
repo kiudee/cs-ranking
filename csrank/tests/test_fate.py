@@ -32,7 +32,7 @@ def test_construction_core():
         def fit(self, *args, **kwargs):
             pass
 
-    grc = MockClass(n_objects=n_objects, n_features=n_features)
+    grc = MockClass()
     grc._construct_layers(
         activation=grc.activation,
         kernel_initializer=grc.kernel_initializer,
@@ -87,7 +87,6 @@ def test_fate_object_ranker_fixed_generator():
             yield x, y_true
 
     fate = FATEObjectRanker(
-        n_object_features=1,
         n_hidden_joint_layers=1,
         n_hidden_set_layers=1,
         n_hidden_joint_units=5,

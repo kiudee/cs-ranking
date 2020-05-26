@@ -26,8 +26,6 @@ from csrank.util import print_dictionary
 class FETANetwork(Learner):
     def __init__(
         self,
-        n_objects,
-        n_object_features,
         n_hidden=2,
         n_units=8,
         add_zeroth_order_model=False,
@@ -52,10 +50,8 @@ class FETANetwork(Learner):
         self.activation = activation
         self.loss_function = loss_function
         self.metrics = metrics
-        self._n_objects = n_objects
         self.max_number_of_objects = max_number_of_objects
         self.num_subsample = num_subsample
-        self.n_object_features = n_object_features
         self.batch_size = batch_size
         self.hash_file = None
         self.optimizer = optimizers.get(optimizer)
@@ -68,24 +64,20 @@ class FETANetwork(Learner):
             if key not in allowed_dense_kwargs:
                 del kwargs[key]
         self.kwargs = kwargs
-        self._construct_layers(
-            kernel_regularizer=self.kernel_regularizer,
-            kernel_initializer=self.kernel_initializer,
-            activation=self.activation,
-            **self.kwargs
-        )
         self._pairwise_model = None
         self.model = None
         self._zero_order_model = None
 
     @property
     def n_objects(self):
-        if self._n_objects > self.max_number_of_objects:
+        if self.n_objects_fit_ > self.max_number_of_objects:
             return self.max_number_of_objects
-        return self._n_objects
+        return self.n_objects_fit_
 
     def _construct_layers(self, **kwargs):
-        self.input_layer = Input(shape=(self.n_objects, self.n_object_features))
+        self.input_layer = Input(
+            shape=(self.n_objects_fit_, self.n_object_features_fit_)
+        )
         # Todo: Variable sized input
         # X = Input(shape=(None, n_features))
         self.logger.info("n_hidden {}, n_units {}".format(self.n_hidden, self.n_units))
@@ -124,7 +116,7 @@ class FETANetwork(Learner):
     def zero_order_model(self):
         if self._zero_order_model is None and self._use_zeroth_model:
             self.logger.info("Creating zeroth model")
-            inp = Input(shape=(self.n_object_features,))
+            inp = Input(shape=(self.n_object_features_fit_,))
 
             x = inp
             for hidden in self.hidden_layers_zeroth:
@@ -139,8 +131,8 @@ class FETANetwork(Learner):
     def pairwise_model(self):
         if self._pairwise_model is None:
             self.logger.info("Creating pairwise model")
-            x1 = Input(shape=(self.n_object_features,))
-            x2 = Input(shape=(self.n_object_features,))
+            x1 = Input(shape=(self.n_object_features_fit_,))
+            x2 = Input(shape=(self.n_object_features_fit_,))
 
             x1x2 = concatenate([x1, x2])
             x2x1 = concatenate([x2, x1])
@@ -213,7 +205,7 @@ class FETANetwork(Learner):
             self.logger.debug("Create 0th order model")
             zeroth_order_outputs = []
             inputs = []
-            for i in range(self.n_objects):
+            for i in range(self.n_objects_fit_):
                 x = create_input_lambda(i)(self.input_layer)
                 inputs.append(x)
                 for hidden in self.hidden_layers_zeroth:
@@ -222,8 +214,8 @@ class FETANetwork(Learner):
             zeroth_order_scores = concatenate(zeroth_order_outputs)
             self.logger.debug("0th order model finished")
         self.logger.debug("Create 1st order model")
-        outputs = [list() for _ in range(self.n_objects)]
-        for i, j in combinations(range(self.n_objects), 2):
+        outputs = [list() for _ in range(self.n_objects_fit_)]
+        for i, j in combinations(range(self.n_objects_fit_), 2):
             if self._use_zeroth_model:
                 x1 = inputs[i]
                 x2 = inputs[j]
@@ -289,6 +281,14 @@ class FETANetwork(Learner):
             **kwd :
                 Keyword arguments for the fit function
         """
+        _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
+        self._construct_layers(
+            kernel_regularizer=self.kernel_regularizer,
+            kernel_initializer=self.kernel_initializer,
+            activation=self.activation,
+            **self.kwargs
+        )
+
         self.logger.debug("Enter fit function...")
         self.random_state_ = check_random_state(self.random_state)
 
@@ -310,18 +310,20 @@ class FETANetwork(Learner):
             self.model.save_weights(self.hash_file)
 
     def sub_sampling(self, X, Y):
-        if self._n_objects > self.max_number_of_objects:
-            bucket_size = int(self._n_objects / self.max_number_of_objects)
-            idx = self.random_state_.randint(bucket_size, size=(len(X), self.n_objects))
+        if self.n_objects_fit_ > self.max_number_of_objects:
+            bucket_size = int(self.n_objects_fit_ / self.max_number_of_objects)
+            idx = self.random_state_.randint(
+                bucket_size, size=(len(X), self.n_objects_fit_)
+            )
             # TODO: subsampling multiple rankings
-            idx += np.arange(start=0, stop=self._n_objects, step=bucket_size)[
-                : self.n_objects
+            idx += np.arange(start=0, stop=self.n_objects_fit_, step=bucket_size)[
+                : self.n_objects_fit_
             ]
             X = X[np.arange(X.shape[0])[:, None], idx]
             Y = Y[np.arange(X.shape[0])[:, None], idx]
             tmp_sort = Y.argsort(axis=-1)
             Y = np.empty_like(Y)
-            Y[np.arange(len(X))[:, None], tmp_sort] = np.arange(self.n_objects)
+            Y[np.arange(len(X))[:, None], tmp_sort] = np.arange(self.n_objects_fit_)
         return X, Y
 
     def _predict_scores_fixed(self, X, **kwargs):
@@ -329,7 +331,7 @@ class FETANetwork(Learner):
         self.logger.info(
             "For Test instances {} objects {} features {}".format(*X.shape)
         )
-        if self.n_objects != n_objects:
+        if self.n_objects_fit_ != n_objects:
             scores = self._predict_scores_using_pairs(X, **kwargs)
         else:
             scores = self.model.predict(X, **kwargs)

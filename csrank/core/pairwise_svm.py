@@ -13,7 +13,6 @@ from csrank.util import print_dictionary
 class PairwiseSVM(Learner):
     def __init__(
         self,
-        n_object_features,
         C=1.0,
         tol=1e-4,
         normalize=True,
@@ -25,8 +24,6 @@ class PairwiseSVM(Learner):
 
         Parameters
         ----------
-        n_object_features : int
-            Number of features of the object space
         C : float, optional
             Penalty parameter of the error term
         tol : float, optional
@@ -45,7 +42,6 @@ class PairwiseSVM(Learner):
             [1] Joachims, T. (2002, July). "Optimizing search engines using clickthrough data.", Proceedings of the eighth ACM SIGKDD international conference on Knowledge discovery and data mining (pp. 133-142). ACM.
         """
         self.normalize = normalize
-        self.n_object_features = n_object_features
         self.C = C
         self.tol = tol
         self.logger = logging.getLogger("RankSVM")
@@ -71,6 +67,7 @@ class PairwiseSVM(Learner):
 
         """
         self.random_state_ = check_random_state(self.random_state)
+        _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
         x_train, y_single = self._convert_instances_(X, Y)
         if x_train.shape[0] > self.threshold_instances:
             self.model = LogisticRegression(
@@ -101,7 +98,7 @@ class PairwiseSVM(Learner):
         self.logger.debug("Fitting Complete")
 
     def _predict_scores_fixed(self, X, **kwargs):
-        assert X.shape[-1] == self.n_object_features
+        assert X.shape[-1] == self.n_object_features_fit_
         self.logger.info(
             "For Test instances {} objects {} features {}".format(*X.shape)
         )

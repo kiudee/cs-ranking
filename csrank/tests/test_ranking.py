@@ -70,8 +70,8 @@ def check_params_tunable(tunable_obj, params, rtol=1e-2, atol=1e-4):
                     isinstance(tunable_obj, PairedCombinatorialLogit)
                     and key == "n_nests"
                 ):
-                    tunable_obj.n_nests == tunable_obj.n_objects * (
-                        tunable_obj.n_objects - 1
+                    tunable_obj.n_nests == tunable_obj.n_objects_fit_ * (
+                        tunable_obj.n_objects_fit_ - 1
                     ) / 2
                 else:
                     assert np.isclose(
@@ -110,7 +110,6 @@ def test_object_ranker_fixed(trivial_ranking_problem, ranker_name):
     np.random.seed(123)
     x, y = trivial_ranking_problem
     ranker, params, (loss, acc) = object_rankers[ranker_name]
-    params["n_objects"], params["n_object_features"] = tuple(x.shape[1:])
     ranker = ranker(**params)
     if "linear" in ranker_name:
         ranker.fit(x, y, epochs=10, validation_split=0, verbose=False)

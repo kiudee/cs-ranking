@@ -13,7 +13,6 @@ __all__ = ["CmpNet"]
 class CmpNet(CmpNetCore, ObjectRanker):
     def __init__(
         self,
-        n_object_features,
         n_hidden=2,
         n_units=8,
         loss_function="binary_crossentropy",
@@ -50,8 +49,6 @@ class CmpNet(CmpNetCore, ObjectRanker):
 
            Parameters
            ----------
-           n_object_features : int
-               Number of features of the object space
            n_hidden : int
                Number of hidden layers used in the scoring network
            n_units : int
@@ -83,7 +80,6 @@ class CmpNet(CmpNetCore, ObjectRanker):
                 [1] Leonardo Rigutini, Tiziano Papini, Marco Maggini, and Franco Scarselli. 2011. SortNet: Learning to Rank by a Neural Preference Function. IEEE Trans. Neural Networks 22, 9 (2011), 1368–1380. https://doi.org/10.1109/TNN.2011.2160875
         """
         super().__init__(
-            n_object_features=n_object_features,
             n_hidden=n_hidden,
             n_units=n_units,
             loss_function=loss_function,
@@ -98,11 +94,7 @@ class CmpNet(CmpNetCore, ObjectRanker):
             **kwargs
         )
         self.logger = logging.getLogger(CmpNet.__name__)
-        self.logger.info(
-            "Initializing network with object features {}".format(
-                self.n_object_features
-            )
-        )
+        self.logger.info("Initializing network")
 
     def _convert_instances_(self, X, Y):
         self.logger.debug("Creating the Dataset")

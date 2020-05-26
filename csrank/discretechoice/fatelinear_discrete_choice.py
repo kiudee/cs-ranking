@@ -9,8 +9,6 @@ from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 class FATELinearDiscreteChoiceFunction(FATELinearCore, DiscreteObjectChooser):
     def __init__(
         self,
-        n_object_features,
-        n_objects,
         n_hidden_set_units=2,
         loss_function=categorical_hinge,
         learning_rate=1e-3,
@@ -40,10 +38,6 @@ class FATELinearDiscreteChoiceFunction(FATELinearCore, DiscreteObjectChooser):
 
             Parameters
             ----------
-            n_object_features : int
-                Dimensionality of the feature space of each object
-            n_objects : int
-                Number of objects in each choice set
             n_hidden_set_units : int
                 Number of hidden set units.
             batch_size : int
@@ -56,8 +50,6 @@ class FATELinearDiscreteChoiceFunction(FATELinearCore, DiscreteObjectChooser):
                 Keyword arguments for the @FATENetwork
         """
         super().__init__(
-            n_object_features=n_object_features,
-            n_objects=n_objects,
             n_hidden_set_units=n_hidden_set_units,
             learning_rate=learning_rate,
             batch_size=batch_size,

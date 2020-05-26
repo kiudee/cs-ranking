@@ -10,7 +10,6 @@ from .util import generate_complete_pairwise_dataset
 class PairwiseSVMChoiceFunction(PairwiseSVM, ChoiceFunctions):
     def __init__(
         self,
-        n_object_features,
         C=1.0,
         tol=1e-4,
         normalize=True,
@@ -30,8 +29,6 @@ class PairwiseSVMChoiceFunction(PairwiseSVM, ChoiceFunctions):
 
             Parameters
             ----------
-            n_object_features : int
-                Number of features of the object space
             C : float, optional
                 Penalty parameter of the error term
             tol : float, optional
@@ -54,7 +51,6 @@ class PairwiseSVMChoiceFunction(PairwiseSVM, ChoiceFunctions):
 
         """
         super().__init__(
-            n_object_features=n_object_features,
             C=C,
             tol=tol,
             normalize=normalize,
@@ -63,11 +59,7 @@ class PairwiseSVMChoiceFunction(PairwiseSVM, ChoiceFunctions):
             **kwargs
         )
         self.logger = logging.getLogger(PairwiseSVMChoiceFunction.__name__)
-        self.logger.info(
-            "Initializing network with object features {}".format(
-                self.n_object_features
-            )
-        )
+        self.logger.info("Initializing network")
         self.threshold = 0.5
 
     def _convert_instances_(self, X, Y):
@@ -80,7 +72,7 @@ class PairwiseSVMChoiceFunction(PairwiseSVM, ChoiceFunctions):
             y_single,
         ) = generate_complete_pairwise_dataset(X, Y)
         del garbage
-        assert x_train.shape[1] == self.n_object_features
+        assert x_train.shape[1] == self.n_object_features_fit_
         self.logger.debug(
             "Finished the Dataset with instances {}".format(x_train.shape[0])
         )
@@ -107,6 +99,7 @@ class PairwiseSVMChoiceFunction(PairwiseSVM, ChoiceFunctions):
                 Keyword arguments for the fit function
 
         """
+        _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
         if tune_size > 0:
             X_train, X_val, Y_train, Y_val = train_test_split(
                 X, Y, test_size=tune_size, random_state=self.random_state

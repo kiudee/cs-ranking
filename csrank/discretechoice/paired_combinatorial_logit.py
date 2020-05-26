@@ -34,8 +34,6 @@ except ImportError:
 class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
     def __init__(
         self,
-        n_object_features,
-        n_objects,
         loss_function="",
         regularization="l2",
         alpha=5e-2,
@@ -67,8 +65,6 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
 
             Parameters
             ----------
-            n_object_features : int
-                Number of features of the object space
             n_objects: int
                 Number of objects in each query set
             n_nests : int range : [2,n_objects/2]
@@ -93,10 +89,6 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
                 [3] Chaushie Chu. „A paired combinatorial logit model for travel demand analysis“. In: Proceedings of the fifth world conference on transportation research. Vol. 4.1989, pp. 295–309
         """
         self.logger = logging.getLogger(PairedCombinatorialLogit.__name__)
-        self.n_object_features = n_object_features
-        self.n_objects = n_objects
-        self.nests_indices = np.array(list(combinations(np.arange(n_objects), 2)))
-        self.n_nests = len(self.nests_indices)
         self.alpha = alpha
         self.random_state = random_state
         self.loss_function = likelihood_dict.get(loss_function, None)
@@ -194,7 +186,7 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
                 Choice probabilities :math:`P_i` of the objects :math:`x_i \\in Q` in the query sets
 
         """
-        n_objects = self.n_objects
+        n_objects = self.n_objects_fit_
         nests_indices = self.nests_indices
         n_nests = self.n_nests
         lambdas = tt.ones((n_objects, n_objects), dtype=np.float)
@@ -220,7 +212,7 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         return p
 
     def _get_probabilities_np(self, utility, lambda_k):
-        n_objects = self.n_objects
+        n_objects = self.n_objects_fit_
         nests_indices = self.nests_indices
         n_nests = self.n_nests
         temp_lambdas = np.ones((n_objects, n_objects), lambda_k.dtype)
@@ -269,7 +261,7 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         with pm.Model() as self.model:
             self.Xt = theano.shared(X)
             self.Yt = theano.shared(Y)
-            shapes = {"weights": self.n_object_features}
+            shapes = {"weights": self.n_object_features_fit_}
             weights_dict = create_weight_dictionary(self.model_configuration, shapes)
             lambda_k = pm.Uniform("lambda_k", self.alpha, 1.0, shape=self.n_nests)
             utility = tt.dot(self.Xt, weights_dict["weights"])
@@ -330,13 +322,21 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
                Keyword arguments for the fit function of :meth:`pymc3.fit`or :meth:`pymc3.sample`
        """
         self.random_state_ = check_random_state(self.random_state)
+        _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
+        self.nests_indices = np.array(
+            list(combinations(np.arange(self.n_objects_fit_), 2))
+        )
+        self.n_nests = len(self.nests_indices)
         self.construct_model(X, Y)
         fit_pymc3_model(self, sampler, draws, tune, vi_params, **kwargs)
 
     def _predict_scores_fixed(self, X, **kwargs):
         mean_trace = dict(pm.summary(self.trace)["mean"])
         weights = np.array(
-            [mean_trace["weights[{}]".format(i)] for i in range(self.n_object_features)]
+            [
+                mean_trace["weights[{}]".format(i)]
+                for i in range(self.n_object_features_fit_)
+            ]
         )
         lambda_k = np.array(
             [mean_trace["lambda_k[{}]".format(i)] for i in range(self.n_nests)]

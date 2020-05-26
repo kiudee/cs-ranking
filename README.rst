@@ -50,7 +50,7 @@ method:
 
 .. code-block:: python
 
-   fate = cs.FATEChoiceFunction(n_object_features=2)
+   fate = cs.FATEChoiceFunction()
    fate.fit(X_train, Y_train)
 
 Predictions can then be obtained using:

@@ -18,7 +18,6 @@ __all__ = ["ExpectedRankRegression"]
 class ExpectedRankRegression(ObjectRanker, Learner):
     def __init__(
         self,
-        n_object_features,
         alpha=0.0,
         l1_ratio=0.5,
         tol=1e-4,
@@ -46,8 +45,6 @@ class ExpectedRankRegression(ObjectRanker, Learner):
 
             Parameters
             ----------
-            n_object_features : int
-                Number of features of the object space
             alpha : float, optional
                 Regularization strength
             l1_ratio : float, optional
@@ -68,7 +65,6 @@ class ExpectedRankRegression(ObjectRanker, Learner):
                 [1] Kamishima, T., Kazawa, H., & Akaho, S. (2005, November). "Supervised ordering-an empirical survey.", Fifth IEEE International Conference on Data Mining.
         """
         self.normalize = normalize
-        self.n_object_features = n_object_features
         self.alpha = alpha
         self.l1_ratio = l1_ratio
         self.tol = tol
@@ -96,7 +92,6 @@ class ExpectedRankRegression(ObjectRanker, Learner):
         self.random_state_ = check_random_state(self.random_state)
         self.logger.debug("Creating the Dataset")
         x_train, y_train = complete_linear_regression_dataset(X, Y)
-        assert x_train.shape[1] == self.n_object_features
         self.logger.debug("Finished the Dataset")
         if self.alpha < 1e-3:
             self.model = LinearRegression(

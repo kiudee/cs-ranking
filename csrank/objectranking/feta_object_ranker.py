@@ -13,8 +13,6 @@ __all__ = ["FETAObjectRanker"]
 class FETAObjectRanker(FETANetwork, ObjectRanker):
     def __init__(
         self,
-        n_objects,
-        n_object_features,
         n_hidden=2,
         n_units=8,
         add_zeroth_order_model=False,
@@ -49,10 +47,6 @@ class FETAObjectRanker(FETANetwork, ObjectRanker):
 
             Parameters
             ----------
-            n_objects : int
-                Number of objects to be ranked
-            n_object_features : int
-                Dimensionality of the feature space of each object
             n_hidden : int
                 Number of hidden layers
             n_units : int
@@ -85,8 +79,6 @@ class FETAObjectRanker(FETANetwork, ObjectRanker):
                 Keyword arguments for the hidden units
         """
         super().__init__(
-            n_objects=n_objects,
-            n_object_features=n_object_features,
             n_hidden=n_hidden,
             n_units=n_units,
             add_zeroth_order_model=add_zeroth_order_model,

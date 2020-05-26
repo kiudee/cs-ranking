@@ -34,8 +34,6 @@ except ImportError:
 class NestedLogitModel(DiscreteObjectChooser, Learner):
     def __init__(
         self,
-        n_object_features,
-        n_objects,
         n_nests=None,
         loss_function="",
         regularization="l1",
@@ -66,12 +64,10 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
 
             Parameters
             ----------
-            n_object_features : int
-                Number of features of the object space
-            n_objects: int
-                Number of objects in each query set
             n_nests : int range : [2,n_objects/2]
-                The number of nests/subsets in which the objects are divided
+                The number of nests/subsets in which the objects are divided.
+                This may not surpass half the amount of objects this model will
+                be trained on.
             loss_function : string , {‘categorical_crossentropy’, ‘binary_crossentropy’, ’categorical_hinge’}
                 Loss function to be used for the discrete choice decision from the query set
             regularization : string, {‘l1’, ‘l2’}, string
@@ -92,12 +88,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
                 [3] Kenneth Train and Daniel McFadden. „The goods/leisure tradeoff and disaggregate work trip mode choice models“. In: Transportation research 12.5 (1978), pp. 349–353
         """
         self.logger = logging.getLogger(NestedLogitModel.__name__)
-        self.n_object_features = n_object_features
-        self.n_objects = n_objects
-        if n_nests is None:
-            self.n_nests = int(n_objects / 2)
-        else:
-            self.n_nests = n_nests
+        self.n_nests = n_nests
         self.alpha = alpha
         self.random_state = random_state
         self.loss_function = likelihood_dict.get(loss_function, None)
@@ -334,8 +325,8 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
             self.Yt = theano.shared(Y)
             self.y_nests = theano.shared(y_nests)
             shapes = {
-                "weights": self.n_object_features,
-                "weights_k": self.n_object_features,
+                "weights": self.n_object_features_fit_,
+                "weights_k": self.n_object_features_fit_,
             }
 
             weights_dict = create_weight_dictionary(self.model_configuration, shapes)
@@ -400,6 +391,9 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
             **kwargs :
                 Keyword arguments for the fit function of :meth:`pymc3.fit`or :meth:`pymc3.sample`
         """
+        _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
+        if self.n_nests is None:
+            self.n_nests = int(self.n_objects_fit_ / 2)
         self.random_state_ = check_random_state(self.random_state)
         self.construct_model(X, Y)
         fit_pymc3_model(self, sampler, draws, tune, vi_params, **kwargs)
@@ -408,12 +402,15 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         y_nests = self.create_nests(X)
         mean_trace = dict(pm.summary(self.trace)["mean"])
         weights = np.array(
-            [mean_trace["weights[{}]".format(i)] for i in range(self.n_object_features)]
+            [
+                mean_trace["weights[{}]".format(i)]
+                for i in range(self.n_object_features_fit_)
+            ]
         )
         weights_k = np.array(
             [
                 mean_trace["weights_k[{}]".format(i)]
-                for i in range(self.n_object_features)
+                for i in range(self.n_object_features_fit_)
             ]
         )
         lambda_k = np.array(
@@ -456,7 +453,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         if alpha is not None:
             self.alpha = alpha
         if n_nests is None:
-            self.n_nests = int(self.n_objects / 2)
+            self.n_nests = int(self.n_objects_fit_ / 2)
         else:
             self.n_nests = n_nests
         self.regularization = regularization

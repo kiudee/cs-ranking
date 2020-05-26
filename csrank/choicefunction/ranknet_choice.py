@@ -12,7 +12,6 @@ from .util import generate_complete_pairwise_dataset
 class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
     def __init__(
         self,
-        n_object_features,
         n_hidden=2,
         n_units=8,
         loss_function="binary_crossentropy",
@@ -40,8 +39,6 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
 
             Parameters
             ----------
-            n_object_features : int
-                Number of features of the object space
             n_hidden : int
                 Number of hidden layers used in the scoring network
             n_units : int
@@ -74,7 +71,6 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
                 [2] Burges, C. J. (2010). "From ranknet to lambdarank to lambdamart: An overview.", Learning, 11(23-581).
         """
         super().__init__(
-            n_object_features=n_object_features,
             n_hidden=n_hidden,
             n_units=n_units,
             loss_function=loss_function,
@@ -89,11 +85,7 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
             **kwargs
         )
         self.logger = logging.getLogger(RankNetChoiceFunction.__name__)
-        self.logger.info(
-            "Initializing network with object features {}".format(
-                self.n_object_features
-            )
-        )
+        self.logger.info("Initializing network")
         self.threshold = 0.5
 
     def construct_model(self):

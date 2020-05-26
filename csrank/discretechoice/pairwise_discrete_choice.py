@@ -8,7 +8,6 @@ from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 class PairwiseSVMDiscreteChoiceFunction(PairwiseSVM, DiscreteObjectChooser):
     def __init__(
         self,
-        n_object_features,
         C=1.0,
         tol=1e-4,
         normalize=True,
@@ -28,8 +27,6 @@ class PairwiseSVMDiscreteChoiceFunction(PairwiseSVM, DiscreteObjectChooser):
 
             Parameters
             ----------
-            n_object_features : int
-                Number of features of the object space
             C : float, optional
                 Penalty parameter of the error term
             tol : float, optional
@@ -51,7 +48,6 @@ class PairwiseSVMDiscreteChoiceFunction(PairwiseSVM, DiscreteObjectChooser):
                 [2] Sebastián Maldonado, Ricardo Montoya, and Richard Weber. „Advanced conjoint analysis using feature selection via support vector machines“. In: European Journal of Operational Research 241.2 (2015), pp. 564 –574.
         """
         super().__init__(
-            n_object_features=n_object_features,
             C=C,
             tol=tol,
             normalize=normalize,
@@ -60,11 +56,7 @@ class PairwiseSVMDiscreteChoiceFunction(PairwiseSVM, DiscreteObjectChooser):
             **kwargs
         )
         self.logger = logging.getLogger(PairwiseSVMDiscreteChoiceFunction.__name__)
-        self.logger.info(
-            "Initializing network with object features {}".format(
-                self.n_object_features
-            )
-        )
+        self.logger.info("Initializing network")
 
     def _convert_instances_(self, X, Y):
         self.logger.debug("Creating the Dataset")
@@ -76,13 +68,14 @@ class PairwiseSVMDiscreteChoiceFunction(PairwiseSVM, DiscreteObjectChooser):
             y_single,
         ) = generate_complete_pairwise_dataset(X, Y)
         del garbage
-        assert x_train.shape[1] == self.n_object_features
+        assert x_train.shape[1] == self.n_object_features_fit_
         self.logger.debug(
             "Finished the Dataset with instances {}".format(x_train.shape[0])
         )
         return x_train, y_single
 
     def fit(self, X, Y, **kwd):
+        _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
         super().fit(X, Y, **kwd)
 
     def _predict_scores_fixed(self, X, **kwargs):

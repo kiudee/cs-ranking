@@ -100,7 +100,6 @@ def test_discrete_choice_function_fixed(trivial_discrete_choice_problem, name):
         discrete_choice_functions[name][1],
         discrete_choice_functions[name][2],
     )
-    params["n_objects"], params["n_object_features"] = tuple(x.shape[1:])
     learner = choice_function(**params)
     if name in [MNL, NLM, GEV, PCL, MLM]:
         learner.fit(

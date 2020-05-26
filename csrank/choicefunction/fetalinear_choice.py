@@ -10,8 +10,6 @@ from .choice_functions import ChoiceFunctions
 class FETALinearChoiceFunction(FETALinearCore, ChoiceFunctions):
     def __init__(
         self,
-        n_object_features,
-        n_objects,
         loss_function=binary_crossentropy,
         learning_rate=5e-3,
         batch_size=256,
@@ -40,10 +38,6 @@ class FETALinearChoiceFunction(FETALinearCore, ChoiceFunctions):
 
             Parameters
             ----------
-            n_object_features : int
-                Dimensionality of the feature space of each object
-            n_objects : int
-                Number of objects in each choice set
             n_hidden_set_units : int
                 Number of hidden set units.
             batch_size : int
@@ -56,8 +50,6 @@ class FETALinearChoiceFunction(FETALinearCore, ChoiceFunctions):
                 Keyword arguments for the @FATENetwork
         """
         super().__init__(
-            n_object_features=n_object_features,
-            n_objects=n_objects,
             learning_rate=learning_rate,
             batch_size=batch_size,
             loss_function=loss_function,

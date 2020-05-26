@@ -30,9 +30,7 @@ except ImportError:
 
 
 class GeneralizedLinearModel(ChoiceFunctions, Learner):
-    def __init__(
-        self, n_object_features, regularization="l2", random_state=None, **kwargs
-    ):
+    def __init__(self, regularization="l2", random_state=None, **kwargs):
         """
             Create an instance of the GeneralizedLinearModel model for learning the choice function. This model is
             adapted from the multinomial logit model :class:`csrank.discretechoice.multinomial_logit_model.MultinomialLogitModel`.
@@ -52,8 +50,6 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
 
             Parameters
             ----------
-            n_object_features : int
-                Number of features of the object space
             regularization : string, optional
                 Regularization technique to be used for estimating the weights
             random_state : int or object
@@ -68,7 +64,6 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
                 [2] Kenneth Train. Qualitative choice analysis. Cambridge, MA: MIT Press, 1986
         """
         self.logger = logging.getLogger(GeneralizedLinearModel.__name__)
-        self.n_object_features = n_object_features
         if regularization in ["l1", "l2"]:
             self.regularization = regularization
         else:
@@ -156,8 +151,8 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
         with pm.Model() as self.model:
             self.Xt = theano.shared(X)
             self.Yt = theano.shared(Y)
-            shapes = {"weights": self.n_object_features}
-            # shapes = {'weights': (self.n_object_features, 3)}
+            shapes = {"weights": self.n_object_features_fit_}
+            # shapes = {'weights': (self.n_object_features_fit_, 3)}
             weights_dict = create_weight_dictionary(self.model_configuration, shapes)
             intercept = pm.Normal("intercept", mu=0, sd=10)
             utility = tt.dot(self.Xt, weights_dict["weights"]) + intercept
@@ -274,6 +269,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
         },
         **kwargs
     ):
+        _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
         self.construct_model(X, Y)
         fit_pymc3_model(self, sampler, draws, tune, vi_params, **kwargs)
 
@@ -281,7 +277,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
         d = dict(pm.summary(self.trace)["mean"])
         intercept = 0.0
         weights = np.array(
-            [d["weights[{}]".format(i)] for i in range(self.n_object_features)]
+            [d["weights[{}]".format(i)] for i in range(self.n_object_features_fit_)]
         )
         if "intercept" in d:
             intercept = intercept + d["intercept"]

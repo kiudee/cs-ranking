@@ -10,7 +10,6 @@ __all__ = ["RankSVM"]
 class RankSVM(ObjectRanker, PairwiseSVM):
     def __init__(
         self,
-        n_object_features,
         C=1.0,
         tol=1e-4,
         normalize=True,
@@ -30,8 +29,6 @@ class RankSVM(ObjectRanker, PairwiseSVM):
 
             Parameters
             ----------
-            n_object_features : int
-                Number of features of the object space
             C : float, optional
                 Penalty parameter of the error term
             tol : float, optional
@@ -50,7 +47,6 @@ class RankSVM(ObjectRanker, PairwiseSVM):
                 [1] Joachims, T. (2002, July). "Optimizing search engines using clickthrough data.", Proceedings of the eighth ACM SIGKDD international conference on Knowledge discovery and data mining (pp. 133-142). ACM.
         """
         super().__init__(
-            n_object_features=n_object_features,
             C=C,
             tol=tol,
             normalize=normalize,
@@ -59,13 +55,10 @@ class RankSVM(ObjectRanker, PairwiseSVM):
             **kwargs
         )
         self.logger = logging.getLogger(RankSVM.__name__)
-        self.logger.info(
-            "Initializing network with object features {}".format(
-                self.n_object_features
-            )
-        )
+        self.logger.info("Initializing network")
 
     def fit(self, X, Y, **kwargs):
+        _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
         super().fit(X, Y, **kwargs)
 
     def _convert_instances_(self, X, Y):
@@ -78,7 +71,7 @@ class RankSVM(ObjectRanker, PairwiseSVM):
             y_single,
         ) = generate_complete_pairwise_dataset(X, Y)
         del garbage
-        assert x_train.shape[1] == self.n_object_features
+        assert x_train.shape[1] == self.n_object_features_fit_
         self.logger.debug(
             "Finished the Dataset with instances {}".format(x_train.shape[0])
         )
