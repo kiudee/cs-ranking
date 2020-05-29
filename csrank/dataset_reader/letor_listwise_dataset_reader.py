@@ -31,10 +31,9 @@ class LetorListwiseDatasetReader(DatasetReader, metaclass=ABCMeta):
         self.DATASET_FOLDER_2008 = "MQ{}-list".format(year)
         self.logger = logging.getLogger(LetorListwiseDatasetReader.__name__)
 
-        if year not in [2007, 2008]:
-            self.year = 2007
-        else:
-            self.year = year
+        if year not in {2007, 2008}:
+            raise ValueError("year must be either 2007 or 2008")
+        self.year = year
         self.exclude_qf = exclude_qf
         self.query_feature_indices = [4, 5, 6, 19, 20, 21, 34, 35, 36]
         self.query_document_feature_indices = np.delete(

@@ -15,7 +15,9 @@ class ChoiceDatasetGenerator(SyntheticDatasetGenerator):
             "pareto": self.make_globular_pareto_choices,
         }
         if dataset_type not in dataset_function_options.keys():
-            dataset_type = "pareto"
+            raise ValueError(
+                f"dataset_type must be one of {set(dataset_function_options.keys())}"
+            )
         self.dataset_function = dataset_function_options[dataset_type]
 
     def get_single_train_test_split(self):

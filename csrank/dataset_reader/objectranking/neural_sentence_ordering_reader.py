@@ -23,11 +23,11 @@ class SentenceOrderingDatasetReader(DatasetReader):
             **kwargs,
         )
         self.logger = logging.getLogger(name=SentenceOrderingDatasetReader.__name__)
-        dimensions = [25, 50, 100, 200]
+        dimensions = {25, 50, 100, 200}
         d_files = ["test_{}_dim.h5", "train_{}_dim.h5"]
         self.n_objects = n_objects
         if n_dims not in dimensions:
-            n_dims = 25
+            raise ValueError(f"n_dims must be one of {dimensions}")
         self.logger.info("Loading the dataset with {} features".format(n_dims))
         self.train_file = os.path.join(self.dirname, d_files[1]).format(n_dims)
         self.test_file = os.path.join(self.dirname, d_files[0]).format(n_dims)

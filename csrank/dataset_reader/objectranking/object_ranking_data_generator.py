@@ -33,6 +33,9 @@ class ObjectRankingDatasetGenerator(SyntheticDatasetGenerator):
             "hyper_volume": self.make_hv_dataset,
         }
         if dataset_type not in dataset_function_options.keys():
+            raise ValueError(
+                f"dataset_type must be one of {set(dataset_function_options.keys())}"
+            )
             dataset_type = "medoid"
         self.dataset_function = dataset_function_options[dataset_type]
 

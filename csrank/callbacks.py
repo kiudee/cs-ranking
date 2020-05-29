@@ -1,6 +1,5 @@
 import logging
 import math
-import warnings
 
 from keras import backend as K
 from keras.callbacks import Callback
@@ -61,12 +60,11 @@ class EarlyStoppingWithWeights(Callback, Tunable):
         self.restore_best_weights = restore_best_weights
         self.best_weights = None
 
-        if mode not in ["auto", "min", "max"]:
-            warnings.warn(
-                "EarlyStopping mode %s is unknown, " "fallback to auto mode." % mode,
-                RuntimeWarning,
+        known_modes = {"auto", "min", "max"}
+        if mode not in known_modes:
+            raise ValueError(
+                f"EarlyStopping mode {mode} is unknown, must be one of {known_modes}"
             )
-            mode = "auto"
 
         if mode == "min":
             self.monitor_op = np.less

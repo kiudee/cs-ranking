@@ -147,10 +147,9 @@ def create_joined_dataset():
 def univerisity_dataset_for_year(year):
     dir_name = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
-    if str(year) not in str(years):
-        raise Exception(
-            "Data is not present for the year, university dataset is present only for: "
-            + repr(years)
+    if int(year) not in years:
+        raise ValueError(
+            f"Data is not present for the year, university dataset is present only for: {set(years)}"
         )
     path = os.path.join(dir_name, DATASET_FOLDER, UNIVERSITY_ + str(year) + ".csv")
     dataframe = pd.read_csv(path)

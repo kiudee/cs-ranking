@@ -33,7 +33,9 @@ class DiscreteChoiceDatasetGenerator(SyntheticDatasetGenerator):
             "gp_non_transitive": self.make_gp_non_transitive,
         }
         if dataset_type not in dataset_function_options.keys():
-            dataset_type = "medoid"
+            raise ValueError(
+                f"dataset_type must be one of {set(dataset_function_options.keys())}"
+            )
         self.logger.info("dataset type {}".format(dataset_type))
         self.dataset_function = dataset_function_options[dataset_type]
 

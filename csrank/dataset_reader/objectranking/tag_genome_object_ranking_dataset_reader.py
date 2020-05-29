@@ -14,7 +14,9 @@ class TagGenomeObjectRankingDatasetReader(TagGenomeDatasetReader):
             "critique_fit_more": self.make_critique_fit_dataset(direction=1),
         }
         if dataset_type not in dataset_func_dict.keys():
-            dataset_type = "nearest_neighbour"
+            raise ValueError(
+                f"dataset_type must be one of {set(dataset_func_dict.keys())}"
+            )
         self.logger.info("Dataset type: {}".format(dataset_type))
         self.dataset_function = dataset_func_dict[dataset_type]
 

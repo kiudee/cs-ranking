@@ -15,7 +15,9 @@ class MNISTDiscreteChoiceDatasetReader(MNISTDatasetReader):
             "unique_max_occurring": self.create_dataset_mode_least_angle,
         }
         if dataset_type not in dataset_func_dict.keys():
-            dataset_type = "median"
+            raise ValueError(
+                f"dataset_type must be one of {set(dataset_func_dict.keys())}"
+            )
         self.dataset_function = dataset_func_dict[dataset_type]
         super(MNISTDiscreteChoiceDatasetReader, self).__init__(
             learning_problem=DISCRETE_CHOICE, **kwargs
