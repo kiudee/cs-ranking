@@ -63,8 +63,8 @@ def trivial_ranking_problem():
 
 def check_params_tunable(tunable_obj, params, rtol=1e-2, atol=1e-4):
     for key, value in params.items():
-        if key in tunable_obj.__dict__:
-            expected = tunable_obj.__dict__[key]
+        if hasattr(tunable_obj, key):
+            expected = getattr(tunable_obj, key)
             if isinstance(value, int) or isinstance(value, float):
                 if (
                     isinstance(tunable_obj, PairedCombinatorialLogit)
@@ -79,7 +79,7 @@ def check_params_tunable(tunable_obj, params, rtol=1e-2, atol=1e-4):
                     )
             else:
                 assert value == expected
-        elif key == "learning_rate" and "optimizer" in tunable_obj.__dict__:
+        elif key == "learning_rate" and hasattr(tunable_obj, "optimizer"):
             key = (
                 "learning_rate"
                 if "learning_rate" in tunable_obj.optimizer.get_config()
@@ -89,7 +89,7 @@ def check_params_tunable(tunable_obj, params, rtol=1e-2, atol=1e-4):
             assert np.isclose(
                 learning_rate, value, rtol=rtol, atol=atol, equal_nan=False
             )
-        elif key == "reg_strength" and "kernel_regularizer" in tunable_obj.__dict__:
+        elif key == "reg_strength" and hasattr(tunable_obj, "kernel_regularizer"):
             config = tunable_obj.kernel_regularizer.get_config()
             val1 = np.isclose(
                 config["l1"], value, rtol=rtol, atol=atol, equal_nan=False
