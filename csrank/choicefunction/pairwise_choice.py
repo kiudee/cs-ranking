@@ -15,7 +15,7 @@ class PairwiseSVMChoiceFunction(PairwiseSVM, ChoiceFunctions):
         normalize=True,
         fit_intercept=True,
         random_state=None,
-        **kwargs
+        **kwargs,
     ):
         """
             Create an instance of the :class:`PairwiseSVM` model for learning a choice function.
@@ -56,7 +56,7 @@ class PairwiseSVMChoiceFunction(PairwiseSVM, ChoiceFunctions):
             normalize=normalize,
             fit_intercept=fit_intercept,
             random_state=random_state,
-            **kwargs
+            **kwargs,
         )
         self.logger = logging.getLogger(PairwiseSVMChoiceFunction.__name__)
         self.logger.info("Initializing network")

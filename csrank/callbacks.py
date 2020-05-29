@@ -20,7 +20,7 @@ class EarlyStoppingWithWeights(Callback, Tunable):
         mode="auto",
         baseline=None,
         restore_best_weights=False,
-        **kwargs
+        **kwargs,
     ):
         """Stop training when a monitored quantity has stopped improving.
 

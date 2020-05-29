@@ -176,7 +176,7 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
             "method": "advi",
             "callbacks": [CheckParametersConvergence()],
         },
-        **kwargs
+        **kwargs,
     ):
         """
             Fit a multinomial logit model on the provided set of queries X and choices Y of those objects. The

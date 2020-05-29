@@ -39,7 +39,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         regularization="l1",
         alpha=1e-2,
         random_state=None,
-        **kwd
+        **kwd,
     ):
         """
             Create an instance of the Nested Logit model for learning the discrete choice function. This model divides
@@ -353,7 +353,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
             "method": "advi",
             "callbacks": [CheckParametersConvergence()],
         },
-        **kwargs
+        **kwargs,
     ):
         """
             Fit a nested logit model on the provided set of queries X and choices Y of those objects. The provided

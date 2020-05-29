@@ -15,7 +15,7 @@ class SyntheticDatasetGenerator(DatasetReader):
         n_test_instances=10000,
         random_state=None,
         standardize=True,
-        **kwargs
+        **kwargs,
     ):
         super(SyntheticDatasetGenerator, self).__init__(
             learning_problem=learning_problem, dataset_folder=None, **kwargs

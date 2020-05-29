@@ -86,7 +86,7 @@ class ParameterOptimizer(Learner):
         tuning_callbacks=None,
         validation_loss=None,
         learning_problem=OBJECT_RANKING,
-        **kwd
+        **kwd,
     ):
         """
 
@@ -237,7 +237,7 @@ class ParameterOptimizer(Learner):
         n_iter=100,
         cv_iter=None,
         acq_func="gp_hedge",
-        **kwargs
+        **kwargs,
     ):
         start = datetime.now()
         self.random_state_ = check_random_state(self.random_state)
@@ -497,7 +497,7 @@ class ParameterOptimizer(Learner):
                 random_state=opt_seed,
                 base_estimator=base_estimator,
                 acq_func=acq_func,
-                **kwargs
+                **kwargs,
             )
 
         return n_iter

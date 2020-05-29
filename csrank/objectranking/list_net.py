@@ -38,7 +38,7 @@ class ListNet(Learner, ObjectRanker):
         metrics=[zero_one_rank_loss_for_scores_ties],
         batch_size=256,
         random_state=None,
-        **kwargs
+        **kwargs,
     ):
         """ Create an instance of the ListNet architecture. ListNet trains a latent utility model based on
             top-k-subrankings of the objects. This network learns a latent utility score for each object in the given
@@ -174,7 +174,7 @@ class ListNet(Learner, ObjectRanker):
             kernel_regularizer=self.kernel_regularizer,
             kernel_initializer=self.kernel_initializer,
             activation=self.activation,
-            **self.kwargs
+            **self.kwargs,
         )
         self.logger.debug("Creating top-k dataset")
         X, Y = self._create_topk(X, Y)
@@ -191,7 +191,7 @@ class ListNet(Learner, ObjectRanker):
             callbacks=callbacks,
             validation_split=validation_split,
             verbose=verbose,
-            **kwd
+            **kwd,
         )
         self.logger.debug("Fitting Complete")
 
@@ -279,7 +279,7 @@ class ListNet(Learner, ObjectRanker):
                 kernel_regularizer=self.kernel_regularizer,
                 kernel_initializer=self.kernel_initializer,
                 activation=self.activation,
-                **self.kwargs
+                **self.kwargs,
             )
             self.model = self.construct_model()
             self.model.load_weights(self.hash_file)
@@ -293,7 +293,7 @@ class ListNet(Learner, ObjectRanker):
         reg_strength=1e-4,
         learning_rate=1e-3,
         batch_size=128,
-        **point
+        **point,
     ):
         """
             Set tunable parameters of the ListNet network to the values provided.
@@ -323,7 +323,7 @@ class ListNet(Learner, ObjectRanker):
             kernel_regularizer=self.kernel_regularizer,
             kernel_initializer=self.kernel_initializer,
             activation=self.activation,
-            **self.kwargs
+            **self.kwargs,
         )
 
         self._scoring_model = None

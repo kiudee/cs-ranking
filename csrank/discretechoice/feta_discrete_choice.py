@@ -36,7 +36,7 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
         metrics=["categorical_accuracy"],
         batch_size=256,
         random_state=None,
-        **kwargs
+        **kwargs,
     ):
         """
             Create a FETA-network architecture for learning the discrete choice functions.
@@ -103,7 +103,7 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
             metrics=metrics,
             batch_size=batch_size,
             random_state=random_state,
-            **kwargs
+            **kwargs,
         )
         self.logger = logging.getLogger(FETADiscreteChoiceFunction.__name__)
 
@@ -342,7 +342,7 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
         reg_strength=1e-4,
         learning_rate=1e-3,
         batch_size=128,
-        **point
+        **point,
     ):
         super().set_tunable_parameters(
             n_hidden=n_hidden,
@@ -350,5 +350,5 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
             reg_strength=reg_strength,
             learning_rate=learning_rate,
             batch_size=batch_size,
-            **point
+            **point,
         )

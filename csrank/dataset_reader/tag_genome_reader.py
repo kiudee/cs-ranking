@@ -36,7 +36,7 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
         n_objects=5,
         random_state=None,
         standardize=True,
-        **kwargs
+        **kwargs,
     ):
         super(TagGenomeDatasetReader, self).__init__(
             dataset_folder="movie_lens", **kwargs

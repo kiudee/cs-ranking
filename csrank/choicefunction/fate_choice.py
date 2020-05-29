@@ -25,7 +25,7 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
         batch_size=256,
         metrics=None,
         random_state=None,
-        **kwargs
+        **kwargs,
     ):
         """
             Create a FATE-network architecture for leaning discrete choice function. The first-aggregate-then-evaluate
@@ -89,7 +89,7 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
             optimizer=optimizer,
             batch_size=batch_size,
             random_state=random_state,
-            **kwargs
+            **kwargs,
         )
         self.logger = logging.getLogger(FATEChoiceFunction.__name__)
         self.threshold = 0.5
@@ -146,7 +146,7 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
         refit=False,
         tune_size=0.1,
         thin_thresholds=1,
-        **kwargs
+        **kwargs,
     ):
         """
             Fit a generic FATE-network model for learning a choice function on a provided set of queries.
@@ -233,7 +233,7 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
         reg_strength=1e-4,
         learning_rate=1e-3,
         batch_size=128,
-        **point
+        **point,
     ):
         super().set_tunable_parameters(
             n_hidden_set_units=n_hidden_set_units,
@@ -243,5 +243,5 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
             reg_strength=reg_strength,
             learning_rate=learning_rate,
             batch_size=batch_size,
-            **point
+            **point,
         )

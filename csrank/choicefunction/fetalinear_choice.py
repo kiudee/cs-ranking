@@ -14,7 +14,7 @@ class FETALinearChoiceFunction(FETALinearCore, ChoiceFunctions):
         learning_rate=5e-3,
         batch_size=256,
         random_state=None,
-        **kwargs
+        **kwargs,
     ):
         """
             Create a FATELinear-network architecture for leaning discrete choice function. The first-aggregate-then-evaluate
@@ -54,7 +54,7 @@ class FETALinearChoiceFunction(FETALinearCore, ChoiceFunctions):
             batch_size=batch_size,
             loss_function=loss_function,
             random_state=random_state,
-            **kwargs
+            **kwargs,
         )
         self.logger = logging.getLogger(FETALinearChoiceFunction.__name__)
 
@@ -68,7 +68,7 @@ class FETALinearChoiceFunction(FETALinearCore, ChoiceFunctions):
         tune_size=0.1,
         thin_thresholds=1,
         verbose=0,
-        **kwd
+        **kwd,
     ):
         if tune_size > 0:
             X_train, X_val, Y_train, Y_val = train_test_split(
@@ -82,7 +82,7 @@ class FETALinearChoiceFunction(FETALinearCore, ChoiceFunctions):
                     callbacks,
                     validation_split,
                     verbose,
-                    **kwd
+                    **kwd,
                 )
             finally:
                 self.logger.info(
@@ -115,5 +115,5 @@ class FETALinearChoiceFunction(FETALinearCore, ChoiceFunctions):
             batch_size=batch_size,
             epochs_drop=epochs_drop,
             drop=drop,
-            **point
+            **point,
         )

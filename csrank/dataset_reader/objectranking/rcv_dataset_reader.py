@@ -18,7 +18,7 @@ class RCVDatasetReader(DatasetReader):
         n_objects=5,
         query_based=False,
         random_state=None,
-        **kwargs
+        **kwargs,
     ):
         super(RCVDatasetReader, self).__init__(
             learning_problem=OBJECT_RANKING, dataset_folder="textual_data", **kwargs

@@ -23,7 +23,7 @@ class FATEDiscreteChoiceFunction(FATENetwork, DiscreteObjectChooser):
         optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
         batch_size=256,
         random_state=None,
-        **kwargs
+        **kwargs,
     ):
         """
             Create a FATE-network architecture for leaning discrete choice function. The first-aggregate-then-evaluate
@@ -87,7 +87,7 @@ class FATEDiscreteChoiceFunction(FATENetwork, DiscreteObjectChooser):
             optimizer=optimizer,
             batch_size=batch_size,
             random_state=random_state,
-            **kwargs
+            **kwargs,
         )
         self.logger = logging.getLogger(FATEDiscreteChoiceFunction.__name__)
 
@@ -157,7 +157,7 @@ class FATEDiscreteChoiceFunction(FATENetwork, DiscreteObjectChooser):
         reg_strength=1e-4,
         learning_rate=1e-3,
         batch_size=128,
-        **point
+        **point,
     ):
         super().set_tunable_parameters(
             n_hidden_set_units=n_hidden_set_units,
@@ -167,5 +167,5 @@ class FATEDiscreteChoiceFunction(FATENetwork, DiscreteObjectChooser):
             reg_strength=reg_strength,
             learning_rate=learning_rate,
             batch_size=batch_size,
-            **point
+            **point,
         )

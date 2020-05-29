@@ -40,7 +40,7 @@ class FETANetwork(Learner):
         metrics=None,
         batch_size=256,
         random_state=None,
-        **kwargs
+        **kwargs,
     ):
         self.logger = logging.getLogger(FETANetwork.__name__)
         self.random_state = random_state
@@ -286,7 +286,7 @@ class FETANetwork(Learner):
             kernel_regularizer=self.kernel_regularizer,
             kernel_initializer=self.kernel_initializer,
             activation=self.activation,
-            **self.kwargs
+            **self.kwargs,
         )
 
         self.logger.debug("Enter fit function...")
@@ -304,7 +304,7 @@ class FETANetwork(Learner):
             callbacks=callbacks,
             validation_split=validation_split,
             verbose=verbose,
-            **kwd
+            **kwd,
         )
         if self.hash_file is not None:
             self.model.save_weights(self.hash_file)
@@ -345,7 +345,7 @@ class FETANetwork(Learner):
         reg_strength=1e-4,
         learning_rate=1e-3,
         batch_size=128,
-        **point
+        **point,
     ):
         """
             Set tunable parameters of the FETA-network to the values provided.
@@ -377,7 +377,7 @@ class FETANetwork(Learner):
             kernel_regularizer=self.kernel_regularizer,
             kernel_initializer=self.kernel_initializer,
             activation=self.activation,
-            **self.kwargs
+            **self.kwargs,
         )
         if len(point) > 0:
             self.logger.warning(
@@ -407,7 +407,7 @@ class FETANetwork(Learner):
                 kernel_regularizer=self.kernel_regularizer,
                 kernel_initializer=self.kernel_initializer,
                 activation=self.activation,
-                **self.kwargs
+                **self.kwargs,
             )
             self.model = self.construct_model()
             self.model.load_weights(self.hash_file)

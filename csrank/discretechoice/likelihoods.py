@@ -146,7 +146,7 @@ def fit_pymc3_model(self, sampler, draws, tune, vi_params, **kwargs):
                 draws=draws,
                 **kwargs,
                 step=pm.Metropolis(),
-                start=start
+                start=start,
             )
     else:
         with self.model:

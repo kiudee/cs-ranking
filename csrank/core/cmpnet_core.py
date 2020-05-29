@@ -33,7 +33,7 @@ class CmpNetCore(Learner):
         metrics=["binary_accuracy"],
         batch_size=256,
         random_state=None,
-        **kwargs
+        **kwargs,
     ):
         self.logger = logging.getLogger("CmpNet")
         self.batch_normalization = batch_normalization
@@ -158,7 +158,7 @@ class CmpNetCore(Learner):
             kernel_regularizer=self.kernel_regularizer,
             kernel_initializer=self.kernel_initializer,
             activation=self.activation,
-            **self.kwargs
+            **self.kwargs,
         )
         self.model = self.construct_model()
 
@@ -171,7 +171,7 @@ class CmpNetCore(Learner):
             callbacks=callbacks,
             validation_split=validation_split,
             verbose=verbose,
-            **kwd
+            **kwd,
         )
         self.logger.debug("Fitting Complete")
 
@@ -217,7 +217,7 @@ class CmpNetCore(Learner):
                 kernel_regularizer=self.kernel_regularizer,
                 kernel_initializer=self.kernel_initializer,
                 activation=self.activation,
-                **self.kwargs
+                **self.kwargs,
             )
             self.model = self.construct_model()
             self.model.load_weights(self.hash_file)
@@ -231,7 +231,7 @@ class CmpNetCore(Learner):
         reg_strength=1e-4,
         learning_rate=1e-3,
         batch_size=128,
-        **point
+        **point,
     ):
         """
             Set tunable parameters of the CmpNet network to the values provided.
@@ -261,7 +261,7 @@ class CmpNetCore(Learner):
             kernel_regularizer=self.kernel_regularizer,
             kernel_initializer=self.kernel_initializer,
             activation=self.activation,
-            **self.kwargs
+            **self.kwargs,
         )
         if len(point) > 0:
             self.logger.warning(

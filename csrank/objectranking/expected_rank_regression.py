@@ -24,7 +24,7 @@ class ExpectedRankRegression(ObjectRanker, Learner):
         normalize=True,
         fit_intercept=True,
         random_state=None,
-        **kwargs
+        **kwargs,
     ):
         """
             Create an expected rank regression model.

@@ -45,7 +45,7 @@ class DiscreteChoiceDatasetGenerator(SyntheticDatasetGenerator):
         n_features=100,
         n_informative=10,
         seed=42,
-        **kwd
+        **kwd,
     ):
         random_state = check_random_state(seed=seed)
         X, y, coeff = make_regression(
@@ -101,7 +101,7 @@ class DiscreteChoiceDatasetGenerator(SyntheticDatasetGenerator):
         n_features=5,
         seed=42,
         cluster_spread=1.0,
-        **kwd
+        **kwd,
     ):
         def sample_unit_ball(n_f=2, rng=None, radius=1.0):
             rng = check_random_state(rng)
@@ -133,7 +133,7 @@ class DiscreteChoiceDatasetGenerator(SyntheticDatasetGenerator):
         n_features=100,
         kernel_params=None,
         seed=42,
-        **kwd
+        **kwd,
     ):
         """Creates a nonlinear object ranking problem by sampling from a
         Gaussian process as the latent utility function.
@@ -164,7 +164,7 @@ class DiscreteChoiceDatasetGenerator(SyntheticDatasetGenerator):
         center_box=(-10.0, 10.0),
         cluster_std=2.0,
         seed=42,
-        **kwd
+        **kwd,
     ):
         n_samples = n_instances * n_objects
         random_state = check_random_state(seed=seed)

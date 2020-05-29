@@ -18,7 +18,7 @@ class PairwiseSVM(Learner):
         normalize=True,
         fit_intercept=True,
         random_state=None,
-        **kwargs
+        **kwargs,
     ):
         """ Create an instance of the PairwiseSVM model for any preference learner.
 

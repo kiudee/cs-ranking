@@ -21,7 +21,7 @@ class FETALinearCore(Learner):
         epochs_drop=50,
         drop=0.01,
         random_state=None,
-        **kwargs
+        **kwargs,
     ):
         self.learning_rate = learning_rate
         self.batch_size = batch_size

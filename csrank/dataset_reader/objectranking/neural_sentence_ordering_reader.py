@@ -20,7 +20,7 @@ class SentenceOrderingDatasetReader(DatasetReader):
         super(SentenceOrderingDatasetReader, self).__init__(
             learning_problem=OBJECT_RANKING,
             dataset_folder="sentence_ordering",
-            **kwargs
+            **kwargs,
         )
         self.logger = logging.getLogger(name=SentenceOrderingDatasetReader.__name__)
         dimensions = [25, 50, 100, 200]

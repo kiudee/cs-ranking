@@ -38,7 +38,7 @@ class ImageDatasetReader(DatasetReader):
         n_test_instances=10000,
         n_objects=5,
         random_state=None,
-        **kwargs
+        **kwargs,
     ):
         super(ImageDatasetReader, self).__init__(
             learning_problem=OBJECT_RANKING, dataset_folder="image_dataset", **kwargs

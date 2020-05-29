@@ -23,7 +23,7 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
         metrics=["binary_accuracy"],
         batch_size=256,
         random_state=None,
-        **kwargs
+        **kwargs,
     ):
         """
             Create an instance of the :class:`RankNetCore` architecture for learning a object ranking function.
@@ -82,7 +82,7 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
             metrics=metrics,
             batch_size=batch_size,
             random_state=random_state,
-            **kwargs
+            **kwargs,
         )
         self.logger = logging.getLogger(RankNetChoiceFunction.__name__)
         self.logger.info("Initializing network")
@@ -116,7 +116,7 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
         tune_size=0.1,
         thin_thresholds=1,
         verbose=0,
-        **kwd
+        **kwd,
     ):
         """
             Fit RankNet model for learning choice function on a provided set of queries. The provided queries can be of
@@ -163,7 +163,7 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
                     callbacks,
                     validation_split,
                     verbose,
-                    **kwd
+                    **kwd,
                 )
             finally:
                 self.logger.info(
@@ -199,7 +199,7 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
         reg_strength=1e-4,
         learning_rate=1e-3,
         batch_size=128,
-        **point
+        **point,
     ):
         super().set_tunable_parameters(
             n_hidden=n_hidden,
@@ -207,5 +207,5 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
             reg_strength=reg_strength,
             learning_rate=learning_rate,
             batch_size=batch_size,
-            **point
+            **point,
         )

@@ -21,7 +21,7 @@ class FATELinearCore(Learner):
         epochs_drop=300,
         drop=0.1,
         random_state=None,
-        **kwargs
+        **kwargs,
     ):
         self.n_hidden_set_units = n_hidden_set_units
         self.learning_rate = learning_rate
@@ -155,7 +155,7 @@ class FATELinearCore(Learner):
         batch_size=128,
         epochs_drop=300,
         drop=0.1,
-        **point
+        **point,
     ):
         """
             Set tunable parameters of the FETA-network to the values provided.

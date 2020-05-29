@@ -175,7 +175,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
             "callbacks": [CheckParametersConvergence()],
         },
         verbose=0,
-        **kwargs
+        **kwargs,
     ):
         """
             Fit a generalized logit model on the provided set of queries X and choices Y of those objects. The
@@ -251,7 +251,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
                     ],
                     "draws": 500,
                 },
-                **kwargs
+                **kwargs,
             )
             self.threshold = 0.5
 
@@ -267,7 +267,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
             "method": "advi",
             "callbacks": [CheckParametersConvergence()],
         },
-        **kwargs
+        **kwargs,
     ):
         _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
         self.construct_model(X, Y)

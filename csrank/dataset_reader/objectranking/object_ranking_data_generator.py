@@ -44,7 +44,7 @@ class ObjectRankingDatasetGenerator(SyntheticDatasetGenerator):
         n_features=100,
         n_informative=10,
         seed=42,
-        **kwd
+        **kwd,
     ):
         random_state = check_random_state(seed=seed)
         X, y, coeff = make_regression(
@@ -68,7 +68,7 @@ class ObjectRankingDatasetGenerator(SyntheticDatasetGenerator):
         n_features=100,
         kernel_params=None,
         seed=42,
-        **kwd
+        **kwd,
     ):
         """Creates a nonlinear object ranking problem by sampling from a
         Gaussian process as the latent utility function.
@@ -99,7 +99,7 @@ class ObjectRankingDatasetGenerator(SyntheticDatasetGenerator):
         center_box=(-10.0, 10.0),
         cluster_std=2.0,
         seed=42,
-        **kwd
+        **kwd,
     ):
         n_samples = n_instances * n_objects
         random_state = check_random_state(seed=seed)
