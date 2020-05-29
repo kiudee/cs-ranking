@@ -373,7 +373,7 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         """
         if alpha is not None:
             self.alpha = alpha
-        if loss_function in likelihood_dict.keys():
+        if loss_function in likelihood_dict:
             self.loss_function = likelihood_dict.get(loss_function, None)
         self.regularization = regularization
         self.model = None

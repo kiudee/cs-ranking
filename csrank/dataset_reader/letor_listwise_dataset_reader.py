@@ -192,7 +192,7 @@ class LetorListwiseDatasetReader(DatasetReader, metaclass=ABCMeta):
                     [float(l.split(":")[1]) for l in information[1].split(" ")[1:-1]]
                 )
                 x = np.insert(x, len(x), rel_deg)
-                if qid not in dataset.keys():
+                if qid not in dataset:
                     dataset[qid] = [x]
                 else:
                     dataset[qid].append(x)
@@ -228,7 +228,7 @@ class LetorListwiseDatasetReader(DatasetReader, metaclass=ABCMeta):
             x = X[key]
             y = Y[key]
             s = scores[key]
-            if key in self.X_train.keys():
+            if key in self.X_train:
                 self.X_train[key] = np.append(self.X_train[key], x, axis=0)
                 self.Y_train[key] = np.append(self.Y_train[key], y, axis=0)
                 self.scores_train[key] = np.append(self.scores_train[key], s, axis=0)

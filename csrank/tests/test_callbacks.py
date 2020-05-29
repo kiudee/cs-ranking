@@ -57,9 +57,7 @@ def test_callbacks(trivial_classification_problem, name):
         step = math.floor(epochs / epochs_drop)
         actual_lr = init_lr * math.pow(drop, step)
         key = (
-            "learning_rate"
-            if "learning_rate" in model.optimizer.get_config().keys()
-            else "lr"
+            "learning_rate" if "learning_rate" in model.optimizer.get_config() else "lr"
         )
         learning_rate = model.optimizer.get_config().get(key, 0.0)
         assert np.isclose(

@@ -66,7 +66,7 @@ class SentenceOrderingDatasetReader(DatasetReader):
                 else:
                     X = np.concatenate([X, x], axis=0)
                     Y = np.concatenate([Y, y], axis=0)
-        if self.n_objects in self.X_train.keys():
+        if self.n_objects in self.X_train:
             X = np.concatenate([X, np.copy(self.X_train[self.n_objects])], axis=0)
             Y = np.concatenate([Y, np.copy(self.Y_train[self.n_objects])], axis=0)
         self.logger.info(

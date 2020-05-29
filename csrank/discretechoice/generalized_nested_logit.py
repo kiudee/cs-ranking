@@ -396,7 +396,7 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
             self.n_nests = self.n_objects_fit + int(self.n_objects_fit / 2)
         else:
             self.n_nests = n_nests
-        if loss_function in likelihood_dict.keys():
+        if loss_function in likelihood_dict:
             self.loss_function = likelihood_dict.get(loss_function, None)
         self.regularization = regularization
         self.model = None

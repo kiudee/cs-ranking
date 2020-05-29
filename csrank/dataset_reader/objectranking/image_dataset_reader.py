@@ -188,7 +188,7 @@ class ImageDatasetReader(DatasetReader):
             lines = np.array([line.rstrip("\n") for line in open(file)])
             for line in lines:
                 label_keys.append(line.split(" ")[0])
-                if line.split(" ")[0] in label_vectors_dictionary.keys():
+                if line.split(" ")[0] in label_vectors_dictionary:
                     label_vectors_dictionary[line.split(" ")[0]].append(
                         int(line.split(" ")[-1])
                     )

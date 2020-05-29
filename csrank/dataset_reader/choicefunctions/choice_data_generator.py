@@ -14,7 +14,7 @@ class ChoiceDatasetGenerator(SyntheticDatasetGenerator):
             "linear": self.make_latent_linear_choices,
             "pareto": self.make_globular_pareto_choices,
         }
-        if dataset_type not in dataset_function_options.keys():
+        if dataset_type not in dataset_function_options:
             raise ValueError(
                 f"dataset_type must be one of {set(dataset_function_options.keys())}"
             )

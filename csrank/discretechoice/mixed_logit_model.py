@@ -254,7 +254,7 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
             point: dict
                 Dictionary containing parameter values which are not tuned for the network
         """
-        if loss_function in likelihood_dict.keys():
+        if loss_function in likelihood_dict:
             self.loss_function = likelihood_dict.get(loss_function, None)
         self.n_mixtures = n_mixtures
         self.regularization = regularization

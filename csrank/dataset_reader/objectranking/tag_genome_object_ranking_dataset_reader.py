@@ -13,7 +13,7 @@ class TagGenomeObjectRankingDatasetReader(TagGenomeDatasetReader):
             "critique_fit_less": self.make_critique_fit_dataset(direction=-1),
             "critique_fit_more": self.make_critique_fit_dataset(direction=1),
         }
-        if dataset_type not in dataset_func_dict.keys():
+        if dataset_type not in dataset_func_dict:
             raise ValueError(
                 f"dataset_type must be one of {set(dataset_func_dict.keys())}"
             )

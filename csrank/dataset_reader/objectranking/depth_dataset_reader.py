@@ -23,7 +23,7 @@ class DepthDatasetReader(DatasetReader):
             "basic": ["saxena_basic61x55.dat", "saxena_basicTest61x55.dat"],
             "semantic": ["saxena_semantic61x55.dat", "saxena_semanticTest61x55.dat"],
         }
-        if dataset_type not in options.keys():
+        if dataset_type not in options:
             raise ValueError(f"dataset_type must be one of set({options.keys()})")
         train_filename, test_file_name = options[dataset_type]
         self.train_file = os.path.join(self.dirname, train_filename)

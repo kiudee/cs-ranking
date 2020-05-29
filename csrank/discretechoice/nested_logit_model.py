@@ -457,7 +457,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         else:
             self.n_nests = n_nests
         self.regularization = regularization
-        if loss_function in likelihood_dict.keys():
+        if loss_function in likelihood_dict:
             self.loss_function = likelihood_dict.get(loss_function, None)
         self.cluster_model = None
         self.features_nests = None

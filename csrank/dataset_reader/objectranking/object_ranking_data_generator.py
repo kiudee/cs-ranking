@@ -32,7 +32,7 @@ class ObjectRankingDatasetGenerator(SyntheticDatasetGenerator):
             "gp_non_transitive": self.make_gp_non_transitive,
             "hyper_volume": self.make_hv_dataset,
         }
-        if dataset_type not in dataset_function_options.keys():
+        if dataset_type not in dataset_function_options:
             raise ValueError(
                 f"dataset_type must be one of {set(dataset_function_options.keys())}"
             )

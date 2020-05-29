@@ -25,7 +25,7 @@ class TagGenomeDiscreteChoiceDatasetReader(TagGenomeDatasetReader):
                 direction=-1
             ),
         }
-        if dataset_type not in dataset_func_dict.keys():
+        if dataset_type not in dataset_func_dict:
             raise ValueError(
                 f"dataset_type must be one of {set(dataset_func_dict.keys())}"
             )
