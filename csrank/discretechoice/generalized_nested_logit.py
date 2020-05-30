@@ -39,7 +39,7 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
         regularization="l2",
         alpha=5e-2,
         random_state=None,
-        **kwd
+        **kwd,
     ):
         """
             Create an instance of the Generalized Nested Logit model for learning the discrete choice function. This
@@ -294,7 +294,7 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
             "method": "advi",
             "callbacks": [CheckParametersConvergence()],
         },
-        **kwargs
+        **kwargs,
     ):
         """
             Fit a generalized nested logit model on the provided set of queries X and choices Y of those objects. The
@@ -396,7 +396,7 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
             self.n_nests = self.n_objects_fit + int(self.n_objects_fit / 2)
         else:
             self.n_nests = n_nests
-        if loss_function in likelihood_dict.keys():
+        if loss_function in likelihood_dict:
             self.loss_function = likelihood_dict.get(loss_function, None)
         self.regularization = regularization
         self.model = None

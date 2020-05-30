@@ -76,9 +76,8 @@ class TripAdviosrDataset(object):
     def data_for_city(self, city, features_to_remove=[]):
 
         if city not in self.city_names:
-            raise Exception(
-                "Data is not present for the city, hotel_dataset is present only for: "
-                + repr(self.city_names)
+            raise ValueError(
+                f"Data is not present for the city, hotel_dataset is present only for: {set(self.city_names)}"
             )
         dataframe = copy.deepcopy(self.datasets_dictionaries[city])
         dataframe.drop(features_to_remove, axis=1, inplace=True)

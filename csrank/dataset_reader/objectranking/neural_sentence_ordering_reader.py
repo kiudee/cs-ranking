@@ -20,14 +20,14 @@ class SentenceOrderingDatasetReader(DatasetReader):
         super(SentenceOrderingDatasetReader, self).__init__(
             learning_problem=OBJECT_RANKING,
             dataset_folder="sentence_ordering",
-            **kwargs
+            **kwargs,
         )
         self.logger = logging.getLogger(name=SentenceOrderingDatasetReader.__name__)
-        dimensions = [25, 50, 100, 200]
+        dimensions = {25, 50, 100, 200}
         d_files = ["test_{}_dim.h5", "train_{}_dim.h5"]
         self.n_objects = n_objects
         if n_dims not in dimensions:
-            n_dims = 25
+            raise ValueError(f"n_dims must be one of {dimensions}")
         self.logger.info("Loading the dataset with {} features".format(n_dims))
         self.train_file = os.path.join(self.dirname, d_files[1]).format(n_dims)
         self.test_file = os.path.join(self.dirname, d_files[0]).format(n_dims)
@@ -66,7 +66,7 @@ class SentenceOrderingDatasetReader(DatasetReader):
                 else:
                     X = np.concatenate([X, x], axis=0)
                     Y = np.concatenate([Y, y], axis=0)
-        if self.n_objects in self.X_train.keys():
+        if self.n_objects in self.X_train:
             X = np.concatenate([X, np.copy(self.X_train[self.n_objects])], axis=0)
             Y = np.concatenate([Y, np.copy(self.Y_train[self.n_objects])], axis=0)
         self.logger.info(

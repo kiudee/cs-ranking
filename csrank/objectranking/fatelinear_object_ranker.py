@@ -13,7 +13,7 @@ class FATELinearObjectRanker(FATELinearCore, ObjectRanker):
         learning_rate=1e-3,
         batch_size=256,
         random_state=None,
-        **kwargs
+        **kwargs,
     ):
         """
             Create a FATELinear-network architecture for leaning discrete choice function. The first-aggregate-then-evaluate
@@ -54,7 +54,7 @@ class FATELinearObjectRanker(FATELinearCore, ObjectRanker):
             batch_size=batch_size,
             loss_function=loss_function,
             random_state=random_state,
-            **kwargs
+            **kwargs,
         )
         self.logger = logging.getLogger(FATELinearObjectRanker.__name__)
 
@@ -91,7 +91,7 @@ class FATELinearObjectRanker(FATELinearCore, ObjectRanker):
             callbacks=callbacks,
             validation_split=validation_split,
             verbose=verbose,
-            **kwd
+            **kwd,
         )
 
     def _predict_scores_fixed(self, X, **kwargs):
@@ -113,7 +113,7 @@ class FATELinearObjectRanker(FATELinearCore, ObjectRanker):
         batch_size=128,
         epochs_drop=300,
         drop=0.1,
-        **point
+        **point,
     ):
         super().set_tunable_parameters(
             n_hidden_set_units=n_hidden_set_units,
@@ -121,5 +121,5 @@ class FATELinearObjectRanker(FATELinearCore, ObjectRanker):
             batch_size=batch_size,
             epochs_drop=epochs_drop,
             drop=drop,
-            **point
+            **point,
         )

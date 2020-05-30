@@ -24,7 +24,7 @@ class RankNet(RankNetCore, ObjectRanker):
         metrics=["binary_accuracy"],
         batch_size=256,
         random_state=None,
-        **kwargs
+        **kwargs,
     ):
         """ Create an instance of the :class:`RankNetCore` architecture for learning a object ranking function.
             It breaks the preferences into pairwise comparisons and learns a latent utility model for the objects.
@@ -84,7 +84,7 @@ class RankNet(RankNetCore, ObjectRanker):
             metrics=metrics,
             batch_size=batch_size,
             random_state=random_state,
-            **kwargs
+            **kwargs,
         )
         self.logger = logging.getLogger(RankNet.__name__)
         self.logger.info("Initializing network")
@@ -147,7 +147,7 @@ class RankNet(RankNetCore, ObjectRanker):
             callbacks=callbacks,
             validation_split=validation_split,
             verbose=verbose,
-            **kwd
+            **kwd,
         )
 
     def _predict_scores_fixed(self, X, **kwargs):
@@ -172,7 +172,7 @@ class RankNet(RankNetCore, ObjectRanker):
         reg_strength=1e-4,
         learning_rate=1e-3,
         batch_size=128,
-        **point
+        **point,
     ):
         super().set_tunable_parameters(
             n_hidden=n_hidden,
@@ -180,5 +180,5 @@ class RankNet(RankNetCore, ObjectRanker):
             reg_strength=reg_strength,
             learning_rate=learning_rate,
             batch_size=batch_size,
-            **point
+            **point,
         )

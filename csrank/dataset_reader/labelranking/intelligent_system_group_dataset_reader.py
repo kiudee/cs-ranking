@@ -23,7 +23,7 @@ class IntelligentSystemGroupDatasetReader(DatasetReader):
         super(IntelligentSystemGroupDatasetReader, self).__init__(
             learning_problem=LABEL_RANKING,
             dataset_folder="intelligent_system_data",
-            **kwargs
+            **kwargs,
         )
 
         self.logger = logging.getLogger(IntelligentSystemGroupDatasetReader.__name__)

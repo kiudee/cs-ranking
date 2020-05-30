@@ -38,7 +38,7 @@ class ImageDatasetReader(DatasetReader):
         n_test_instances=10000,
         n_objects=5,
         random_state=None,
-        **kwargs
+        **kwargs,
     ):
         super(ImageDatasetReader, self).__init__(
             learning_problem=OBJECT_RANKING, dataset_folder="image_dataset", **kwargs
@@ -188,7 +188,7 @@ class ImageDatasetReader(DatasetReader):
             lines = np.array([line.rstrip("\n") for line in open(file)])
             for line in lines:
                 label_keys.append(line.split(" ")[0])
-                if line.split(" ")[0] in label_vectors_dictionary.keys():
+                if line.split(" ")[0] in label_vectors_dictionary:
                     label_vectors_dictionary[line.split(" ")[0]].append(
                         int(line.split(" ")[-1])
                     )

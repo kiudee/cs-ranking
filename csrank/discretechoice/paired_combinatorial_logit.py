@@ -38,7 +38,7 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         regularization="l2",
         alpha=5e-2,
         random_state=None,
-        **kwd
+        **kwd,
     ):
         """
             Create an instance of the Paired Combinatorial Logit model for learning the discrete choice function. This
@@ -283,7 +283,7 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
             "method": "advi",
             "callbacks": [CheckParametersConvergence()],
         },
-        **kwargs
+        **kwargs,
     ):
         """
            Fit a paired combinatorial logit  model on the provided set of queries X and choices Y of those objects. The
@@ -373,7 +373,7 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         """
         if alpha is not None:
             self.alpha = alpha
-        if loss_function in likelihood_dict.keys():
+        if loss_function in likelihood_dict:
             self.loss_function = likelihood_dict.get(loss_function, None)
         self.regularization = regularization
         self.model = None

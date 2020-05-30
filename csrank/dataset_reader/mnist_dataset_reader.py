@@ -17,7 +17,7 @@ class MNISTDatasetReader(DatasetReader):
         n_objects=10,
         random_state=None,
         standardize=True,
-        **kwargs
+        **kwargs,
     ):
         super(MNISTDatasetReader, self).__init__(dataset_folder="mnist", **kwargs)
         self.logger = logging.getLogger(MNISTDatasetReader.__name__)

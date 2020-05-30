@@ -86,7 +86,7 @@ class DeepSet(object):
         kernel_initializer="lecun_normal",
         kernel_regularizer=None,
         input_shape=None,
-        **kwargs
+        **kwargs,
     ):
         self.logger = logging.getLogger("DeepSets")
         self.n_units = units
@@ -106,7 +106,7 @@ class DeepSet(object):
             kernel_initializer=kernel_initializer,
             kernel_regularizer=kernel_regularizer,
             activation=activation,
-            **kwargs
+            **kwargs,
         )
 
     def _construct_layers(self, **kwargs):

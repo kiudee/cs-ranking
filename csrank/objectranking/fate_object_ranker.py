@@ -24,7 +24,7 @@ class FATEObjectRanker(FATENetwork, ObjectRanker):
         loss_function=hinged_rank_loss,
         metrics=[zero_one_rank_loss_for_scores_ties],
         random_state=None,
-        **kwargs
+        **kwargs,
     ):
         """
             Create a FATE-network architecture for leaning object ranking function. The first-aggregate-then-evaluate
@@ -87,7 +87,7 @@ class FATEObjectRanker(FATENetwork, ObjectRanker):
             optimizer=optimizer,
             batch_size=batch_size,
             random_state=random_state,
-            **kwargs
+            **kwargs,
         )
         self.logger = logging.getLogger(FATEObjectRanker.__name__)
 
@@ -122,7 +122,7 @@ class FATEObjectRanker(FATENetwork, ObjectRanker):
         reg_strength=1e-4,
         learning_rate=1e-3,
         batch_size=128,
-        **point
+        **point,
     ):
         super().set_tunable_parameters(
             n_hidden_set_units=n_hidden_set_units,
@@ -132,5 +132,5 @@ class FATEObjectRanker(FATENetwork, ObjectRanker):
             reg_strength=reg_strength,
             learning_rate=learning_rate,
             batch_size=batch_size,
-            **point
+            **point,
         )

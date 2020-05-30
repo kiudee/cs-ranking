@@ -23,7 +23,7 @@ class CmpNetChoiceFunction(CmpNetCore, ChoiceFunctions):
         metrics=["binary_accuracy"],
         batch_size=256,
         random_state=None,
-        **kwargs
+        **kwargs,
     ):
         """
             Create an instance of the :class:`CmpNetCore` architecture for learning a choice function.
@@ -88,7 +88,7 @@ class CmpNetChoiceFunction(CmpNetCore, ChoiceFunctions):
             metrics=metrics,
             batch_size=batch_size,
             random_state=random_state,
-            **kwargs
+            **kwargs,
         )
         self.logger = logging.getLogger(CmpNetChoiceFunction.__name__)
         self.logger.info("Initializing network")
@@ -121,7 +121,7 @@ class CmpNetChoiceFunction(CmpNetCore, ChoiceFunctions):
         tune_size=0.1,
         thin_thresholds=1,
         verbose=0,
-        **kwd
+        **kwd,
     ):
         """
             Fit a CmptNet model for learning a choice fucntion on the provided set of queries X and preferences Y of
@@ -171,7 +171,7 @@ class CmpNetChoiceFunction(CmpNetCore, ChoiceFunctions):
                     callbacks,
                     validation_split,
                     verbose,
-                    **kwd
+                    **kwd,
                 )
             finally:
                 self.logger.info(
@@ -203,7 +203,7 @@ class CmpNetChoiceFunction(CmpNetCore, ChoiceFunctions):
         reg_strength=1e-4,
         learning_rate=1e-3,
         batch_size=128,
-        **point
+        **point,
     ):
         super().set_tunable_parameters(
             n_hidden=n_hidden,
@@ -211,5 +211,5 @@ class CmpNetChoiceFunction(CmpNetCore, ChoiceFunctions):
             reg_strength=reg_strength,
             learning_rate=learning_rate,
             batch_size=batch_size,
-            **point
+            **point,
         )

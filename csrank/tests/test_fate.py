@@ -59,11 +59,7 @@ def test_construction_core():
     assert grc.batch_size == params["batch_size"]
     rtol = 1e-2
     atol = 1e-4
-    key = (
-        "learning_rate"
-        if "learning_rate" in grc.optimizer.get_config().keys()
-        else "lr"
-    )
+    key = "learning_rate" if "learning_rate" in grc.optimizer.get_config() else "lr"
     learning_rate = grc.optimizer.get_config().get(key, 0.0)
     assert np.isclose(
         learning_rate, params["learning_rate"], rtol=rtol, atol=atol, equal_nan=False

@@ -22,7 +22,7 @@ class RankNetDiscreteChoiceFunction(RankNetCore, DiscreteObjectChooser):
         metrics=["binary_accuracy"],
         batch_size=256,
         random_state=None,
-        **kwargs
+        **kwargs,
     ):
         """
             Create an instance of the :class:`RankNetCore` architecture for learning a choice function.
@@ -82,7 +82,7 @@ class RankNetDiscreteChoiceFunction(RankNetCore, DiscreteObjectChooser):
             metrics=metrics,
             batch_size=batch_size,
             random_state=random_state,
-            **kwargs
+            **kwargs,
         )
         self.logger = logging.getLogger(RankNetDiscreteChoiceFunction.__name__)
         self.logger.info("Initializing network")
@@ -130,7 +130,7 @@ class RankNetDiscreteChoiceFunction(RankNetCore, DiscreteObjectChooser):
         reg_strength=1e-4,
         learning_rate=1e-3,
         batch_size=128,
-        **point
+        **point,
     ):
         super().set_tunable_parameters(
             n_hidden=n_hidden,
@@ -138,5 +138,5 @@ class RankNetDiscreteChoiceFunction(RankNetCore, DiscreteObjectChooser):
             reg_strength=reg_strength,
             learning_rate=learning_rate,
             batch_size=batch_size,
-            **point
+            **point,
         )

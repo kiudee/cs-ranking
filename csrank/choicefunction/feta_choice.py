@@ -38,7 +38,7 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
         metrics=["binary_accuracy"],
         batch_size=256,
         random_state=None,
-        **kwargs
+        **kwargs,
     ):
         """
             Create a FETA-network architecture for learning choice functions.
@@ -105,7 +105,7 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
             metrics=metrics,
             batch_size=batch_size,
             random_state=random_state,
-            **kwargs
+            **kwargs,
         )
         self.threshold = 0.5
         self.logger = logging.getLogger(FETAChoiceFunction.__name__)
@@ -237,7 +237,7 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
         tune_size=0.1,
         thin_thresholds=1,
         verbose=0,
-        **kwd
+        **kwd,
     ):
         """
             Fit a FETA-Network for learning a choice function on the provided set of queries X and preferences Y of
@@ -276,7 +276,7 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
                     callbacks,
                     validation_split,
                     verbose,
-                    **kwd
+                    **kwd,
                 )
             finally:
                 self.logger.info(
@@ -372,7 +372,7 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
         reg_strength=1e-4,
         learning_rate=1e-3,
         batch_size=128,
-        **point
+        **point,
     ):
         super().set_tunable_parameters(
             n_hidden=n_hidden,
@@ -380,5 +380,5 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
             reg_strength=reg_strength,
             learning_rate=learning_rate,
             batch_size=batch_size,
-            **point
+            **point,
         )

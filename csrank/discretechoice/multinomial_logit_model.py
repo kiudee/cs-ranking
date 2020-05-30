@@ -176,7 +176,7 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
             "method": "advi",
             "callbacks": [CheckParametersConvergence()],
         },
-        **kwargs
+        **kwargs,
     ):
         """
             Fit a multinomial logit model on the provided set of queries X and choices Y of those objects. The
@@ -250,7 +250,7 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
             point: dict
                 Dictionary containing parameter values which are not tuned for the network
         """
-        if loss_function in likelihood_dict.keys():
+        if loss_function in likelihood_dict:
             self.loss_function = likelihood_dict.get(loss_function, None)
         self.regularization = regularization
         self.model = None

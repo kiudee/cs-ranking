@@ -21,7 +21,7 @@ class ModelSelector(metaclass=ABCMeta):
         model_params,
         fit_params,
         model_path,
-        **kwargs
+        **kwargs,
     ):
         self.priors = [
             [pm.Normal, {"mu": 0, "sd": 10}],

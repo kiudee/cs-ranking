@@ -32,7 +32,7 @@ class FATENetworkCore(Learner):
         optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
         batch_size=256,
         random_state=None,
-        **kwargs
+        **kwargs,
     ):
         """
             Create a FATE-network architecture.
@@ -82,7 +82,7 @@ class FATENetworkCore(Learner):
             activation=self.activation,
             kernel_initializer=self.kernel_initializer,
             kernel_regularizer=self.kernel_regularizer,
-            **self.kwargs
+            **self.kwargs,
         )
 
     def _construct_layers(self, **kwargs):
@@ -160,7 +160,7 @@ class FATENetworkCore(Learner):
         reg_strength=1e-4,
         learning_rate=1e-3,
         batch_size=128,
-        **point
+        **point,
     ):
         self.n_hidden_joint_layers = n_hidden_joint_layers
         self.n_hidden_joint_units = n_hidden_joint_units
@@ -174,7 +174,7 @@ class FATENetworkCore(Learner):
             activation=self.activation,
             kernel_initializer=self.kernel_initializer,
             kernel_regularizer=self.kernel_regularizer,
-            **self.kwargs
+            **self.kwargs,
         )
 
         if len(point) > 0:
@@ -307,7 +307,7 @@ class FATENetwork(FATENetworkCore):
         min_bucket_size=500,
         refit=False,
         optimizer=None,
-        **kwargs
+        **kwargs,
     ):
         if optimizer is not None:
             self.optimizer = optimizer
@@ -361,7 +361,7 @@ class FATENetwork(FATENetworkCore):
                         batch_size=self.batch_size,
                         validation_split=validation_split,
                         verbose=verbose,
-                        **kwargs
+                        **kwargs,
                     )
                     w_after = np.array(self.get_weights())
                     self.set_weights(
@@ -390,7 +390,7 @@ class FATENetwork(FATENetworkCore):
                     validation_split=validation_split,
                     batch_size=self.batch_size,
                     verbose=verbose,
-                    **kwargs
+                    **kwargs,
                 )
             else:
                 self.model.fit_generator(
@@ -398,7 +398,7 @@ class FATENetwork(FATENetworkCore):
                     callbacks=callbacks,
                     epochs=epochs,
                     verbose=verbose,
-                    **kwargs
+                    **kwargs,
                 )
             self.logger.info("Fitting complete")
 
@@ -452,7 +452,7 @@ class FATENetwork(FATENetworkCore):
         global_momentum=0.9,
         min_bucket_size=500,
         refit=False,
-        **kwargs
+        **kwargs,
     ):
         """
             Fit a generic preference learning FATE-network model on a provided set of queries.
@@ -509,7 +509,7 @@ class FATENetwork(FATENetworkCore):
             global_momentum=global_momentum,
             min_bucket_size=min_bucket_size,
             refit=refit,
-            **kwargs
+            **kwargs,
         )
 
     def fit_generator(
@@ -524,7 +524,7 @@ class FATENetwork(FATENetworkCore):
         global_momentum=0.9,
         min_bucket_size=500,
         refit=False,
-        **kwargs
+        **kwargs,
     ):
         """
             Fit a generic object ranking FATE-network on a set of queries provided by
@@ -585,7 +585,7 @@ class FATENetwork(FATENetworkCore):
             global_momentum=global_momentum,
             min_bucket_size=min_bucket_size,
             refit=refit,
-            **kwargs
+            **kwargs,
         )
 
     def _get_context_representation(self, X, kwargs):
@@ -669,13 +669,13 @@ class FATENetwork(FATENetworkCore):
                 activation=self.activation,
                 kernel_initializer=self.kernel_initializer,
                 kernel_regularizer=self.kernel_regularizer,
-                **self.kwargs
+                **self.kwargs,
             )
             self._create_set_layers(
                 activation=self.activation,
                 kernel_initializer=self.kernel_initializer,
                 kernel_regularizer=self.kernel_regularizer,
-                **self.kwargs
+                **self.kwargs,
             )
             self.model = self.construct_model(self.n_object_features_fit_, n_objects)
             self.model.load_weights(self.hash_file)
@@ -691,7 +691,7 @@ class FATENetwork(FATENetworkCore):
         reg_strength=1e-4,
         learning_rate=1e-3,
         batch_size=128,
-        **point
+        **point,
     ):
         """
             Set tunable parameters of the FATE-network to the values provided.
@@ -722,7 +722,7 @@ class FATENetwork(FATENetworkCore):
             reg_strength=reg_strength,
             learning_rate=learning_rate,
             batch_size=batch_size,
-            **point
+            **point,
         )
 
         self.n_hidden_set_units = n_hidden_set_units
@@ -732,7 +732,7 @@ class FATENetwork(FATENetworkCore):
             activation=self.activation,
             kernel_initializer=self.kernel_initializer,
             kernel_regularizer=self.kernel_regularizer,
-            **self.kwargs
+            **self.kwargs,
         )
         if hasattr(self, "model"):
             self.model = None

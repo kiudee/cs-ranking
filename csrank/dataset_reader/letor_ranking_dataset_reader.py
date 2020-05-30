@@ -29,9 +29,8 @@ class LetorRankingDatasetReader(DatasetReader, metaclass=ABCMeta):
         self.logger = logging.getLogger(LetorRankingDatasetReader.__name__)
 
         if year not in [2007, 2008]:
-            self.year = 2007
-        else:
-            self.year = year
+            raise ValueError("year must be either 2007 or 2008")
+        self.year = year
         self.exclude_qf = exclude_qf
         self.query_feature_indices = [4, 5, 6, 19, 20, 21, 34, 35, 36]
         self.query_document_feature_indices = np.delete(
@@ -133,7 +132,7 @@ class LetorRankingDatasetReader(DatasetReader, metaclass=ABCMeta):
         for key in X.keys():
             x = X[key]
             y = Y[key]
-            if key in self.X_train.keys():
+            if key in self.X_train:
                 self.X_train[key] = np.append(self.X_train[key], x, axis=0)
                 self.Y_train[key] = np.append(self.Y_train[key], y, axis=0)
             else:
@@ -215,7 +214,7 @@ class LetorRankingDatasetReader(DatasetReader, metaclass=ABCMeta):
                     [float(l.split(":")[1]) for l in information[1].split(" ")[1:-1]]
                 )
                 x = np.insert(x, len(x), rel_deg)
-                if qid not in dataset.keys():
+                if qid not in dataset:
                     dataset[qid] = [x]
                 else:
                     dataset[qid].append(x)

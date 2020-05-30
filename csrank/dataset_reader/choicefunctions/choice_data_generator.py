@@ -14,8 +14,10 @@ class ChoiceDatasetGenerator(SyntheticDatasetGenerator):
             "linear": self.make_latent_linear_choices,
             "pareto": self.make_globular_pareto_choices,
         }
-        if dataset_type not in dataset_function_options.keys():
-            dataset_type = "pareto"
+        if dataset_type not in dataset_function_options:
+            raise ValueError(
+                f"dataset_type must be one of {set(dataset_function_options.keys())}"
+            )
         self.dataset_function = dataset_function_options[dataset_type]
 
     def get_single_train_test_split(self):
@@ -34,7 +36,7 @@ class ChoiceDatasetGenerator(SyntheticDatasetGenerator):
         seed=42,
         cluster_spread=1.0,
         cluster_size=10,
-        **kwargs
+        **kwargs,
     ):
         def pareto_front(X, signs=None):
             n_points, n_attributes = X.shape
@@ -96,7 +98,7 @@ class ChoiceDatasetGenerator(SyntheticDatasetGenerator):
         n_rep_units=5,
         threshold=0.0,
         seed=42,
-        **kwargs
+        **kwargs,
     ):
         rand = check_random_state(seed)
         ranw = check_random_state(rand.randint(2 ** 32, dtype="uint32"))
