@@ -5,8 +5,8 @@ from keras import Model
 from keras.regularizers import l2
 import numpy as np
 
-from csrank import FATENetworkCore
-from csrank import FATEObjectRanker
+from csrank.core import FATENetworkCore
+from csrank.objectranking import FATEObjectRanker
 from csrank.tests.test_ranking import optimizer
 
 
