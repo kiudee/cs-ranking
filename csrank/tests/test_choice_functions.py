@@ -49,7 +49,7 @@ choice_functions = {
             "n_hidden_set_units": 5,
             "optimizer": optimizer,
         },
-        get_vals([0.8185, 0.6845, 0.9924]),
+        get_vals([0.8185, 0.6070, 0.9924]),
     ),
     FATELINEAR_CHOICE: (
         FATELinearChoiceFunction,
