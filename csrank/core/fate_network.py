@@ -309,6 +309,45 @@ class FATENetwork(FATENetworkCore):
         optimizer=None,
         **kwargs,
     ):
+        """
+            Fit a generic FATE-network model.
+
+            This is not intended for direct use. Instead, you should use one of
+            the domain-specific subclasses such as `FATEChoiceFuntion` or
+            `FATEObjectRanker` instead.
+
+            Parameters
+            ----------
+            X : numpy array or dict
+                Feature vectors of the objects
+                (n_instances, n_objects, n_features) if numpy array or map from n_objects to numpy arrays
+            Y : numpy array or dict
+                The exact semantics are domain dependent and should be
+                described in the relevant subclasses.
+            epochs : int
+                Number of epochs to run if training for a fixed query size or
+                number of epochs of the meta gradient descent for the variadic model
+            inner_epochs : int
+                Number of epochs to train for each query size inside the variadic
+                model
+            callbacks : list
+                List of callbacks to be called during optimization
+            validation_split : float (range : [0,1])
+                Percentage of instances to split off to validate on
+            verbose : bool
+                Print verbose information
+            global_lr : float
+                Learning rate of the meta gradient descent (variadic model only)
+            global_momentum : float
+                Momentum for the meta gradient descent (variadic model only)
+            min_bucket_size : int
+                Restrict the training to queries of a minimum size
+            refit : bool
+                If True, create a new model object, otherwise continue fitting the
+                existing one if one exists.
+            **kwargs :
+                Keyword arguments for the fit function
+        """
         if optimizer is not None:
             self.optimizer = optimizer
         if isinstance(X, dict):
