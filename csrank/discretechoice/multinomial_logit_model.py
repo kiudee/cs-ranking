@@ -65,10 +65,12 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
         """
         self.logger = logging.getLogger(MultinomialLogitModel.__name__)
         self.loss_function = likelihood_dict.get(loss_function, None)
-        if regularization in ["l1", "l2"]:
-            self.regularization = regularization
-        else:
-            self.regularization = "l2"
+        known_regularization_functions = {"l1", "l2"}
+        if regularization not in known_regularization_functions:
+            raise ValueError(
+                f"Regularization function {regularization} is unknown. Must be one of {known_regularization_functions}"
+            )
+        self.regularization = regularization
         self._config = None
         self.model = None
         self.trace = None
@@ -237,7 +239,7 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
     def predict_for_scores(self, scores, **kwargs):
         return DiscreteObjectChooser.predict_for_scores(self, scores, **kwargs)
 
-    def set_tunable_parameters(self, loss_function="", regularization="l1", **point):
+    def set_tunable_parameters(self, loss_function=None, regularization="l1", **point):
         """
             Set tunable parameters of the Multinomial Logit model to the values provided.
 
@@ -250,7 +252,11 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
             point: dict
                 Dictionary containing parameter values which are not tuned for the network
         """
-        if loss_function in likelihood_dict:
+        if loss_function is not None:
+            if loss_function not in likelihood_dict:
+                raise ValueError(
+                    f"Loss function {loss_function} is unknown. Must be one of {set(likelihood_dict.keys())}"
+                )
             self.loss_function = likelihood_dict.get(loss_function, None)
         self.regularization = regularization
         self.model = None

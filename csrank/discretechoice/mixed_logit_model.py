@@ -73,10 +73,12 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
         """
         self.logger = logging.getLogger(MixedLogitModel.__name__)
         self.loss_function = likelihood_dict.get(loss_function, None)
-        if regularization in ["l1", "l2"]:
-            self.regularization = regularization
-        else:
-            self.regularization = "l2"
+        known_regularization_functions = {"l1", "l2"}
+        if regularization not in known_regularization_functions:
+            raise ValueError(
+                f"Regularization function {regularization} is unknown. Must be one of {known_regularization_functions}"
+            )
+        self.regularization = regularization
         self._config = None
         self.n_mixtures = n_mixtures
         self.model = None
