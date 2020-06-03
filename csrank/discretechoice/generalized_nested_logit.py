@@ -95,10 +95,12 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
         self.loss_function = likelihood_dict.get(loss_function, None)
 
         self.random_state = random_state
-        if regularization in ["l1", "l2"]:
-            self.regularization = regularization
-        else:
-            self.regularization = "l2"
+        known_regularization_functions = {"l1", "l2"}
+        if regularization not in known_regularization_functions:
+            raise ValueError(
+                f"Regularization function {regularization} is unknown. Must be one of {known_regularization_functions}"
+            )
+        self.regularization = regularization
         self._config = None
         self.model = None
         self.trace = None
@@ -371,7 +373,7 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
         return DiscreteObjectChooser.predict_for_scores(self, scores, **kwargs)
 
     def set_tunable_parameters(
-        self, alpha=None, n_nests=None, loss_function="", regularization="l2", **point
+        self, alpha=None, n_nests=None, loss_function=None, regularization="l2", **point
     ):
         """
             Set tunable parameters of the Nested Logit model to the values provided.
@@ -396,7 +398,11 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
             self.n_nests = self.n_objects_fit + int(self.n_objects_fit / 2)
         else:
             self.n_nests = n_nests
-        if loss_function in likelihood_dict:
+        if loss_function is not None:
+            if loss_function not in likelihood_dict:
+                raise ValueError(
+                    f"Loss function {loss_function} is unknown. Must be one of {set(likelihood_dict.keys())}"
+                )
             self.loss_function = likelihood_dict.get(loss_function, None)
         self.regularization = regularization
         self.model = None

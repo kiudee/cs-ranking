@@ -64,10 +64,12 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
                 [2] Kenneth Train. Qualitative choice analysis. Cambridge, MA: MIT Press, 1986
         """
         self.logger = logging.getLogger(GeneralizedLinearModel.__name__)
-        if regularization in ["l1", "l2"]:
-            self.regularization = regularization
-        else:
-            self.regularization = "l2"
+        known_regularization_functions = {"l1", "l2"}
+        if regularization not in known_regularization_functions:
+            raise ValueError(
+                f"Regularization function {regularization} is unknown. Must be one of {known_regularization_functions}"
+            )
+        self.regularization = regularization
         self.random_state = random_state
         self.model = None
         self.trace = None
