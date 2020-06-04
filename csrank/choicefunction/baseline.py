@@ -34,6 +34,14 @@ class AllPositive(ChoiceFunctions, Learner):
                or a single numpy array of size:
                (n_instances, n_objects, n_features)
 
+            Y : dict or numpy array
+               Dictionary with a mapping from ranking size to numpy arrays
+               or a single numpy array of size:
+               (n_instances, n_objects, n_features)
+               True scores
+
+            Note that dict and array parameters cannot be mixed.
+
            Returns
            -------
            Y : dict or numpy array
@@ -43,6 +51,13 @@ class AllPositive(ChoiceFunctions, Learner):
                Predicted scores
         """
         self.logger.info("Predicting scores")
+
+        if (isinstance(X, dict) and not isinstance(Y, dict)) or (
+            isinstance(X, np.ndarray) and not isinstance(Y, np.ndarray)
+        ):
+            raise ValueError(
+                "X and Y need to have matching types, either both have to be a dict or both a numpy array."
+            )
 
         if isinstance(X, dict):
             scores = dict()
