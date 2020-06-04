@@ -67,7 +67,7 @@ class AllPositive(ChoiceFunctions, Learner):
                 )
 
         else:
-            scores = self._predict_scores_fixed(X, **kwargs)
+            scores = self._predict_scores_fixed(X, Y, **kwargs)
         return scores
 
     def predict_for_scores(self, scores, **kwargs):
