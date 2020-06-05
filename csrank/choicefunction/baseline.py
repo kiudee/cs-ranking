@@ -8,10 +8,11 @@ from .choice_functions import ChoiceFunctions
 
 class AllPositive(ChoiceFunctions, Learner):
     def __init__(self, **kwargs):
-        """
-            Baseline assigns the average number of chosen objects in the given choice sets and chooses all the objects.
+        """Baseline that assigns the average number of chosen objects in the given choice sets and chooses all the objects
 
-            :param kwargs: Keyword arguments for the algorithms
+        Parameters
+        ----------
+        **kwargs: Keyword arguments for the algorithms
         """
 
         self.logger = logging.getLogger(AllPositive.__name__)
@@ -24,31 +25,30 @@ class AllPositive(ChoiceFunctions, Learner):
         return np.zeros_like(Y) + Y.mean()
 
     def predict_scores(self, X, Y, **kwargs):
-        """
-           Predict the utility scores for each object in the collection of set of objects.
+        """Predict the utility scores for each object in the collection of set of objects
 
-            Parameters
-            ----------
-            X : dict or numpy array
-               Dictionary with a mapping from ranking size to numpy arrays
-               or a single numpy array of size:
-               (n_instances, n_objects, n_features)
+        Parameters
+        ----------
+        X : dict or numpy array
+           Dictionary with a mapping from ranking size to numpy arrays
+           or a single numpy array of size:
+           (n_instances, n_objects, n_features)
 
-            Y : dict or numpy array
-               Dictionary with a mapping from ranking size to numpy arrays
-               or a single numpy array of size:
-               (n_instances, n_objects, n_features)
-               True scores
+        Y : dict or numpy array
+           Dictionary with a mapping from ranking size to numpy arrays
+           or a single numpy array of size:
+           (n_instances, n_objects, n_features)
+           True scores
 
-            Note that dict and array parameters cannot be mixed.
+        Note that dict and array parameters cannot be mixed.
 
-           Returns
-           -------
-           Y : dict or numpy array
-               Dictionary with a mapping from ranking size to numpy arrays
-               or a single numpy array of size:
-               (n_instances, n_objects)
-               Predicted scores
+        Returns
+        -------
+        Y : dict or numpy array
+            Dictionary with a mapping from ranking size to numpy arrays
+            or a single numpy array of size:
+            (n_instances, n_objects)
+            Predicted scores
         """
         self.logger.info("Predicting scores")
 
