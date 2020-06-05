@@ -2,6 +2,25 @@
 History
 =======
 
+1.2.0 (2020-06-05)
+------------------
+
+* Change public interface of the learners to be more in line with the
+  scikit-learn interface (ongoing). As part of these changes, it is no longer
+  required to explicitly pass the data dimensionality to the learners on
+  initialization.
+* Rewrite and document normalized discounted cumulative gain (ndcg) metric to
+  fix numerical issues.
+  See `#32 <https://github.com/kiudee/cs-ranking/issues/32>`__ for details.
+* Fix passing fit keyword arguments on to the core network in
+  ``FATEChoiceFunction``.
+* Fix arguments for ``AllPositive`` baseline.
+* Raise ValueError rather than silently using a default value for unknown
+  passed arguments.
+* Internal efforts to increase code quality and make use of linting
+  (``black``, ``flake8``, ``doc8``).
+* Remove old experimental code.
+
 1.1.0 (2020-03-19)
 ------------------
 
