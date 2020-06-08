@@ -2,7 +2,7 @@
 History
 =======
 
-Unreleased
+1.2.1 (2020-06-08)
 ------------------
 
 * Make all our optional dependencies mandatory to work around a bug in our
