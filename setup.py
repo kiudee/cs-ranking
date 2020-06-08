@@ -52,6 +52,15 @@ if __name__ == "__main__":
             # Pick either CPU or GPU version of tensorflow:
             "tensorflow>=1.5,<2.0",
             # tensorflow-gpu>=1.0.1"
+            # These should be optional, but are temporarily made mandatory due
+            # to an issue in our optional imports. See
+            # https://github.com/kiudee/cs-ranking/issues/137.
+            "psycopg2-binary>=2.7",
+            "pandas>=0.22",
+            "h5py>=2.7",
+            "pygmo>=2.7",
+            "pymc3>=3.8",
+            "theano>=1.0",
         ],
         extras_require={
             "data": [

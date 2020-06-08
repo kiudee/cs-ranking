@@ -2,6 +2,13 @@
 History
 =======
 
+Unreleased
+------------------
+
+* Make all our optional dependencies mandatory to work around a bug in our
+  optional imports code. Without this, an exception is raised on import.
+  A proper fix will follow.
+
 1.2.0 (2020-06-05)
 ------------------
 
