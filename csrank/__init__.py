@@ -1,4 +1,4 @@
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 
 # We should re-evaluate if we really want to re-export everything here and then
 # use __all__ properly.
