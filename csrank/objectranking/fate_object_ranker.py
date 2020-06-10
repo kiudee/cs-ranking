@@ -19,7 +19,7 @@ class FATEObjectRanker(FATENetwork, ObjectRanker):
         activation="selu",
         kernel_initializer="lecun_normal",
         kernel_regularizer=l2(0.01),
-        optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
+        optimizer=SGD(),
         batch_size=256,
         loss_function=hinged_rank_loss,
         metrics=[zero_one_rank_loss_for_scores_ties],

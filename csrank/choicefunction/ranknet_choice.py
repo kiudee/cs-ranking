@@ -19,7 +19,7 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
         kernel_regularizer=l2(1e-4),
         kernel_initializer="lecun_normal",
         activation="relu",
-        optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
+        optimizer=SGD(),
         metrics=["binary_accuracy"],
         batch_size=256,
         random_state=None,

@@ -5,7 +5,9 @@ History
 Unreleased
 ------------------
 
-No changes yet.
+* We no longer override any of the defaults of our default optimizer (SGD). In
+  particular, the parameters nesterov, momentum and lr are now set to the
+  default values set by keras.
 
 1.2.1 (2020-06-08)
 ------------------
