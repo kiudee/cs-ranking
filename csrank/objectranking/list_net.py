@@ -34,7 +34,7 @@ class ListNet(Learner, ObjectRanker):
         kernel_regularizer=l2(1e-4),
         activation="selu",
         kernel_initializer="lecun_normal",
-        optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
+        optimizer=SGD(),
         metrics=[zero_one_rank_loss_for_scores_ties],
         batch_size=256,
         random_state=None,
