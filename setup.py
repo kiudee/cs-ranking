@@ -48,7 +48,7 @@ if __name__ == "__main__":
             "docopt>=0.6.0",
             "joblib>=0.9.4",
             "tqdm>=4.11.2",
-            "keras>=2.3",
+            "keras>=2.3,<2.4",  # 2.4 delegates to tf, needs tf2
             # Pick either CPU or GPU version of tensorflow:
             "tensorflow>=1.5,<2.0",
             # tensorflow-gpu>=1.0.1"
