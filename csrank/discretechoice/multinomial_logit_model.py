@@ -64,7 +64,7 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
                 [2] Kenneth Train. Qualitative choice analysis. Cambridge, MA: MIT Press, 1986
         """
         self.logger = logging.getLogger(MultinomialLogitModel.__name__)
-        self.loss_function = likelihood_dict.get(loss_function, None)
+        self.loss_function = loss_function
         known_regularization_functions = {"l1", "l2"}
         if regularization not in known_regularization_functions:
             raise ValueError(
@@ -151,6 +151,7 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
                 print_dictionary(self.model_configuration)
             )
         )
+        self.loss_function_ = likelihood_dict.get(self.loss_function, None)
         with pm.Model() as self.model:
             self.Xt = theano.shared(X)
             self.Yt = theano.shared(Y)
@@ -162,7 +163,7 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
             self.p = ttu.softmax(utility, axis=1)
 
             LogLikelihood(
-                "yl", loss_func=self.loss_function, p=self.p, observed=self.Yt
+                "yl", loss_func=self.loss_function_, p=self.p, observed=self.Yt
             )
         self.logger.info("Model construction completed")
 
@@ -257,7 +258,7 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
                 raise ValueError(
                     f"Loss function {loss_function} is unknown. Must be one of {set(likelihood_dict.keys())}"
                 )
-            self.loss_function = likelihood_dict.get(loss_function, None)
+            self.loss_function = loss_function
         self.regularization = regularization
         self.model = None
         self.trace = None

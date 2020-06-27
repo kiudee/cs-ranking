@@ -72,7 +72,7 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
                 [3] Daniel McFadden and Kenneth Train. „Mixed MNL models for discrete response“. In: Journal of applied Econometrics 15.5 (2000), pp. 447–470
         """
         self.logger = logging.getLogger(MixedLogitModel.__name__)
-        self.loss_function = likelihood_dict.get(loss_function, None)
+        self.loss_function = loss_function
         known_regularization_functions = {"l1", "l2"}
         if regularization not in known_regularization_functions:
             raise ValueError(
@@ -155,6 +155,7 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
             -------
              model : pymc3 Model :class:`pm.Model`
         """
+        self.loss_function_ = likelihood_dict.get(self.loss_function, None)
         with pm.Model() as self.model:
             self.Xt = theano.shared(X)
             self.Yt = theano.shared(Y)
@@ -163,7 +164,7 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
             utility = tt.dot(self.Xt, weights_dict["weights"])
             self.p = tt.mean(ttu.softmax(utility, axis=1), axis=2)
             LogLikelihood(
-                "yl", loss_func=self.loss_function, p=self.p, observed=self.Yt
+                "yl", loss_func=self.loss_function_, p=self.p, observed=self.Yt
             )
         self.logger.info("Model construction completed")
 
@@ -257,7 +258,7 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
                 Dictionary containing parameter values which are not tuned for the network
         """
         if loss_function in likelihood_dict:
-            self.loss_function = likelihood_dict.get(loss_function, None)
+            self.loss_function = loss_function
         self.n_mixtures = n_mixtures
         self.regularization = regularization
         self.model = None
