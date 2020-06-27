@@ -54,7 +54,7 @@ class FETANetwork(Learner):
         self.batch_size = batch_size
         self.hash_file = None
         self.optimizer = optimizer
-        self._use_zeroth_model = add_zeroth_order_model
+        self.add_zeroth_order_model = add_zeroth_order_model
         self.n_hidden = n_hidden
         self.n_units = n_units
         keys = list(kwargs.keys())
@@ -80,7 +80,7 @@ class FETANetwork(Learner):
         # X = Input(shape=(None, n_features))
         self.logger.info("n_hidden {}, n_units {}".format(self.n_hidden, self.n_units))
         if self.batch_normalization:
-            if self._use_zeroth_model:
+            if self.add_zeroth_order_model:
                 self.hidden_layers_zeroth = [
                     NormalizedDense(
                         self.n_units, name="hidden_zeroth_{}".format(x), **kwargs
@@ -92,7 +92,7 @@ class FETANetwork(Learner):
                 for x in range(self.n_hidden)
             ]
         else:
-            if self._use_zeroth_model:
+            if self.add_zeroth_order_model:
                 self.hidden_layers_zeroth = [
                     Dense(self.n_units, name="hidden_zeroth_{}".format(x), **kwargs)
                     for x in range(self.n_hidden)
@@ -105,14 +105,14 @@ class FETANetwork(Learner):
         self.output_node = Dense(
             1, activation="sigmoid", kernel_regularizer=self.kernel_regularizer
         )
-        if self._use_zeroth_model:
+        if self.add_zeroth_order_model:
             self.output_node_zeroth = Dense(
                 1, activation="sigmoid", kernel_regularizer=self.kernel_regularizer
             )
 
     @property
     def zero_order_model(self):
-        if self._zero_order_model is None and self._use_zeroth_model:
+        if self._zero_order_model is None and self.add_zeroth_order_model:
             self.logger.info("Creating zeroth model")
             inp = Input(shape=(self.n_object_features_fit_,))
 
@@ -153,7 +153,7 @@ class FETANetwork(Learner):
     def _predict_pair(self, a, b, only_pairwise=False, **kwargs):
         # TODO: Is this working correctly?
         pairwise = self.pairwise_model.predict([a, b], **kwargs)
-        if not only_pairwise and self._use_zeroth_model:
+        if not only_pairwise and self.add_zeroth_order_model:
             utility_a = self.zero_order_model.predict([a])
             utility_b = self.zero_order_model.predict([b])
             return pairwise + (utility_a, utility_b)
@@ -173,7 +173,7 @@ class FETANetwork(Learner):
             scores[n] += result.reshape(n_objects, n_objects - 1).mean(axis=1)
             del result
         del pairs
-        if self._use_zeroth_model:
+        if self.add_zeroth_order_model:
             scores_zero = self.zero_order_model.predict(X.reshape(-1, n_features))
             scores_zero = scores_zero.reshape(n_instances, n_objects)
             scores = scores + scores_zero
@@ -199,7 +199,7 @@ class FETANetwork(Learner):
         def create_input_lambda(i):
             return Lambda(lambda x: x[:, i])
 
-        if self._use_zeroth_model:
+        if self.add_zeroth_order_model:
             self.logger.debug("Create 0th order model")
             zeroth_order_outputs = []
             inputs = []
@@ -214,7 +214,7 @@ class FETANetwork(Learner):
         self.logger.debug("Create 1st order model")
         outputs = [list() for _ in range(self.n_objects_fit_)]
         for i, j in combinations(range(self.n_objects_fit_), 2):
-            if self._use_zeroth_model:
+            if self.add_zeroth_order_model:
                 x1 = inputs[i]
                 x2 = inputs[j]
             else:
@@ -244,7 +244,7 @@ class FETANetwork(Learner):
         ]
         scores = concatenate(scores)
         self.logger.debug("1st order model finished")
-        if self._use_zeroth_model:
+        if self.add_zeroth_order_model:
             scores = add([scores, zeroth_order_scores])
         model = Model(inputs=self.input_layer, outputs=scores)
         self.logger.debug("Compiling complete model...")
