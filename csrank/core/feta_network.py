@@ -36,7 +36,7 @@ class FETANetwork(Learner):
         kernel_initializer="lecun_normal",
         activation="selu",
         optimizer=SGD,
-        metrics=None,
+        metrics=(),
         batch_size=256,
         random_state=None,
         **kwargs,
@@ -249,7 +249,9 @@ class FETANetwork(Learner):
         model = Model(inputs=self.input_layer, outputs=scores)
         self.logger.debug("Compiling complete model...")
         model.compile(
-            loss=self.loss_function, optimizer=self.optimizer_, metrics=self.metrics
+            loss=self.loss_function,
+            optimizer=self.optimizer_,
+            metrics=list(self.metrics),
         )
         return model
 

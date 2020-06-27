@@ -23,7 +23,7 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
         kernel_regularizer=l2(0.01),
         optimizer=SGD,
         batch_size=256,
-        metrics=None,
+        metrics=(),
         random_state=None,
         **kwargs,
     ):

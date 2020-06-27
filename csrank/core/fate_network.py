@@ -475,7 +475,9 @@ class FATENetwork(FATENetworkCore):
         model = Model(inputs=input_layer, outputs=scores)
 
         model.compile(
-            loss=self.loss_function, optimizer=self.optimizer_, metrics=self.metrics
+            loss=self.loss_function,
+            optimizer=self.optimizer_,
+            metrics=list(self.metrics),
         )
         return model
 

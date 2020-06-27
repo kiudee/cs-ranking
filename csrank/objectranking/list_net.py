@@ -34,7 +34,7 @@ class ListNet(Learner, ObjectRanker):
         activation="selu",
         kernel_initializer="lecun_normal",
         optimizer=SGD,
-        metrics=[zero_one_rank_loss_for_scores_ties],
+        metrics=(zero_one_rank_loss_for_scores_ties,),
         batch_size=256,
         random_state=None,
         **kwargs,
@@ -214,7 +214,9 @@ class ListNet(Learner, ObjectRanker):
         merged = concatenate(outputs)
         model = Model(inputs=self.input_layer, outputs=merged)
         model.compile(
-            loss=self.loss_function, optimizer=self.optimizer_, metrics=self.metrics
+            loss=self.loss_function,
+            optimizer=self.optimizer_,
+            metrics=list(self.metrics),
         )
         return model
 

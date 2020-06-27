@@ -22,7 +22,7 @@ class FATEObjectRanker(FATENetwork, ObjectRanker):
         optimizer=SGD,
         batch_size=256,
         loss_function=hinged_rank_loss,
-        metrics=[zero_one_rank_loss_for_scores_ties],
+        metrics=(zero_one_rank_loss_for_scores_ties,),
         random_state=None,
         **kwargs,
     ):

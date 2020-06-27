@@ -29,7 +29,7 @@ class CmpNetCore(Learner):
         kernel_initializer="lecun_normal",
         activation="relu",
         optimizer=SGD,
-        metrics=["binary_accuracy"],
+        metrics=("binary_accuracy",),
         batch_size=256,
         random_state=None,
         **kwargs,
@@ -109,7 +109,9 @@ class CmpNetCore(Learner):
         merged_output = concatenate([N_g, N_l])
         model = Model(inputs=[self.x1, self.x2], outputs=merged_output)
         model.compile(
-            loss=self.loss_function, optimizer=self.optimizer_, metrics=self.metrics
+            loss=self.loss_function,
+            optimizer=self.optimizer_,
+            metrics=list(self.metrics),
         )
         return model
 

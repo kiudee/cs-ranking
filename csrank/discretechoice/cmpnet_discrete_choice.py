@@ -19,7 +19,7 @@ class CmpNetDiscreteChoiceFunction(CmpNetCore, DiscreteObjectChooser):
         kernel_initializer="lecun_normal",
         activation="relu",
         optimizer=SGD,
-        metrics=["binary_accuracy"],
+        metrics=("binary_accuracy",),
         batch_size=256,
         random_state=None,
         **kwargs,

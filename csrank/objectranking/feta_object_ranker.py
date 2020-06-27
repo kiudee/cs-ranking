@@ -24,7 +24,7 @@ class FETAObjectRanker(FETANetwork, ObjectRanker):
         kernel_initializer="lecun_normal",
         activation="selu",
         optimizer=SGD,
-        metrics=None,
+        metrics=(),
         batch_size=256,
         random_state=None,
         **kwargs,
