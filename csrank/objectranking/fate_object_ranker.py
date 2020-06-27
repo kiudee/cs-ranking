@@ -18,7 +18,7 @@ class FATEObjectRanker(FATENetwork, ObjectRanker):
         n_hidden_joint_units=32,
         activation="selu",
         kernel_initializer="lecun_normal",
-        kernel_regularizer=l2(0.01),
+        kernel_regularizer=l2(),
         optimizer=SGD,
         batch_size=256,
         loss_function=hinged_rank_loss,

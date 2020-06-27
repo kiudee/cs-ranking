@@ -27,7 +27,7 @@ class FATENetworkCore(Learner):
         n_hidden_joint_units=32,
         activation="selu",
         kernel_initializer="lecun_normal",
-        kernel_regularizer=l2(0.01),
+        kernel_regularizer=l2(),
         optimizer=SGD,
         batch_size=256,
         random_state=None,

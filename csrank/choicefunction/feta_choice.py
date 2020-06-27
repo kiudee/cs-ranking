@@ -31,7 +31,7 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
         num_subsample=5,
         loss_function=binary_crossentropy,
         batch_normalization=False,
-        kernel_regularizer=l2(1e-4),
+        kernel_regularizer=l2(),
         kernel_initializer="lecun_normal",
         activation="selu",
         optimizer=SGD,

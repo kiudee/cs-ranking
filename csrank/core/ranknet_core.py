@@ -24,7 +24,7 @@ class RankNetCore(Learner):
         n_units=8,
         loss_function="binary_crossentropy",
         batch_normalization=True,
-        kernel_regularizer=l2(1e-4),
+        kernel_regularizer=l2(),
         kernel_initializer="lecun_normal",
         activation="relu",
         optimizer=SGD,
