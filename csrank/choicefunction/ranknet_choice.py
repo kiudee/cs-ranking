@@ -19,7 +19,7 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
         kernel_regularizer=l2(1e-4),
         kernel_initializer="lecun_normal",
         activation="relu",
-        optimizer=SGD(),
+        optimizer=SGD,
         metrics=["binary_accuracy"],
         batch_size=256,
         random_state=None,
@@ -53,8 +53,10 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
                 Initialization function for the weights of each hidden layer
             activation : function or string
                 Type of activation function to use in each hidden layer
-            optimizer : function or string
-                Optimizer to use during stochastic gradient descent
+            optimizer: Class
+                Uninitialized optimizer class following the keras optimizer interface.
+            optimizer__{kwarg}
+                Arguments to be passed to the optimizer on initialization, such as optimizer__lr.
             metrics : list
                 List of metrics to evaluate during training (can be non-differentiable)
             batch_size : int

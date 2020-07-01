@@ -20,7 +20,12 @@ from csrank.metrics_np import zero_one_rank_loss_for_scores_ties_np
 from csrank.objectranking import *
 from csrank.objectranking.fate_object_ranker import FATEObjectRanker
 
-optimizer = SGD(lr=1e-3, momentum=0.9, nesterov=True)
+optimizer_common_args = {
+    "optimizer": SGD,
+    "optimizer__lr": 1e-3,
+    "optimizer__momentum": 0.9,
+    "optimizer__nesterov": True,
+}
 
 object_rankers = {
     FATELINEAR_RANKER: (
@@ -31,12 +36,12 @@ object_rankers = {
     FETALINEAR_RANKER: (FETALinearObjectRanker, {}, (0.0, 1.0)),
     FETA_RANKER: (
         FETAObjectRanker,
-        {"add_zeroth_order_model": True, "optimizer": optimizer},
+        {"add_zeroth_order_model": True, **optimizer_common_args},
         (0.0, 1.0),
     ),
-    RANKNET: (RankNet, {"optimizer": optimizer}, (0.0, 1.0)),
-    CMPNET: (CmpNet, {"optimizer": optimizer}, (0.0, 1.0)),
-    LISTNET: (ListNet, {"n_top": 3, "optimizer": optimizer}, (0.0, 1.0)),
+    RANKNET: (RankNet, optimizer_common_args.copy(), (0.0, 1.0)),
+    CMPNET: (CmpNet, optimizer_common_args.copy(), (0.0, 1.0),),
+    LISTNET: (ListNet, {"n_top": 3, **optimizer_common_args}, (0.0, 1.0)),
     ERR: (ExpectedRankRegression, {}, (0.0, 1.0)),
     RANKSVM: (RankSVM, {}, (0.0, 1.0)),
     FATE_RANKER: (
@@ -46,7 +51,6 @@ object_rankers = {
             "n_hidden_set_layers": 1,
             "n_hidden_joint_units": 5,
             "n_hidden_set_units": 5,
-            "optimizer": optimizer,
         },
         (0.0, 1.0),
     ),
@@ -79,16 +83,6 @@ def check_params_tunable(tunable_obj, params, rtol=1e-2, atol=1e-4):
                     )
             else:
                 assert value == expected
-        elif key == "learning_rate" and hasattr(tunable_obj, "optimizer"):
-            key = (
-                "learning_rate"
-                if "learning_rate" in tunable_obj.optimizer.get_config()
-                else "lr"
-            )
-            learning_rate = tunable_obj.optimizer.get_config().get(key, 0.0)
-            assert np.isclose(
-                learning_rate, value, rtol=rtol, atol=atol, equal_nan=False
-            )
         elif key == "reg_strength" and hasattr(tunable_obj, "kernel_regularizer"):
             config = tunable_obj.kernel_regularizer.get_config()
             val1 = np.isclose(

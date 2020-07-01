@@ -7,7 +7,7 @@ import numpy as np
 
 from csrank import FATENetworkCore
 from csrank import FATEObjectRanker
-from csrank.tests.test_ranking import optimizer
+from csrank.tests.test_ranking import optimizer_common_args
 
 
 def test_construction_core():
@@ -33,6 +33,7 @@ def test_construction_core():
             pass
 
     grc = MockClass()
+    grc._initialize_optimizer()
     grc._construct_layers(
         activation=grc.activation,
         kernel_initializer=grc.kernel_initializer,
@@ -42,7 +43,7 @@ def test_construction_core():
     scores = grc.join_input_layers(input_layer, None, n_layers=0, n_objects=n_objects)
 
     model = Model(inputs=input_layer, outputs=scores)
-    model.compile(loss="mse", optimizer=grc.optimizer)
+    model.compile(loss="mse", optimizer=grc.optimizer_)
     X = np.random.randn(100, n_objects, n_features)
     y = X.sum(axis=2)
     model.fit(x=X, y=y, verbose=0)
@@ -59,8 +60,8 @@ def test_construction_core():
     assert grc.batch_size == params["batch_size"]
     rtol = 1e-2
     atol = 1e-4
-    key = "learning_rate" if "learning_rate" in grc.optimizer.get_config() else "lr"
-    learning_rate = grc.optimizer.get_config().get(key, 0.0)
+    key = "learning_rate" if "learning_rate" in grc.optimizer_.get_config() else "lr"
+    learning_rate = grc.optimizer_.get_config().get(key, 0.0)
     assert np.isclose(
         learning_rate, params["learning_rate"], rtol=rtol, atol=atol, equal_nan=False
     )
@@ -88,7 +89,7 @@ def test_fate_object_ranker_fixed_generator():
         n_hidden_joint_units=5,
         n_hidden_set_units=5,
         kernel_regularizer=l2(1e-4),
-        optimizer=optimizer,
+        **optimizer_common_args,
     )
     fate.fit_generator(
         generator=trivial_ranking_problem_generator(),

@@ -4,7 +4,6 @@ import logging
 from keras import backend as K
 from keras import Input
 from keras import Model
-from keras import optimizers
 from keras.layers import concatenate
 from keras.layers import Dense
 from keras.optimizers import SGD
@@ -29,7 +28,7 @@ class CmpNetCore(Learner):
         kernel_regularizer=l2(1e-4),
         kernel_initializer="lecun_normal",
         activation="relu",
-        optimizer=SGD(),
+        optimizer=SGD,
         metrics=["binary_accuracy"],
         batch_size=256,
         random_state=None,
@@ -47,8 +46,7 @@ class CmpNetCore(Learner):
         self.kernel_initializer = kernel_initializer
         self.loss_function = loss_function
 
-        self.optimizer = optimizers.get(optimizer)
-        self._optimizer_config = self.optimizer.get_config()
+        self.optimizer = optimizer
 
         self.n_hidden = n_hidden
         self.n_units = n_units
@@ -97,6 +95,7 @@ class CmpNetCore(Learner):
             model: keras :class:`Model`
                 Neural network to learn the CmpNet utility score
         """
+        self._initialize_optimizer()
         x1x2 = concatenate([self.x1, self.x2])
         x2x1 = concatenate([self.x2, self.x1])
         self.logger.debug("Creating the model")
@@ -110,7 +109,7 @@ class CmpNetCore(Learner):
         merged_output = concatenate([N_g, N_l])
         model = Model(inputs=[self.x1, self.x2], outputs=merged_output)
         model.compile(
-            loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics
+            loss=self.loss_function, optimizer=self.optimizer_, metrics=self.metrics
         )
         return model
 
@@ -212,7 +211,7 @@ class CmpNetCore(Learner):
             sess = tf.Session()
             K.set_session(sess)
 
-            self.optimizer = self.optimizer.from_config(self._optimizer_config)
+            self._initialize_optimizer()
             self._construct_layers(
                 kernel_regularizer=self.kernel_regularizer,
                 kernel_initializer=self.kernel_initializer,
@@ -255,8 +254,8 @@ class CmpNetCore(Learner):
         self.n_units = n_units
         self.kernel_regularizer = l2(reg_strength)
         self.batch_size = batch_size
-        self.optimizer = self.optimizer.from_config(self._optimizer_config)
-        K.set_value(self.optimizer.lr, learning_rate)
+        self._initialize_optimizer()
+        K.set_value(self.optimizer_.lr, learning_rate)
         self._construct_layers(
             kernel_regularizer=self.kernel_regularizer,
             kernel_initializer=self.kernel_initializer,

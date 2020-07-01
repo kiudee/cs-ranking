@@ -30,7 +30,12 @@ metrics = {
     "CategoricalAccuracy": categorical_accuracy_np,
     "CategoricalTopK2": topk_categorical_accuracy_np(k=2),
 }
-optimizer = SGD(lr=1e-3, momentum=0.9, nesterov=True)
+optimizer_common_args = {
+    "optimizer": SGD,
+    "optimizer__lr": 1e-3,
+    "optimizer__momentum": 0.9,
+    "optimizer__nesterov": True,
+}
 
 
 def get_vals(values=[1.0, 1.0]):
@@ -40,17 +45,17 @@ def get_vals(values=[1.0, 1.0]):
 discrete_choice_functions = {
     FETA_DC: (
         FETADiscreteChoiceFunction,
-        {"n_hidden": 1, "optimizer": optimizer},
+        {"n_hidden": 1, **optimizer_common_args},
         get_vals([0.978, 1.0]),
     ),
     RANKNET_DC: (
         RankNetDiscreteChoiceFunction,
-        {"optimizer": optimizer},
+        optimizer_common_args.copy(),
         get_vals([0.97, 0.996]),
     ),
     CMPNET_DC: (
         CmpNetDiscreteChoiceFunction,
-        {"optimizer": optimizer},
+        optimizer_common_args.copy(),
         get_vals([0.994, 1.0]),
     ),
     FATE_DC: (
@@ -60,7 +65,7 @@ discrete_choice_functions = {
             "n_hidden_set_layers": 1,
             "n_hidden_joint_units": 5,
             "n_hidden_set_units": 5,
-            "optimizer": optimizer,
+            **optimizer_common_args,
         },
         get_vals([0.95, 0.998]),
     ),

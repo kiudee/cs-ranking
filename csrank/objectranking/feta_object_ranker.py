@@ -23,7 +23,7 @@ class FETAObjectRanker(FETANetwork, ObjectRanker):
         kernel_regularizer=l2(1e-4),
         kernel_initializer="lecun_normal",
         activation="selu",
-        optimizer=SGD(),
+        optimizer=SGD,
         metrics=None,
         batch_size=256,
         random_state=None,
@@ -67,8 +67,10 @@ class FETAObjectRanker(FETANetwork, ObjectRanker):
                 Initialization function for the weights of each hidden layer
             activation : string or function
                 Activation function to use in the hidden units
-            optimizer : string or function
-                Stochastic gradient optimizer
+            optimizer: Class
+                Uninitialized optimizer class following the keras optimizer interface.
+            optimizer__{kwarg}
+                Arguments to be passed to the optimizer on initialization, such as optimizer__lr.
             metrics : list
                 List of evaluation metrics (can be non-differentiable)
             batch_size : int
