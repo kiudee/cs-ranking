@@ -31,11 +31,11 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
         num_subsample=5,
         loss_function=binary_crossentropy,
         batch_normalization=False,
-        kernel_regularizer=l2(1e-4),
+        kernel_regularizer=l2(),
         kernel_initializer="lecun_normal",
         activation="selu",
         optimizer=SGD,
-        metrics=["binary_accuracy"],
+        metrics=("binary_accuracy",),
         batch_size=256,
         random_state=None,
         **kwargs,
@@ -119,7 +119,7 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
         # Todo: Variable sized input
         # X = Input(shape=(None, n_features))
         if self.batch_normalization:
-            if self._use_zeroth_model:
+            if self.add_zeroth_order_model:
                 self.hidden_layers_zeroth = [
                     NormalizedDense(
                         self.n_units, name="hidden_zeroth_{}".format(x), *kwargs
@@ -131,7 +131,7 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
                 for x in range(self.n_hidden)
             ]
         else:
-            if self._use_zeroth_model:
+            if self.add_zeroth_order_model:
                 self.hidden_layers_zeroth = [
                     Dense(self.n_units, name="hidden_zeroth_{}".format(x), **kwargs)
                     for x in range(self.n_hidden)
@@ -144,7 +144,7 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
         self.output_node = Dense(
             1, activation="linear", kernel_regularizer=self.kernel_regularizer
         )
-        if self._use_zeroth_model:
+        if self.add_zeroth_order_model:
             self.output_node_zeroth = Dense(
                 1, activation="linear", kernel_regularizer=self.kernel_regularizer
             )
@@ -169,7 +169,7 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
         def create_input_lambda(i):
             return Lambda(lambda x: x[:, i])
 
-        if self._use_zeroth_model:
+        if self.add_zeroth_order_model:
             self.logger.debug("Create 0th order model")
             zeroth_order_outputs = []
             inputs = []
@@ -184,7 +184,7 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
         self.logger.debug("Create 1st order model")
         outputs = [list() for _ in range(self.n_objects_fit_)]
         for i, j in combinations(range(self.n_objects_fit_), 2):
-            if self._use_zeroth_model:
+            if self.add_zeroth_order_model:
                 x1 = inputs[i]
                 x2 = inputs[j]
             else:
@@ -214,13 +214,15 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
         ]
         scores = concatenate(scores)
         self.logger.debug("1st order model finished")
-        if self._use_zeroth_model:
+        if self.add_zeroth_order_model:
             scores = add([scores, zeroth_order_scores])
         scores = Activation("sigmoid")(scores)
         model = Model(inputs=self.input_layer, outputs=scores)
         self.logger.debug("Compiling complete model...")
         model.compile(
-            loss=self.loss_function, optimizer=self.optimizer_, metrics=self.metrics
+            loss=self.loss_function,
+            optimizer=self.optimizer_,
+            metrics=list(self.metrics),
         )
         return model
 

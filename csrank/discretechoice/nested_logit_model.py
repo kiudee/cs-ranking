@@ -91,7 +91,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         self.n_nests = n_nests
         self.alpha = alpha
         self.random_state = random_state
-        self.loss_function = likelihood_dict.get(loss_function, None)
+        self.loss_function = loss_function
         known_regularization_functions = {"l1", "l2"}
         if regularization not in known_regularization_functions:
             raise ValueError(
@@ -313,6 +313,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
             -------
              model : pymc3 Model :class:`pm.Model`
         """
+        self.loss_function_ = likelihood_dict.get(self.loss_function, None)
         if np.prod(X.shape) > self.threshold:
             upper_bound = int(self.threshold / np.prod(X.shape[1:]))
             indices = self.random_state_.choice(X.shape[0], upper_bound, replace=False)
@@ -339,7 +340,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
             self.p = self.get_probabilities(utility, lambda_k, utility_k)
 
             LogLikelihood(
-                "yl", loss_func=self.loss_function, p=self.p, observed=self.Yt
+                "yl", loss_func=self.loss_function_, p=self.p, observed=self.Yt
             )
         self.logger.info("Model construction completed")
 
@@ -464,7 +465,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
                 raise ValueError(
                     f"Loss function {loss_function} is unknown. Must be one of {set(likelihood_dict.keys())}"
                 )
-            self.loss_function = likelihood_dict.get(loss_function, None)
+            self.loss_function = loss_function
         self.cluster_model = None
         self.features_nests = None
         self.model = None

@@ -24,11 +24,11 @@ class RankNetCore(Learner):
         n_units=8,
         loss_function="binary_crossentropy",
         batch_normalization=True,
-        kernel_regularizer=l2(1e-4),
+        kernel_regularizer=l2(),
         kernel_initializer="lecun_normal",
         activation="relu",
         optimizer=SGD,
-        metrics=["binary_accuracy"],
+        metrics=("binary_accuracy",),
         batch_size=256,
         random_state=None,
         **kwargs,
@@ -99,7 +99,9 @@ class RankNetCore(Learner):
         output = self.output_node(merged_inputs)
         model = Model(inputs=[self.x1, self.x2], outputs=output)
         model.compile(
-            loss=self.loss_function, optimizer=self.optimizer_, metrics=self.metrics
+            loss=self.loss_function,
+            optimizer=self.optimizer_,
+            metrics=list(self.metrics),
         )
         return model
 

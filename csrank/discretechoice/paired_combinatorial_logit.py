@@ -91,7 +91,7 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         self.logger = logging.getLogger(PairedCombinatorialLogit.__name__)
         self.alpha = alpha
         self.random_state = random_state
-        self.loss_function = likelihood_dict.get(loss_function, None)
+        self.loss_function = loss_function
         known_regularization_functions = {"l1", "l2"}
         if regularization not in known_regularization_functions:
             raise ValueError(
@@ -260,6 +260,7 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
             -------
              model : pymc3 Model :class:`pm.Model`
         """
+        self.loss_function_ = likelihood_dict.get(self.loss_function, None)
         with pm.Model() as self.model:
             self.Xt = theano.shared(X)
             self.Yt = theano.shared(Y)
@@ -269,7 +270,7 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
             utility = tt.dot(self.Xt, weights_dict["weights"])
             self.p = self.get_probabilities(utility, lambda_k)
             LogLikelihood(
-                "yl", loss_func=self.loss_function, p=self.p, observed=self.Yt
+                "yl", loss_func=self.loss_function_, p=self.p, observed=self.Yt
             )
         self.logger.info("Model construction completed")
 
@@ -380,7 +381,7 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
                 raise ValueError(
                     f"Loss function {loss_function} is unknown. Must be one of {set(likelihood_dict.keys())}"
                 )
-            self.loss_function = likelihood_dict.get(loss_function, None)
+            self.loss_function = loss_function
         self.regularization = regularization
         self.model = None
         self.trace = None

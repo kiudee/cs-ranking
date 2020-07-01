@@ -27,7 +27,7 @@ class FATENetworkCore(Learner):
         n_hidden_joint_units=32,
         activation="selu",
         kernel_initializer="lecun_normal",
-        kernel_regularizer=l2(0.01),
+        kernel_regularizer=l2(),
         optimizer=SGD,
         batch_size=256,
         random_state=None,
@@ -475,7 +475,9 @@ class FATENetwork(FATENetworkCore):
         model = Model(inputs=input_layer, outputs=scores)
 
         model.compile(
-            loss=self.loss_function, optimizer=self.optimizer_, metrics=self.metrics
+            loss=self.loss_function,
+            optimizer=self.optimizer_,
+            metrics=list(self.metrics),
         )
         return model
 

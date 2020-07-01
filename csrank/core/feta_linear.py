@@ -13,6 +13,21 @@ from csrank.util import progress_bar
 
 
 class FETALinearCore(Learner):
+    """Core Learner implementing the First Evaluate then Aggregate approach.
+
+    This implements a linear variant of the FETA approach introduced in
+    [PfGuH18]. The idea is to first evaluate each object in each sub-context of
+    fixed size with a linear function approximator and then to aggregate these
+    evaluations.
+
+    References
+    ----------
+
+    .. [PfGuH18] Pfannschmidt, K., Gupta, P., & Hüllermeier, E. (2018). Deep
+       architectures for learning context-dependent ranking functions. arXiv
+       preprint arXiv:1803.05796. https://arxiv.org/pdf/1803.05796.pdf
+    """
+
     def __init__(
         self,
         learning_rate=1e-3,
@@ -23,6 +38,25 @@ class FETALinearCore(Learner):
         random_state=None,
         **kwargs,
     ):
+        """
+        Parameters
+        ----------
+        learning_rate : float
+            The learning rate used by the gradient descent optimizer.
+        batch_size : int
+            The size of the mini-batches used to train the Neural Network.
+        loss_function
+            The loss function to minimize when training the Neural Network. See
+            the functions offered in the keras.losses module for more details.
+        epochs_drop: int
+            The amount of training epochs after which the learning rate is
+            decreased by a factor of `drop`.
+        drop: float
+            The factor by which to decrease the learning rate every
+            `epochs_drop` epochs.
+        random_state: np.RandomState
+            The random state to use in this object.
+        """
         self.learning_rate = learning_rate
         self.batch_size = batch_size
         self.random_state = random_state
@@ -90,6 +124,18 @@ class FETALinearCore(Learner):
         )
 
     def step_decay(self, epoch):
+        """Update the current learning rate.
+
+        Computes the current learning rate based on the initial learning rate,
+        the current epoch and the decay speed set by the `epochs_drop` and
+        `drop` hyperparameters.
+
+        Parameters
+        ----------
+
+        epoch: int
+            The current epoch.
+        """
         step = math.floor((1 + epoch) / self.epochs_drop)
         self.current_lr = self.learning_rate * math.pow(self.drop, step)
         self.optimizer = tf.train.GradientDescentOptimizer(self.current_lr).minimize(
@@ -99,6 +145,22 @@ class FETALinearCore(Learner):
     def fit(
         self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd
     ):
+        """
+        Fit the preference learning algorithm on the provided set of queries X
+        and preferences Y of those objects. The provided queries and
+        corresponding preferences are of a fixed size (numpy arrays).
+
+        Parameters
+        ----------
+        X : array-like, shape (n_samples, n_objects, n_features)
+            Feature vectors of the objects
+        Y : array-like, shape (n_samples, n_objects)
+            Preferences of the objects in form of rankings or choices
+        epochs: int
+            The amount of epochs to train for. The training loop will try to
+            predict the target variables and adjust its parameters by gradient
+            descent `epochs` times.
+        """
         self.random_state_ = check_random_state(self.random_state)
         # Global Variables Initializer
         n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
@@ -146,6 +208,18 @@ class FETALinearCore(Learner):
             self.logger.info("Epoch {}: cost {} ".format((epoch + 1), np.mean(c)))
 
     def _predict_scores_fixed(self, X, **kwargs):
+        """Predict the scores for a given collection of sets of objects of same size.
+
+           Parameters
+           ----------
+           X : array-like, shape (n_samples, n_objects, n_features)
+
+
+           Returns
+           -------
+           Y : array-like, shape (n_samples, n_objects)
+               Returns the scores of each of the objects for each of the samples.
+        """
         n_instances, n_objects, n_features = X.shape
         assert n_features == self.n_object_features_fit_
         outputs = [list() for _ in range(n_objects)]
@@ -168,7 +242,10 @@ class FETALinearCore(Learner):
         self, learning_rate=1e-3, batch_size=128, epochs_drop=300, drop=0.1, **point
     ):
         """
-            Set tunable parameters of the FETA-network to the values provided.
+            Set tunable hyperparameters of the FETA-network to the values provided.
+
+            This can be used for automatic hyperparameter optimization. See
+            csrank.tuning for more information.
 
             Parameters
             ----------

@@ -92,7 +92,7 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
 
         self.n_nests = n_nests
         self.alpha = alpha
-        self.loss_function = likelihood_dict.get(loss_function, None)
+        self.loss_function = loss_function
 
         self.random_state = random_state
         known_regularization_functions = {"l1", "l2"}
@@ -257,6 +257,7 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
              model : pymc3 Model :class:`pm.Model`
         """
         self.random_state_ = check_random_state(self.random_state)
+        self.loss_function_ = likelihood_dict.get(self.loss_function, None)
         if np.prod(X.shape) > self.threshold:
             upper_bound = int(self.threshold / np.prod(X.shape[1:]))
             indices = self.random_state_.choice(X.shape[0], upper_bound, replace=False)
@@ -280,7 +281,7 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
             lambda_k = pm.Uniform("lambda_k", self.alpha, 1.0, shape=self.n_nests)
             self.p = self.get_probabilities(utility, lambda_k, alpha_ik)
             LogLikelihood(
-                "yl", loss_func=self.loss_function, p=self.p, observed=self.Yt
+                "yl", loss_func=self.loss_function_, p=self.p, observed=self.Yt
             )
         self.logger.info("Model construction completed")
 
@@ -403,7 +404,7 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
                 raise ValueError(
                     f"Loss function {loss_function} is unknown. Must be one of {set(likelihood_dict.keys())}"
                 )
-            self.loss_function = likelihood_dict.get(loss_function, None)
+            self.loss_function = loss_function
         self.regularization = regularization
         self.model = None
         self.trace = None

@@ -29,11 +29,11 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
         num_subsample=5,
         loss_function="categorical_hinge",
         batch_normalization=False,
-        kernel_regularizer=l2(1e-4),
+        kernel_regularizer=l2(),
         kernel_initializer="lecun_normal",
         activation="selu",
         optimizer=SGD,
-        metrics=["categorical_accuracy"],
+        metrics=("categorical_accuracy",),
         batch_size=256,
         random_state=None,
         **kwargs,
@@ -116,7 +116,7 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
         # Todo: Variable sized input
         # X = Input(shape=(None, n_features))
         if self.batch_normalization:
-            if self._use_zeroth_model:
+            if self.add_zeroth_order_model:
                 self.hidden_layers_zeroth = [
                     NormalizedDense(
                         self.n_units, name="hidden_zeroth_{}".format(x), *kwargs
@@ -128,7 +128,7 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
                 for x in range(self.n_hidden)
             ]
         else:
-            if self._use_zeroth_model:
+            if self.add_zeroth_order_model:
                 self.hidden_layers_zeroth = [
                     Dense(self.n_units, name="hidden_zeroth_{}".format(x), **kwargs)
                     for x in range(self.n_hidden)
@@ -144,7 +144,7 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
             kernel_regularizer=self.kernel_regularizer,
             name="score",
         )
-        if self._use_zeroth_model:
+        if self.add_zeroth_order_model:
             self.output_node_zeroth = Dense(
                 1,
                 activation="linear",
@@ -178,7 +178,7 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
         def create_input_lambda(i):
             return Lambda(lambda x: x[:, i])
 
-        if self._use_zeroth_model:
+        if self.add_zeroth_order_model:
             self.logger.debug("Create 0th order model")
             zeroth_order_outputs = []
             inputs = []
@@ -193,7 +193,7 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
         self.logger.debug("Create 1st order model")
         outputs = [list() for _ in range(self.n_objects_fit_)]
         for i, j in combinations(range(self.n_objects_fit_), 2):
-            if self._use_zeroth_model:
+            if self.add_zeroth_order_model:
                 x1 = inputs[i]
                 x2 = inputs[j]
             else:
@@ -223,7 +223,7 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
         ]
         scores = concatenate(scores)
         self.logger.debug("1st order model finished")
-        if self._use_zeroth_model:
+        if self.add_zeroth_order_model:
 
             def get_score_object(i):
                 return Lambda(lambda x: x[:, i, None])
@@ -242,9 +242,9 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
                 scores.append(self.weighted_sum(concat_scores[i]))
             scores = concatenate(scores)
 
-        # if self._use_zeroth_model:
+        # if self.add_zeroth_order_model:
         #     scores = add([scores, zeroth_order_scores])
-        # if self._use_zeroth_model:
+        # if self.add_zeroth_order_model:
         #     def expand_dims():
         #         return Lambda(lambda x: x[..., None])
         #
@@ -259,12 +259,14 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
         #                          kernel_regularizer=self.kernel_regularizer, use_bias=False)
         #     scores = weighted_sum(concat_scores)
         #     scores = squeeze_dims()(scores)
-        if not self._use_zeroth_model:
+        if not self.add_zeroth_order_model:
             scores = Activation("sigmoid")(scores)
         model = Model(inputs=self.input_layer, outputs=scores)
         self.logger.debug("Compiling complete model...")
         model.compile(
-            loss=self.loss_function, optimizer=self.optimizer_, metrics=self.metrics
+            loss=self.loss_function,
+            optimizer=self.optimizer_,
+            metrics=list(self.metrics),
         )
         return model
 
@@ -299,7 +301,7 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
             scores[n] += result.reshape(n_objects, n_objects - 1).mean(axis=1)
             del result
         del pairs
-        if self._use_zeroth_model:
+        if self.add_zeroth_order_model:
             scores_zero = self.zero_order_model.predict(X.reshape(-1, n_features))
             scores_zero = scores_zero.reshape(n_instances, n_objects)
             model = self._create_weighted_model(n_objects)
