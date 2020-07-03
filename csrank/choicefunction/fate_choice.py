@@ -20,7 +20,7 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
         loss_function=binary_crossentropy,
         activation="selu",
         kernel_initializer="lecun_normal",
-        kernel_regularizer=l2(),
+        kernel_regularizer=l2,
         optimizer=SGD,
         batch_size=256,
         metrics=(),
@@ -61,7 +61,7 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
                 Activation function to use in the hidden units
             kernel_initializer : function or string
                 Initialization function for the weights of each hidden layer
-            kernel_regularizer : function or string
+            kernel_regularizer : uninitialized keras regularizer
                 Regularizer to use in the hidden units
             optimizer: Class
                 Uninitialized optimizer class following the keras optimizer interface.
@@ -129,7 +129,7 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
             1,
             name="output_node",
             activation="sigmoid",
-            kernel_regularizer=self.kernel_regularizer,
+            kernel_regularizer=self.kernel_regularizer_,
         )
 
     def construct_model(self, n_features, n_objects):
@@ -203,6 +203,7 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
         n_hidden_set_layers=2,
         n_hidden_joint_units=32,
         n_hidden_joint_layers=2,
+        kernel_regularizer=l2,
         learning_rate=1e-3,
         batch_size=128,
         **point,
@@ -212,6 +213,7 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
             n_hidden_set_layers=n_hidden_set_layers,
             n_hidden_joint_units=n_hidden_joint_units,
             n_hidden_joint_layers=n_hidden_joint_layers,
+            kernel_regularizer=kernel_regularizer,
             learning_rate=learning_rate,
             batch_size=batch_size,
             **point,

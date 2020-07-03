@@ -31,7 +31,7 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
         num_subsample=5,
         loss_function=binary_crossentropy,
         batch_normalization=False,
-        kernel_regularizer=l2(),
+        kernel_regularizer=l2,
         kernel_initializer="lecun_normal",
         activation="selu",
         optimizer=SGD,
@@ -73,7 +73,7 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
                 Differentiable loss function for the score vector
             batch_normalization : bool
                 Whether to use batch normalization in the hidden layers
-            kernel_regularizer : function
+            kernel_regularizer : uninitialized keras regularizer
                 Regularizer to use in the hidden units
             kernel_initializer : function or string
                 Initialization function for the weights of each hidden layer
@@ -142,11 +142,11 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
             ]
         assert len(self.hidden_layers) == self.n_hidden
         self.output_node = Dense(
-            1, activation="linear", kernel_regularizer=self.kernel_regularizer
+            1, activation="linear", kernel_regularizer=self.kernel_regularizer_
         )
         if self.add_zeroth_order_model:
             self.output_node_zeroth = Dense(
-                1, activation="linear", kernel_regularizer=self.kernel_regularizer
+                1, activation="linear", kernel_regularizer=self.kernel_regularizer_
             )
 
     def construct_model(self):

@@ -21,6 +21,24 @@ class Learner(Tunable, BaseEstimator, metaclass=ABCMeta):
         optimizer_params.update(filter_dict_by_prefix(self.kwargs, "optimizer__"))
         self.optimizer_ = self.optimizer(**optimizer_params)
 
+    def _initialize_regularizer(self):
+        regularizer_params = filter_dict_by_prefix(
+            self.__dict__, "kernel_regularizer__"
+        )
+        regularizer_params.update(
+            filter_dict_by_prefix(self.kwargs, "kernel_regularizer__")
+        )
+        if self.kernel_regularizer is not None:
+            print(f"Regularizer is {self.kernel_regularizer}")
+            print(f"Initializing with {regularizer_params}")
+            self.kernel_regularizer_ = self.kernel_regularizer(**regularizer_params)
+        else:
+            # No regularizer is an option.
+            self.logger.warning(
+                "You specified regularizer parameters but no regularizer."
+            )
+            self.kernel_regularizer_ = None
+
     @abstractmethod
     def fit(self, X, Y, **kwargs):
         """

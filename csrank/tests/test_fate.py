@@ -34,10 +34,11 @@ def test_construction_core():
 
     grc = MockClass()
     grc._initialize_optimizer()
+    grc._initialize_regularizer()
     grc._construct_layers(
         activation=grc.activation,
         kernel_initializer=grc.kernel_initializer,
-        kernel_regularizer=grc.kernel_regularizer,
+        kernel_regularizer=grc.kernel_regularizer_,
     )
     input_layer = Input(shape=(n_objects, n_features))
     scores = grc.join_input_layers(input_layer, None, n_layers=0, n_objects=n_objects)
@@ -79,7 +80,8 @@ def test_fate_object_ranker_fixed_generator():
         n_hidden_set_layers=1,
         n_hidden_joint_units=5,
         n_hidden_set_units=5,
-        kernel_regularizer=l2(1e-4),
+        kernel_regularizer=l2,
+        kernel_regularizer__l=1e-4,
         **optimizer_common_args,
     )
     fate.fit_generator(

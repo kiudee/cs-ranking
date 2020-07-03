@@ -30,7 +30,7 @@ class ListNet(Learner, ObjectRanker):
         n_units=8,
         loss_function=plackett_luce_loss,
         batch_normalization=False,
-        kernel_regularizer=l2(),
+        kernel_regularizer=l2,
         activation="selu",
         kernel_initializer="lecun_normal",
         optimizer=SGD,
@@ -63,8 +63,10 @@ class ListNet(Learner, ObjectRanker):
                 Listwise loss function which is applied on the top-k objects
             batch_normalization : bool
                 Whether to use batch normalization in each hidden layer
-            kernel_regularizer : function
+            kernel_regularizer : uninitialized keras regularizer
                 Regularizer function applied to all the hidden weight matrices.
++           kernel_regularizer__{kwarg}
++               Arguments to be passed to the kernel regularizer on initialization, such as kernel_regularizer__l.
             activation : function or string
                 Type of activation function to use in each hidden layer
             kernel_initializer : function or string
@@ -114,7 +116,7 @@ class ListNet(Learner, ObjectRanker):
     def _construct_layers(self, **kwargs):
         self.input_layer = Input(shape=(self.n_top, self.n_object_features_fit_))
         self.output_node = Dense(
-            1, activation="linear", kernel_regularizer=self.kernel_regularizer
+            1, activation="linear", kernel_regularizer=self.kernel_regularizer_
         )
         if self.batch_normalization:
             self.hidden_layers = [
@@ -171,8 +173,9 @@ class ListNet(Learner, ObjectRanker):
         self.random_state_ = check_random_state(self.random_state)
         _n_instances, _n_objects, self.n_object_features_fit_ = X.shape
         self._initialize_optimizer()
+        self._initialize_regularizer()
         self._construct_layers(
-            kernel_regularizer=self.kernel_regularizer,
+            kernel_regularizer=self.kernel_regularizer_,
             kernel_initializer=self.kernel_initializer,
             activation=self.activation,
             **self.kwargs,
@@ -279,7 +282,7 @@ class ListNet(Learner, ObjectRanker):
             self._scoring_model = None
             self._initialize_optimizer()
             self._construct_layers(
-                kernel_regularizer=self.kernel_regularizer,
+                kernel_regularizer=self.kernel_regularizer_,
                 kernel_initializer=self.kernel_initializer,
                 activation=self.activation,
                 **self.kwargs,
@@ -290,7 +293,13 @@ class ListNet(Learner, ObjectRanker):
             self.logger.info("Cannot clear the memory")
 
     def set_tunable_parameters(
-        self, n_hidden=32, n_units=2, learning_rate=1e-3, batch_size=128, **point,
+        self,
+        n_hidden=32,
+        n_units=2,
+        kernel_regularizer=l2,
+        learning_rate=1e-3,
+        batch_size=128,
+        **point,
     ):
         """
             Set tunable parameters of the ListNet network to the values provided.
@@ -301,6 +310,10 @@ class ListNet(Learner, ObjectRanker):
                 Number of hidden layers used in the scoring network
             n_units: int
                 Number of hidden units in each layer of the scoring network
+            kernel_regularizer: keras regularizer
+                Regularizer function applied to the `kernel` weights matrix
++           kernel_regularizer__{kwarg}
++               Arguments to be passed to the kernel regularizer on initialization, such as kernel_regularizer__l.
             learning_rate: float
                 Learning rate of the stochastic gradient descent algorithm used by the network
             batch_size: int
@@ -310,12 +323,13 @@ class ListNet(Learner, ObjectRanker):
         """
         self.n_hidden = n_hidden
         self.n_units = n_units
-        self.kernel_regularizer = l2()
+        self.kernel_regularizer = kernel_regularizer
         self.batch_size = batch_size
         self._initialize_optimizer()
+        self._initialize_regularizer()
         K.set_value(self.optimizer_.lr, learning_rate)
         self._construct_layers(
-            kernel_regularizer=self.kernel_regularizer,
+            kernel_regularizer=self.kernel_regularizer_,
             kernel_initializer=self.kernel_initializer,
             activation=self.activation,
             **self.kwargs,

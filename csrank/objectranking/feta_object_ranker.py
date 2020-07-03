@@ -20,7 +20,7 @@ class FETAObjectRanker(FETANetwork, ObjectRanker):
         num_subsample=5,
         loss_function=hinged_rank_loss,
         batch_normalization=False,
-        kernel_regularizer=l2(),
+        kernel_regularizer=l2,
         kernel_initializer="lecun_normal",
         activation="selu",
         optimizer=SGD,
@@ -61,7 +61,7 @@ class FETAObjectRanker(FETANetwork, ObjectRanker):
                 Differentiable loss function for the score vector
             batch_normalization : bool
                 Whether to use batch normalization in the hidden layers
-            kernel_regularizer : function
+            kernel_regularizer : uninitialized keras regularizer
                 Regularizer to use in the hidden units
             kernel_initializer : function or string
                 Initialization function for the weights of each hidden layer

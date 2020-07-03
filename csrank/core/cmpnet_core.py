@@ -25,7 +25,7 @@ class CmpNetCore(Learner):
         n_units=8,
         loss_function="binary_crossentropy",
         batch_normalization=True,
-        kernel_regularizer=l2(),
+        kernel_regularizer=l2,
         kernel_initializer="lecun_normal",
         activation="relu",
         optimizer=SGD,
@@ -62,7 +62,7 @@ class CmpNetCore(Learner):
     def _construct_layers(self, **kwargs):
 
         self.output_node = Dense(
-            1, activation="sigmoid", kernel_regularizer=self.kernel_regularizer
+            1, activation="sigmoid", kernel_regularizer=self.kernel_regularizer_
         )
 
         self.x1 = Input(shape=(self.n_object_features_fit_,))
@@ -96,6 +96,7 @@ class CmpNetCore(Learner):
                 Neural network to learn the CmpNet utility score
         """
         self._initialize_optimizer()
+        self._initialize_regularizer()
         x1x2 = concatenate([self.x1, self.x2])
         x2x1 = concatenate([self.x2, self.x1])
         self.logger.debug("Creating the model")
@@ -151,12 +152,13 @@ class CmpNetCore(Learner):
                 Keyword arguments for the fit function
         """
         self.random_state_ = check_random_state(self.random_state)
+        self._initialize_regularizer()
         _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
         x1, x2, y_double = self._convert_instances_(X, Y)
 
         self.logger.debug("Instances created {}".format(x1.shape[0]))
         self._construct_layers(
-            kernel_regularizer=self.kernel_regularizer,
+            kernel_regularizer=self.kernel_regularizer_,
             kernel_initializer=self.kernel_initializer,
             activation=self.activation,
             **self.kwargs,
@@ -214,8 +216,9 @@ class CmpNetCore(Learner):
             K.set_session(sess)
 
             self._initialize_optimizer()
+            self._initialize_regularizer()
             self._construct_layers(
-                kernel_regularizer=self.kernel_regularizer,
+                kernel_regularizer=self.kernel_regularizer_,
                 kernel_initializer=self.kernel_initializer,
                 activation=self.activation,
                 **self.kwargs,
@@ -249,8 +252,9 @@ class CmpNetCore(Learner):
         self.batch_size = batch_size
         self._initialize_optimizer()
         K.set_value(self.optimizer_.lr, learning_rate)
+        self._initialize_regularizer()
         self._construct_layers(
-            kernel_regularizer=self.kernel_regularizer,
+            kernel_regularizer=self.kernel_regularizer_,
             kernel_initializer=self.kernel_initializer,
             activation=self.activation,
             **self.kwargs,

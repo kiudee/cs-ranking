@@ -15,7 +15,7 @@ class CmpNetDiscreteChoiceFunction(CmpNetCore, DiscreteObjectChooser):
         n_units=8,
         loss_function="binary_crossentropy",
         batch_normalization=True,
-        kernel_regularizer=l2(),
+        kernel_regularizer=l2,
         kernel_initializer="lecun_normal",
         activation="relu",
         optimizer=SGD,
@@ -53,7 +53,7 @@ class CmpNetDiscreteChoiceFunction(CmpNetCore, DiscreteObjectChooser):
                 Loss function to be used for the binary decision task of the pairwise comparisons
             batch_normalization : bool
                 Whether to use batch normalization in each hidden layer
-            kernel_regularizer : function
+            kernel_regularizer : uninitialized keras regularizer
                 Regularizer function applied to all the hidden weight matrices
             kernel_initializer : function or string
                 Initialization function for the weights of each hidden layer

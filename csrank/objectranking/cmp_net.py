@@ -17,7 +17,7 @@ class CmpNet(CmpNetCore, ObjectRanker):
         n_units=8,
         loss_function="binary_crossentropy",
         batch_normalization=True,
-        kernel_regularizer=l2(),
+        kernel_regularizer=l2,
         kernel_initializer="lecun_normal",
         activation="relu",
         optimizer=SGD,
@@ -58,7 +58,7 @@ class CmpNet(CmpNetCore, ObjectRanker):
                pairwise comparisons
            batch_normalization : bool
                Whether to use batch normalization in each hidden layer
-           kernel_regularizer : function
+           kernel_regularizer : uninitialized keras regularizer
                Regularizer function applied to all the hidden weight matrices.
            activation : function or string
                Type of activation function to use in each hidden layer
