@@ -143,7 +143,6 @@ def test_discrete_choice_function_fixed(trivial_discrete_choice_problem, name):
         "n_hidden_set_layers": 10,
         "n_hidden_joint_units": 2,
         "n_hidden_joint_layers": 10,
-        "reg_strength": 1e-3,
         "learning_rate": 1e-1,
         "batch_size": 32,
         "alpha": 0.5,

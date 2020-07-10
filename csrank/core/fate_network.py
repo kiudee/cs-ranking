@@ -158,14 +158,13 @@ class FATENetworkCore(Learner):
         self,
         n_hidden_joint_units=32,
         n_hidden_joint_layers=2,
-        reg_strength=1e-4,
         learning_rate=1e-3,
         batch_size=128,
         **point,
     ):
         self.n_hidden_joint_layers = n_hidden_joint_layers
         self.n_hidden_joint_units = n_hidden_joint_units
-        self.kernel_regularizer = l2(reg_strength)
+        self.kernel_regularizer = l2()
         self.batch_size = batch_size
         # Hack to fix memory leak:
         self._initialize_optimizer()
@@ -731,7 +730,6 @@ class FATENetwork(FATENetworkCore):
         n_hidden_set_layers=2,
         n_hidden_joint_units=32,
         n_hidden_joint_layers=2,
-        reg_strength=1e-4,
         learning_rate=1e-3,
         batch_size=128,
         **point,
@@ -749,8 +747,6 @@ class FATENetwork(FATENetworkCore):
                 Number of hidden joint layers
             n_hidden_joint_layers: int
                 Number of hidden units in each joint layer
-            reg_strength: float
-                Regularization strength of the regularizer function applied to the `kernel` weights matrix
             learning_rate: float
                 Learning rate of the stochastic gradient descent algorithm used by the network
             batch_size: int
@@ -762,7 +758,6 @@ class FATENetwork(FATENetworkCore):
             self,
             n_hidden_joint_units=n_hidden_joint_units,
             n_hidden_joint_layers=n_hidden_joint_layers,
-            reg_strength=reg_strength,
             learning_rate=learning_rate,
             batch_size=batch_size,
             **point,

@@ -50,7 +50,6 @@ def test_construction_core():
     params = {
         "n_hidden_joint_units": 2,
         "n_hidden_joint_layers": 10,
-        "reg_strength": 1e-3,
         "learning_rate": 1e-1,
         "batch_size": 32,
     }
@@ -65,14 +64,6 @@ def test_construction_core():
     assert np.isclose(
         learning_rate, params["learning_rate"], rtol=rtol, atol=atol, equal_nan=False
     )
-    config = grc.kernel_regularizer.get_config()
-    val1 = np.isclose(
-        config["l1"], params["reg_strength"], rtol=rtol, atol=atol, equal_nan=False
-    )
-    val2 = np.isclose(
-        config["l2"], params["reg_strength"], rtol=rtol, atol=atol, equal_nan=False
-    )
-    assert val1 or val2
 
 
 def test_fate_object_ranker_fixed_generator():

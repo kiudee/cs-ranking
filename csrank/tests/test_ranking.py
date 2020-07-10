@@ -83,15 +83,6 @@ def check_params_tunable(tunable_obj, params, rtol=1e-2, atol=1e-4):
                     )
             else:
                 assert value == expected
-        elif key == "reg_strength" and hasattr(tunable_obj, "kernel_regularizer"):
-            config = tunable_obj.kernel_regularizer.get_config()
-            val1 = np.isclose(
-                config["l1"], value, rtol=rtol, atol=atol, equal_nan=False
-            )
-            val2 = np.isclose(
-                config["l2"], value, rtol=rtol, atol=atol, equal_nan=False
-            )
-            assert val1 or val2
 
 
 @pytest.mark.parametrize("ranker_name", list(object_rankers.keys()))
@@ -124,7 +115,6 @@ def test_object_ranker_fixed(trivial_ranking_problem, ranker_name):
         "n_hidden_set_layers": 10,
         "n_hidden_joint_units": 2,
         "n_hidden_joint_layers": 10,
-        "reg_strength": 1e-3,
         "learning_rate": 1e-1,
         "batch_size": 32,
         "alpha": 0.5,

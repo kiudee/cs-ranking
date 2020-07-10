@@ -231,13 +231,7 @@ class RankNetCore(Learner):
             self.logger.info("Cannot clear the memory")
 
     def set_tunable_parameters(
-        self,
-        n_hidden=32,
-        n_units=2,
-        reg_strength=1e-4,
-        learning_rate=1e-3,
-        batch_size=128,
-        **point,
+        self, n_hidden=32, n_units=2, learning_rate=1e-3, batch_size=128, **point,
     ):
         """
             Set tunable parameters of the RankNet network to the values provided.
@@ -248,8 +242,6 @@ class RankNetCore(Learner):
                 Number of hidden layers used in the scoring network
             n_units: int
                 Number of hidden units in each layer of the scoring network
-            reg_strength: float
-                Regularization strength of the regularizer function applied to the `kernel` weights matrix
             learning_rate: float
                 Learning rate of the stochastic gradient descent algorithm used by the network
             batch_size: int
@@ -259,7 +251,7 @@ class RankNetCore(Learner):
         """
         self.n_hidden = n_hidden
         self.n_units = n_units
-        self.kernel_regularizer = l2(reg_strength)
+        self.kernel_regularizer = l2()
         self.batch_size = batch_size
         self._initialize_optimizer()
         K.set_value(self.optimizer_.lr, learning_rate)

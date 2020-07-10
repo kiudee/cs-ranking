@@ -126,18 +126,11 @@ class RankNetDiscreteChoiceFunction(RankNetCore, DiscreteObjectChooser):
         super().clear_memory(**kwargs)
 
     def set_tunable_parameters(
-        self,
-        n_hidden=32,
-        n_units=2,
-        reg_strength=1e-4,
-        learning_rate=1e-3,
-        batch_size=128,
-        **point,
+        self, n_hidden=32, n_units=2, learning_rate=1e-3, batch_size=128, **point,
     ):
         super().set_tunable_parameters(
             n_hidden=n_hidden,
             n_units=n_units,
-            reg_strength=reg_strength,
             learning_rate=learning_rate,
             batch_size=batch_size,
             **point,
