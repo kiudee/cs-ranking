@@ -244,9 +244,6 @@ class FETALinearCore(Learner):
         """
             Set tunable hyperparameters of the FETA-network to the values provided.
 
-            This can be used for automatic hyperparameter optimization. See
-            csrank.tuning for more information.
-
             Parameters
             ----------
             learning_rate: float

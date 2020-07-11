@@ -16,6 +16,10 @@ Unreleased
 * Regularizers must similarly be passed uninitialized, therefore the
   `reg_strength` parameter is replaced by `kernel_regularizer__l`.
 
+* Tuning functionality has been removed. Since our Learners are ScikitLearn
+  estimators, any standard tuning framework should work and no special support
+  is needed.
+
 1.2.1 (2020-06-08)
 ------------------
 

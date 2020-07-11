@@ -8,5 +8,3 @@ from .core import *  # noqa
 from .dataset_reader import *  # noqa
 from .discretechoice import *  # noqa
 from .objectranking import *  # noqa
-from .tunable import Tunable  # noqa
-from .tuning import ParameterOptimizer  # noqa

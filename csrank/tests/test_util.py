@@ -1,11 +1,9 @@
 from keras import backend as K
 import numpy as np
-import pytest
 import tensorflow as tf
 
 from csrank import SyntheticIterator
 from csrank.tensorflow_util import tensorify
-from csrank.tuning import check_learner_class
 
 
 def test_tensorify():
@@ -28,13 +26,3 @@ def test_synthetic_iterator():
             break
         assert x == 2
         assert y == 41
-
-
-def test_check_ranker_class():
-    class MockClass(object):
-        def __init__(self):
-            pass
-
-    ranker = MockClass()
-    with pytest.raises(AttributeError):
-        check_learner_class(ranker)
