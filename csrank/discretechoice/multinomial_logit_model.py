@@ -239,36 +239,3 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
 
     def predict_for_scores(self, scores, **kwargs):
         return DiscreteObjectChooser.predict_for_scores(self, scores, **kwargs)
-
-    def set_tunable_parameters(self, loss_function=None, regularization="l1", **point):
-        """
-            Set tunable parameters of the Multinomial Logit model to the values provided.
-
-            Parameters
-            ----------
-            loss_function : string , {‘categorical_crossentropy’, ‘binary_crossentropy’, ’categorical_hinge’}
-                Loss function to be used for the discrete choice decision from the query set
-            regularization : string, {‘l1’, ‘l2’}, string
-               Regularizer function (L1 or L2) applied to the `kernel` weights matrix
-            point: dict
-                Dictionary containing parameter values which are not tuned for the network
-        """
-        if loss_function is not None:
-            if loss_function not in likelihood_dict:
-                raise ValueError(
-                    f"Loss function {loss_function} is unknown. Must be one of {set(likelihood_dict.keys())}"
-                )
-            self.loss_function = loss_function
-        self.regularization = regularization
-        self.model = None
-        self.trace = None
-        self.trace_vi = None
-        self.Xt = None
-        self.Yt = None
-        self.p = None
-        self._config = None
-        if len(point) > 0:
-            self.logger.warning(
-                "This ranking algorithm does not support"
-                " tunable parameters called: {}".format(print_dictionary(point))
-            )

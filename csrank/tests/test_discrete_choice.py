@@ -23,7 +23,6 @@ from csrank.discretechoice import *
 from csrank.metrics_np import categorical_accuracy_np
 from csrank.metrics_np import subset_01_loss
 from csrank.metrics_np import topk_categorical_accuracy_np
-from csrank.tests.test_ranking import check_params_tunable
 from csrank.util import metrics_on_predictions
 
 metrics = {
@@ -135,23 +134,3 @@ def test_discrete_choice_function_fixed(trivial_discrete_choice_problem, name):
         else:
             pred_loss = metric(y, s_pred)
         assert np.isclose(value, pred_loss, rtol=rtol, atol=atol, equal_nan=False)
-
-    params = {
-        "n_hidden": 20,
-        "n_units": 20,
-        "n_hidden_set_units": 2,
-        "n_hidden_set_layers": 10,
-        "n_hidden_joint_units": 2,
-        "n_hidden_joint_layers": 10,
-        "learning_rate": 1e-1,
-        "batch_size": 32,
-        "alpha": 0.5,
-        "l1_ratio": 0.7,
-        "tol": 1e-2,
-        "C": 10,
-        "n_mixtures": 10,
-        "n_nests": 5,
-        "regularization": "l2",
-    }
-    learner.set_tunable_parameters(**params)
-    check_params_tunable(learner, params, rtol, atol)

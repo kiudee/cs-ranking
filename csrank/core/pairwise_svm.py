@@ -7,7 +7,6 @@ from sklearn.svm import LinearSVC
 from sklearn.utils import check_random_state
 
 from csrank.learner import Learner
-from csrank.util import print_dictionary
 
 
 class PairwiseSVM(Learner):
@@ -111,25 +110,3 @@ class PairwiseSVM(Learner):
 
     def _convert_instances_(self, X, Y):
         raise NotImplementedError
-
-    def set_tunable_parameters(self, C=1.0, tol=1e-4, **point):
-        """
-            Set tunable parameters of the PairwiseSVM model to the values provided.
-
-            Parameters
-            ----------
-            C : float
-               Penalty parameter of the error term of the SVM classifier
-            tol : float
-                Optimization tolerance of the SVM classifier
-            point: dict
-                Dictionary containing parameter values which are not tuned for the network
-        """
-        self.tol = tol
-        self.C = C
-        if len(point) > 0:
-            self.logger.warning(
-                "This ranking algorithm does not support"
-                " tunable parameters"
-                " called: {}".format(print_dictionary(point))
-            )

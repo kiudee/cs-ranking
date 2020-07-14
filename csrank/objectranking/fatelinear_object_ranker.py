@@ -105,21 +105,3 @@ class FATELinearObjectRanker(FATELinearCore, ObjectRanker):
 
     def predict(self, X, **kwargs):
         return super().predict(X, **kwargs)
-
-    def set_tunable_parameters(
-        self,
-        n_hidden_set_units=32,
-        learning_rate=1e-3,
-        batch_size=128,
-        epochs_drop=300,
-        drop=0.1,
-        **point,
-    ):
-        super().set_tunable_parameters(
-            n_hidden_set_units=n_hidden_set_units,
-            learning_rate=learning_rate,
-            batch_size=batch_size,
-            epochs_drop=epochs_drop,
-            drop=drop,
-            **point,
-        )

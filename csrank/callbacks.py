@@ -5,11 +5,8 @@ from keras import backend as K
 from keras.callbacks import Callback
 import numpy as np
 
-from csrank.tunable import Tunable
-from csrank.util import print_dictionary
 
-
-class EarlyStoppingWithWeights(Callback, Tunable):
+class EarlyStoppingWithWeights(Callback):
     def __init__(
         self,
         monitor="val_loss",
@@ -118,30 +115,8 @@ class EarlyStoppingWithWeights(Callback, Tunable):
             )
             self.model.set_weights(self.best_weights)
 
-    def set_tunable_parameters(self, patience=300, min_delta=2, **point):
-        """Set tunable parameters of the EarlyStopping callback to the values provided.
 
-        Parameters
-        ----------
-        patience: unsigned int
-            Number of epochs with no improvement after which training will be stopped.
-        min_delta: float
-            Minimum change in the monitored quantity to qualify as an improvement, i.e. an absolute change of less
-            than min_delta, will count as no improvement.
-        point: dict
-            Dictionary containing parameter values which are not tuned for the network
-        """
-        self.patience = patience
-        self.min_delta = min_delta
-        if len(point) > 0:
-            self.logger.warning(
-                "This callback does not support"
-                " tunable parameters"
-                " called: {}".format(print_dictionary(point))
-            )
-
-
-class LRScheduler(Callback, Tunable):
+class LRScheduler(Callback):
     def __init__(self, epochs_drop=300, drop=0.1, verbose=0, **kwargs):
         """Learning rate scheduler with step-decay function
 
@@ -199,27 +174,6 @@ class LRScheduler(Callback, Tunable):
     def on_epoch_end(self, epoch, logs=None):
         logs = logs or {}
         logs["lr"] = K.get_value(self.model.optimizer.lr)
-
-    def set_tunable_parameters(self, epochs_drop=300, drop=0.1, **point):
-        """Set tunable parameters of the LRScheduler callback to the values provided.
-
-        Parameters
-        ----------
-        epochs_drop: unsigned int
-            The number of epochs after which the learning rate is reduced
-        drop: float [0,1):
-            The percentage of the learning rate which needs to be dropped
-        point: dict
-            Dictionary containing parameter values which are not tuned for the network
-        """
-        self.epochs_drop = epochs_drop
-        self.drop = drop
-        if len(point) > 0:
-            self.logger.warning(
-                "This callback does not support"
-                " tunable parameters"
-                " called: {}".format(print_dictionary(point))
-            )
 
 
 class DebugOutput(Callback):

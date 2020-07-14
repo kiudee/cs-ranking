@@ -9,7 +9,6 @@ from sklearn.utils import check_random_state
 from csrank.learner import Learner
 from csrank.numpy_util import normalize
 from csrank.objectranking.object_ranker import ObjectRanker
-from csrank.util import print_dictionary
 from ..dataset_reader.objectranking.util import complete_linear_regression_dataset
 
 __all__ = ["ExpectedRankRegression"]
@@ -145,28 +144,3 @@ class ExpectedRankRegression(ObjectRanker, Learner):
 
     def predict(self, X, **kwargs):
         return super().predict(X, **kwargs)
-
-    def set_tunable_parameters(self, alpha=0.0, l1_ratio=0.5, tol=1e-4, **point):
-        """
-            Set tunable parameters of the PairwiseSVM model to the values provided.
-
-            Parameters
-            ----------
-            alpha : float
-               Regularization strength
-            l1_ratio : float in [0,1]
-                Ratio between pure L2 (=0) or pure L1 (=1) regularization
-            tol : float
-                 Optimization tolerance for regression model
-            point: dict
-                Dictionary containing parameter values which are not tuned for the network
-        """
-        self.tol = tol
-        self.alpha = alpha
-        self.l1_ratio = l1_ratio
-        if len(point) > 0:
-            self.logger.warning(
-                "This ranking algorithm does not support"
-                " tunable parameters"
-                " called: {}".format(print_dictionary(point))
-            )

@@ -8,7 +8,6 @@ import tensorflow as tf
 
 from csrank.learner import Learner
 from csrank.numpy_util import sigmoid
-from csrank.util import print_dictionary
 from csrank.util import progress_bar
 
 
@@ -237,32 +236,3 @@ class FETALinearCore(Learner):
         scores_zero = np.dot(X, self.weight2) + self.bias2
         scores = sigmoid(self.W_last[0] * scores_zero + self.W_last[1] * outputs)
         return scores
-
-    def set_tunable_parameters(
-        self, learning_rate=1e-3, batch_size=128, epochs_drop=300, drop=0.1, **point
-    ):
-        """
-            Set tunable hyperparameters of the FETA-network to the values provided.
-
-            Parameters
-            ----------
-            learning_rate: float
-                Learning rate of the stochastic gradient descent algorithm used by the network
-            batch_size: int
-                Batch size to use during training
-            epochs_drop: int
-                The epochs after which the learning rate is decreased
-            drop: float
-                The percentage with which the learning rate is decreased
-            point: dict
-                Dictionary containing parameter values which are not tuned for the network
-        """
-        self.batch_size = batch_size
-        self.learning_rate = learning_rate
-        self.epochs_drop = epochs_drop
-        self.drop = drop
-        if len(point) > 0:
-            self.logger.warning(
-                "This ranking algorithm does not support tunable parameters"
-                " called: {}".format(print_dictionary(point))
-            )

@@ -88,6 +88,3 @@ class RankSVM(ObjectRanker, PairwiseSVM):
 
     def predict(self, X, **kwargs):
         return super().predict(X, **kwargs)
-
-    def set_tunable_parameters(self, C=1.0, tol=1e-4, **point):
-        super().set_tunable_parameters(C=C, tol=tol, **point)

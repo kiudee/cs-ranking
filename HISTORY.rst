@@ -20,6 +20,9 @@ Unreleased
   estimators, any standard tuning framework should work and no special support
   is needed.
 
+* The tunable class and notably its `set_tunable_parameters` function has been
+  removed. Use `set_params` from the scikit-learn estimator API instead.
+
 1.2.1 (2020-06-08)
 ------------------
 

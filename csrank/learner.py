@@ -3,8 +3,6 @@ from abc import abstractmethod
 
 from sklearn.base import BaseEstimator
 
-from csrank.tunable import Tunable
-
 
 def filter_dict_by_prefix(source, prefix):
     result = dict()
@@ -15,7 +13,7 @@ def filter_dict_by_prefix(source, prefix):
     return result
 
 
-class Learner(Tunable, BaseEstimator, metaclass=ABCMeta):
+class Learner(BaseEstimator, metaclass=ABCMeta):
     def _initialize_optimizer(self):
         optimizer_params = filter_dict_by_prefix(self.__dict__, "optimizer__")
         optimizer_params.update(filter_dict_by_prefix(self.kwargs, "optimizer__"))

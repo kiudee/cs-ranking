@@ -15,7 +15,6 @@ from csrank.constants import allowed_dense_kwargs
 from csrank.layers import create_input_lambda
 from csrank.layers import DeepSet
 from csrank.learner import Learner
-from csrank.util import print_dictionary
 
 __all__ = ["FATENetwork", "FATENetworkCore"]
 
@@ -156,38 +155,6 @@ class FATENetworkCore(Learner):
         self.logger.debug("Done")
 
         return scores
-
-    def set_tunable_parameters(
-        self,
-        n_hidden_joint_units=32,
-        n_hidden_joint_layers=2,
-        kernel_regularizer=l2,
-        learning_rate=1e-3,
-        batch_size=128,
-        **point,
-    ):
-        self.n_hidden_joint_layers = n_hidden_joint_layers
-        self.n_hidden_joint_units = n_hidden_joint_units
-        self.kernel_regularizer = kernel_regularizer
-        self.batch_size = batch_size
-        # Hack to fix memory leak:
-        self._initialize_optimizer()
-        self._initialize_regularizer()
-        K.set_value(self.optimizer_.lr, learning_rate)
-
-        self._construct_layers(
-            activation=self.activation,
-            kernel_initializer=self.kernel_initializer,
-            kernel_regularizer=self.kernel_regularizer_,
-            **self.kwargs,
-        )
-
-        if len(point) > 0:
-            self.logger.warning(
-                "This ranking algorithm does not support"
-                " tunable parameters"
-                " called: {}".format(print_dictionary(point))
-            )
 
 
 class FATENetwork(FATENetworkCore):
@@ -730,58 +697,3 @@ class FATENetwork(FATENetworkCore):
             self.model.load_weights(self.hash_file)
         else:
             self.logger.info("Cannot clear the memory")
-
-    def set_tunable_parameters(
-        self,
-        n_hidden_set_units=32,
-        n_hidden_set_layers=2,
-        n_hidden_joint_units=32,
-        n_hidden_joint_layers=2,
-        kernel_regularizer=l2,
-        learning_rate=1e-3,
-        batch_size=128,
-        **point,
-    ):
-        """
-            Set tunable parameters of the FATE-network to the values provided.
-
-            Parameters
-            ----------
-            n_hidden_set_layers : int
-                Number of hidden set layers
-            n_hidden_set_units : int
-                Number of hidden set units in each set layer
-            n_hidden_joint_units: int
-                Number of hidden joint layers
-            n_hidden_joint_layers: int
-                Number of hidden units in each joint layer
-            learning_rate: float
-                Learning rate of the stochastic gradient descent algorithm used by the network
-            batch_size: int
-                Batch size to use during training
-            point: dict
-                Dictionary containing parameter values which are not tuned for the network
-        """
-        FATENetworkCore.set_tunable_parameters(
-            self,
-            n_hidden_joint_units=n_hidden_joint_units,
-            n_hidden_joint_layers=n_hidden_joint_layers,
-            learning_rate=learning_rate,
-            batch_size=batch_size,
-            **point,
-        )
-
-        self.n_hidden_set_units = n_hidden_set_units
-        self.n_hidden_set_layers = n_hidden_set_layers
-        self.kernel_regularizer = kernel_regularizer
-
-        self._create_set_layers(
-            activation=self.activation,
-            kernel_initializer=self.kernel_initializer,
-            kernel_regularizer=self.kernel_regularizer_,
-            **self.kwargs,
-        )
-        if hasattr(self, "model"):
-            self.model = None
-        if hasattr(self, "models"):
-            self.models = None
