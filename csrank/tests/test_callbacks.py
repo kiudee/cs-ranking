@@ -10,7 +10,6 @@ import tensorflow as tf
 
 from csrank.callbacks import EarlyStoppingWithWeights
 from csrank.callbacks import LRScheduler
-from csrank.tests.test_ranking import check_params_tunable
 
 callbacks_dict = {
     "EarlyStopping": (EarlyStoppingWithWeights, {"patience": 5, "min_delta": 5e-2}),
@@ -65,6 +64,3 @@ def test_callbacks(trivial_classification_problem, name):
         )
     elif name == "EarlyStopping":
         assert callback.stopped_epoch == 6
-    params = {"epochs_drop": 100, "drop": 0.5, "patience": 10, "min_delta": 1e-5}
-    callback.set_tunable_parameters(**params)
-    check_params_tunable(callback, params, rtol, atol)

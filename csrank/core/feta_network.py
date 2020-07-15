@@ -19,7 +19,6 @@ from csrank.constants import allowed_dense_kwargs
 from csrank.layers import NormalizedDense
 from csrank.learner import Learner
 from csrank.losses import hinged_rank_loss
-from csrank.util import print_dictionary
 
 
 class FETANetwork(Learner):
@@ -339,56 +338,6 @@ class FETANetwork(Learner):
             scores = self.model.predict(X, **kwargs)
         self.logger.info("Done predicting scores")
         return scores
-
-    def set_tunable_parameters(
-        self,
-        n_hidden=32,
-        n_units=2,
-        kernel_regularizer=l2,
-        learning_rate=1e-3,
-        batch_size=128,
-        **point,
-    ):
-        """
-            Set tunable parameters of the FETA-network to the values provided.
-
-            Parameters
-            ----------
-            n_hidden: int
-                Number of hidden layers used in the scoring network
-            n_units: int
-                Number of hidden units in each layer of the scoring network
-            kernel_regularizer: keras regularizer
-                Regularizer function applied to the `kernel` weights matrix
-+           kernel_regularizer__{kwarg}
-+               Arguments to be passed to the kernel regularizer on initialization, such as kernel_regularizer__l.
-            learning_rate: float
-                Learning rate of the stochastic gradient descent algorithm used by the network
-            batch_size: int
-                Batch size to use during training
-            point: dict
-                Dictionary containing parameter values which are not tuned for the network
-        """
-        self.n_hidden = n_hidden
-        self.n_units = n_units
-        self.kernel_regularizer = kernel_regularizer
-        self.batch_size = batch_size
-        self._initialize_optimizer()
-        self._initialize_regularizer()
-        K.set_value(self.optimizer_.lr, learning_rate)
-        self._pairwise_model = None
-        self._zero_order_model = None
-        self._construct_layers(
-            kernel_regularizer=self.kernel_regularizer_,
-            kernel_initializer=self.kernel_initializer,
-            activation=self.activation,
-            **self.kwargs,
-        )
-        if len(point) > 0:
-            self.logger.warning(
-                "This ranking algorithm does not support tunable parameters"
-                " called: {}".format(print_dictionary(point))
-            )
 
     def clear_memory(self, **kwargs):
         """

@@ -17,9 +17,6 @@ def test_construction_core():
     # Create mock class:
 
     class MockClass(FATENetworkCore, metaclass=ABCMeta):
-        def set_tunable_parameters(self, **point):
-            super().set_tunable_parameters(**point)
-
         def predict_scores(self, X, **kwargs):
             pass
 
@@ -48,23 +45,6 @@ def test_construction_core():
     X = np.random.randn(100, n_objects, n_features)
     y = X.sum(axis=2)
     model.fit(x=X, y=y, verbose=0)
-    params = {
-        "n_hidden_joint_units": 2,
-        "n_hidden_joint_layers": 10,
-        "learning_rate": 1e-1,
-        "batch_size": 32,
-    }
-    grc.set_tunable_parameters(**params)
-    assert grc.n_hidden_joint_units == params["n_hidden_joint_units"]
-    assert grc.n_hidden_joint_layers == params["n_hidden_joint_layers"]
-    assert grc.batch_size == params["batch_size"]
-    rtol = 1e-2
-    atol = 1e-4
-    key = "learning_rate" if "learning_rate" in grc.optimizer_.get_config() else "lr"
-    learning_rate = grc.optimizer_.get_config().get(key, 0.0)
-    assert np.isclose(
-        learning_rate, params["learning_rate"], rtol=rtol, atol=atol, equal_nan=False
-    )
 
 
 def test_fate_object_ranker_fixed_generator():

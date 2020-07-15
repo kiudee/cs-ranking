@@ -5,7 +5,6 @@ import numpy as np
 import pytest
 import tensorflow as tf
 
-from csrank import PairedCombinatorialLogit
 from csrank.constants import CMPNET
 from csrank.constants import ERR
 from csrank.constants import FATE_RANKER
@@ -65,26 +64,6 @@ def trivial_ranking_problem():
     return x, y_true
 
 
-def check_params_tunable(tunable_obj, params, rtol=1e-2, atol=1e-4):
-    for key, value in params.items():
-        if hasattr(tunable_obj, key):
-            expected = getattr(tunable_obj, key)
-            if isinstance(value, int) or isinstance(value, float):
-                if (
-                    isinstance(tunable_obj, PairedCombinatorialLogit)
-                    and key == "n_nests"
-                ):
-                    tunable_obj.n_nests == tunable_obj.n_objects_fit_ * (
-                        tunable_obj.n_objects_fit_ - 1
-                    ) / 2
-                else:
-                    assert np.isclose(
-                        expected, value, rtol=rtol, atol=atol, equal_nan=False
-                    )
-            else:
-                assert value == expected
-
-
 @pytest.mark.parametrize("ranker_name", list(object_rankers.keys()))
 def test_object_ranker_fixed(trivial_ranking_problem, ranker_name):
     tf.set_random_seed(0)
@@ -108,22 +87,3 @@ def test_object_ranker_fixed(trivial_ranking_problem, ranker_name):
     assert np.isclose(1.0, pred_acc, rtol=rtol, atol=atol, equal_nan=False)
     pred_acc = zero_one_accuracy_np(pred, y)
     assert np.isclose(acc, pred_acc, rtol=rtol, atol=atol, equal_nan=False)
-    params = {
-        "n_hidden": 20,
-        "n_units": 20,
-        "n_hidden_set_units": 2,
-        "n_hidden_set_layers": 10,
-        "n_hidden_joint_units": 2,
-        "n_hidden_joint_layers": 10,
-        "learning_rate": 1e-1,
-        "batch_size": 32,
-        "alpha": 0.5,
-        "l1_ratio": 0.7,
-        "tol": 1e-2,
-        "C": 10,
-        "n_mixtures": 10,
-        "n_nests": 5,
-        "regularization": "l2",
-    }
-    ranker.set_tunable_parameters(**params)
-    check_params_tunable(ranker, params, rtol, atol)

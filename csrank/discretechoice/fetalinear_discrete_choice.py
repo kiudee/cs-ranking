@@ -71,14 +71,3 @@ class FETALinearDiscreteChoiceFunction(FETALinearCore, DiscreteObjectChooser):
 
     def predict(self, X, **kwargs):
         return super().predict(X, **kwargs)
-
-    def set_tunable_parameters(
-        self, learning_rate=1e-3, batch_size=128, epochs_drop=300, drop=0.1, **point
-    ):
-        super().set_tunable_parameters(
-            learning_rate=learning_rate,
-            batch_size=batch_size,
-            epochs_drop=epochs_drop,
-            drop=drop,
-            **point,
-        )

@@ -293,27 +293,3 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
 
     def predict_for_scores(self, scores, **kwargs):
         return ChoiceFunctions.predict_for_scores(self, scores, **kwargs)
-
-    def set_tunable_parameters(self, regularization="l1", **point):
-        """
-            Set tunable parameters of the Generalized Linear model to the values provided.
-
-            Parameters
-            ----------
-            regularization : {‘l1’, ‘l2’}, string
-               Regularizer function (L1 or L2) applied to the `kernel` weights matrix
-            point: dict
-                Dictionary containing parameter values which are not tuned for the network
-        """
-        self.regularization = regularization
-        self.model = None
-        self.trace = None
-        self.trace_vi = None
-        self.Xt = None
-        self.Yt = None
-        self.p = None
-        if len(point) > 0:
-            self.logger.warning(
-                "This ranking algorithm does not support"
-                " tunable parameters called: {}".format(print_dictionary(point))
-            )

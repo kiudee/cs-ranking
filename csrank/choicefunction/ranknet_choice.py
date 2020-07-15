@@ -193,14 +193,3 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
     def clear_memory(self, **kwargs):
         self.logger.info("Clearing memory")
         super().clear_memory(**kwargs)
-
-    def set_tunable_parameters(
-        self, n_hidden=32, n_units=2, learning_rate=1e-3, batch_size=128, **point,
-    ):
-        super().set_tunable_parameters(
-            n_hidden=n_hidden,
-            n_units=n_units,
-            learning_rate=learning_rate,
-            batch_size=batch_size,
-            **point,
-        )

@@ -149,23 +149,3 @@ class FATEDiscreteChoiceFunction(FATENetwork, DiscreteObjectChooser):
     def clear_memory(self, **kwargs):
         self.logger.info("Clearing memory")
         super().clear_memory(**kwargs)
-
-    def set_tunable_parameters(
-        self,
-        n_hidden_set_units=32,
-        n_hidden_set_layers=2,
-        n_hidden_joint_units=32,
-        n_hidden_joint_layers=2,
-        learning_rate=1e-3,
-        batch_size=128,
-        **point,
-    ):
-        super().set_tunable_parameters(
-            n_hidden_set_units=n_hidden_set_units,
-            n_hidden_set_layers=n_hidden_set_layers,
-            n_hidden_joint_units=n_hidden_joint_units,
-            n_hidden_joint_layers=n_hidden_joint_layers,
-            learning_rate=learning_rate,
-            batch_size=batch_size,
-            **point,
-        )
