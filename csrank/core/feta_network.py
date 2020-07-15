@@ -32,7 +32,7 @@ class FETANetwork(Learner):
         num_subsample=5,
         loss_function=hinged_rank_loss,
         batch_normalization=False,
-        kernel_regularizer=l2(),
+        kernel_regularizer=l2,
         kernel_initializer="lecun_normal",
         activation="selu",
         optimizer=SGD,
@@ -103,11 +103,11 @@ class FETANetwork(Learner):
             ]
         assert len(self.hidden_layers) == self.n_hidden
         self.output_node = Dense(
-            1, activation="sigmoid", kernel_regularizer=self.kernel_regularizer
+            1, activation="sigmoid", kernel_regularizer=self.kernel_regularizer_
         )
         if self.add_zeroth_order_model:
             self.output_node_zeroth = Dense(
-                1, activation="sigmoid", kernel_regularizer=self.kernel_regularizer
+                1, activation="sigmoid", kernel_regularizer=self.kernel_regularizer_
             )
 
     @property
@@ -283,8 +283,9 @@ class FETANetwork(Learner):
         """
         _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
         self._initialize_optimizer()
+        self._initialize_regularizer()
         self._construct_layers(
-            kernel_regularizer=self.kernel_regularizer,
+            kernel_regularizer=self.kernel_regularizer_,
             kernel_initializer=self.kernel_initializer,
             activation=self.activation,
             **self.kwargs,
@@ -343,7 +344,7 @@ class FETANetwork(Learner):
         self,
         n_hidden=32,
         n_units=2,
-        reg_strength=1e-4,
+        kernel_regularizer=l2,
         learning_rate=1e-3,
         batch_size=128,
         **point,
@@ -357,8 +358,10 @@ class FETANetwork(Learner):
                 Number of hidden layers used in the scoring network
             n_units: int
                 Number of hidden units in each layer of the scoring network
-            reg_strength: float
-                Regularization strength of the regularizer function applied to the `kernel` weights matrix
+            kernel_regularizer: keras regularizer
+                Regularizer function applied to the `kernel` weights matrix
++           kernel_regularizer__{kwarg}
++               Arguments to be passed to the kernel regularizer on initialization, such as kernel_regularizer__l.
             learning_rate: float
                 Learning rate of the stochastic gradient descent algorithm used by the network
             batch_size: int
@@ -368,14 +371,15 @@ class FETANetwork(Learner):
         """
         self.n_hidden = n_hidden
         self.n_units = n_units
-        self.kernel_regularizer = l2(reg_strength)
+        self.kernel_regularizer = kernel_regularizer
         self.batch_size = batch_size
         self._initialize_optimizer()
+        self._initialize_regularizer()
         K.set_value(self.optimizer_.lr, learning_rate)
         self._pairwise_model = None
         self._zero_order_model = None
         self._construct_layers(
-            kernel_regularizer=self.kernel_regularizer,
+            kernel_regularizer=self.kernel_regularizer_,
             kernel_initializer=self.kernel_initializer,
             activation=self.activation,
             **self.kwargs,
@@ -405,7 +409,7 @@ class FETANetwork(Learner):
             self._zero_order_model = None
             self._initialize_optimizer()
             self._construct_layers(
-                kernel_regularizer=self.kernel_regularizer,
+                kernel_regularizer=self.kernel_regularizer_,
                 kernel_initializer=self.kernel_initializer,
                 activation=self.activation,
                 **self.kwargs,

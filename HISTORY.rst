@@ -13,6 +13,9 @@ Unreleased
   be set by passing `optimizer__{kwarg}` parameters to the learner. This
   follows the scikit-learn and skorch standard.
 
+* Regularizers must similarly be passed uninitialized, therefore the
+  `reg_strength` parameter is replaced by `kernel_regularizer__l`.
+
 1.2.1 (2020-06-08)
 ------------------
 

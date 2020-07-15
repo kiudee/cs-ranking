@@ -24,7 +24,7 @@ class RankNetCore(Learner):
         n_units=8,
         loss_function="binary_crossentropy",
         batch_normalization=True,
-        kernel_regularizer=l2(),
+        kernel_regularizer=l2,
         kernel_initializer="lecun_normal",
         activation="relu",
         optimizer=SGD,
@@ -60,7 +60,7 @@ class RankNetCore(Learner):
         self.x1 = Input(shape=(self.n_object_features_fit_,))
         self.x2 = Input(shape=(self.n_object_features_fit_,))
         self.output_node = Dense(
-            1, activation="sigmoid", kernel_regularizer=self.kernel_regularizer
+            1, activation="sigmoid", kernel_regularizer=self.kernel_regularizer_
         )
         self.output_layer_score = Dense(1, activation="linear")
         if self.batch_normalization:
@@ -148,8 +148,9 @@ class RankNetCore(Learner):
         self.logger.debug("Creating the model")
 
         self._initialize_optimizer()
+        self._initialize_regularizer()
         self._construct_layers(
-            kernel_regularizer=self.kernel_regularizer,
+            kernel_regularizer=self.kernel_regularizer_,
             kernel_initializer=self.kernel_initializer,
             activation=self.activation,
             **self.kwargs,
@@ -220,7 +221,7 @@ class RankNetCore(Learner):
             self._scoring_model = None
             self._initialize_optimizer()
             self._construct_layers(
-                kernel_regularizer=self.kernel_regularizer,
+                kernel_regularizer=self.kernel_regularizer_,
                 kernel_initializer=self.kernel_initializer,
                 activation=self.activation,
                 **self.kwargs,
@@ -234,7 +235,7 @@ class RankNetCore(Learner):
         self,
         n_hidden=32,
         n_units=2,
-        reg_strength=1e-4,
+        kernel_regularizer=l2,
         learning_rate=1e-3,
         batch_size=128,
         **point,
@@ -248,8 +249,10 @@ class RankNetCore(Learner):
                 Number of hidden layers used in the scoring network
             n_units: int
                 Number of hidden units in each layer of the scoring network
-            reg_strength: float
-                Regularization strength of the regularizer function applied to the `kernel` weights matrix
+            kernel_regularizer: uninitialized keras regularizer
+                Regularizer function applied to the `kernel` weights matrix
++           kernel_regularizer__{kwarg}
++               Arguments to be passed to the kernel regularizer on initialization, such as kernel_regularizer__l.
             learning_rate: float
                 Learning rate of the stochastic gradient descent algorithm used by the network
             batch_size: int
@@ -259,13 +262,13 @@ class RankNetCore(Learner):
         """
         self.n_hidden = n_hidden
         self.n_units = n_units
-        self.kernel_regularizer = l2(reg_strength)
+        self.kernel_regularizer = kernel_regularizer
         self.batch_size = batch_size
         self._initialize_optimizer()
         K.set_value(self.optimizer_.lr, learning_rate)
         self._scoring_model = None
         self._construct_layers(
-            kernel_regularizer=self.kernel_regularizer,
+            kernel_regularizer=self.kernel_regularizer_,
             kernel_initializer=self.kernel_initializer,
             activation=self.activation,
             **self.kwargs,

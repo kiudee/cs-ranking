@@ -27,7 +27,7 @@ class FATENetworkCore(Learner):
         n_hidden_joint_units=32,
         activation="selu",
         kernel_initializer="lecun_normal",
-        kernel_regularizer=l2(),
+        kernel_regularizer=l2,
         optimizer=SGD,
         batch_size=256,
         random_state=None,
@@ -47,7 +47,7 @@ class FATENetworkCore(Learner):
                 Activation function to use in the hidden units
             kernel_initializer : function or string
                 Initialization function for the weights of each hidden layer
-            kernel_regularizer : function or string
+            kernel_regularizer : uninitialized keras regularizer
                 Regularizer to use in the hidden units
             optimizer: Class
                 Uninitialized optimizer class following the keras optimizer interface.
@@ -79,10 +79,11 @@ class FATENetworkCore(Learner):
                 del kwargs[key]
         self.kwargs = kwargs
         self._initialize_optimizer()
+        self._initialize_regularizer()
         self._construct_layers(
             activation=self.activation,
             kernel_initializer=self.kernel_initializer,
-            kernel_regularizer=self.kernel_regularizer,
+            kernel_regularizer=self.kernel_regularizer_,
             **self.kwargs,
         )
 
@@ -109,7 +110,9 @@ class FATENetworkCore(Learner):
         for i in range(self.n_hidden_joint_layers):
             self.joint_layers.append(
                 Dense(
-                    self.n_hidden_joint_units, name="joint_layer_{}".format(i), **kwargs
+                    self.n_hidden_joint_units,
+                    name="joint_layer_{}".format(i),
+                    **kwargs,
                 )
             )
 
@@ -118,7 +121,7 @@ class FATENetworkCore(Learner):
             1,
             name="output_node",
             activation="linear",
-            kernel_regularizer=self.kernel_regularizer,
+            kernel_regularizer=self.kernel_regularizer_,
         )
 
     def join_input_layers(self, input_layer, *layers, n_layers, n_objects):
@@ -158,23 +161,24 @@ class FATENetworkCore(Learner):
         self,
         n_hidden_joint_units=32,
         n_hidden_joint_layers=2,
-        reg_strength=1e-4,
+        kernel_regularizer=l2,
         learning_rate=1e-3,
         batch_size=128,
         **point,
     ):
         self.n_hidden_joint_layers = n_hidden_joint_layers
         self.n_hidden_joint_units = n_hidden_joint_units
-        self.kernel_regularizer = l2(reg_strength)
+        self.kernel_regularizer = kernel_regularizer
         self.batch_size = batch_size
         # Hack to fix memory leak:
         self._initialize_optimizer()
+        self._initialize_regularizer()
         K.set_value(self.optimizer_.lr, learning_rate)
 
         self._construct_layers(
             activation=self.activation,
             kernel_initializer=self.kernel_initializer,
-            kernel_regularizer=self.kernel_regularizer,
+            kernel_regularizer=self.kernel_regularizer_,
             **self.kwargs,
         )
 
@@ -211,7 +215,7 @@ class FATENetwork(FATENetworkCore):
         self._create_set_layers(
             activation=self.activation,
             kernel_initializer=self.kernel_initializer,
-            kernel_regularizer=self.kernel_regularizer,
+            kernel_regularizer=self.kernel_regularizer_,
         )
         self.is_variadic = True
         self.hash_file = None
@@ -540,6 +544,7 @@ class FATENetwork(FATENetworkCore):
         self.random_state_ = check_random_state(self.random_state)
         _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
         self._initialize_optimizer()
+        self._initialize_regularizer()
         self._fit(
             X=X,
             Y=Y,
@@ -708,16 +713,17 @@ class FATENetwork(FATENetworkCore):
             sess = tf.Session()
             K.set_session(sess)
             self._initialize_optimizer()
+            self._initialize_regularizer()
             self._construct_layers(
                 activation=self.activation,
                 kernel_initializer=self.kernel_initializer,
-                kernel_regularizer=self.kernel_regularizer,
+                kernel_regularizer=self.kernel_regularizer_,
                 **self.kwargs,
             )
             self._create_set_layers(
                 activation=self.activation,
                 kernel_initializer=self.kernel_initializer,
-                kernel_regularizer=self.kernel_regularizer,
+                kernel_regularizer=self.kernel_regularizer_,
                 **self.kwargs,
             )
             self.model = self.construct_model(self.n_object_features_fit_, n_objects)
@@ -731,7 +737,7 @@ class FATENetwork(FATENetworkCore):
         n_hidden_set_layers=2,
         n_hidden_joint_units=32,
         n_hidden_joint_layers=2,
-        reg_strength=1e-4,
+        kernel_regularizer=l2,
         learning_rate=1e-3,
         batch_size=128,
         **point,
@@ -749,8 +755,6 @@ class FATENetwork(FATENetworkCore):
                 Number of hidden joint layers
             n_hidden_joint_layers: int
                 Number of hidden units in each joint layer
-            reg_strength: float
-                Regularization strength of the regularizer function applied to the `kernel` weights matrix
             learning_rate: float
                 Learning rate of the stochastic gradient descent algorithm used by the network
             batch_size: int
@@ -762,7 +766,6 @@ class FATENetwork(FATENetworkCore):
             self,
             n_hidden_joint_units=n_hidden_joint_units,
             n_hidden_joint_layers=n_hidden_joint_layers,
-            reg_strength=reg_strength,
             learning_rate=learning_rate,
             batch_size=batch_size,
             **point,
@@ -770,11 +773,12 @@ class FATENetwork(FATENetworkCore):
 
         self.n_hidden_set_units = n_hidden_set_units
         self.n_hidden_set_layers = n_hidden_set_layers
+        self.kernel_regularizer = kernel_regularizer
 
         self._create_set_layers(
             activation=self.activation,
             kernel_initializer=self.kernel_initializer,
-            kernel_regularizer=self.kernel_regularizer,
+            kernel_regularizer=self.kernel_regularizer_,
             **self.kwargs,
         )
         if hasattr(self, "model"):

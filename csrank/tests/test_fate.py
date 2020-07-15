@@ -34,10 +34,11 @@ def test_construction_core():
 
     grc = MockClass()
     grc._initialize_optimizer()
+    grc._initialize_regularizer()
     grc._construct_layers(
         activation=grc.activation,
         kernel_initializer=grc.kernel_initializer,
-        kernel_regularizer=grc.kernel_regularizer,
+        kernel_regularizer=grc.kernel_regularizer_,
     )
     input_layer = Input(shape=(n_objects, n_features))
     scores = grc.join_input_layers(input_layer, None, n_layers=0, n_objects=n_objects)
@@ -50,7 +51,6 @@ def test_construction_core():
     params = {
         "n_hidden_joint_units": 2,
         "n_hidden_joint_layers": 10,
-        "reg_strength": 1e-3,
         "learning_rate": 1e-1,
         "batch_size": 32,
     }
@@ -65,14 +65,6 @@ def test_construction_core():
     assert np.isclose(
         learning_rate, params["learning_rate"], rtol=rtol, atol=atol, equal_nan=False
     )
-    config = grc.kernel_regularizer.get_config()
-    val1 = np.isclose(
-        config["l1"], params["reg_strength"], rtol=rtol, atol=atol, equal_nan=False
-    )
-    val2 = np.isclose(
-        config["l2"], params["reg_strength"], rtol=rtol, atol=atol, equal_nan=False
-    )
-    assert val1 or val2
 
 
 def test_fate_object_ranker_fixed_generator():
@@ -88,7 +80,8 @@ def test_fate_object_ranker_fixed_generator():
         n_hidden_set_layers=1,
         n_hidden_joint_units=5,
         n_hidden_set_units=5,
-        kernel_regularizer=l2(1e-4),
+        kernel_regularizer=l2,
+        kernel_regularizer__l=1e-4,
         **optimizer_common_args,
     )
     fate.fit_generator(
