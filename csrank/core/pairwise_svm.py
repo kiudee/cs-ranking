@@ -16,6 +16,7 @@ class PairwiseSVM(Learner):
         tol=1e-4,
         normalize=True,
         fit_intercept=True,
+        use_logistic_regression=False,
         random_state=None,
         **kwargs,
     ):
@@ -31,6 +32,10 @@ class PairwiseSVM(Learner):
             If True, the data will be normalized before fitting.
         fit_intercept : bool, optional
             If True, the linear model will also fit an intercept.
+        use_logistic_regression : bool, optional
+            Whether to fit a Linear Support Vector machine or a Logistic
+            Regression model. You may want to prefer the simpler Logistic
+            Regression model on a large sample size.
         random_state : int, RandomState instance or None, optional
             Seed of the pseudorandom generator or a RandomState instance
         **kwargs
@@ -44,8 +49,8 @@ class PairwiseSVM(Learner):
         self.C = C
         self.tol = tol
         self.logger = logging.getLogger("RankSVM")
+        self.use_logistic_regression = use_logistic_regression
         self.random_state = random_state
-        self.threshold_instances = int(1e10)
         self.fit_intercept = fit_intercept
         self.weights = None
         self.model = None
@@ -68,7 +73,7 @@ class PairwiseSVM(Learner):
         self.random_state_ = check_random_state(self.random_state)
         _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
         x_train, y_single = self._convert_instances_(X, Y)
-        if x_train.shape[0] > self.threshold_instances:
+        if self.use_logistic_regression:
             self.model = LogisticRegression(
                 C=self.C,
                 tol=self.tol,
