@@ -54,7 +54,6 @@ class CmpNetCore(Learner):
             if key not in allowed_dense_kwargs:
                 del kwargs[key]
         self.kwargs = kwargs
-        self.threshold_instances = int(1e10)
         self.random_state = random_state
         self.model = None
 

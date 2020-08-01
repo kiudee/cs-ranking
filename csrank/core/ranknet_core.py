@@ -47,7 +47,6 @@ class RankNetCore(Learner):
             if key not in allowed_dense_kwargs:
                 del kwargs[key]
         self.kwargs = kwargs
-        self.threshold_instances = int(1e10)
         self.batch_size = batch_size
         self._scoring_model = None
         self.model = None

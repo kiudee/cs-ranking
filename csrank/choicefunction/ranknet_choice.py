@@ -97,14 +97,6 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
         self.logger.debug("Creating the Dataset")
         x1, x2, garbage, garbage, y_single = generate_complete_pairwise_dataset(X, Y)
         del garbage
-        if x1.shape[0] > self.threshold_instances:
-            indices = self.random_state.choice(
-                x1.shape[0], self.threshold_instances, replace=False
-            )
-            x1 = x1[indices, :]
-            x2 = x2[indices, :]
-            y_single = y_single[indices]
-            self.logger.debug("Sampling instances")
         self.logger.debug("Finished the Dataset instances {}".format(x1.shape[0]))
         return x1, x2, y_single
 
