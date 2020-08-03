@@ -105,7 +105,6 @@ class ListNet(Learner, ObjectRanker):
                 del kwargs[key]
         self.kwargs = kwargs
 
-        self.threshold_instances = int(1e10)
         self.batch_size = batch_size
         self.random_state = random_state
         self.hash_file = None
