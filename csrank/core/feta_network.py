@@ -13,7 +13,6 @@ from keras.optimizers import SGD
 from keras.regularizers import l2
 import numpy as np
 from sklearn.utils import check_random_state
-import tensorflow as tf
 
 from csrank.constants import allowed_dense_kwargs
 from csrank.layers import NormalizedDense
@@ -338,32 +337,3 @@ class FETANetwork(Learner):
             scores = self.model.predict(X, **kwargs)
         self.logger.info("Done predicting scores")
         return scores
-
-    def clear_memory(self, **kwargs):
-        """
-            Clear the memory, restores the currently fitted model back to prevent memory leaks.
-
-            Parameters
-            ----------
-            **kwargs :
-                Keyword arguments for the function
-        """
-        if self.hash_file is not None:
-            self.model.save_weights(self.hash_file)
-            K.clear_session()
-            sess = tf.Session()
-            K.set_session(sess)
-
-            self._pairwise_model = None
-            self._zero_order_model = None
-            self._initialize_optimizer()
-            self._construct_layers(
-                kernel_regularizer=self.kernel_regularizer_,
-                kernel_initializer=self.kernel_initializer,
-                activation=self.activation,
-                **self.kwargs,
-            )
-            self.model = self.construct_model()
-            self.model.load_weights(self.hash_file)
-        else:
-            self.logger.info("Cannot clear the memory")

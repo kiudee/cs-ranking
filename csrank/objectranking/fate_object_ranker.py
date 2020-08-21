@@ -110,7 +110,3 @@ class FATEObjectRanker(FATENetwork, ObjectRanker):
 
     def predict(self, X, **kwargs):
         return super().predict(X, **kwargs)
-
-    def clear_memory(self, **kwargs):
-        self.logger.info("Clearing memory")
-        super().clear_memory(**kwargs)

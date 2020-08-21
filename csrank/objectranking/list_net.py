@@ -1,6 +1,5 @@
 import logging
 
-from keras import backend as K
 from keras import Input
 from keras.layers import concatenate
 from keras.layers import Dense
@@ -8,7 +7,6 @@ from keras.models import Model
 from keras.optimizers import SGD
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
-import tensorflow as tf
 
 from csrank.constants import allowed_dense_kwargs
 from csrank.layers import create_input_lambda
@@ -262,30 +260,3 @@ class ListNet(Learner, ObjectRanker):
 
     def predict(self, X, **kwargs):
         return super().predict(X, **kwargs)
-
-    def clear_memory(self, **kwargs):
-        """
-            Clear the memory, restores the currently fitted model back to prevent memory leaks.
-
-            Parameters
-            ----------
-            **kwargs :
-                Keyword arguments for the function
-        """
-        if self.hash_file is not None:
-            self.model.save_weights(self.hash_file)
-            K.clear_session()
-            sess = tf.Session()
-            K.set_session(sess)
-            self._scoring_model = None
-            self._initialize_optimizer()
-            self._construct_layers(
-                kernel_regularizer=self.kernel_regularizer_,
-                kernel_initializer=self.kernel_initializer,
-                activation=self.activation,
-                **self.kwargs,
-            )
-            self.model = self.construct_model()
-            self.model.load_weights(self.hash_file)
-        else:
-            self.logger.info("Cannot clear the memory")

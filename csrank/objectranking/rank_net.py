@@ -156,6 +156,3 @@ class RankNet(RankNetCore, ObjectRanker):
 
     def predict(self, X, **kwargs):
         return super().predict(X, **kwargs)
-
-    def clear_memory(self, **kwargs):
-        super().clear_memory(**kwargs)

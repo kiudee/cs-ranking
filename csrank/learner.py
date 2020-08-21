@@ -95,12 +95,6 @@ class Learner(BaseEstimator, metaclass=ABCMeta):
             scores = dict()
             for ranking_size, x in X.items():
                 n_instances, n_objects, n_features = x.shape
-                if "clear_memory" in dir(self):
-                    self.clear_memory(
-                        n_instances=n_instances,
-                        n_objects=n_objects,
-                        n_features=n_features,
-                    )
                 scores[ranking_size] = self._predict_scores_fixed(x, **kwargs)
 
         else:
