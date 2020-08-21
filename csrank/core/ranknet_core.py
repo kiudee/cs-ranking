@@ -48,7 +48,6 @@ class RankNetCore(Learner):
         self.batch_size = batch_size
         self._scoring_model = None
         self.model = None
-        self.hash_file = None
         self.random_state = random_state
 
     def _construct_layers(self, **kwargs):

@@ -50,7 +50,6 @@ class FETANetwork(Learner):
         self.max_number_of_objects = max_number_of_objects
         self.num_subsample = num_subsample
         self.batch_size = batch_size
-        self.hash_file = None
         self.optimizer = optimizer
         self.add_zeroth_order_model = add_zeroth_order_model
         self.n_hidden = n_hidden
@@ -306,8 +305,6 @@ class FETANetwork(Learner):
             verbose=verbose,
             **kwd,
         )
-        if self.hash_file is not None:
-            self.model.save_weights(self.hash_file)
 
     def sub_sampling(self, X, Y):
         if self.n_objects_fit_ > self.max_number_of_objects:

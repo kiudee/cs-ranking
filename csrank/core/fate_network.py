@@ -183,7 +183,6 @@ class FATENetwork(FATENetworkCore):
             kernel_regularizer=self.kernel_regularizer_,
         )
         self.is_variadic = True
-        self.hash_file = None
 
     def _create_set_layers(self, **kwargs):
         """

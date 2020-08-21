@@ -34,7 +34,6 @@ class CmpNetCore(Learner):
         self.logger = logging.getLogger("CmpNet")
         self.batch_normalization = batch_normalization
         self.activation = activation
-        self.hash_file = None
 
         self.batch_size = batch_size
 

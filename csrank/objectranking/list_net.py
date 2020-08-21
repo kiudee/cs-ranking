@@ -50,8 +50,6 @@ class ListNet(Learner, ObjectRanker):
             ----------
             n_top : int
                 Size of the top-k-subrankings to consider for training
-            hash_file: str
-                File path of the model where the weights are stored to get the predictions after clearing the memory
             n_hidden : int
                 Number of hidden layers used in the scoring network
             n_units : int
@@ -105,7 +103,6 @@ class ListNet(Learner, ObjectRanker):
 
         self.batch_size = batch_size
         self.random_state = random_state
-        self.hash_file = None
         self.model = None
         self._scoring_model = None
 
