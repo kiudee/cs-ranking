@@ -20,14 +20,6 @@ class ChoiceDatasetGenerator(SyntheticDatasetGenerator):
             )
         self.dataset_function = dataset_function_options[dataset_type]
 
-    def get_single_train_test_split(self):
-        return super(ChoiceDatasetGenerator, self).get_single_train_test_split()
-
-    def get_train_test_datasets(self, n_datasets=5):
-        return super(ChoiceDatasetGenerator, self).get_train_test_datasets(
-            n_datasets=n_datasets
-        )
-
     def make_globular_pareto_choices(
         self,
         n_instances=10000,

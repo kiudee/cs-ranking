@@ -9,7 +9,7 @@ from .choice_functions import ChoiceFunctions
 from .util import generate_complete_pairwise_dataset
 
 
-class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
+class RankNetChoiceFunction(ChoiceFunctions, RankNetCore):
     def __init__(
         self,
         n_hidden=2,
@@ -90,9 +90,6 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
         self.logger.info("Initializing network")
         self.threshold = 0.5
 
-    def construct_model(self):
-        return super().construct_model()
-
     def _convert_instances_(self, X, Y):
         self.logger.debug("Creating the Dataset")
         x1, x2, garbage, garbage, y_single = generate_complete_pairwise_dataset(X, Y)
@@ -169,15 +166,3 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
         else:
             super().fit(X, Y, epochs, callbacks, validation_split, verbose, **kwd)
             self.threshold = 0.5
-
-    def _predict_scores_fixed(self, X, **kwargs):
-        return super()._predict_scores_fixed(X, **kwargs)
-
-    def predict_scores(self, X, **kwargs):
-        return super().predict_scores(X, **kwargs)
-
-    def predict_for_scores(self, scores, **kwargs):
-        return ChoiceFunctions.predict_for_scores(self, scores, **kwargs)
-
-    def predict(self, X, **kwargs):
-        return super().predict(X, **kwargs)

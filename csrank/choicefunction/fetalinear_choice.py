@@ -7,7 +7,7 @@ from csrank.core.feta_linear import FETALinearCore
 from .choice_functions import ChoiceFunctions
 
 
-class FETALinearChoiceFunction(FETALinearCore, ChoiceFunctions):
+class FETALinearChoiceFunction(ChoiceFunctions, FETALinearCore):
     def __init__(
         self,
         loss_function=binary_crossentropy,
@@ -94,15 +94,3 @@ class FETALinearChoiceFunction(FETALinearCore, ChoiceFunctions):
         else:
             super().fit(X, Y, epochs, callbacks, validation_split, verbose, **kwd)
             self.threshold = 0.5
-
-    def _predict_scores_fixed(self, X, **kwargs):
-        return super()._predict_scores_fixed(X, **kwargs)
-
-    def predict_scores(self, X, **kwargs):
-        return super().predict_scores(X, **kwargs)
-
-    def predict_for_scores(self, scores, **kwargs):
-        return ChoiceFunctions.predict_for_scores(self, scores, **kwargs)
-
-    def predict(self, X, **kwargs):
-        return super().predict(X, **kwargs)

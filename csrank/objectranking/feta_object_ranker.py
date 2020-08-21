@@ -10,7 +10,7 @@ from .object_ranker import ObjectRanker
 __all__ = ["FETAObjectRanker"]
 
 
-class FETAObjectRanker(FETANetwork, ObjectRanker):
+class FETAObjectRanker(ObjectRanker, FETANetwork):
     def __init__(
         self,
         n_hidden=2,
@@ -98,54 +98,3 @@ class FETAObjectRanker(FETANetwork, ObjectRanker):
             **kwargs,
         )
         self.logger = logging.getLogger(FETAObjectRanker.__name__)
-
-    def construct_model(self):
-        return super().construct_model()
-
-    def fit(
-        self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd
-    ):
-        """
-            Fit an object ranking learning model on a provided set of queries.
-            The provided queries are of a fixed size (numpy arrays).
-
-            Parameters
-            ----------
-            X : numpy array
-                (n_instances, n_objects, n_features)
-                Feature vectors of the objects
-            Y : numpy array
-                (n_instances, n_objects)
-                Rankings of the given objects
-            epochs : int
-                Number of epochs to run if training for a fixed query size
-            callbacks : list
-                List of callbacks to be called during optimization
-            validation_split : float
-                Percentage of instances to split off to validate on
-            verbose : bool
-                Print verbose information
-            **kwd
-                Keyword arguments for the fit function
-        """
-        super().fit(
-            X,
-            Y,
-            epochs=epochs,
-            callbacks=callbacks,
-            validation_split=validation_split,
-            verbose=verbose,
-            **kwd,
-        )
-
-    def _predict_scores_fixed(self, X, **kwargs):
-        return super()._predict_scores_fixed(X, **kwargs)
-
-    def predict_scores(self, X, **kwargs):
-        return super().predict_scores(X, **kwargs)
-
-    def predict_for_scores(self, scores, **kwargs):
-        return ObjectRanker.predict_for_scores(self, scores, **kwargs)
-
-    def predict(self, X, **kwargs):
-        return super().predict(X, **kwargs)

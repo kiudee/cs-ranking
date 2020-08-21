@@ -24,12 +24,3 @@ class RandomBaselineDC(DiscreteObjectChooser, Learner):
     def _predict_scores_fixed(self, X, **kwargs):
         n_instances, n_objects, n_features = X.shape
         return self.random_state_.rand(n_instances, n_objects)
-
-    def predict_scores(self, X, **kwargs):
-        return super().predict_scores(X, **kwargs)
-
-    def predict_for_scores(self, scores, **kwargs):
-        return DiscreteObjectChooser.predict_for_scores(self, scores, **kwargs)
-
-    def predict(self, X, **kwargs):
-        return super().predict(X, **kwargs)

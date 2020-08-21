@@ -72,7 +72,6 @@ class Learner(BaseEstimator, metaclass=ABCMeta):
     def predict_for_scores(self, scores, **kwargs):
         raise NotImplementedError
 
-    @abstractmethod
     def predict_scores(self, X, **kwargs):
         """
             Predict the utility scores for each object in the collection of set of objects called a query set.
@@ -101,7 +100,6 @@ class Learner(BaseEstimator, metaclass=ABCMeta):
             scores = self._predict_scores_fixed(X, **kwargs)
         return scores
 
-    @abstractmethod
     def predict(self, X, **kwargs):
         """
             Predict preferences in the form of rankings or choices for a given collection of sets of objects called

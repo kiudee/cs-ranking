@@ -10,7 +10,7 @@ from csrank.core.fate_network import FATENetwork
 from .choice_functions import ChoiceFunctions
 
 
-class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
+class FATEChoiceFunction(ChoiceFunctions, FATENetwork):
     def __init__(
         self,
         n_hidden_set_layers=2,
@@ -132,9 +132,6 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
             kernel_regularizer=self.kernel_regularizer_,
         )
 
-    def construct_model(self, n_features, n_objects):
-        return super().construct_model(n_features, n_objects)
-
     def fit(
         self, X, Y, verbose=0, tune_size=0.1, thin_thresholds=1, **kwargs,
     ):
@@ -180,15 +177,3 @@ class FATEChoiceFunction(FATENetwork, ChoiceFunctions):
         else:
             super().fit(X, Y, **kwargs)
             self.threshold = 0.5
-
-    def _predict_scores_fixed(self, X, **kwargs):
-        return super()._predict_scores_fixed(X, **kwargs)
-
-    def predict_scores(self, X, **kwargs):
-        return super().predict_scores(X, **kwargs)
-
-    def predict_for_scores(self, scores, **kwargs):
-        return ChoiceFunctions.predict_for_scores(self, scores, **kwargs)
-
-    def predict(self, X, **kwargs):
-        return super().predict(X, **kwargs)

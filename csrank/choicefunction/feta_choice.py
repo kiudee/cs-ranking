@@ -21,7 +21,7 @@ from csrank.numpy_util import sigmoid
 from .choice_functions import ChoiceFunctions
 
 
-class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
+class FETAChoiceFunction(ChoiceFunctions, FETANetwork):
     def __init__(
         self,
         n_hidden=2,
@@ -352,15 +352,3 @@ class FETAChoiceFunction(FETANetwork, ChoiceFunctions):
             "Sampled instances {} objects {}".format(X_train.shape[0], X_train.shape[1])
         )
         return X_train, Y_train
-
-    def _predict_scores_fixed(self, X, **kwargs):
-        return super()._predict_scores_fixed(X, **kwargs)
-
-    def predict_scores(self, X, **kwargs):
-        return super().predict_scores(X, **kwargs)
-
-    def predict_for_scores(self, scores, **kwargs):
-        return ChoiceFunctions.predict_for_scores(self, scores, **kwargs)
-
-    def predict(self, X, **kwargs):
-        return super().predict(X, **kwargs)

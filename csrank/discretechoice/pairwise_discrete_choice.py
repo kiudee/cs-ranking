@@ -5,7 +5,7 @@ from csrank.core.pairwise_svm import PairwiseSVM
 from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 
 
-class PairwiseSVMDiscreteChoiceFunction(PairwiseSVM, DiscreteObjectChooser):
+class PairwiseSVMDiscreteChoiceFunction(DiscreteObjectChooser, PairwiseSVM):
     def __init__(
         self,
         C=1.0,
@@ -77,15 +77,3 @@ class PairwiseSVMDiscreteChoiceFunction(PairwiseSVM, DiscreteObjectChooser):
     def fit(self, X, Y, **kwd):
         _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
         super().fit(X, Y, **kwd)
-
-    def _predict_scores_fixed(self, X, **kwargs):
-        return super()._predict_scores_fixed(X, **kwargs)
-
-    def predict_scores(self, X, **kwargs):
-        return super().predict_scores(X, **kwargs)
-
-    def predict_for_scores(self, scores, **kwargs):
-        return DiscreteObjectChooser.predict_for_scores(self, scores, **kwargs)
-
-    def predict(self, X, **kwargs):
-        return super().predict(X, **kwargs)

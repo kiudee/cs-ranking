@@ -8,7 +8,7 @@ from csrank.core.fate_network import FATENetwork
 from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 
 
-class FATEDiscreteChoiceFunction(FATENetwork, DiscreteObjectChooser):
+class FATEDiscreteChoiceFunction(DiscreteObjectChooser, FATENetwork):
     def __init__(
         self,
         n_hidden_set_layers=2,
@@ -127,21 +127,3 @@ class FATEDiscreteChoiceFunction(FATENetwork, DiscreteObjectChooser):
             activation="sigmoid",
             kernel_regularizer=self.kernel_regularizer_,
         )
-
-    def construct_model(self, n_features, n_objects):
-        return super().construct_model(n_features, n_objects)
-
-    def fit(self, X, Y, **kwd):
-        super().fit(X, Y, **kwd)
-
-    def _predict_scores_fixed(self, X, **kwargs):
-        return super()._predict_scores_fixed(X, **kwargs)
-
-    def predict_scores(self, X, **kwargs):
-        return super().predict_scores(X, **kwargs)
-
-    def predict_for_scores(self, scores, **kwargs):
-        return DiscreteObjectChooser.predict_for_scores(self, scores, **kwargs)
-
-    def predict(self, X, **kwargs):
-        return super().predict(X, **kwargs)

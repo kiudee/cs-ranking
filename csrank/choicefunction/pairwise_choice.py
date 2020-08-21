@@ -7,7 +7,7 @@ from .choice_functions import ChoiceFunctions
 from .util import generate_complete_pairwise_dataset
 
 
-class PairwiseSVMChoiceFunction(PairwiseSVM, ChoiceFunctions):
+class PairwiseSVMChoiceFunction(ChoiceFunctions, PairwiseSVM):
     def __init__(
         self,
         C=1.0,
@@ -116,15 +116,3 @@ class PairwiseSVMChoiceFunction(PairwiseSVM, ChoiceFunctions):
         else:
             super().fit(X, Y, **kwd)
             self.threshold = 0.5
-
-    def _predict_scores_fixed(self, X, **kwargs):
-        return super()._predict_scores_fixed(X, **kwargs)
-
-    def predict_scores(self, X, **kwargs):
-        return super().predict_scores(X, **kwargs)
-
-    def predict_for_scores(self, scores, **kwargs):
-        return ChoiceFunctions.predict_for_scores(self, scores, **kwargs)
-
-    def predict(self, X, **kwargs):
-        return super().predict(X, **kwargs)

@@ -8,7 +8,7 @@ from csrank.core.ranknet_core import RankNetCore
 from .discrete_choice import DiscreteObjectChooser
 
 
-class RankNetDiscreteChoiceFunction(RankNetCore, DiscreteObjectChooser):
+class RankNetDiscreteChoiceFunction(DiscreteObjectChooser, RankNetCore):
     def __init__(
         self,
         n_hidden=2,
@@ -89,27 +89,9 @@ class RankNetDiscreteChoiceFunction(RankNetCore, DiscreteObjectChooser):
         self.logger = logging.getLogger(RankNetDiscreteChoiceFunction.__name__)
         self.logger.info("Initializing network")
 
-    def construct_model(self):
-        return super().construct_model()
-
     def _convert_instances_(self, X, Y):
         self.logger.debug("Creating the Dataset")
         x1, x2, garbage, garbage, y_single = generate_complete_pairwise_dataset(X, Y)
         del garbage
         self.logger.debug("Finished the Dataset instances {}".format(x1.shape[0]))
         return x1, x2, y_single
-
-    def fit(self, X, Y, **kwd):
-        super().fit(X, Y, **kwd)
-
-    def _predict_scores_fixed(self, X, **kwargs):
-        return super()._predict_scores_fixed(X, **kwargs)
-
-    def predict_scores(self, X, **kwargs):
-        return super().predict_scores(X, **kwargs)
-
-    def predict_for_scores(self, scores, **kwargs):
-        return DiscreteObjectChooser.predict_for_scores(self, scores, **kwargs)
-
-    def predict(self, X, **kwargs):
-        return super().predict(X, **kwargs)

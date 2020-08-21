@@ -78,6 +78,3 @@ class AllPositive(ChoiceFunctions, Learner):
         else:
             result = np.ones_like(scores, dtype=int)
         return result
-
-    def predict(self, X, **kwargs):
-        return super().predict(X, **kwargs)

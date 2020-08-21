@@ -230,12 +230,3 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
         utility = np.dot(X, weights)
         p = np.mean(npu.softmax(utility, axis=1), axis=2)
         return p
-
-    def predict(self, X, **kwargs):
-        return super().predict(X, **kwargs)
-
-    def predict_scores(self, X, **kwargs):
-        return super().predict_scores(X, **kwargs)
-
-    def predict_for_scores(self, scores, **kwargs):
-        return DiscreteObjectChooser.predict_for_scores(self, scores, **kwargs)

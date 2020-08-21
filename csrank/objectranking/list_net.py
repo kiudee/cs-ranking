@@ -19,7 +19,7 @@ from csrank.objectranking.object_ranker import ObjectRanker
 __all__ = ["ListNet"]
 
 
-class ListNet(Learner, ObjectRanker):
+class ListNet(ObjectRanker, Learner):
     def __init__(
         self,
         n_top=1,
@@ -248,12 +248,3 @@ class ListNet(Learner, ObjectRanker):
         scores = concatenate([self.scoring_model(lam) for lam in lambdas])
         model = Model(inputs=inp, outputs=scores)
         return model.predict(X)
-
-    def predict_scores(self, X, **kwargs):
-        return super().predict_scores(X, **kwargs)
-
-    def predict_for_scores(self, scores, **kwargs):
-        return ObjectRanker.predict_for_scores(self, scores, **kwargs)
-
-    def predict(self, X, **kwargs):
-        return super().predict(X, **kwargs)

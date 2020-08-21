@@ -107,7 +107,7 @@ class RankNetCore(Learner):
         self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd
     ):
         """
-            Fit a generic preference learning RankNet model on a provided set of queries. The provided queries can be of
+            Fit a preference learning RankNet model on a provided set of queries. The provided queries can be of
             a fixed size (numpy arrays). For learning this network the binary cross entropy loss function for a pair of
             objects :math:`x_i, x_j \\in Q` is defined as:
 
