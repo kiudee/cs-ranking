@@ -1,6 +1,5 @@
 import logging
 
-import keras.backend as K
 from keras.layers import Dense
 from keras.layers import Input
 from keras.layers.merge import concatenate
@@ -9,7 +8,6 @@ from keras.optimizers import SGD
 from keras.regularizers import l2
 import numpy as np
 from sklearn.utils import check_random_state
-import tensorflow as tf
 
 from csrank.constants import allowed_dense_kwargs
 from csrank.layers import create_input_lambda
@@ -185,7 +183,6 @@ class FATENetwork(FATENetworkCore):
             kernel_regularizer=self.kernel_regularizer_,
         )
         self.is_variadic = True
-        self.hash_file = None
 
     def _create_set_layers(self, **kwargs):
         """
@@ -662,38 +659,3 @@ class FATENetwork(FATENetworkCore):
         predicted_scores = joint_model.predict(X)
         self.logger.info("Done predicting scores")
         return predicted_scores
-
-    def clear_memory(self, n_objects=5, **kwargs):
-        """
-            Clear the memory, restores the currently fitted model back to prevent memory leaks.
-
-            Parameters
-            ----------
-            n_objects : int
-                float (n_instances, n_objects, n_features)
-            **kwargs :
-                Keyword arguments for the function
-        """
-        if self.hash_file is not None:
-            self.model.save_weights(self.hash_file)
-            K.clear_session()
-            sess = tf.Session()
-            K.set_session(sess)
-            self._initialize_optimizer()
-            self._initialize_regularizer()
-            self._construct_layers(
-                activation=self.activation,
-                kernel_initializer=self.kernel_initializer,
-                kernel_regularizer=self.kernel_regularizer_,
-                **self.kwargs,
-            )
-            self._create_set_layers(
-                activation=self.activation,
-                kernel_initializer=self.kernel_initializer,
-                kernel_regularizer=self.kernel_regularizer_,
-                **self.kwargs,
-            )
-            self.model = self.construct_model(self.n_object_features_fit_, n_objects)
-            self.model.load_weights(self.hash_file)
-        else:
-            self.logger.info("Cannot clear the memory")
