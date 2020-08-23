@@ -53,7 +53,6 @@ class PairwiseSVM(Learner):
         self.random_state = random_state
         self.fit_intercept = fit_intercept
         self.weights = None
-        self.model = None
 
     def fit(self, X, Y, **kwargs):
         """
@@ -74,7 +73,7 @@ class PairwiseSVM(Learner):
         _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
         x_train, y_single = self._convert_instances_(X, Y)
         if self.use_logistic_regression:
-            self.model = LogisticRegression(
+            self.model_ = LogisticRegression(
                 C=self.C,
                 tol=self.tol,
                 fit_intercept=self.fit_intercept,
@@ -82,7 +81,7 @@ class PairwiseSVM(Learner):
             )
             self.logger.info("Logistic Regression model ")
         else:
-            self.model = LinearSVC(
+            self.model_ = LinearSVC(
                 C=self.C,
                 tol=self.tol,
                 fit_intercept=self.fit_intercept,
@@ -95,10 +94,10 @@ class PairwiseSVM(Learner):
             x_train = std_scalar.fit_transform(x_train)
         self.logger.debug("Finished Creating the model, now fitting started")
 
-        self.model.fit(x_train, y_single)
-        self.weights = self.model.coef_.flatten()
+        self.model_.fit(x_train, y_single)
+        self.weights = self.model_.coef_.flatten()
         if self.fit_intercept:
-            self.weights = np.append(self.weights, self.model.intercept_)
+            self.weights = np.append(self.weights, self.model_.intercept_)
         self.logger.debug("Fitting Complete")
 
     def _predict_scores_fixed(self, X, **kwargs):

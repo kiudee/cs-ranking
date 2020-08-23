@@ -71,7 +71,6 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
             )
         self.regularization = regularization
         self.random_state = random_state
-        self.model = None
         self.trace = None
         self.trace_vi = None
         self.Xt = None

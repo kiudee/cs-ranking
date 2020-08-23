@@ -60,7 +60,6 @@ class FETANetwork(Learner):
                 del kwargs[key]
         self.kwargs = kwargs
         self._pairwise_model = None
-        self.model = None
         self._zero_order_model = None
 
     @property
@@ -292,10 +291,10 @@ class FETANetwork(Learner):
         self.random_state_ = check_random_state(self.random_state)
 
         X, Y = self.sub_sampling(X, Y)
-        self.model = self.construct_model()
+        self.model_ = self.construct_model()
         self.logger.debug("Starting gradient descent...")
 
-        self.model.fit(
+        self.model_.fit(
             x=X,
             y=Y,
             batch_size=self.batch_size,
@@ -331,6 +330,6 @@ class FETANetwork(Learner):
         if self.n_objects_fit_ != n_objects:
             scores = self._predict_scores_using_pairs(X, **kwargs)
         else:
-            scores = self.model.predict(X, **kwargs)
+            scores = self.model_.predict(X, **kwargs)
         self.logger.info("Done predicting scores")
         return scores

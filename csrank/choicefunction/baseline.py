@@ -16,7 +16,6 @@ class AllPositive(ChoiceFunctions, Learner):
         """
 
         self.logger = logging.getLogger(AllPositive.__name__)
-        self.model = None
 
     def fit(self, X, Y, **kwd):
         pass

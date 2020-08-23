@@ -102,7 +102,6 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
             )
         self.regularization = regularization
         self._config = None
-        self.model = None
         self.trace = None
         self.trace_vi = None
         self.Xt = None

@@ -103,7 +103,6 @@ class ListNet(ObjectRanker, Learner):
 
         self.batch_size = batch_size
         self.random_state = random_state
-        self.model = None
         self._scoring_model = None
 
     def _construct_layers(self, **kwargs):
@@ -178,9 +177,9 @@ class ListNet(ObjectRanker, Learner):
         self.logger.debug("Finished creating the dataset")
 
         self.logger.debug("Creating the model")
-        self.model = self.construct_model()
+        self.model_ = self.construct_model()
         self.logger.debug("Finished creating the model, now fitting...")
-        self.model.fit(
+        self.model_.fit(
             X,
             Y,
             batch_size=self.batch_size,
