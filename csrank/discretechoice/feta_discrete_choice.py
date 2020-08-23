@@ -19,7 +19,7 @@ from csrank.numpy_util import sigmoid
 from .discrete_choice import DiscreteObjectChooser
 
 
-class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
+class FETADiscreteChoiceFunction(DiscreteObjectChooser, FETANetwork):
     def __init__(
         self,
         n_hidden=2,
@@ -319,18 +319,3 @@ class FETADiscreteChoiceFunction(FETANetwork, DiscreteObjectChooser):
         zeroth_output = self.output_node_zeroth(x)
 
         return Model(inputs=[inp], outputs=Activation("sigmoid")(zeroth_output))
-
-    def fit(self, X, Y, **kwd):
-        super().fit(X, Y, **kwd)
-
-    def _predict_scores_fixed(self, X, **kwargs):
-        return super()._predict_scores_fixed(X, **kwargs)
-
-    def predict_scores(self, X, **kwargs):
-        return super().predict_scores(X, **kwargs)
-
-    def predict_for_scores(self, scores, **kwargs):
-        return DiscreteObjectChooser.predict_for_scores(self, scores, **kwargs)
-
-    def predict(self, X, **kwargs):
-        return super().predict(X, **kwargs)

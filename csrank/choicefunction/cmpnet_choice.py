@@ -9,7 +9,7 @@ from csrank.choicefunction.util import generate_complete_pairwise_dataset
 from csrank.core.cmpnet_core import CmpNetCore
 
 
-class CmpNetChoiceFunction(CmpNetCore, ChoiceFunctions):
+class CmpNetChoiceFunction(ChoiceFunctions, CmpNetCore):
     def __init__(
         self,
         n_hidden=2,
@@ -103,9 +103,6 @@ class CmpNetChoiceFunction(CmpNetCore, ChoiceFunctions):
         self.logger.debug("Finished the Dataset instances {}".format(x1.shape[0]))
         return x1, x2, y_double
 
-    def construct_model(self):
-        return super().construct_model()
-
     def fit(
         self,
         X,
@@ -175,15 +172,3 @@ class CmpNetChoiceFunction(CmpNetCore, ChoiceFunctions):
         else:
             super().fit(X, Y, epochs, callbacks, validation_split, verbose, **kwd)
             self.threshold = 0.5
-
-    def _predict_scores_fixed(self, X, **kwargs):
-        return super()._predict_scores_fixed(X, **kwargs)
-
-    def predict_scores(self, X, **kwargs):
-        return super().predict_scores(X, **kwargs)
-
-    def predict_for_scores(self, scores, **kwargs):
-        return ChoiceFunctions.predict_for_scores(self, scores, **kwargs)
-
-    def predict(self, X, **kwargs):
-        return super().predict(X, **kwargs)

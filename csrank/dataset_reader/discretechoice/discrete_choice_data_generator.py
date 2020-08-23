@@ -197,16 +197,3 @@ class DiscreteChoiceDatasetGenerator(SyntheticDatasetGenerator):
         Y = np.array(Y)
         Y = convert_to_label_encoding(Y, n_objects)
         return X, Y
-
-    def get_single_train_test_split(self):
-        return super(DiscreteChoiceDatasetGenerator, self).get_single_train_test_split()
-
-    def get_train_test_datasets(self, n_datasets=5):
-        return super(DiscreteChoiceDatasetGenerator, self).get_train_test_datasets(
-            n_datasets=n_datasets
-        )
-
-    def get_dataset_dictionaries(self, lengths=[5, 6]):
-        return super(DiscreteChoiceDatasetGenerator, self).get_dataset_dictionaries(
-            lengths=lengths
-        )

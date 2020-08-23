@@ -424,12 +424,3 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         utility = self._eval_utility_np(X, y_nests, weights)
         scores = self._get_probabilities_np(y_nests, utility, lambda_k, utility_k)
         return scores
-
-    def predict(self, X, **kwargs):
-        return super().predict(X, **kwargs)
-
-    def predict_scores(self, X, **kwargs):
-        return super().predict_scores(X, **kwargs)
-
-    def predict_for_scores(self, scores, **kwargs):
-        return DiscreteObjectChooser.predict_for_scores(self, scores, **kwargs)

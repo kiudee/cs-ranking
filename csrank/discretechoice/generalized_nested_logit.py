@@ -363,12 +363,3 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
         utility = np.dot(X, weights)
         p = self._get_probabilities_np(utility, lambda_k, alpha_ik)
         return p
-
-    def predict(self, X, **kwargs):
-        return super().predict(X, **kwargs)
-
-    def predict_scores(self, X, **kwargs):
-        return super().predict_scores(X, **kwargs)
-
-    def predict_for_scores(self, scores, **kwargs):
-        return DiscreteObjectChooser.predict_for_scores(self, scores, **kwargs)

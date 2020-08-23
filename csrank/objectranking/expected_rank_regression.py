@@ -135,12 +135,3 @@ class ExpectedRankRegression(ObjectRanker, Learner):
         scores = normalize(scores)
         self.logger.info("Done predicting scores")
         return scores
-
-    def predict_scores(self, X, **kwargs):
-        return super().predict_scores(X, **kwargs)
-
-    def predict_for_scores(self, scores, **kwargs):
-        return ObjectRanker.predict_for_scores(self, scores, **kwargs)
-
-    def predict(self, X, **kwargs):
-        return super().predict(X, **kwargs)

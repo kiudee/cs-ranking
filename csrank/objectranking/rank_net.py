@@ -10,7 +10,7 @@ from csrank.objectranking.object_ranker import ObjectRanker
 __all__ = ["RankNet"]
 
 
-class RankNet(RankNetCore, ObjectRanker):
+class RankNet(ObjectRanker, RankNetCore):
     def __init__(
         self,
         n_hidden=2,
@@ -91,68 +91,9 @@ class RankNet(RankNetCore, ObjectRanker):
         self.logger = logging.getLogger(RankNet.__name__)
         self.logger.info("Initializing network")
 
-    def construct_model(self):
-        return super().construct_model()
-
     def _convert_instances_(self, X, Y):
         self.logger.debug("Creating the Dataset")
         garbage, x1, x2, garbage, y_single = generate_complete_pairwise_dataset(X, Y)
         del garbage
         self.logger.debug("Finished the Dataset instances {}".format(x1.shape[0]))
         return x1, x2, y_single
-
-    def fit(
-        self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd
-    ):
-        """
-            Fit an object ranking learning RankNet model on a provided set of queries. The provided queries can be of a
-            fixed size (numpy arrays). For learning this network the binary cross entropy loss function for a pair of
-            objects :math:`x_i, x_j \\in Q` is defined as:
-
-            .. math::
-
-                C_{ij} =  -\\tilde{P_{ij}}\\log(P_{ij}) - (1 - \\tilde{P_{ij}})\\log(1 - P{ij}) \\enspace,
-
-            where :math:`\\tilde{P_{ij}}` is ground truth probability of the preference of :math:`x_i` over :math:`x_j`.
-            :math:`\\tilde{P_{ij}} = 1` if :math:`x_i \\succ x_j` else :math:`\\tilde{P_{ij}} = 0`.
-
-            Parameters
-            ----------
-            X : numpy array
-                (n_instances, n_objects, n_features)
-                Feature vectors of the objects
-            Y : numpy array
-                (n_instances, n_objects)
-                Rankings of the given objects
-            epochs : int
-                Number of epochs to run if training for a fixed query size
-            callbacks : list
-                List of callbacks to be called during optimization
-            validation_split : float
-                Percentage of instances to split off to validate on
-            verbose : bool
-                Print verbose information
-            **kwd
-                Keyword arguments for the fit function
-        """
-        super().fit(
-            X,
-            Y,
-            epochs=epochs,
-            callbacks=callbacks,
-            validation_split=validation_split,
-            verbose=verbose,
-            **kwd,
-        )
-
-    def _predict_scores_fixed(self, X, **kwargs):
-        return super()._predict_scores_fixed(X, **kwargs)
-
-    def predict_scores(self, X, **kwargs):
-        return super().predict_scores(X, **kwargs)
-
-    def predict_for_scores(self, scores, **kwargs):
-        return ObjectRanker.predict_for_scores(self, scores, **kwargs)
-
-    def predict(self, X, **kwargs):
-        return super().predict(X, **kwargs)

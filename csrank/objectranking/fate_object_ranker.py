@@ -9,7 +9,7 @@ from csrank.metrics import zero_one_rank_loss_for_scores_ties
 from csrank.objectranking.object_ranker import ObjectRanker
 
 
-class FATEObjectRanker(FATENetwork, ObjectRanker):
+class FATEObjectRanker(ObjectRanker, FATENetwork):
     def __init__(
         self,
         n_hidden_set_layers=2,
@@ -92,21 +92,3 @@ class FATEObjectRanker(FATENetwork, ObjectRanker):
             **kwargs,
         )
         self.logger = logging.getLogger(FATEObjectRanker.__name__)
-
-    def construct_model(self, n_features, n_objects):
-        return super().construct_model(n_features, n_objects)
-
-    def fit(self, X, Y, **kwd):
-        super().fit(X, Y, **kwd)
-
-    def _predict_scores_fixed(self, X, **kwargs):
-        return super()._predict_scores_fixed(X, **kwargs)
-
-    def predict_scores(self, X, **kwargs):
-        return super().predict_scores(X, **kwargs)
-
-    def predict_for_scores(self, scores, **kwargs):
-        return ObjectRanker.predict_for_scores(self, scores, **kwargs)
-
-    def predict(self, X, **kwargs):
-        return super().predict(X, **kwargs)

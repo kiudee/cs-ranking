@@ -76,15 +76,3 @@ class RankSVM(ObjectRanker, PairwiseSVM):
             "Finished the Dataset with instances {}".format(x_train.shape[0])
         )
         return x_train, y_single
-
-    def _predict_scores_fixed(self, X, **kwargs):
-        return super()._predict_scores_fixed(X, **kwargs)
-
-    def predict_scores(self, X, **kwargs):
-        return super().predict_scores(X, **kwargs)
-
-    def predict_for_scores(self, scores, **kwargs):
-        return ObjectRanker.predict_for_scores(self, scores, **kwargs)
-
-    def predict(self, X, **kwargs):
-        return super().predict(X, **kwargs)

@@ -284,12 +284,3 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
         if "intercept" in d:
             intercept = intercept + d["intercept"]
         return np.dot(X, weights) + intercept
-
-    def predict(self, X, **kwargs):
-        return super().predict(X, **kwargs)
-
-    def predict_scores(self, X, **kwargs):
-        return super().predict_scores(X, **kwargs)
-
-    def predict_for_scores(self, scores, **kwargs):
-        return ChoiceFunctions.predict_for_scores(self, scores, **kwargs)
