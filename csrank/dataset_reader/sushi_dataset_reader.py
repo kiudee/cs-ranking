@@ -72,6 +72,6 @@ class SushiDatasetReader(DatasetReader, metaclass=ABCMeta):
         self.Y = np.array(rankings)
         if self.learning_problem == DYAD_RANKING:
             self.Xc = np.array(Xc)
-            self.logger(Xc.shape)
+            self.logger.debug(Xc.shape)
         else:
             self.Xc = None
