@@ -30,6 +30,8 @@ except ImportError:
 
     raise MissingExtraError("pandas", "data")
 
+logger = logging.getLogger(__name__)
+
 
 class ImageDatasetReader(DatasetReader):
     def __init__(
@@ -50,7 +52,6 @@ class ImageDatasetReader(DatasetReader):
         # self.test_file = os.path.join(dirname, DATASET_FOLDER, "test.hd5")
         # self.labels_test_files = glob.glob(os.path.join(dirname, DATASET_FOLDER, TEST_LABEL, "*.txt"))
         # self.labels_test_files.sort()
-        self.logger = logging.getLogger(ImageDatasetReader.__name__)
 
         self.train_file = os.path.join(self.dirname, "train.hd5")
         self.similarity_matrix_train_file = os.path.join(
@@ -78,11 +79,11 @@ class ImageDatasetReader(DatasetReader):
         for file in self.labels_test_files:
             self.label_names.append(os.path.basename(file).split(".")[0].split("_")[0])
 
-        self.logger.info("Image Features Train File {}".format(self.train_file))
-        self.logger.info("Image Features Test File {}".format(self.test_file))
-        self.logger.info("Image Labels Train File {}".format(self.labels_train_files))
-        self.logger.info("Image Labels Test File {}".format(self.labels_test_files))
-        self.logger.info("Image Labels Names {}".format(self.label_names))
+        logger.info("Image Features Train File {}".format(self.train_file))
+        logger.info("Image Features Test File {}".format(self.test_file))
+        logger.info("Image Labels Train File {}".format(self.labels_train_files))
+        logger.info("Image Labels Test File {}".format(self.labels_test_files))
+        logger.info("Image Labels Names {}".format(self.label_names))
         self.random_state = check_random_state(random_state)
         if not (
             os.path.isfile(self.similarity_matrix_test_file)
@@ -213,7 +214,7 @@ class ImageDatasetReader(DatasetReader):
             ] = distance_metric_multilabel(
                 label_vectors[i], label_vectors[j], image_features[i], image_features[j]
             )
-        # self.logger.info("calculating similarity {},{},{}".format(i, j, sim))
+        # logger.info("calculating similarity {},{},{}".format(i, j, sim))
 
         for i in range(num_of_images):
             similarity_matrix_lin_list[get_key_for_indices(i, i)] = 1.0
@@ -223,7 +224,7 @@ class ImageDatasetReader(DatasetReader):
             {"col_major_index": series.index, "similarity": series.values}
         )
         matrix_df.to_csv(similarity_matrix_file)
-        self.logger.debug(
+        logger.debug(
             "Done calculating the similarity matrix stored at: {}".format(
                 similarity_matrix_file
             )

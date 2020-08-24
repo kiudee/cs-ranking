@@ -27,6 +27,8 @@ TAG_POPULARITY = "tagpopularity"
 DOC_FREQUENCY = "docfrequency"
 RELEVANCE = "relevance"
 
+logger = logging.getLogger(__name__)
+
 
 class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
     def __init__(
@@ -41,8 +43,6 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
         super(TagGenomeDatasetReader, self).__init__(
             dataset_folder="movie_lens", **kwargs
         )
-
-        self.logger = logging.getLogger(TagGenomeDatasetReader.__name__)
 
         self.movies_file = os.path.join(self.dirname, "movies.csv")
         genome_scores = pd.read_csv(os.path.join(self.dirname, "genome-scores.csv"))
@@ -63,9 +63,9 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
         if not os.path.isfile(self.similarity_matrix_file):
             self.__load_dataset__(genome_scores, genome_tags, tags_applies, movies_df)
 
-        self.logger.info("Loading similarity matrix")
+        logger.info("Loading similarity matrix")
         self.similarity_matrix = get_similarity_matrix(self.similarity_matrix_file)
-        self.logger.info("Done loading similarity matrix")
+        logger.info("Done loading similarity matrix")
         self.weights = np.log(np.array(genome_tags[TAG_POPULARITY])) / np.log(
             np.array(genome_tags[DOC_FREQUENCY])
         )
@@ -73,7 +73,7 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
         self.n_movies = len(self.movies_df)
         self.movie_features = self.movies_df.as_matrix()[:, 3:].astype(float)
         self.tags_info_df = pd.read_csv(self.tags_info_file)
-        self.logger.info("Done creating the complete dataset")
+        logger.info("Done creating the complete dataset")
 
     def __load_dataset__(self, genome_scores, genome_tags, tags_applies, movies_df):
         tags_applies[TAG] = tags_applies[TAG].str.lower()
@@ -82,12 +82,10 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
             tags_a = tags_applies.loc[tags_applies[TAG] == t.lower()]
             tags_total = np.array(tags_a[MOVIE_ID])
             values_with_pop.append([tid, t, len(tags_total)])
-            self.logger.info(
-                "Tag popularity for tag {} is: {}".format(t, len(tags_total))
-            )
+            logger.info("Tag popularity for tag {} is: {}".format(t, len(tags_total)))
             if len(tags_total) == 0:
-                self.logger.info((tid, t))
-                self.logger.info(
+                logger.info((tid, t))
+                logger.info(
                     "Tag popularity for tag {} is: {}".format(t, len(tags_total))
                 )
                 values_with_pop.append([tid, t, 2])
@@ -100,13 +98,11 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
             freq = np.sum(np.array(df["relevance"]) > 0.5)
             if freq == 0 or freq == 1:
                 freq = 2
-                self.logger.info("Document frequency for tag {} is: zero".format(tag))
+                logger.info("Document frequency for tag {} is: zero".format(tag))
             doc_freq.append(freq)
         genome_tags[DOC_FREQUENCY] = doc_freq
         genome_tags.to_csv(self.tags_info_file, index=False)
-        self.logger.info(
-            "Done loading the tag popularity and doc frequency for the tags"
-        )
+        logger.info("Done loading the tag popularity and doc frequency for the tags")
         self.weights = np.log(np.array(genome_tags[TAG_POPULARITY])) / np.log(
             np.array(genome_tags[DOC_FREQUENCY])
         )
@@ -125,7 +121,7 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
             movies_df[tag[1]] = objects[:, i]
         movies_df.to_csv(self.movies_file, index=False)
 
-        self.logger.info("Done loading the features for the movies")
+        logger.info("Done loading the features for the movies")
 
         num_of_movies = movie_ids.shape[0]
         combinations_list = np.array(list(combinations(range(num_of_movies), 2)))
@@ -137,7 +133,7 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
             similarity_matrix[get_key_for_indices(i, j)] = weighted_cosine_similarity(
                 self.weights
             )(features[i], features[j])
-            self.logger.info(
+            logger.info(
                 "Calculating similarity {},{}, {}".format(
                     i, j, similarity_matrix[get_key_for_indices(i, j)]
                 )
@@ -151,7 +147,7 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
             {"col_major_index": series.index, "similarity": series.values}
         )
         matrix_df.to_csv(self.similarity_matrix_file, index=False)
-        self.logger.info(
+        logger.info(
             "Done calculating the similarity matrix stored at: {}".format(
                 self.similarity_matrix_file
             )
@@ -159,7 +155,7 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
 
     @abstractmethod
     def make_nearest_neighbour_dataset(self, n_instances, n_objects, seed, **kwargs):
-        self.logger.info(
+        logger.info(
             "For instances {} objects {}, seed {}".format(n_instances, n_objects, seed)
         )
         random_state = check_random_state(seed)
@@ -196,7 +192,7 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
     def make_critique_fit_dataset(
         self, n_instances, n_objects, seed, direction, **kwargs
     ):
-        self.logger.info(
+        logger.info(
             "For instances {} objects {}, seed {}, direction {}".format(
                 n_instances, n_objects, seed, direction
             )
@@ -270,12 +266,12 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
                 y_1,
                 y_2,
             )
-        self.logger.info("Done")
+        logger.info("Done")
         return x_train, y_train, x_test, y_test
 
     def get_train_test_datasets(self, n_datasets=5):
         splits = np.array(n_datasets)
-        self.logger.info("Done")
+        logger.info("Done")
         return self.splitter(splits)
 
     def get_single_train_test_split(self):
@@ -293,7 +289,7 @@ class TagGenomeDatasetReader(DatasetReader, metaclass=ABCMeta):
         )
         if self.standardize:
             x_train, x_test = standardize_features(x_train, x_test)
-        self.logger.info("Done")
+        logger.info("Done")
         return x_train, y_train, x_test, y_test
 
     def splitter(self, iter):

@@ -18,6 +18,8 @@ from csrank.layers import NormalizedDense
 from csrank.numpy_util import sigmoid
 from .discrete_choice import DiscreteObjectChooser
 
+logger = logging.getLogger(__name__)
+
 
 class FETADiscreteChoiceFunction(DiscreteObjectChooser, FETANetwork):
     def __init__(
@@ -107,7 +109,6 @@ class FETADiscreteChoiceFunction(DiscreteObjectChooser, FETANetwork):
             random_state=random_state,
             **kwargs,
         )
-        self.logger = logging.getLogger(FETADiscreteChoiceFunction.__name__)
 
     def _construct_layers(self, **kwargs):
         self.input_layer = Input(
@@ -179,7 +180,7 @@ class FETADiscreteChoiceFunction(DiscreteObjectChooser, FETANetwork):
             return Lambda(lambda x: x[:, i])
 
         if self.add_zeroth_order_model:
-            self.logger.debug("Create 0th order model")
+            logger.debug("Create 0th order model")
             zeroth_order_outputs = []
             inputs = []
             for i in range(self.n_objects_fit_):
@@ -189,8 +190,8 @@ class FETADiscreteChoiceFunction(DiscreteObjectChooser, FETANetwork):
                     x = hidden(x)
                 zeroth_order_outputs.append(self.output_node_zeroth(x))
             zeroth_order_scores = concatenate(zeroth_order_outputs)
-            self.logger.debug("0th order model finished")
-        self.logger.debug("Create 1st order model")
+            logger.debug("0th order model finished")
+        logger.debug("Create 1st order model")
         outputs = [list() for _ in range(self.n_objects_fit_)]
         for i, j in combinations(range(self.n_objects_fit_), 2):
             if self.add_zeroth_order_model:
@@ -222,7 +223,7 @@ class FETADiscreteChoiceFunction(DiscreteObjectChooser, FETANetwork):
             Lambda(lambda s: K.mean(s, axis=1, keepdims=True))(x) for x in outputs
         ]
         scores = concatenate(scores)
-        self.logger.debug("1st order model finished")
+        logger.debug("1st order model finished")
         if self.add_zeroth_order_model:
 
             def get_score_object(i):
@@ -262,7 +263,7 @@ class FETADiscreteChoiceFunction(DiscreteObjectChooser, FETANetwork):
         if not self.add_zeroth_order_model:
             scores = Activation("sigmoid")(scores)
         model = Model(inputs=self.input_layer, outputs=scores)
-        self.logger.debug("Compiling complete model...")
+        logger.debug("Compiling complete model...")
         model.compile(
             loss=self.loss_function,
             optimizer=self.optimizer_,

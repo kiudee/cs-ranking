@@ -17,6 +17,7 @@ from csrank.metrics import zero_one_rank_loss_for_scores_ties
 from csrank.objectranking.object_ranker import ObjectRanker
 
 __all__ = ["ListNet"]
+logger = logging.getLogger(__name__)
 
 
 class ListNet(ObjectRanker, Learner):
@@ -84,7 +85,6 @@ class ListNet(ObjectRanker, Learner):
             ----------
                 [1] Z. Cao, T. Qin, T. Liu, M. Tsai and H. Li. "Learning to Rank: From Pairwise Approach to Listwise Approach." ICML, 2007.
         """
-        self.logger = logging.getLogger(ListNet.__name__)
         self.n_top = n_top
         self.batch_normalization = batch_normalization
         self.activation = activation
@@ -172,13 +172,13 @@ class ListNet(ObjectRanker, Learner):
             activation=self.activation,
             **self.kwargs,
         )
-        self.logger.debug("Creating top-k dataset")
+        logger.debug("Creating top-k dataset")
         X, Y = self._create_topk(X, Y)
-        self.logger.debug("Finished creating the dataset")
+        logger.debug("Finished creating the dataset")
 
-        self.logger.debug("Creating the model")
+        logger.debug("Creating the model")
         self.model_ = self.construct_model()
-        self.logger.debug("Finished creating the model, now fitting...")
+        logger.debug("Finished creating the model, now fitting...")
         self.model_.fit(
             X,
             Y,
@@ -189,7 +189,7 @@ class ListNet(ObjectRanker, Learner):
             verbose=verbose,
             **kwd,
         )
-        self.logger.debug("Fitting Complete")
+        logger.debug("Fitting Complete")
 
     def construct_model(self):
         """
@@ -228,7 +228,7 @@ class ListNet(ObjectRanker, Learner):
                 scoring model used to predict utility score for each object
         """
         if self._scoring_model is None:
-            self.logger.info("Creating scoring model")
+            logger.info("Creating scoring model")
             inp = Input(shape=(self.n_object_features_fit_,))
             x = inp
             for hidden_layer in self.hidden_layers:
@@ -239,9 +239,7 @@ class ListNet(ObjectRanker, Learner):
 
     def _predict_scores_fixed(self, X, **kwargs):
         n_inst, n_obj, n_feat = X.shape
-        self.logger.info(
-            "For Test instances {} objects {} features {}".format(*X.shape)
-        )
+        logger.info("For Test instances {} objects {} features {}".format(*X.shape))
         inp = Input(shape=(n_obj, n_feat))
         lambdas = [create_input_lambda(i)(inp) for i in range(n_obj)]
         scores = concatenate([self.scoring_model(lam) for lam in lambdas])

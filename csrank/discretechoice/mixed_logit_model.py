@@ -29,6 +29,8 @@ except ImportError:
 
     raise MissingExtraError("theano", "probabilistic")
 
+logger = logging.getLogger(__name__)
+
 
 class MixedLogitModel(DiscreteObjectChooser, Learner):
     def __init__(self, n_mixtures=4, loss_function="", regularization="l2", **kwargs):
@@ -71,7 +73,6 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
 
                 [3] Daniel McFadden and Kenneth Train. „Mixed MNL models for discrete response“. In: Journal of applied Econometrics 15.5 (2000), pp. 447–470
         """
-        self.logger = logging.getLogger(MixedLogitModel.__name__)
         self.loss_function = loss_function
         known_regularization_functions = {"l1", "l2"}
         if regularization not in known_regularization_functions:
@@ -126,7 +127,7 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
                     },
                 ]
             }
-            self.logger.info(
+            logger.info(
                 "Creating model with config {}".format(print_dictionary(self._config))
             )
         return self._config
@@ -165,7 +166,7 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
             LogLikelihood(
                 "yl", loss_func=self.loss_function_, p=self.p, observed=self.Yt
             )
-        self.logger.info("Model construction completed")
+        logger.info("Model construction completed")
 
     def fit(
         self,

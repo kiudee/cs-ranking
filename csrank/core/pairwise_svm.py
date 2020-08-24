@@ -8,6 +8,8 @@ from sklearn.utils import check_random_state
 
 from csrank.learner import Learner
 
+logger = logging.getLogger(__name__)
+
 
 class PairwiseSVM(Learner):
     def __init__(
@@ -48,7 +50,6 @@ class PairwiseSVM(Learner):
         self.normalize = normalize
         self.C = C
         self.tol = tol
-        self.logger = logging.getLogger("RankSVM")
         self.use_logistic_regression = use_logistic_regression
         self.random_state = random_state
         self.fit_intercept = fit_intercept
@@ -79,7 +80,7 @@ class PairwiseSVM(Learner):
                 fit_intercept=self.fit_intercept,
                 random_state=self.random_state_,
             )
-            self.logger.info("Logistic Regression model ")
+            logger.info("Logistic Regression model ")
         else:
             self.model_ = LinearSVC(
                 C=self.C,
@@ -87,29 +88,27 @@ class PairwiseSVM(Learner):
                 fit_intercept=self.fit_intercept,
                 random_state=self.random_state_,
             )
-            self.logger.info("Linear SVC model ")
+            logger.info("Linear SVC model ")
 
         if self.normalize:
             std_scalar = StandardScaler()
             x_train = std_scalar.fit_transform(x_train)
-        self.logger.debug("Finished Creating the model, now fitting started")
+        logger.debug("Finished Creating the model, now fitting started")
 
         self.model_.fit(x_train, y_single)
         self.weights = self.model_.coef_.flatten()
         if self.fit_intercept:
             self.weights = np.append(self.weights, self.model_.intercept_)
-        self.logger.debug("Fitting Complete")
+        logger.debug("Fitting Complete")
 
     def _predict_scores_fixed(self, X, **kwargs):
         assert X.shape[-1] == self.n_object_features_fit_
-        self.logger.info(
-            "For Test instances {} objects {} features {}".format(*X.shape)
-        )
+        logger.info("For Test instances {} objects {} features {}".format(*X.shape))
         if self.fit_intercept:
             scores = np.dot(X, self.weights[:-1])
         else:
             scores = np.dot(X, self.weights)
-        self.logger.info("Done predicting scores")
+        logger.info("Done predicting scores")
         return np.array(scores)
 
     def _convert_instances_(self, X, Y):

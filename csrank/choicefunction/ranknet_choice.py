@@ -8,6 +8,8 @@ from csrank.core.ranknet_core import RankNetCore
 from .choice_functions import ChoiceFunctions
 from .util import generate_complete_pairwise_dataset
 
+logger = logging.getLogger(__name__)
+
 
 class RankNetChoiceFunction(ChoiceFunctions, RankNetCore):
     def __init__(
@@ -86,15 +88,14 @@ class RankNetChoiceFunction(ChoiceFunctions, RankNetCore):
             random_state=random_state,
             **kwargs,
         )
-        self.logger = logging.getLogger(RankNetChoiceFunction.__name__)
-        self.logger.info("Initializing network")
+        logger.info("Initializing network")
         self.threshold = 0.5
 
     def _convert_instances_(self, X, Y):
-        self.logger.debug("Creating the Dataset")
+        logger.debug("Creating the Dataset")
         x1, x2, garbage, garbage, y_single = generate_complete_pairwise_dataset(X, Y)
         del garbage
-        self.logger.debug("Finished the Dataset instances {}".format(x1.shape[0]))
+        logger.debug("Finished the Dataset instances {}".format(x1.shape[0]))
         return x1, x2, y_single
 
     def fit(
@@ -157,7 +158,7 @@ class RankNetChoiceFunction(ChoiceFunctions, RankNetCore):
                     **kwd,
                 )
             finally:
-                self.logger.info(
+                logger.info(
                     "Fitting utility function finished. Start tuning threshold."
                 )
                 self.threshold = self._tune_threshold(

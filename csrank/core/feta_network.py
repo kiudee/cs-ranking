@@ -19,6 +19,8 @@ from csrank.layers import NormalizedDense
 from csrank.learner import Learner
 from csrank.losses import hinged_rank_loss
 
+logger = logging.getLogger(__name__)
+
 
 class FETANetwork(Learner):
     def __init__(
@@ -39,7 +41,6 @@ class FETANetwork(Learner):
         random_state=None,
         **kwargs,
     ):
-        self.logger = logging.getLogger(FETANetwork.__name__)
         self.random_state = random_state
         self.kernel_regularizer = kernel_regularizer
         self.kernel_initializer = kernel_initializer
@@ -74,7 +75,7 @@ class FETANetwork(Learner):
         )
         # Todo: Variable sized input
         # X = Input(shape=(None, n_features))
-        self.logger.info("n_hidden {}, n_units {}".format(self.n_hidden, self.n_units))
+        logger.info("n_hidden {}, n_units {}".format(self.n_hidden, self.n_units))
         if self.batch_normalization:
             if self.add_zeroth_order_model:
                 self.hidden_layers_zeroth = [
@@ -109,7 +110,7 @@ class FETANetwork(Learner):
     @property
     def zero_order_model(self):
         if self._zero_order_model is None and self.add_zeroth_order_model:
-            self.logger.info("Creating zeroth model")
+            logger.info("Creating zeroth model")
             inp = Input(shape=(self.n_object_features_fit_,))
 
             x = inp
@@ -118,13 +119,13 @@ class FETANetwork(Learner):
             zeroth_output = self.output_node_zeroth(x)
 
             self._zero_order_model = Model(inputs=[inp], outputs=zeroth_output)
-            self.logger.info("Done creating zeroth model")
+            logger.info("Done creating zeroth model")
         return self._zero_order_model
 
     @property
     def pairwise_model(self):
         if self._pairwise_model is None:
-            self.logger.info("Creating pairwise model")
+            logger.info("Creating pairwise model")
             x1 = Input(shape=(self.n_object_features_fit_,))
             x2 = Input(shape=(self.n_object_features_fit_,))
 
@@ -143,7 +144,7 @@ class FETANetwork(Learner):
 
             merged_output = concatenate([n_g, n_l])
             self._pairwise_model = Model(inputs=[x1, x2], outputs=merged_output)
-            self.logger.info("Done creating pairwise model")
+            logger.info("Done creating pairwise model")
         return self._pairwise_model
 
     def _predict_pair(self, a, b, only_pairwise=False, **kwargs):
@@ -196,7 +197,7 @@ class FETANetwork(Learner):
             return Lambda(lambda x: x[:, i])
 
         if self.add_zeroth_order_model:
-            self.logger.debug("Create 0th order model")
+            logger.debug("Create 0th order model")
             zeroth_order_outputs = []
             inputs = []
             for i in range(self.n_objects_fit_):
@@ -206,8 +207,8 @@ class FETANetwork(Learner):
                     x = hidden(x)
                 zeroth_order_outputs.append(self.output_node_zeroth(x))
             zeroth_order_scores = concatenate(zeroth_order_outputs)
-            self.logger.debug("0th order model finished")
-        self.logger.debug("Create 1st order model")
+            logger.debug("0th order model finished")
+        logger.debug("Create 1st order model")
         outputs = [list() for _ in range(self.n_objects_fit_)]
         for i, j in combinations(range(self.n_objects_fit_), 2):
             if self.add_zeroth_order_model:
@@ -239,11 +240,11 @@ class FETANetwork(Learner):
             Lambda(lambda s: K.mean(s, axis=1, keepdims=True))(x) for x in outputs
         ]
         scores = concatenate(scores)
-        self.logger.debug("1st order model finished")
+        logger.debug("1st order model finished")
         if self.add_zeroth_order_model:
             scores = add([scores, zeroth_order_scores])
         model = Model(inputs=self.input_layer, outputs=scores)
-        self.logger.debug("Compiling complete model...")
+        logger.debug("Compiling complete model...")
         model.compile(
             loss=self.loss_function,
             optimizer=self.optimizer_,
@@ -287,12 +288,12 @@ class FETANetwork(Learner):
             **self.kwargs,
         )
 
-        self.logger.debug("Enter fit function...")
+        logger.debug("Enter fit function...")
         self.random_state_ = check_random_state(self.random_state)
 
         X, Y = self.sub_sampling(X, Y)
         self.model_ = self.construct_model()
-        self.logger.debug("Starting gradient descent...")
+        logger.debug("Starting gradient descent...")
 
         self.model_.fit(
             x=X,
@@ -324,12 +325,10 @@ class FETANetwork(Learner):
 
     def _predict_scores_fixed(self, X, **kwargs):
         n_objects = X.shape[-2]
-        self.logger.info(
-            "For Test instances {} objects {} features {}".format(*X.shape)
-        )
+        logger.info("For Test instances {} objects {} features {}".format(*X.shape))
         if self.n_objects_fit_ != n_objects:
             scores = self._predict_scores_using_pairs(X, **kwargs)
         else:
             scores = self.model_.predict(X, **kwargs)
-        self.logger.info("Done predicting scores")
+        logger.info("Done predicting scores")
         return scores

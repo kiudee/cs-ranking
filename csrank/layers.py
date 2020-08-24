@@ -9,6 +9,7 @@ from keras.layers.merge import average
 from keras.models import Model
 
 __all__ = ["NormalizedDense", "DeepSet", "create_input_lambda"]
+logger = logging.getLogger(__name__)
 
 
 class NormalizedDense(object):
@@ -88,10 +89,9 @@ class DeepSet(object):
         input_shape=None,
         **kwargs,
     ):
-        self.logger = logging.getLogger("DeepSets")
         self.n_units = units
         if input_shape is not None:
-            self.logger.warning(
+            logger.warning(
                 "input_shape is deprecated, since the number "
                 "of objects is now inferred"
             )
@@ -121,7 +121,7 @@ class DeepSet(object):
         n_objects, n_features = shape[1].value, shape[2].value
         if hasattr(self, "n_features"):
             if self.n_features != n_features:
-                self.logger.error("Number of features is not consistent.")
+                logger.error("Number of features is not consistent.")
         input_layer = Input(shape=(n_objects, n_features))
         inputs = [create_input_lambda(i)(input_layer) for i in range(n_objects)]
 

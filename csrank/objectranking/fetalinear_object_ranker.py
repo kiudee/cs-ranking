@@ -4,6 +4,8 @@ from csrank.core.feta_linear import FETALinearCore
 from csrank.losses import hinged_rank_loss
 from .object_ranker import ObjectRanker
 
+logger = logging.getLogger(__name__)
+
 
 class FETALinearObjectRanker(ObjectRanker, FETALinearCore):
     def __init__(
@@ -54,4 +56,3 @@ class FETALinearObjectRanker(ObjectRanker, FETALinearCore):
             random_state=random_state,
             **kwargs,
         )
-        self.logger = logging.getLogger(FETALinearObjectRanker.__name__)

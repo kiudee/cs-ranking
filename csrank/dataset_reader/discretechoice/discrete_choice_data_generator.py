@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 from scipy.spatial.distance import pdist
 from scipy.spatial.distance import squareform
@@ -18,6 +20,8 @@ except ImportError:
 
     raise MissingExtraError("pygmo", "data")
 
+logger = logging.getLogger(__name__)
+
 
 class DiscreteChoiceDatasetGenerator(SyntheticDatasetGenerator):
     def __init__(self, dataset_type="medoid", **kwargs):
@@ -36,7 +40,7 @@ class DiscreteChoiceDatasetGenerator(SyntheticDatasetGenerator):
             raise ValueError(
                 f"dataset_type must be one of {set(dataset_function_options.keys())}"
             )
-        self.logger.info("dataset type {}".format(dataset_type))
+        logger.info("dataset type {}".format(dataset_type))
         self.dataset_function = dataset_function_options[dataset_type]
 
     def make_linear_transitive(

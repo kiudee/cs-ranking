@@ -6,13 +6,14 @@ from csrank.constants import CHOICE_FUNCTION
 from .util import sub_sampling_choices_from_relevance
 from ..letor_ranking_dataset_reader import LetorRankingDatasetReader
 
+logger = logging.getLogger(__name__)
+
 
 class LetorRankingChoiceDatasetReader(LetorRankingDatasetReader):
     def __init__(self, random_state=None, n_objects=5, **kwargs):
         super(LetorRankingChoiceDatasetReader, self).__init__(
             learning_problem=CHOICE_FUNCTION, **kwargs
         )
-        self.logger = logging.getLogger(LetorRankingChoiceDatasetReader.__name__)
         self.random_state = check_random_state(random_state)
         self.n_objects = n_objects
         self.__load_dataset__()

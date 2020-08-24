@@ -5,6 +5,8 @@ from keras import backend as K
 from keras.callbacks import Callback
 import numpy as np
 
+logger = logging.getLogger(__name__)
+
 
 class EarlyStoppingWithWeights(Callback):
     def __init__(
@@ -77,7 +79,6 @@ class EarlyStoppingWithWeights(Callback):
             self.min_delta *= 1
         else:
             self.min_delta *= -1
-        self.logger = logging.getLogger(EarlyStoppingWithWeights.__name__)
 
     def on_train_begin(self, logs=None):
         # Allow instances to be re-used
@@ -93,7 +94,7 @@ class EarlyStoppingWithWeights(Callback):
         current = logs.get(self.monitor)
         self.best_weights = self.model.get_weights()
         if current is None:
-            self.logger.warning(
+            logger.warning(
                 "Early stopping conditioned on metric `%s` which is not available. Available metrics are: %s"
                 % (self.monitor, ",".join(list(logs.keys()))),
                 RuntimeWarning,
@@ -110,7 +111,7 @@ class EarlyStoppingWithWeights(Callback):
 
     def on_train_end(self, logs=None):
         if self.stopped_epoch > 0:
-            self.logger.info(
+            logger.info(
                 "Setting best weights for final epoch {}".format(self.stopped_epoch)
             )
             self.model.set_weights(self.best_weights)
@@ -136,7 +137,6 @@ class LRScheduler(Callback):
         self.epochs_drop = epochs_drop
         self.drop = drop
         self.initial_lr = None
-        self.logger = logging.getLogger(LRScheduler.__name__)
 
     def step_decay(self, epoch):
         """The step-decay function, which takes the current epoch and update the learning rate according to the
@@ -190,10 +190,9 @@ class DebugOutput(Callback):
         super(DebugOutput, self).__init__(**kwargs)
         self.delta = delta
         self.epoch = 0
-        self.logger = logging.getLogger(DebugOutput.__name__)
 
     def on_train_end(self, logs=None):
-        self.logger.debug("Total number of epochs: {}".format(self.epoch))
+        logger.debug("Total number of epochs: {}".format(self.epoch))
 
     def on_train_begin(self, logs=None):
         self.epoch = 0
@@ -201,4 +200,4 @@ class DebugOutput(Callback):
     def on_epoch_end(self, epoch, logs=None):
         self.epoch += 1
         if self.epoch % self.delta == 0:
-            self.logger.debug("Epoch {} of the training finished.".format(self.epoch))
+            logger.debug("Epoch {} of the training finished.".format(self.epoch))

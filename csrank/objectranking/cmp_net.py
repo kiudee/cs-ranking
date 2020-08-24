@@ -8,6 +8,7 @@ from csrank.dataset_reader.objectranking.util import generate_complete_pairwise_
 from csrank.objectranking.object_ranker import ObjectRanker
 
 __all__ = ["CmpNet"]
+logger = logging.getLogger(__name__)
 
 
 class CmpNet(ObjectRanker, CmpNetCore):
@@ -97,12 +98,11 @@ class CmpNet(ObjectRanker, CmpNetCore):
             random_state=random_state,
             **kwargs,
         )
-        self.logger = logging.getLogger(CmpNet.__name__)
-        self.logger.info("Initializing network")
+        logger.info("Initializing network")
 
     def _convert_instances_(self, X, Y):
-        self.logger.debug("Creating the Dataset")
+        logger.debug("Creating the Dataset")
         garbage, x1, x2, y_double, garbage = generate_complete_pairwise_dataset(X, Y)
         del garbage
-        self.logger.debug("Finished the Dataset instances {}".format(x1.shape[0]))
+        logger.debug("Finished the Dataset instances {}".format(x1.shape[0]))
         return x1, x2, y_double

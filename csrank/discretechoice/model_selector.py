@@ -12,6 +12,8 @@ except ImportError:
 
     raise MissingExtraError("pymc3", "probabilistic")
 
+logger = logging.getLogger(__name__)
+
 
 class ModelSelector(metaclass=ABCMeta):
     def __init__(
@@ -54,23 +56,22 @@ class ModelSelector(metaclass=ABCMeta):
         self.parameter_ind = list(product(pf_arange, ps_arange))
         self.model_path = model_path
         self.models = dict()
-        self.logger = logging.getLogger(ModelSelector.__name__)
 
     def fit(self, X, Y):
         model_args = dict()
         for param_key in self.parameter_keys:
             model_args[param_key] = self.uniform_prior
-        self.logger.info("Uniform Prior")
+        logger.info("Uniform Prior")
         self.model_params["model_args"] = model_args
         key = "{}_uniform_prior".format(self.parameter_keys)
         self.fit_learner(X, Y, key)
         for j, param in enumerate(self.parameters):
-            self.logger.info("mu: {}, sd/b: {}".format(*self.parameter_ind[j]))
+            logger.info("mu: {}, sd/b: {}".format(*self.parameter_ind[j]))
             if len(self.parameter_keys) == 2:
                 for i1, i2 in product(self.prior_indices, self.prior_indices):
                     prior1 = self.priors[i1]
                     prior2 = self.priors[i2]
-                    self.logger.info("Priors {}, {}".format(i1, i2))
+                    logger.info("Priors {}, {}".format(i1, i2))
                     model_args = dict()
                     k1 = list(prior1[1].keys())
                     k2 = list(prior2[1].keys())
@@ -90,7 +91,7 @@ class ModelSelector(metaclass=ABCMeta):
                     self.fit_learner(X, Y, key)
             else:
                 for i, prior in enumerate(self.priors):
-                    self.logger.info("Prior {}".format(i))
+                    logger.info("Prior {}".format(i))
                     model_args = dict()
                     k1 = list(prior[1].keys())
                     prior[1] = dict(zip(k1, param))
@@ -109,9 +110,9 @@ class ModelSelector(metaclass=ABCMeta):
         try:
             learner.fit(X, Y, **self.fit_params)
             self.models[key] = {"model": learner.model, "trace": learner.trace}
-            self.logger.info("Model done for priors key {}".format(key))
+            logger.info("Model done for priors key {}".format(key))
             f = open(self.model_path, "wb")
             pk.dump(self.models, f)
             f.close()
         except Exception as e:
-            self.logger.error("Error for parameters {}: {}".format(key, e))
+            logger.error("Error for parameters {}: {}".format(key, e))

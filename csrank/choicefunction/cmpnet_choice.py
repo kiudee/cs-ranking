@@ -8,6 +8,8 @@ from csrank.choicefunction.choice_functions import ChoiceFunctions
 from csrank.choicefunction.util import generate_complete_pairwise_dataset
 from csrank.core.cmpnet_core import CmpNetCore
 
+logger = logging.getLogger(__name__)
+
 
 class CmpNetChoiceFunction(ChoiceFunctions, CmpNetCore):
     def __init__(
@@ -92,15 +94,14 @@ class CmpNetChoiceFunction(ChoiceFunctions, CmpNetCore):
             random_state=random_state,
             **kwargs,
         )
-        self.logger = logging.getLogger(CmpNetChoiceFunction.__name__)
-        self.logger.info("Initializing network")
+        logger.info("Initializing network")
         self.threshold = 0.5
 
     def _convert_instances_(self, X, Y):
-        self.logger.debug("Creating the Dataset")
+        logger.debug("Creating the Dataset")
         x1, x2, garbage, y_double, garbage = generate_complete_pairwise_dataset(X, Y)
         del garbage
-        self.logger.debug("Finished the Dataset instances {}".format(x1.shape[0]))
+        logger.debug("Finished the Dataset instances {}".format(x1.shape[0]))
         return x1, x2, y_double
 
     def fit(
@@ -166,7 +167,7 @@ class CmpNetChoiceFunction(ChoiceFunctions, CmpNetCore):
                     **kwd,
                 )
             finally:
-                self.logger.info(
+                logger.info(
                     "Fitting utility function finished. Start tuning threshold."
                 )
         else:

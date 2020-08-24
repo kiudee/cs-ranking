@@ -18,6 +18,8 @@ from csrank.constants import EXCEPTION_UNWANTED_CONTEXT_FEATURES
 from csrank.constants import LABEL_RANKING
 from csrank.constants import OBJECT_RANKING
 
+logger = logging.getLogger(__name__)
+
 
 class DatasetReader(metaclass=ABCMeta):
     def __init__(self, dataset_folder="", learning_problem=OBJECT_RANKING, **kwargs):
@@ -38,8 +40,7 @@ class DatasetReader(metaclass=ABCMeta):
             kwargs:
                 Keyword arguments for the dataset parser
         """
-        self.dr_logger = logging.getLogger("DatasetReader")
-        self.dr_logger.info("Learning Problem: {}".format(learning_problem))
+        logger.info("Learning Problem: {}".format(learning_problem))
         self.X = None
         self.Y = None
         self.Xc = None
@@ -50,7 +51,7 @@ class DatasetReader(metaclass=ABCMeta):
         if dataset_folder is not None:
             self.dirname = os.path.join(dirname, dataset_folder)
             if not os.path.exists(self.dirname):
-                self.dr_logger.warning(
+                logger.warning(
                     "Path given for dataset does not exit {}".format(self.dirname)
                 )
         else:

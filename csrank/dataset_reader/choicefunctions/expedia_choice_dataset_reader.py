@@ -7,13 +7,14 @@ from csrank.constants import CHOICE_FUNCTION
 from .util import sub_sampling_choices_from_relevance
 from ..expedia_dataset_reader import ExpediaDatasetReader
 
+logger = logging.getLogger(__name__)
+
 
 class ExpediaChoiceDatasetReader(ExpediaDatasetReader):
     def __init__(self, random_state=None, n_objects=5, **kwargs):
         super(ExpediaChoiceDatasetReader, self).__init__(
             learning_problem=CHOICE_FUNCTION, **kwargs
         )
-        self.logger = logging.getLogger(ExpediaChoiceDatasetReader.__name__)
         self.random_state = check_random_state(random_state)
         self.n_objects = n_objects
         self.hdf5file_path = os.path.join(self.dirname, "exp_choice.h5")

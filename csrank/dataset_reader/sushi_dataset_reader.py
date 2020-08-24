@@ -14,6 +14,8 @@ except ImportError:
 
     raise MissingExtraError("pandas", "data")
 
+logger = logging.getLogger(__name__)
+
 
 class SushiDatasetReader(DatasetReader, metaclass=ABCMeta):
     def __init__(self, **kwargs):
@@ -24,7 +26,6 @@ class SushiDatasetReader(DatasetReader, metaclass=ABCMeta):
         self.rankings_big = os.path.join(self.dirname, "sushi_big.txt")
         self.__load_dataset__()
         self.__check_dataset_validity__()
-        self.logger = logging.getLogger(SushiDatasetReader.__name__)
 
     def __load_dataset__(self):
         # Code to concatenate the context feature to each object feature
@@ -72,6 +73,6 @@ class SushiDatasetReader(DatasetReader, metaclass=ABCMeta):
         self.Y = np.array(rankings)
         if self.learning_problem == DYAD_RANKING:
             self.Xc = np.array(Xc)
-            self.logger.debug(Xc.shape)
+            logger.debug(Xc.shape)
         else:
             self.Xc = None

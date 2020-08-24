@@ -7,6 +7,8 @@ from csrank.choicefunction.util import generate_complete_pairwise_dataset
 from csrank.core.cmpnet_core import CmpNetCore
 from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 
+logger = logging.getLogger(__name__)
+
 
 class CmpNetDiscreteChoiceFunction(DiscreteObjectChooser, CmpNetCore):
     def __init__(
@@ -90,12 +92,11 @@ class CmpNetDiscreteChoiceFunction(DiscreteObjectChooser, CmpNetCore):
             random_state=random_state,
             **kwargs,
         )
-        self.logger = logging.getLogger(CmpNetDiscreteChoiceFunction.__name__)
-        self.logger.info("Initializing network")
+        logger.info("Initializing network")
 
     def _convert_instances_(self, X, Y):
-        self.logger.debug("Creating the Dataset")
+        logger.debug("Creating the Dataset")
         x1, x2, garbage, y_double, garbage = generate_complete_pairwise_dataset(X, Y)
         del garbage
-        self.logger.debug("Finished the Dataset instances {}".format(x1.shape[0]))
+        logger.debug("Finished the Dataset instances {}".format(x1.shape[0]))
         return x1, x2, y_double

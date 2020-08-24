@@ -1,4 +1,5 @@
 from itertools import combinations
+import logging
 import math
 
 from keras.losses import binary_crossentropy
@@ -9,6 +10,8 @@ import tensorflow as tf
 from csrank.learner import Learner
 from csrank.numpy_util import sigmoid
 from csrank.util import progress_bar
+
+logger = logging.getLogger(__name__)
 
 
 class FETALinearCore(Learner):
@@ -170,7 +173,7 @@ class FETALinearCore(Learner):
             tf_session.run(init)
             self._fit_(X, Y, epochs, n_instances, tf_session, verbose)
             training_cost = tf_session.run(self.loss, feed_dict={self.X: X, self.Y: Y})
-            self.logger.info(
+            logger.info(
                 "Fitting completed {} epochs done with loss {}".format(
                     epochs, training_cost.mean()
                 )
@@ -197,14 +200,12 @@ class FETALinearCore(Learner):
                     print("Epoch {}: cost {} ".format((epoch + 1), np.mean(c)))
                 if (epoch + 1) % 100 == 0:
                     c = tf_session.run(self.loss, feed_dict={self.X: X, self.Y: Y})
-                    self.logger.info(
-                        "Epoch {}: cost {} ".format((epoch + 1), np.mean(c))
-                    )
+                    logger.info("Epoch {}: cost {} ".format((epoch + 1), np.mean(c)))
                 self.step_decay(epoch)
         except KeyboardInterrupt:
-            self.logger.info("Interrupted")
+            logger.info("Interrupted")
             c = tf_session.run(self.loss, feed_dict={self.X: X, self.Y: Y})
-            self.logger.info("Epoch {}: cost {} ".format((epoch + 1), np.mean(c)))
+            logger.info("Epoch {}: cost {} ".format((epoch + 1), np.mean(c)))
 
     def _predict_scores_fixed(self, X, **kwargs):
         """Predict the scores for a given collection of sets of objects of same size.

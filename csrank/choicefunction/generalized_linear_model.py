@@ -28,6 +28,8 @@ except ImportError:
 
     raise MissingExtraError("theano", "probabilistic")
 
+logger = logging.getLogger(__name__)
+
 
 class GeneralizedLinearModel(ChoiceFunctions, Learner):
     def __init__(self, regularization="l2", random_state=None, **kwargs):
@@ -63,7 +65,6 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
 
                 [2] Kenneth Train. Qualitative choice analysis. Cambridge, MA: MIT Press, 1986
         """
-        self.logger = logging.getLogger(GeneralizedLinearModel.__name__)
         known_regularization_functions = {"l1", "l2"}
         if regularization not in known_regularization_functions:
             raise ValueError(
@@ -116,7 +117,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
                 },
             ]
         }
-        self.logger.info(
+        logger.info(
             "Creating default config {}".format(print_dictionary(configuration))
         )
         return configuration
@@ -144,7 +145,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
             -------
              model : pymc3 Model :class:`pm.Model`
         """
-        self.logger.info(
+        logger.info(
             "Creating model_args config {}".format(
                 print_dictionary(self.model_configuration)
             )
@@ -159,7 +160,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
             utility = tt.dot(self.Xt, weights_dict["weights"]) + intercept
             self.p = ttu.sigmoid(utility)
             BinaryCrossEntropyLikelihood("yl", p=self.p, observed=self.Yt)
-        self.logger.info("Model construction completed")
+        logger.info("Model construction completed")
 
     def fit(
         self,
@@ -230,7 +231,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
                     X_train, Y_train, sampler=sampler, vi_params=vi_params, **kwargs
                 )
             finally:
-                self.logger.info(
+                logger.info(
                     "Fitting utility function finished. Start tuning threshold."
                 )
                 self.threshold = self._tune_threshold(

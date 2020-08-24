@@ -6,6 +6,8 @@ from sklearn.model_selection import train_test_split
 from csrank.core.fate_linear import FATELinearCore
 from .choice_functions import ChoiceFunctions
 
+logger = logging.getLogger(__name__)
+
 
 class FATELinearChoiceFunction(ChoiceFunctions, FATELinearCore):
     def __init__(
@@ -58,7 +60,6 @@ class FATELinearChoiceFunction(ChoiceFunctions, FATELinearCore):
             random_state=random_state,
             **kwargs,
         )
-        self.logger = logging.getLogger(FATELinearChoiceFunction.__name__)
 
     def fit(
         self,
@@ -87,7 +88,7 @@ class FATELinearChoiceFunction(ChoiceFunctions, FATELinearCore):
                     **kwd,
                 )
             finally:
-                self.logger.info(
+                logger.info(
                     "Fitting utility function finished. Start tuning threshold."
                 )
                 self.threshold = self._tune_threshold(

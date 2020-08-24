@@ -15,6 +15,7 @@ from csrank.layers import DeepSet
 from csrank.learner import Learner
 
 __all__ = ["FATENetwork", "FATENetworkCore"]
+logger = logging.getLogger(__name__)
 
 
 class FATENetworkCore(Learner):
@@ -57,7 +58,6 @@ class FATENetworkCore(Learner):
             **kwargs
                 Keyword arguments for the hidden units
         """
-        self.logger = logging.getLogger(FATENetworkCore.__name__)
         self.random_state = random_state
 
         self.n_hidden_joint_layers = n_hidden_joint_layers
@@ -97,7 +97,7 @@ class FATENetworkCore(Learner):
             **kwargs
                 Keyword arguments passed into the joint layers
         """
-        self.logger.info(
+        logger.info(
             "Construct joint layers hidden units {} and layers {} ".format(
                 self.n_hidden_joint_units, self.n_hidden_joint_layers
             )
@@ -113,7 +113,7 @@ class FATENetworkCore(Learner):
                 )
             )
 
-        self.logger.info("Construct output score node")
+        logger.info("Construct output score node")
         self.scorer = Dense(
             1,
             name="output_node",
@@ -136,7 +136,7 @@ class FATENetworkCore(Learner):
             n_objects : int
                 Number of objects
         """
-        self.logger.debug("Joining set representation and joint layers")
+        logger.debug("Joining set representation and joint layers")
         scores = []
 
         inputs = [create_input_lambda(i)(input_layer) for i in range(n_objects)]
@@ -150,7 +150,7 @@ class FATENetworkCore(Learner):
                 joint = self.joint_layers[j](joint)
             scores.append(self.scorer(joint))
         scores = concatenate(scores, name="final_scores")
-        self.logger.debug("Done")
+        logger.debug("Done")
 
         return scores
 
@@ -171,7 +171,6 @@ class FATENetwork(FATENetworkCore):
                 Keyword arguments for the hidden set units
         """
         FATENetworkCore.__init__(self, **kwargs)
-        self.logger_gorc = logging.getLogger(FATENetwork.__name__)
 
         self.n_hidden_set_layers = n_hidden_set_layers
         self.n_hidden_set_units = n_hidden_set_units
@@ -188,7 +187,7 @@ class FATENetwork(FATENetworkCore):
             Create layers for learning the representation of the query set. The actual connection of the layers is done
             during fitting, since we do not know the size(s) of the set(s) in advance.
         """
-        self.logger_gorc.info(
+        logger.info(
             "Creating set layers with set units {} set layer {} ".format(
                 self.n_hidden_set_units, self.n_hidden_set_layers
             )
@@ -320,7 +319,7 @@ class FATENetwork(FATENetworkCore):
             self.optimizer = optimizer
         if isinstance(X, dict):
             if generator is not None:
-                self.logger.error("Variadic training does not support generators yet.")
+                logger.error("Variadic training does not support generators yet.")
                 raise NotImplementedError
             self.is_variadic = True
             decay_rate = global_lr / epochs
@@ -337,9 +336,7 @@ class FATENetwork(FATENetworkCore):
             #  Iterate training
             for epoch in range(epochs):
 
-                self.logger.info(
-                    "Epoch: {}, Learning rate: {}".format(epoch, learning_rate)
-                )
+                logger.info("Epoch: {}, Learning rate: {}".format(epoch, learning_rate))
 
                 # In the spirit of mini-batch SGD we also shuffle the buckets
                 # each epoch:
@@ -387,7 +384,7 @@ class FATENetwork(FATENetworkCore):
                 n_inst, n_objects, n_features = X.shape
 
                 self.model_ = self.construct_model(n_features, n_objects)
-            self.logger.info("Fitting started")
+            logger.info("Fitting started")
             if generator is None:
                 self.model_.fit(
                     x=X,
@@ -407,7 +404,7 @@ class FATENetwork(FATENetworkCore):
                     verbose=verbose,
                     **kwargs,
                 )
-            self.logger.info("Fitting complete")
+            logger.info("Fitting complete")
 
     def construct_model(self, n_features, n_objects):
         """
@@ -601,9 +598,7 @@ class FATENetwork(FATENetworkCore):
 
     def _get_context_representation(self, X, kwargs):
         n_objects = X.shape[-2]
-        self.logger.info(
-            "Test Set instances {} objects {} features {}".format(*X.shape)
-        )
+        logger.info("Test Set instances {} objects {} features {}".format(*X.shape))
         input_layer_scorer = Input(
             shape=(n_objects, self.n_object_features_fit_), name="input_node"
         )
@@ -638,7 +633,7 @@ class FATENetwork(FATENetworkCore):
         # model = self._construct_scoring_model(n_objects)
         X = self._get_context_representation(X, kwargs)
         n_instances, n_objects, n_features = X.shape
-        self.logger.info(
+        logger.info(
             "After applying the set representations features {}".format(n_features)
         )
         input_layer_joint = Input(
@@ -656,5 +651,5 @@ class FATENetwork(FATENetworkCore):
         scores = concatenate(scores, name="final_scores")
         joint_model = Model(inputs=input_layer_joint, outputs=scores)
         predicted_scores = joint_model.predict(X)
-        self.logger.info("Done predicting scores")
+        logger.info("Done predicting scores")
         return predicted_scores

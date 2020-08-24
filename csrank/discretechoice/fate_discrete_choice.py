@@ -7,6 +7,8 @@ from keras.regularizers import l2
 from csrank.core.fate_network import FATENetwork
 from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 
+logger = logging.getLogger(__name__)
+
 
 class FATEDiscreteChoiceFunction(DiscreteObjectChooser, FATENetwork):
     def __init__(
@@ -91,7 +93,6 @@ class FATEDiscreteChoiceFunction(DiscreteObjectChooser, FATENetwork):
             random_state=random_state,
             **kwargs,
         )
-        self.logger = logging.getLogger(FATEDiscreteChoiceFunction.__name__)
 
     def _construct_layers(self, **kwargs):
         """
@@ -106,7 +107,7 @@ class FATEDiscreteChoiceFunction(DiscreteObjectChooser, FATENetwork):
             **kwargs
                 Keyword arguments passed into the joint layers
         """
-        self.logger.info(
+        logger.info(
             "Construct joint layers hidden units {} and layers {} ".format(
                 self.n_hidden_joint_units, self.n_hidden_joint_layers
             )
@@ -120,7 +121,7 @@ class FATEDiscreteChoiceFunction(DiscreteObjectChooser, FATENetwork):
                 )
             )
 
-        self.logger.info("Construct output score node")
+        logger.info("Construct output score node")
         self.scorer = Dense(
             1,
             name="output_node",

@@ -30,6 +30,8 @@ except ImportError:
 
     raise MissingExtraError("theano", "probabilistic")
 
+logger = logging.getLogger(__name__)
+
 
 class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
     def __init__(
@@ -88,7 +90,6 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
 
                 [3] Chaushie Chu. „A paired combinatorial logit model for travel demand analysis“. In: Proceedings of the fifth world conference on transportation research. Vol. 4.1989, pp. 295–309
         """
-        self.logger = logging.getLogger(PairedCombinatorialLogit.__name__)
         self.alpha = alpha
         self.random_state = random_state
         self.loss_function = loss_function
@@ -149,7 +150,7 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
                     },
                 ]
             }
-            self.logger.info(
+            logger.info(
                 "Creating model with config {}".format(print_dictionary(self._config))
             )
         return self._config
@@ -271,7 +272,7 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
             LogLikelihood(
                 "yl", loss_func=self.loss_function_, p=self.p, observed=self.Yt
             )
-        self.logger.info("Model construction completed")
+        logger.info("Model construction completed")
 
     def fit(
         self,

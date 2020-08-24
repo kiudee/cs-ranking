@@ -5,6 +5,8 @@ from keras.losses import categorical_hinge
 from csrank.core.feta_linear import FETALinearCore
 from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 
+logger = logging.getLogger(__name__)
+
 
 class FETALinearDiscreteChoiceFunction(DiscreteObjectChooser, FETALinearCore):
     def __init__(
@@ -55,4 +57,3 @@ class FETALinearDiscreteChoiceFunction(DiscreteObjectChooser, FETALinearCore):
             random_state=random_state,
             **kwargs,
         )
-        self.logger = logging.getLogger(FETALinearDiscreteChoiceFunction.__name__)

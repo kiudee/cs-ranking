@@ -13,6 +13,8 @@ from csrank.constants import allowed_dense_kwargs
 from csrank.layers import NormalizedDense
 from csrank.learner import Learner
 
+logger = logging.getLogger(__name__)
+
 
 class RankNetCore(Learner):
     def __init__(
@@ -30,7 +32,6 @@ class RankNetCore(Learner):
         random_state=None,
         **kwargs,
     ):
-        self.logger = logging.getLogger(RankNetCore.__name__)
         self.batch_normalization = batch_normalization
         self.activation = activation
         self.metrics = metrics
@@ -50,7 +51,7 @@ class RankNetCore(Learner):
         self.random_state = random_state
 
     def _construct_layers(self, **kwargs):
-        self.logger.info("n_hidden {}, n_units {}".format(self.n_hidden, self.n_units))
+        logger.info("n_hidden {}, n_units {}".format(self.n_hidden, self.n_units))
         self.x1 = Input(shape=(self.n_object_features_fit_,))
         self.x2 = Input(shape=(self.n_object_features_fit_,))
         self.output_node = Dense(
@@ -138,8 +139,8 @@ class RankNetCore(Learner):
         _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
         X1, X2, Y_single = self._convert_instances_(X, Y)
 
-        self.logger.debug("Instances created {}".format(X1.shape[0]))
-        self.logger.debug("Creating the model")
+        logger.debug("Instances created {}".format(X1.shape[0]))
+        logger.debug("Creating the model")
 
         self._initialize_optimizer()
         self._initialize_regularizer()
@@ -152,7 +153,7 @@ class RankNetCore(Learner):
 
         # Model with input as two objects and output as probability of x1>x2
         self.model_ = self.construct_model()
-        self.logger.debug("Finished Creating the model, now fitting started")
+        logger.debug("Finished Creating the model, now fitting started")
 
         self.model_.fit(
             [X1, X2],
@@ -165,7 +166,7 @@ class RankNetCore(Learner):
             **kwd,
         )
 
-        self.logger.debug("Fitting Complete")
+        logger.debug("Fitting Complete")
 
     @property
     def scoring_model(self):
@@ -177,7 +178,7 @@ class RankNetCore(Learner):
                 Neural network to learn the non-linear utility score
         """
         if self._scoring_model is None:
-            self.logger.info("creating scoring model")
+            logger.info("creating scoring model")
             inp = Input(shape=(self.n_object_features_fit_,))
             x = inp
             for hidden_layer in self.hidden_layers:
@@ -188,11 +189,9 @@ class RankNetCore(Learner):
 
     def _predict_scores_fixed(self, X, **kwargs):
         n_instances, n_objects, n_features = X.shape
-        self.logger.info(
-            "Test Set instances {} objects {} features {}".format(*X.shape)
-        )
+        logger.info("Test Set instances {} objects {} features {}".format(*X.shape))
         X1 = X.reshape(n_instances * n_objects, n_features)
         scores = self.scoring_model.predict(X1, **kwargs)
         scores = scores.reshape(n_instances, n_objects)
-        self.logger.info("Done predicting scores")
+        logger.info("Done predicting scores")
         return scores

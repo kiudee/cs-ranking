@@ -5,6 +5,8 @@ import numpy as np
 from csrank.learner import Learner
 from .choice_functions import ChoiceFunctions
 
+logger = logging.getLogger(__name__)
+
 
 class AllPositive(ChoiceFunctions, Learner):
     def __init__(self, **kwargs):
@@ -14,8 +16,6 @@ class AllPositive(ChoiceFunctions, Learner):
         ----------
         **kwargs: Keyword arguments for the algorithms
         """
-
-        self.logger = logging.getLogger(AllPositive.__name__)
 
     def fit(self, X, Y, **kwd):
         pass
@@ -49,7 +49,7 @@ class AllPositive(ChoiceFunctions, Learner):
             (n_instances, n_objects)
             Predicted scores
         """
-        self.logger.info("Predicting scores")
+        logger.info("Predicting scores")
 
         if (isinstance(X, dict) and not isinstance(Y, dict)) or (
             isinstance(X, np.ndarray) and not isinstance(Y, np.ndarray)

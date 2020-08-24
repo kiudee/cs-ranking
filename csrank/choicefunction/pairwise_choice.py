@@ -6,6 +6,8 @@ from csrank.core.pairwise_svm import PairwiseSVM
 from .choice_functions import ChoiceFunctions
 from .util import generate_complete_pairwise_dataset
 
+logger = logging.getLogger(__name__)
+
 
 class PairwiseSVMChoiceFunction(ChoiceFunctions, PairwiseSVM):
     def __init__(
@@ -58,12 +60,11 @@ class PairwiseSVMChoiceFunction(ChoiceFunctions, PairwiseSVM):
             random_state=random_state,
             **kwargs,
         )
-        self.logger = logging.getLogger(PairwiseSVMChoiceFunction.__name__)
-        self.logger.info("Initializing network")
+        logger.info("Initializing network")
         self.threshold = 0.5
 
     def _convert_instances_(self, X, Y):
-        self.logger.debug("Creating the Dataset")
+        logger.debug("Creating the Dataset")
         (
             garbage,
             garbage,
@@ -73,9 +74,7 @@ class PairwiseSVMChoiceFunction(ChoiceFunctions, PairwiseSVM):
         ) = generate_complete_pairwise_dataset(X, Y)
         del garbage
         assert x_train.shape[1] == self.n_object_features_fit_
-        self.logger.debug(
-            "Finished the Dataset with instances {}".format(x_train.shape[0])
-        )
+        logger.debug("Finished the Dataset with instances {}".format(x_train.shape[0]))
         return x_train, y_single
 
     def fit(self, X, Y, tune_size=0.1, thin_thresholds=1, verbose=0, **kwd):
@@ -107,7 +106,7 @@ class PairwiseSVMChoiceFunction(ChoiceFunctions, PairwiseSVM):
             try:
                 super().fit(X_train, Y_train, **kwd)
             finally:
-                self.logger.info(
+                logger.info(
                     "Fitting utility function finished. Start tuning threshold."
                 )
                 self.threshold = self._tune_threshold(

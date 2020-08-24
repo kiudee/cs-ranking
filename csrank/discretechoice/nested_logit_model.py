@@ -30,6 +30,8 @@ except ImportError:
 
     raise MissingExtraError("theano", "probabilistic")
 
+logger = logging.getLogger(__name__)
+
 
 class NestedLogitModel(DiscreteObjectChooser, Learner):
     def __init__(
@@ -87,7 +89,6 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
 
                 [3] Kenneth Train and Daniel McFadden. „The goods/leisure tradeoff and disaggregate work trip mode choice models“. In: Transportation research 12.5 (1978), pp. 349–353
         """
-        self.logger = logging.getLogger(NestedLogitModel.__name__)
         self.n_nests = n_nests
         self.alpha = alpha
         self.random_state = random_state
@@ -162,7 +163,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
                     },
                 ],
             }
-            self.logger.info(
+            logger.info(
                 "Creating model with config {}".format(print_dictionary(self._config))
             )
         return self._config
@@ -318,9 +319,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
             indices = self.random_state_.choice(X.shape[0], upper_bound, replace=False)
             X = X[indices, :, :]
             Y = Y[indices, :]
-        self.logger.info(
-            "Train Set instances {} objects {} features {}".format(*X.shape)
-        )
+        logger.info("Train Set instances {} objects {} features {}".format(*X.shape))
         y_nests = self.create_nests(X)
         with pm.Model() as self.model:
             self.Xt = theano.shared(X)
@@ -341,7 +340,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
             LogLikelihood(
                 "yl", loss_func=self.loss_function_, p=self.p, observed=self.Yt
             )
-        self.logger.info("Model construction completed")
+        logger.info("Model construction completed")
 
     def fit(
         self,

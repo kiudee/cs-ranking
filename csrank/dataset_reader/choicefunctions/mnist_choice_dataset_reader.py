@@ -1,7 +1,11 @@
+import logging
+
 import numpy as np
 
 from csrank.constants import CHOICE_FUNCTION
 from ..mnist_dataset_reader import MNISTDatasetReader
+
+logger = logging.getLogger(__name__)
 
 
 class MNISTChoiceDatasetReader(MNISTDatasetReader):
@@ -19,10 +23,10 @@ class MNISTChoiceDatasetReader(MNISTDatasetReader):
         super(MNISTChoiceDatasetReader, self).__init__(
             learning_problem=CHOICE_FUNCTION, **kwargs
         )
-        self.logger.info("Dataset type {}".format(dataset_type))
+        logger.info("Dataset type {}".format(dataset_type))
 
     def create_dataset_largest(self):
-        self.logger.info("Largest Dataset")
+        logger.info("Largest Dataset")
         num_classes = len(np.unique(self.y_labels))
         n_total = self.n_test_instances + self.n_train_instances
         largest_numbers = self.random_state.randint(1, num_classes, size=n_total)
@@ -44,7 +48,7 @@ class MNISTChoiceDatasetReader(MNISTDatasetReader):
         self.__check_dataset_validity__()
 
     def create_dataset_mode(self):
-        self.logger.info("Mode Dataset")
+        logger.info("Mode Dataset")
         n_total = self.n_test_instances + self.n_train_instances
         self.X = np.empty((n_total, self.n_objects, self.n_features))
         self.Y = np.zeros((n_total, self.n_objects), dtype=int)
@@ -61,7 +65,7 @@ class MNISTChoiceDatasetReader(MNISTDatasetReader):
         self.__check_dataset_validity__()
 
     def create_dataset_unique(self):
-        self.logger.info("Unique Dataset")
+        logger.info("Unique Dataset")
         n_total = self.n_test_instances + self.n_train_instances
         self.X = np.empty((n_total, self.n_objects, self.n_features))
         self.Y = np.zeros((n_total, self.n_objects), dtype=int)

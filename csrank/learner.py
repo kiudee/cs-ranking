@@ -1,7 +1,10 @@
 from abc import ABCMeta
 from abc import abstractmethod
+import logging
 
 from sklearn.base import BaseEstimator
+
+logger = logging.getLogger(__name__)
 
 
 def filter_dict_by_prefix(source, prefix):
@@ -32,9 +35,7 @@ class Learner(BaseEstimator, metaclass=ABCMeta):
             self.kernel_regularizer_ = self.kernel_regularizer(**regularizer_params)
         else:
             # No regularizer is an option.
-            self.logger.warning(
-                "You specified regularizer parameters but no regularizer."
-            )
+            logger.warning("You specified regularizer parameters but no regularizer.")
             self.kernel_regularizer_ = None
 
     @abstractmethod
@@ -88,7 +89,7 @@ class Learner(BaseEstimator, metaclass=ABCMeta):
                 Dictionary with a mapping from query set size to numpy arrays or a single numpy array of size:
                 (n_instances, n_objects)
         """
-        self.logger.info("Predicting scores")
+        logger.info("Predicting scores")
 
         if isinstance(X, dict):
             scores = dict()
@@ -119,10 +120,10 @@ class Learner(BaseEstimator, metaclass=ABCMeta):
                 predicted preferences of size:
                 (n_instances, n_objects)
         """
-        self.logger.debug("Predicting started")
+        logger.debug("Predicting started")
 
         scores = self.predict_scores(X, **kwargs)
-        self.logger.debug("Predicting scores complete")
+        logger.debug("Predicting scores complete")
 
         return self.predict_for_scores(scores, **kwargs)
 

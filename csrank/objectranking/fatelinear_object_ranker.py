@@ -4,6 +4,8 @@ from csrank.core.fate_linear import FATELinearCore
 from csrank.losses import hinged_rank_loss
 from .object_ranker import ObjectRanker
 
+logger = logging.getLogger(__name__)
+
 
 class FATELinearObjectRanker(ObjectRanker, FATELinearCore):
     def __init__(
@@ -56,4 +58,3 @@ class FATELinearObjectRanker(ObjectRanker, FATELinearCore):
             random_state=random_state,
             **kwargs,
         )
-        self.logger = logging.getLogger(FATELinearObjectRanker.__name__)

@@ -8,6 +8,8 @@ from csrank.losses import hinged_rank_loss
 from csrank.metrics import zero_one_rank_loss_for_scores_ties
 from csrank.objectranking.object_ranker import ObjectRanker
 
+logger = logging.getLogger(__name__)
+
 
 class FATEObjectRanker(ObjectRanker, FATENetwork):
     def __init__(
@@ -91,4 +93,3 @@ class FATEObjectRanker(ObjectRanker, FATENetwork):
             random_state=random_state,
             **kwargs,
         )
-        self.logger = logging.getLogger(FATEObjectRanker.__name__)

@@ -5,6 +5,8 @@ from sklearn.utils import check_random_state
 from csrank.learner import Learner
 from .discrete_choice import DiscreteObjectChooser
 
+logger = logging.getLogger(__name__)
+
 
 class RandomBaselineDC(DiscreteObjectChooser, Learner):
     def __init__(self, random_state=None, **kwargs):
@@ -14,7 +16,6 @@ class RandomBaselineDC(DiscreteObjectChooser, Learner):
             :param kwargs: Keyword arguments for the algorithms
         """
 
-        self.logger = logging.getLogger(RandomBaselineDC.__name__)
         self.random_state = random_state
 
     def fit(self, X, Y, **kwd):
