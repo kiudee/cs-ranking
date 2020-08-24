@@ -16,7 +16,6 @@ class RandomBaselineRanker(ObjectRanker, Learner):
 
         self.logger = logging.getLogger(RandomBaselineRanker.__name__)
         self.random_state = (random_state,)
-        self.model = None
 
     def fit(self, X, Y, **kwd):
         self.random_state_ = check_random_state(self.random_state)

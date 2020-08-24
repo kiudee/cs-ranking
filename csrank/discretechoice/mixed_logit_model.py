@@ -81,7 +81,6 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
         self.regularization = regularization
         self._config = None
         self.n_mixtures = n_mixtures
-        self.model = None
         self.trace = None
         self.trace_vi = None
         self.Xt = None

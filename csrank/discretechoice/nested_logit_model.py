@@ -101,7 +101,6 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         self._config = None
         self.cluster_model = None
         self.features_nests = None
-        self.model = None
         self.trace = None
         self.trace_vi = None
         self.Xt = None

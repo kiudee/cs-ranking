@@ -47,7 +47,6 @@ class RankNetCore(Learner):
         self.kwargs = kwargs
         self.batch_size = batch_size
         self._scoring_model = None
-        self.model = None
         self.random_state = random_state
 
     def _construct_layers(self, **kwargs):
@@ -152,10 +151,10 @@ class RankNetCore(Learner):
         )
 
         # Model with input as two objects and output as probability of x1>x2
-        self.model = self.construct_model()
+        self.model_ = self.construct_model()
         self.logger.debug("Finished Creating the model, now fitting started")
 
-        self.model.fit(
+        self.model_.fit(
             [X1, X2],
             Y_single,
             batch_size=self.batch_size,

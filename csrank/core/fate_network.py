@@ -175,7 +175,6 @@ class FATENetwork(FATENetworkCore):
 
         self.n_hidden_set_layers = n_hidden_set_layers
         self.n_hidden_set_units = n_hidden_set_units
-        self.model = None
         self.set_layer = None
         self._create_set_layers(
             activation=self.activation,
@@ -249,7 +248,7 @@ class FATENetwork(FATENetworkCore):
             else:
                 weights = self.models_[n_objects].get_weights()
         else:
-            weights = self.model.get_weights()
+            weights = self.model_.get_weights()
         return weights
 
     def set_weights(self, weights, n_objects=None):
@@ -259,7 +258,7 @@ class FATENetwork(FATENetworkCore):
             else:
                 self.models_[0].set_weights(weights)
         else:
-            self.model.set_weights(weights)
+            self.model_.set_weights(weights)
 
     def _fit(
         self,
@@ -381,16 +380,16 @@ class FATENetwork(FATENetworkCore):
         else:
             self.is_variadic = False
 
-            if self.model is None or refit:
+            if not hasattr(self, "model_") or refit:
                 if generator is not None:
                     X, Y = next(iter(generator))
 
                 n_inst, n_objects, n_features = X.shape
 
-                self.model = self.construct_model(n_features, n_objects)
+                self.model_ = self.construct_model(n_features, n_objects)
             self.logger.info("Fitting started")
             if generator is None:
-                self.model.fit(
+                self.model_.fit(
                     x=X,
                     y=Y,
                     callbacks=callbacks,
@@ -401,7 +400,7 @@ class FATENetwork(FATENetworkCore):
                     **kwargs,
                 )
             else:
-                self.model.fit_generator(
+                self.model_.fit_generator(
                     generator=generator,
                     callbacks=callbacks,
                     epochs=epochs,

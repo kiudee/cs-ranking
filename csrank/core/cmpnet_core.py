@@ -52,7 +52,6 @@ class CmpNetCore(Learner):
                 del kwargs[key]
         self.kwargs = kwargs
         self.random_state = random_state
-        self.model = None
 
     def _construct_layers(self, **kwargs):
 
@@ -158,10 +157,10 @@ class CmpNetCore(Learner):
             activation=self.activation,
             **self.kwargs,
         )
-        self.model = self.construct_model()
+        self.model_ = self.construct_model()
 
         self.logger.debug("Finished Creating the model, now fitting started")
-        self.model.fit(
+        self.model_.fit(
             [x1, x2],
             y_double,
             batch_size=self.batch_size,
@@ -174,7 +173,7 @@ class CmpNetCore(Learner):
         self.logger.debug("Fitting Complete")
 
     def predict_pair(self, a, b, **kwargs):
-        return self.model.predict([a, b], **kwargs)
+        return self.model_.predict([a, b], **kwargs)
 
     def _predict_scores_fixed(self, X, **kwargs):
         n_instances, n_objects, n_features = X.shape

@@ -93,13 +93,13 @@ class ExpectedRankRegression(ObjectRanker, Learner):
         x_train, y_train = complete_linear_regression_dataset(X, Y)
         self.logger.debug("Finished the Dataset")
         if self.alpha < 1e-3:
-            self.model = LinearRegression(
+            self.model_ = LinearRegression(
                 normalize=self.normalize, fit_intercept=self.fit_intercept
             )
             self.logger.info("LinearRegression")
         else:
             if self.l1_ratio >= 0.01:
-                self.model = ElasticNet(
+                self.model_ = ElasticNet(
                     alpha=self.alpha,
                     l1_ratio=self.l1_ratio,
                     normalize=self.normalize,
@@ -109,7 +109,7 @@ class ExpectedRankRegression(ObjectRanker, Learner):
                 )
                 self.logger.info("Elastic Net")
             else:
-                self.model = Ridge(
+                self.model_ = Ridge(
                     alpha=self.alpha,
                     normalize=self.normalize,
                     tol=self.tol,
@@ -118,10 +118,10 @@ class ExpectedRankRegression(ObjectRanker, Learner):
                 )
                 self.logger.info("Ridge")
         self.logger.debug("Finished Creating the model, now fitting started")
-        self.model.fit(x_train, y_train)
-        self.weights = self.model.coef_.flatten()
+        self.model_.fit(x_train, y_train)
+        self.weights = self.model_.coef_.flatten()
         if self.fit_intercept:
-            self.weights = np.append(self.weights, self.model.intercept_)
+            self.weights = np.append(self.weights, self.model_.intercept_)
         self.logger.debug("Fitting Complete")
 
     def _predict_scores_fixed(self, X, **kwargs):
@@ -130,7 +130,7 @@ class ExpectedRankRegression(ObjectRanker, Learner):
             "For Test instances {} objects {} features {}".format(*X.shape)
         )
         X1 = X.reshape(n_instances * n_objects, n_features)
-        scores = n_objects - self.model.predict(X1)
+        scores = n_objects - self.model_.predict(X1)
         scores = scores.reshape(n_instances, n_objects)
         scores = normalize(scores)
         self.logger.info("Done predicting scores")

@@ -8,7 +8,7 @@ class FATEDyadRanker(FATENetwork, DyadRanker):
         pass
 
     def predict_scores(self, Xo, Xc, **kwargs):
-        return self.model.predict([Xo, Xc], **kwargs)
+        return self.model_.predict([Xo, Xc], **kwargs)
 
     def predict(self, Xo, Xc, **kwargs):
         s = self.predict_scores(Xo, Xc, **kwargs)
