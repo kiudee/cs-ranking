@@ -1,4 +1,6 @@
 language: python
+python:
+    - 3.7 # Pinned since tensorflow 1.x is not available for python > 3.7
 
 cache:
   directories:
