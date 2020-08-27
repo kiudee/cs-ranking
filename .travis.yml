@@ -15,6 +15,7 @@ before_install:
   - . ./scripts/install_miniconda.sh
 
 install:
+  - PYTHON_VERSION=3.7
   - . ./scripts/create_testenv.sh
   - pip install codecov
   - conda install --yes sphinx ipython
