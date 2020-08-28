@@ -75,11 +75,15 @@ class FATEDiscreteChoiceFunction(DiscreteObjectChooser, FATENetwork):
                 List of evaluation metrics (can be non-differentiable)
             random_state : int or object
                 Numpy random state
-            **kwargs
-                Keyword arguments for the @FATENetwork
+            hidden_dense_layer__{kwarg}
+                Arguments to be passed to the Dense layers. See the keras
+                documentation for ``Dense`` for available options.
         """
         self.loss_function = loss_function
         self.metrics = metrics
+        self._store_kwargs(
+            kwargs, {"optimizer__", "kernel_regularizer__", "hidden_dense_layer__"}
+        )
         super().__init__(
             n_hidden_set_layers=n_hidden_set_layers,
             n_hidden_set_units=n_hidden_set_units,
@@ -91,33 +95,35 @@ class FATEDiscreteChoiceFunction(DiscreteObjectChooser, FATENetwork):
             optimizer=optimizer,
             batch_size=batch_size,
             random_state=random_state,
-            **kwargs,
         )
 
-    def _construct_layers(self, **kwargs):
+    def _construct_layers(self):
         """
             Construct basic layers shared by all the objects:
                 * Joint dense hidden layers
                 * Output scoring layer is sigmoid output for choice model
 
             Connecting the layers is done in join_input_layers and will be done in implementing classes.
-
-            Parameters
-            ----------
-            **kwargs
-                Keyword arguments passed into the joint layers
         """
         logger.info(
             "Construct joint layers hidden units {} and layers {} ".format(
                 self.n_hidden_joint_units, self.n_hidden_joint_layers
             )
         )
+        hidden_dense_kwargs = {
+            "kernel_regularizer": self.kernel_regularizer_,
+            "kernel_initializer": self.kernel_initializer,
+            "activation": self.activation,
+        }
+        hidden_dense_kwargs.update(self._get_prefix_attributes("hidden_dense_layer__"))
         # Create joint hidden layers:
         self.joint_layers = []
         for i in range(self.n_hidden_joint_layers):
             self.joint_layers.append(
                 Dense(
-                    self.n_hidden_joint_units, name="joint_layer_{}".format(i), **kwargs
+                    self.n_hidden_joint_units,
+                    name="joint_layer_{}".format(i),
+                    **hidden_dense_kwargs,
                 )
             )
 

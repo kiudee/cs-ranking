@@ -9,7 +9,6 @@ from keras.regularizers import l2
 import numpy as np
 from sklearn.utils import check_random_state
 
-from csrank.constants import allowed_dense_kwargs
 from csrank.layers import create_input_lambda
 from csrank.layers import DeepSet
 from csrank.learner import Learner
@@ -47,6 +46,8 @@ class FATENetworkCore(Learner):
                 Initialization function for the weights of each hidden layer
             kernel_regularizer : uninitialized keras regularizer
                 Regularizer to use in the hidden units
+            kernel_regularizer__{kwarg}:
+                Arguments to be passed to the kernel regularizer on initialization.
             optimizer: Class
                 Uninitialized optimizer class following the keras optimizer interface.
             optimizer__{kwarg}
@@ -55,8 +56,9 @@ class FATENetworkCore(Learner):
                 Batch size to use for training
             random_state : int or object
                 Numpy random state
-            **kwargs
-                Keyword arguments for the hidden units
+            hidden_dense_layer__{kwarg}
+                Arguments to be passed to the hidden Dense layers. See the
+                keras documentation for ``Dense`` for available options.
         """
         self.random_state = random_state
 
@@ -70,32 +72,20 @@ class FATENetworkCore(Learner):
         self.optimizer = optimizer
         self.joint_layers = None
         self.scorer = None
-        keys = list(kwargs.keys())
-        for key in keys:
-            if key not in allowed_dense_kwargs:
-                del kwargs[key]
-        self.kwargs = kwargs
         self._initialize_optimizer()
         self._initialize_regularizer()
-        self._construct_layers(
-            activation=self.activation,
-            kernel_initializer=self.kernel_initializer,
-            kernel_regularizer=self.kernel_regularizer_,
-            **self.kwargs,
+        self._store_kwargs(
+            kwargs, {"optimizer__", "kernel_regularizer__", "hidden_dense_layer__"}
         )
+        self._construct_layers()
 
-    def _construct_layers(self, **kwargs):
+    def _construct_layers(self):
         """
             Construct basic layers shared by all ranking algorithms:
              * Joint dense hidden layers
              * Output scoring layer
 
             Connecting the layers is done in join_input_layers and will be done in implementing classes.
-
-            Parameters
-            ----------
-            **kwargs
-                Keyword arguments passed into the joint layers
         """
         logger.info(
             "Construct joint layers hidden units {} and layers {} ".format(
@@ -104,12 +94,18 @@ class FATENetworkCore(Learner):
         )
         # Create joint hidden layers:
         self.joint_layers = []
+        hidden_dense_kwargs = {
+            "kernel_regularizer": self.kernel_regularizer_,
+            "kernel_initializer": self.kernel_initializer,
+            "activation": self.activation,
+        }
+        hidden_dense_kwargs.update(self._get_prefix_attributes("hidden_dense_layer__"))
         for i in range(self.n_hidden_joint_layers):
             self.joint_layers.append(
                 Dense(
                     self.n_hidden_joint_units,
                     name="joint_layer_{}".format(i),
-                    **kwargs,
+                    **hidden_dense_kwargs,
                 )
             )
 

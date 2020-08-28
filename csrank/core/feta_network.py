@@ -14,7 +14,6 @@ from keras.regularizers import l2
 import numpy as np
 from sklearn.utils import check_random_state
 
-from csrank.constants import allowed_dense_kwargs
 from csrank.layers import NormalizedDense
 from csrank.learner import Learner
 from csrank.losses import hinged_rank_loss
@@ -55,13 +54,11 @@ class FETANetwork(Learner):
         self.add_zeroth_order_model = add_zeroth_order_model
         self.n_hidden = n_hidden
         self.n_units = n_units
-        keys = list(kwargs.keys())
-        for key in keys:
-            if key not in allowed_dense_kwargs:
-                del kwargs[key]
-        self.kwargs = kwargs
         self._pairwise_model = None
         self._zero_order_model = None
+        self._store_kwargs(
+            kwargs, {"optimizer__", "kernel_regularizer__", "hidden_dense_layer__"}
+        )
 
     @property
     def n_objects(self):
@@ -69,33 +66,47 @@ class FETANetwork(Learner):
             return self.max_number_of_objects
         return self.n_objects_fit_
 
-    def _construct_layers(self, **kwargs):
+    def _construct_layers(self):
         self.input_layer = Input(
             shape=(self.n_objects_fit_, self.n_object_features_fit_)
         )
         # Todo: Variable sized input
         # X = Input(shape=(None, n_features))
         logger.info("n_hidden {}, n_units {}".format(self.n_hidden, self.n_units))
+        hidden_dense_kwargs = {
+            "kernel_regularizer": self.kernel_regularizer_,
+            "kernel_initializer": self.kernel_initializer,
+            "activation": self.activation,
+        }
+        hidden_dense_kwargs.update(self._get_prefix_attributes("hidden_dense_layer__"))
         if self.batch_normalization:
             if self.add_zeroth_order_model:
                 self.hidden_layers_zeroth = [
                     NormalizedDense(
-                        self.n_units, name="hidden_zeroth_{}".format(x), **kwargs
+                        self.n_units,
+                        name="hidden_zeroth_{}".format(x),
+                        **hidden_dense_kwargs,
                     )
                     for x in range(self.n_hidden)
                 ]
             self.hidden_layers = [
-                NormalizedDense(self.n_units, name="hidden_{}".format(x), **kwargs)
+                NormalizedDense(
+                    self.n_units, name="hidden_{}".format(x), **hidden_dense_kwargs
+                )
                 for x in range(self.n_hidden)
             ]
         else:
             if self.add_zeroth_order_model:
                 self.hidden_layers_zeroth = [
-                    Dense(self.n_units, name="hidden_zeroth_{}".format(x), **kwargs)
+                    Dense(
+                        self.n_units,
+                        name="hidden_zeroth_{}".format(x),
+                        **hidden_dense_kwargs,
+                    )
                     for x in range(self.n_hidden)
                 ]
             self.hidden_layers = [
-                Dense(self.n_units, name="hidden_{}".format(x), **kwargs)
+                Dense(self.n_units, name="hidden_{}".format(x), **hidden_dense_kwargs)
                 for x in range(self.n_hidden)
             ]
         assert len(self.hidden_layers) == self.n_hidden
@@ -281,12 +292,7 @@ class FETANetwork(Learner):
         _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
         self._initialize_optimizer()
         self._initialize_regularizer()
-        self._construct_layers(
-            kernel_regularizer=self.kernel_regularizer_,
-            kernel_initializer=self.kernel_initializer,
-            activation=self.activation,
-            **self.kwargs,
-        )
+        self._construct_layers()
 
         logger.debug("Enter fit function...")
         self.random_state_ = check_random_state(self.random_state)

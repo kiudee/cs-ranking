@@ -17,18 +17,40 @@ def filter_dict_by_prefix(source, prefix):
 
 
 class Learner(BaseEstimator, metaclass=ABCMeta):
+    def _store_kwargs(self, kwargs, allowed_prefixes):
+        """Store kwargs with whitelisted prefixes into this objects attributes.
+
+        Raises an exception if one of the kwargs does not match a whiltelisted prefix.
+        """
+
+        def starts_with_legal_prefix(key):
+            for prefix in allowed_prefixes:
+                if key.startswith(prefix):
+                    return True
+            return False
+
+        for key in kwargs.keys():
+            if not starts_with_legal_prefix(key):
+                raise TypeError(
+                    f"'__init__() got an unexpected keyword argument '{key}'. Allowed prefixes: {allowed_prefixes}."
+                )
+
+        vars(self).update(kwargs)
+
+    def _get_prefix_attributes(self, prefix):
+        """Return all attributes of this class that start with a given prefix.
+
+        The prefix is stripped in the result. This can be used to pass on some
+        parameters to subclasses.
+        """
+        return filter_dict_by_prefix(self.__dict__, prefix)
+
     def _initialize_optimizer(self):
-        optimizer_params = filter_dict_by_prefix(self.__dict__, "optimizer__")
-        optimizer_params.update(filter_dict_by_prefix(self.kwargs, "optimizer__"))
+        optimizer_params = self._get_prefix_attributes("optimizer__")
         self.optimizer_ = self.optimizer(**optimizer_params)
 
     def _initialize_regularizer(self):
-        regularizer_params = filter_dict_by_prefix(
-            self.__dict__, "kernel_regularizer__"
-        )
-        regularizer_params.update(
-            filter_dict_by_prefix(self.kwargs, "kernel_regularizer__")
-        )
+        regularizer_params = self._get_prefix_attributes("kernel_regularizer__")
         if self.kernel_regularizer is not None:
             print(f"Regularizer is {self.kernel_regularizer}")
             print(f"Initializing with {regularizer_params}")

@@ -32,11 +32,7 @@ def test_construction_core():
     grc = MockClass()
     grc._initialize_optimizer()
     grc._initialize_regularizer()
-    grc._construct_layers(
-        activation=grc.activation,
-        kernel_initializer=grc.kernel_initializer,
-        kernel_regularizer=grc.kernel_regularizer_,
-    )
+    grc._construct_layers()
     input_layer = Input(shape=(n_objects, n_features))
     scores = grc.join_input_layers(input_layer, None, n_layers=0, n_objects=n_objects)
 

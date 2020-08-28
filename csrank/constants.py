@@ -20,25 +20,6 @@ EXCEPTION_RANKINGS_FEATURES_NO_OF_OBJECTS = (
 )
 EXCEPTION_RANKINGS = "Unwanted rankings in {} dataset"
 EXCEPTION_SET_INCLUSION = "Choice Set inclusion/exclusion binary code not present for all the objects in the set."
-allowed_dense_kwargs = [
-    "input_shape",
-    "batch_input_shape",
-    "batch_size",
-    "dtype",
-    "name",
-    "trainable",
-    "weights",
-    "input_dtype",
-    "activation",
-    "use_bias",
-    "kernel_initializer",
-    "bias_initializer",
-    "kernel_regularizer",
-    "bias_regularizer",
-    "activity_regularizer",
-    "kernel_constraint",
-    "bias_constraint",
-]
 
 RANKSVM = "ranksvm"
 

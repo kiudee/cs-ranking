@@ -9,7 +9,6 @@ from keras.optimizers import SGD
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
 
-from csrank.constants import allowed_dense_kwargs
 from csrank.layers import NormalizedDense
 from csrank.learner import Learner
 
@@ -41,16 +40,14 @@ class RankNetCore(Learner):
         self.optimizer = optimizer
         self.n_hidden = n_hidden
         self.n_units = n_units
-        keys = list(kwargs.keys())
-        for key in keys:
-            if key not in allowed_dense_kwargs:
-                del kwargs[key]
-        self.kwargs = kwargs
         self.batch_size = batch_size
         self._scoring_model = None
         self.random_state = random_state
+        self._store_kwargs(
+            kwargs, {"optimizer__", "kernel_regularizer__", "hidden_dense_layer__"}
+        )
 
-    def _construct_layers(self, **kwargs):
+    def _construct_layers(self):
         logger.info("n_hidden {}, n_units {}".format(self.n_hidden, self.n_units))
         self.x1 = Input(shape=(self.n_object_features_fit_,))
         self.x2 = Input(shape=(self.n_object_features_fit_,))
@@ -58,14 +55,22 @@ class RankNetCore(Learner):
             1, activation="sigmoid", kernel_regularizer=self.kernel_regularizer_
         )
         self.output_layer_score = Dense(1, activation="linear")
+        hidden_dense_kwargs = {
+            "kernel_regularizer": self.kernel_regularizer_,
+            "kernel_initializer": self.kernel_initializer,
+            "activation": self.activation,
+        }
+        hidden_dense_kwargs.update(self._get_prefix_attributes("hidden_dense_layer__"))
         if self.batch_normalization:
             self.hidden_layers = [
-                NormalizedDense(self.n_units, name="hidden_{}".format(x), **kwargs)
+                NormalizedDense(
+                    self.n_units, name="hidden_{}".format(x), **hidden_dense_kwargs
+                )
                 for x in range(self.n_hidden)
             ]
         else:
             self.hidden_layers = [
-                Dense(self.n_units, name="hidden_{}".format(x), **kwargs)
+                Dense(self.n_units, name="hidden_{}".format(x), **hidden_dense_kwargs)
                 for x in range(self.n_hidden)
             ]
         assert len(self.hidden_layers) == self.n_hidden
@@ -144,12 +149,7 @@ class RankNetCore(Learner):
 
         self._initialize_optimizer()
         self._initialize_regularizer()
-        self._construct_layers(
-            kernel_regularizer=self.kernel_regularizer_,
-            kernel_initializer=self.kernel_initializer,
-            activation=self.activation,
-            **self.kwargs,
-        )
+        self._construct_layers()
 
         # Model with input as two objects and output as probability of x1>x2
         self.model_ = self.construct_model()
