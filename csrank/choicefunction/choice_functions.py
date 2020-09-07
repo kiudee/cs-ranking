@@ -1,4 +1,5 @@
 from abc import ABCMeta
+import logging
 
 import numpy as np
 
@@ -7,6 +8,7 @@ from csrank.metrics_np import f1_measure
 from csrank.util import progress_bar
 
 __all__ = ["ChoiceFunctions"]
+logger = logging.getLogger(__name__)
 
 
 class ChoiceFunctions(metaclass=ABCMeta):
@@ -61,8 +63,8 @@ class ChoiceFunctions(metaclass=ABCMeta):
                 if verbose == 1:
                     progress_bar(i, len(probabilities), status="Tuning threshold")
         except KeyboardInterrupt:
-            self.logger.info("Keyboard interrupted")
-        self.logger.info(
+            logger.info("Keyboard interrupted")
+        logger.info(
             "Tuned threshold, obtained {:.2f} which achieved"
             " a micro F1-measure of {:.2f}".format(threshold, best)
         )

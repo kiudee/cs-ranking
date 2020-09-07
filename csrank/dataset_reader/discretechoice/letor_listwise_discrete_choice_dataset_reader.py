@@ -7,14 +7,13 @@ from .util import convert_to_label_encoding
 from .util import sub_sampling_discrete_choices_from_relevance
 from ..letor_listwise_dataset_reader import LetorListwiseDatasetReader
 
+logger = logging.getLogger(__name__)
+
 
 class LetorListwiseDiscreteChoiceDatasetReader(LetorListwiseDatasetReader):
     def __init__(self, random_state=None, n_objects=5, **kwargs):
         super(LetorListwiseDiscreteChoiceDatasetReader, self).__init__(
             learning_problem=DISCRETE_CHOICE, **kwargs
-        )
-        self.logger = logging.getLogger(
-            LetorListwiseDiscreteChoiceDatasetReader.__name__
         )
         self.random_state = check_random_state(random_state)
         self.n_objects = n_objects

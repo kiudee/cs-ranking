@@ -1,4 +1,5 @@
 import copy
+import logging
 
 from csrank.theano_util import normalize
 
@@ -19,6 +20,7 @@ except ImportError:
     from csrank.util import MissingExtraError
 
     raise MissingExtraError("theano", "probabilistic")
+logger = logging.getLogger(__name__)
 
 
 def categorical_crossentropy(p, y_true):
@@ -124,11 +126,11 @@ def fit_pymc3_model(self, sampler, draws, tune, vi_params, **kwargs):
                     message = e.message
                 else:
                     message = e
-                self.logger.error(message)
+                logger.error(message)
                 self.trace_vi = None
         if self.trace_vi is None and self.trace is None:
             with self.model:
-                self.logger.info(
+                logger.info(
                     "Error in vi ADVI sampler using Metropolis sampler with draws {}".format(
                         draws
                     )

@@ -30,6 +30,8 @@ except ImportError:
 
     raise MissingExtraError("theano", "probabilistic")
 
+logger = logging.getLogger(__name__)
+
 
 class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
     def __init__(
@@ -88,7 +90,6 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
                 [3] Chieh-Hua Wen and Frank S Koppelman. „The generalized nested logit model“. In: Transportation Research Part B: Methodological 35.7 (2001), pp. 627–641
 
         """
-        self.logger = logging.getLogger(GeneralizedNestedLogitModel.__name__)
 
         self.n_nests = n_nests
         self.alpha = alpha
@@ -162,7 +163,7 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
                     },
                 ],
             }
-            self.logger.info(
+            logger.info(
                 "Creating model with config {}".format(print_dictionary(self._config))
             )
         return self._config
@@ -262,9 +263,7 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
             indices = self.random_state_.choice(X.shape[0], upper_bound, replace=False)
             X = X[indices, :, :]
             Y = Y[indices, :]
-        self.logger.info(
-            "Train Set instances {} objects {} features {}".format(*X.shape)
-        )
+        logger.info("Train Set instances {} objects {} features {}".format(*X.shape))
         with pm.Model() as self.model:
             self.Xt = theano.shared(X)
             self.Yt = theano.shared(Y)
@@ -282,7 +281,7 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
             LogLikelihood(
                 "yl", loss_func=self.loss_function_, p=self.p, observed=self.Yt
             )
-        self.logger.info("Model construction completed")
+        logger.info("Model construction completed")
 
     def fit(
         self,

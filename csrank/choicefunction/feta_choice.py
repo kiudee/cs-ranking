@@ -20,6 +20,8 @@ from csrank.layers import NormalizedDense
 from csrank.numpy_util import sigmoid
 from .choice_functions import ChoiceFunctions
 
+logger = logging.getLogger(__name__)
+
 
 class FETAChoiceFunction(ChoiceFunctions, FETANetwork):
     def __init__(
@@ -110,7 +112,6 @@ class FETAChoiceFunction(ChoiceFunctions, FETANetwork):
             **kwargs,
         )
         self.threshold = 0.5
-        self.logger = logging.getLogger(FETAChoiceFunction.__name__)
 
     def _construct_layers(self, **kwargs):
         self.input_layer = Input(
@@ -170,7 +171,7 @@ class FETAChoiceFunction(ChoiceFunctions, FETANetwork):
             return Lambda(lambda x: x[:, i])
 
         if self.add_zeroth_order_model:
-            self.logger.debug("Create 0th order model")
+            logger.debug("Create 0th order model")
             zeroth_order_outputs = []
             inputs = []
             for i in range(self.n_objects_fit_):
@@ -180,8 +181,8 @@ class FETAChoiceFunction(ChoiceFunctions, FETANetwork):
                     x = hidden(x)
                 zeroth_order_outputs.append(self.output_node_zeroth(x))
             zeroth_order_scores = concatenate(zeroth_order_outputs)
-            self.logger.debug("0th order model finished")
-        self.logger.debug("Create 1st order model")
+            logger.debug("0th order model finished")
+        logger.debug("Create 1st order model")
         outputs = [list() for _ in range(self.n_objects_fit_)]
         for i, j in combinations(range(self.n_objects_fit_), 2):
             if self.add_zeroth_order_model:
@@ -213,12 +214,12 @@ class FETAChoiceFunction(ChoiceFunctions, FETANetwork):
             Lambda(lambda s: K.mean(s, axis=1, keepdims=True))(x) for x in outputs
         ]
         scores = concatenate(scores)
-        self.logger.debug("1st order model finished")
+        logger.debug("1st order model finished")
         if self.add_zeroth_order_model:
             scores = add([scores, zeroth_order_scores])
         scores = Activation("sigmoid")(scores)
         model = Model(inputs=self.input_layer, outputs=scores)
-        self.logger.debug("Compiling complete model...")
+        logger.debug("Compiling complete model...")
         model.compile(
             loss=self.loss_function,
             optimizer=self.optimizer_,
@@ -283,7 +284,7 @@ class FETAChoiceFunction(ChoiceFunctions, FETANetwork):
                     **kwd,
                 )
             finally:
-                self.logger.info(
+                logger.info(
                     "Fitting utility function finished. Start tuning threshold."
                 )
                 self.threshold = self._tune_threshold(
@@ -348,7 +349,7 @@ class FETAChoiceFunction(ChoiceFunctions, FETANetwork):
             else:
                 Y_train = np.concatenate([Y_train, y[idx]], axis=0)
                 X_train = np.concatenate([X_train, x[idx]], axis=0)
-        self.logger.info(
+        logger.info(
             "Sampled instances {} objects {}".format(X_train.shape[0], X_train.shape[1])
         )
         return X_train, Y_train

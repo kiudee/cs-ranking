@@ -1,9 +1,13 @@
+import logging
+
 import numpy as np
 
 from csrank.constants import DISCRETE_CHOICE
 from .util import angle_between
 from .util import convert_to_label_encoding
 from ..mnist_dataset_reader import MNISTDatasetReader
+
+logger = logging.getLogger(__name__)
 
 
 class MNISTDiscreteChoiceDatasetReader(MNISTDatasetReader):
@@ -22,13 +26,13 @@ class MNISTDiscreteChoiceDatasetReader(MNISTDatasetReader):
         super(MNISTDiscreteChoiceDatasetReader, self).__init__(
             learning_problem=DISCRETE_CHOICE, **kwargs
         )
-        self.logger.info("Dataset type {}".format(dataset_type))
+        logger.info("Dataset type {}".format(dataset_type))
 
     def create_dataset_median(self):
-        self.logger.info("create_dataset_median")
+        logger.info("create_dataset_median")
         if self.n_objects % 2 == 0:
             self.n_objects = self.n_objects - 1
-            self.logger.info(
+            logger.info(
                 "Cannot create the dataset for even numbered sets so decreasing the set size {}".format(
                     self.n_objects
                 )
@@ -53,7 +57,7 @@ class MNISTDiscreteChoiceDatasetReader(MNISTDatasetReader):
         self.__check_dataset_validity__()
 
     def create_dataset_largest(self):
-        self.logger.info("create_dataset_largest new")
+        logger.info("create_dataset_largest new")
         n_total = self.n_test_instances + self.n_train_instances
         self.X = np.empty((n_total, self.n_objects, self.n_features))
         self.Y = np.empty(n_total, dtype=int)
@@ -73,7 +77,7 @@ class MNISTDiscreteChoiceDatasetReader(MNISTDatasetReader):
         self.__check_dataset_validity__()
 
     def create_dataset_mode_least_angle(self):
-        self.logger.info("create_dataset_maximum_occurring_number")
+        logger.info("create_dataset_maximum_occurring_number")
         n_total = self.n_test_instances + self.n_train_instances
         self.X = np.empty((n_total, self.n_objects, self.n_features))
         self.Y = np.empty(n_total, dtype=int)
@@ -99,7 +103,7 @@ class MNISTDiscreteChoiceDatasetReader(MNISTDatasetReader):
         self.__check_dataset_validity__()
 
     def create_dataset_unique(self):
-        self.logger.info("create_dataset_unique")
+        logger.info("create_dataset_unique")
         num_classes = len(np.unique(self.y_labels))
         n_total = self.n_test_instances + self.n_train_instances
         unique_number = self.random_state.randint(0, num_classes, size=n_total)

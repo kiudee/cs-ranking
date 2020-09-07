@@ -8,6 +8,8 @@ from sklearn.utils import check_random_state
 from csrank.dataset_reader.dataset_reader import DatasetReader
 from csrank.dataset_reader.util import standardize_features
 
+logger = logging.getLogger(__name__)
+
 
 class MNISTDatasetReader(DatasetReader):
     def __init__(
@@ -20,7 +22,6 @@ class MNISTDatasetReader(DatasetReader):
         **kwargs,
     ):
         super(MNISTDatasetReader, self).__init__(dataset_folder="mnist", **kwargs)
-        self.logger = logging.getLogger(MNISTDatasetReader.__name__)
         self.n_test_instances = n_test_instances
         self.n_train_instances = n_train_instances
         self.n_objects = n_objects
@@ -28,7 +29,7 @@ class MNISTDatasetReader(DatasetReader):
         self.n_features = None
         self.standardize = standardize
         self.__load_dataset__()
-        self.logger.info("Done loading the dataset")
+        logger.info("Done loading the dataset")
 
     def __load_dataset__(self):
         x_file = os.path.join(self.dirname, "X_raw_features.npy")
@@ -47,7 +48,7 @@ class MNISTDatasetReader(DatasetReader):
         )
         if self.standardize:
             x_train, x_test = standardize_features(x_train, x_test)
-        self.logger.info("Done")
+        logger.info("Done")
         return x_train, y_train, x_test, y_test
 
     def splitter(self, iter):
@@ -75,7 +76,7 @@ class MNISTDatasetReader(DatasetReader):
                 y_1,
                 y_2,
             )
-        self.logger.info("Done")
+        logger.info("Done")
         return x_train, y_train, x_test, y_test
 
     def get_train_test_datasets(self, n_datasets=5):

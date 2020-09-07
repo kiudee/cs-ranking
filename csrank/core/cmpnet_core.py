@@ -14,6 +14,8 @@ from csrank.constants import allowed_dense_kwargs
 from csrank.layers import NormalizedDense
 from csrank.learner import Learner
 
+logger = logging.getLogger(__name__)
+
 
 class CmpNetCore(Learner):
     def __init__(
@@ -31,7 +33,6 @@ class CmpNetCore(Learner):
         random_state=None,
         **kwargs,
     ):
-        self.logger = logging.getLogger("CmpNet")
         self.batch_normalization = batch_normalization
         self.activation = activation
 
@@ -93,7 +94,7 @@ class CmpNetCore(Learner):
         self._initialize_regularizer()
         x1x2 = concatenate([self.x1, self.x2])
         x2x1 = concatenate([self.x2, self.x1])
-        self.logger.debug("Creating the model")
+        logger.debug("Creating the model")
         for hidden in self.hidden_layers:
             x1x2 = hidden(x1x2)
             x2x1 = hidden(x2x1)
@@ -150,7 +151,7 @@ class CmpNetCore(Learner):
         _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
         x1, x2, y_double = self._convert_instances_(X, Y)
 
-        self.logger.debug("Instances created {}".format(x1.shape[0]))
+        logger.debug("Instances created {}".format(x1.shape[0]))
         self._construct_layers(
             kernel_regularizer=self.kernel_regularizer_,
             kernel_initializer=self.kernel_initializer,
@@ -159,7 +160,7 @@ class CmpNetCore(Learner):
         )
         self.model_ = self.construct_model()
 
-        self.logger.debug("Finished Creating the model, now fitting started")
+        logger.debug("Finished Creating the model, now fitting started")
         self.model_.fit(
             [x1, x2],
             y_double,
@@ -170,16 +171,14 @@ class CmpNetCore(Learner):
             verbose=verbose,
             **kwd,
         )
-        self.logger.debug("Fitting Complete")
+        logger.debug("Fitting Complete")
 
     def predict_pair(self, a, b, **kwargs):
         return self.model_.predict([a, b], **kwargs)
 
     def _predict_scores_fixed(self, X, **kwargs):
         n_instances, n_objects, n_features = X.shape
-        self.logger.info(
-            "Test Set instances {} objects {} features {}".format(*X.shape)
-        )
+        logger.info("Test Set instances {} objects {} features {}".format(*X.shape))
         n2 = n_objects * (n_objects - 1)
         pairs = np.empty((n2, 2, n_features))
         scores = np.empty((n_instances, n_objects))
@@ -190,6 +189,6 @@ class CmpNetCore(Learner):
             scores[n] = result.reshape(n_objects, n_objects - 1).mean(axis=1)
             del result
         del pairs
-        self.logger.info("Done predicting scores")
+        logger.info("Done predicting scores")
 
         return scores

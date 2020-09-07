@@ -25,12 +25,13 @@ except ImportError:
 
     raise MissingExtraError("pandas", "data")
 
+logger = logging.getLogger(__name__)
+
 
 class ExpediaDatasetReader(DatasetReader, metaclass=ABCMeta):
     def __init__(self, fold_id=0, **kwargs):
         super(ExpediaDatasetReader, self).__init__(dataset_folder="expedia", **kwargs)
         self.RAW_DATASET_FILE = os.path.join(self.dirname, "train.csv")
-        self.logger = logging.getLogger(ExpediaDatasetReader.__name__)
         self.fold_id = fold_id
         self.X_train = self.Y_train = self.X_test = self.Y_test = dict()
 
@@ -38,7 +39,7 @@ class ExpediaDatasetReader(DatasetReader, metaclass=ABCMeta):
         if not os.path.isfile(self.hdf5file_path):
             self.create_choices_dataset()
         self.X_dict, self.Y_dict = self.get_choices_dict()
-        self.logger.info("Done loading the dataset")
+        logger.info("Done loading the dataset")
 
     def get_choices_dict(self):
         file = h5py.File(self.hdf5file_path, "r")
@@ -54,11 +55,11 @@ class ExpediaDatasetReader(DatasetReader, metaclass=ABCMeta):
         return X, Y
 
     def create_choices_dataset(self):
-        self.logger.info("Writing in hd5 {}".format(self.hdf5file_path))
+        logger.info("Writing in hd5 {}".format(self.hdf5file_path))
         X, scores = self._parse_dataset()
         result, freq = self._build_training_buckets(X, scores)
         h5f = h5py.File(self.hdf5file_path, "w")
-        self.logger.info("Frequencies of rankings: {}".format(print_dictionary(freq)))
+        logger.info("Frequencies of rankings: {}".format(print_dictionary(freq)))
 
         for key, value in result.items():
             x, s = value
@@ -106,17 +107,15 @@ class ExpediaDatasetReader(DatasetReader, metaclass=ABCMeta):
                 arr = np.array(train[col])
                 fraction = np.isnan(arr).sum() / len(arr)
                 if fraction > 0.0:
-                    self.logger.info(
+                    logger.info(
                         "########################################################################"
                     )
-                    self.logger.info(
+                    logger.info(
                         "Missing values {}: {}".format(
                             col, np.isnan(arr).sum() / len(arr)
                         )
                     )
-                    self.logger.info(
-                        "Min {}: Max {}".format(np.nanmin(arr), np.nanmax(arr))
-                    )
+                    logger.info("Min {}: Max {}".format(np.nanmin(arr), np.nanmax(arr)))
                     if fraction > 0.50:
                         del train[col]
                     else:
@@ -142,12 +141,10 @@ class ExpediaDatasetReader(DatasetReader, metaclass=ABCMeta):
                 else:
                     X = np.concatenate([X, x], axis=0)
                     Y = np.concatenate([Y, y], axis=0)
-                self.logger.info(
+                logger.info(
                     "Sampled instances {} from objects {}".format(x.shape[0], n)
                 )
-        self.logger.info(
-            "Sampled instances {} objects {}".format(X.shape[0], X.shape[1])
-        )
+        logger.info("Sampled instances {} objects {}".format(X.shape[0], X.shape[1]))
         return X, Y
 
     def splitter(self, iter):

@@ -6,6 +6,8 @@ from sklearn.model_selection import train_test_split
 from csrank.core.feta_linear import FETALinearCore
 from .choice_functions import ChoiceFunctions
 
+logger = logging.getLogger(__name__)
+
 
 class FETALinearChoiceFunction(ChoiceFunctions, FETALinearCore):
     def __init__(
@@ -56,7 +58,6 @@ class FETALinearChoiceFunction(ChoiceFunctions, FETALinearCore):
             random_state=random_state,
             **kwargs,
         )
-        self.logger = logging.getLogger(FETALinearChoiceFunction.__name__)
 
     def fit(
         self,
@@ -85,7 +86,7 @@ class FETALinearChoiceFunction(ChoiceFunctions, FETALinearCore):
                     **kwd,
                 )
             finally:
-                self.logger.info(
+                logger.info(
                     "Fitting utility function finished. Start tuning threshold."
                 )
                 self.threshold = self._tune_threshold(

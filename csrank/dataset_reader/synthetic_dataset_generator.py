@@ -6,6 +6,8 @@ from sklearn.utils import check_random_state
 from csrank.dataset_reader.util import standardize_features
 from .dataset_reader import DatasetReader
 
+logger = logging.getLogger(__name__)
+
 
 class SyntheticDatasetGenerator(DatasetReader):
     def __init__(
@@ -25,9 +27,8 @@ class SyntheticDatasetGenerator(DatasetReader):
         self.kwargs = kwargs
         self.n_test_instances = n_test_instances
         self.n_train_instances = n_train_instances
-        self.logger = logging.getLogger(SyntheticDatasetGenerator.__name__)
         self.standardize = standardize
-        self.logger.info("Key word arguments {}".format(kwargs))
+        logger.info("Key word arguments {}".format(kwargs))
 
     def __load_dataset__(self):
         pass
@@ -68,7 +69,7 @@ class SyntheticDatasetGenerator(DatasetReader):
                 y_1,
                 y_2,
             )
-        self.logger.info("Done")
+        logger.info("Done")
         return x_train, y_train, x_test, y_test
 
     def get_single_train_test_split(self):
@@ -85,7 +86,7 @@ class SyntheticDatasetGenerator(DatasetReader):
         )
         if self.standardize:
             x_train, x_test = standardize_features(x_train, x_test)
-        self.logger.info("Done")
+        logger.info("Done")
 
         return x_train, y_train, x_test, y_test
 

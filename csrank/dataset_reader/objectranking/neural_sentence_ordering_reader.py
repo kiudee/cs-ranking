@@ -14,6 +14,8 @@ except ImportError:
 
     raise MissingExtraError("h5py", "data")
 
+logger = logging.getLogger(__name__)
+
 
 class SentenceOrderingDatasetReader(DatasetReader):
     def __init__(self, n_dims=25, n_objects=5, **kwargs):
@@ -22,13 +24,12 @@ class SentenceOrderingDatasetReader(DatasetReader):
             dataset_folder="sentence_ordering",
             **kwargs,
         )
-        self.logger = logging.getLogger(name=SentenceOrderingDatasetReader.__name__)
         dimensions = {25, 50, 100, 200}
         d_files = ["test_{}_dim.h5", "train_{}_dim.h5"]
         self.n_objects = n_objects
         if n_dims not in dimensions:
             raise ValueError(f"n_dims must be one of {dimensions}")
-        self.logger.info("Loading the dataset with {} features".format(n_dims))
+        logger.info("Loading the dataset with {} features".format(n_dims))
         self.train_file = os.path.join(self.dirname, d_files[1]).format(n_dims)
         self.test_file = os.path.join(self.dirname, d_files[0]).format(n_dims)
 
@@ -39,7 +40,7 @@ class SentenceOrderingDatasetReader(DatasetReader):
         self.X_train, self.Y_train = self.get_rankings_dict(file)
         file = h5py.File(self.test_file, "r")
         self.X_test, self.Y_test = self.get_rankings_dict(file)
-        self.logger.info("Done loading the dataset")
+        logger.info("Done loading the dataset")
 
     def get_rankings_dict(self, file):
         lengths = file["lengths"]
@@ -69,9 +70,7 @@ class SentenceOrderingDatasetReader(DatasetReader):
         if self.n_objects in self.X_train:
             X = np.concatenate([X, np.copy(self.X_train[self.n_objects])], axis=0)
             Y = np.concatenate([Y, np.copy(self.Y_train[self.n_objects])], axis=0)
-        self.logger.info(
-            "Sampled instances {} objects {}".format(X.shape[0], X.shape[1])
-        )
+        logger.info("Sampled instances {} objects {}".format(X.shape[0], X.shape[1]))
         return X, Y
 
     def splitter(self, iter):

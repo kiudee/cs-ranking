@@ -10,6 +10,8 @@ from sklearn.utils import check_random_state
 from csrank.constants import OBJECT_RANKING
 from ..dataset_reader import DatasetReader
 
+logger = logging.getLogger(__name__)
+
 
 class RCVDatasetReader(DatasetReader):
     def __init__(
@@ -23,7 +25,6 @@ class RCVDatasetReader(DatasetReader):
         super(RCVDatasetReader, self).__init__(
             learning_problem=OBJECT_RANKING, dataset_folder="textual_data", **kwargs
         )
-        self.logger = logging.getLogger(name=RCVDatasetReader.__name__)
         if n_instances not in [10000]:
             raise ValueError(
                 "The number of instances should be in %s", str([100, 1000, 10000])
@@ -39,7 +40,7 @@ class RCVDatasetReader(DatasetReader):
             )
 
         self.train_file = os.path.join(self.dirname, file_name)
-        self.logger.info(self.train_file)
+        logger.info(self.train_file)
 
         self.random_state = check_random_state(random_state)
         self.__load_dataset__()

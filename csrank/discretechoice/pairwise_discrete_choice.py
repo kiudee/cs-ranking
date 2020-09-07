@@ -4,6 +4,8 @@ from csrank.choicefunction.util import generate_complete_pairwise_dataset
 from csrank.core.pairwise_svm import PairwiseSVM
 from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 
+logger = logging.getLogger(__name__)
+
 
 class PairwiseSVMDiscreteChoiceFunction(DiscreteObjectChooser, PairwiseSVM):
     def __init__(
@@ -55,11 +57,10 @@ class PairwiseSVMDiscreteChoiceFunction(DiscreteObjectChooser, PairwiseSVM):
             random_state=random_state,
             **kwargs,
         )
-        self.logger = logging.getLogger(PairwiseSVMDiscreteChoiceFunction.__name__)
-        self.logger.info("Initializing network")
+        logger.info("Initializing network")
 
     def _convert_instances_(self, X, Y):
-        self.logger.debug("Creating the Dataset")
+        logger.debug("Creating the Dataset")
         (
             garbage,
             garbage,
@@ -69,9 +70,7 @@ class PairwiseSVMDiscreteChoiceFunction(DiscreteObjectChooser, PairwiseSVM):
         ) = generate_complete_pairwise_dataset(X, Y)
         del garbage
         assert x_train.shape[1] == self.n_object_features_fit_
-        self.logger.debug(
-            "Finished the Dataset with instances {}".format(x_train.shape[0])
-        )
+        logger.debug("Finished the Dataset with instances {}".format(x_train.shape[0]))
         return x_train, y_single
 
     def fit(self, X, Y, **kwd):

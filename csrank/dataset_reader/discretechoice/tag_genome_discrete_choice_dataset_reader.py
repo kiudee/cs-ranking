@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 from sklearn.utils import check_random_state
 
@@ -6,6 +8,8 @@ from csrank.dataset_reader.discretechoice.util import convert_to_label_encoding
 from csrank.dataset_reader.tag_genome_reader import critique_dist
 from csrank.dataset_reader.util import get_key_for_indices
 from ..tag_genome_reader import TagGenomeDatasetReader
+
+logger = logging.getLogger(__name__)
 
 
 class TagGenomeDiscreteChoiceDatasetReader(TagGenomeDatasetReader):
@@ -29,7 +33,7 @@ class TagGenomeDiscreteChoiceDatasetReader(TagGenomeDatasetReader):
             raise ValueError(
                 f"dataset_type must be one of {set(dataset_func_dict.keys())}"
             )
-        self.logger.info("Dataset type: {}".format(dataset_type))
+        logger.info("Dataset type: {}".format(dataset_type))
         self.dataset_function = dataset_func_dict[dataset_type]
 
     def make_nearest_neighbour_dataset(self, n_instances, n_objects, seed, **kwargs):
@@ -62,7 +66,7 @@ class TagGenomeDiscreteChoiceDatasetReader(TagGenomeDatasetReader):
     def make_dissimilar_nearest_neighbour_dataset(
         self, n_instances, n_objects, seed, **kwargs
     ):
-        self.logger.info(
+        logger.info(
             "For instances {} objects {}, seed {}".format(n_instances, n_objects, seed)
         )
         X, scores = super(
@@ -77,7 +81,7 @@ class TagGenomeDiscreteChoiceDatasetReader(TagGenomeDatasetReader):
 
     def make_dissimilar_critique_dataset(self, direction):
         def dataset_generator(n_instances, n_objects, seed, **kwargs):
-            self.logger.info(
+            logger.info(
                 "For instances {} objects {}, seed {}, direction {}".format(
                     n_instances, n_objects, seed, direction
                 )

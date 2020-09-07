@@ -8,13 +8,14 @@ from csrank.constants import DISCRETE_CHOICE
 from .util import sub_sampling_discrete_choices_from_relevance
 from ..expedia_dataset_reader import ExpediaDatasetReader
 
+logger = logging.getLogger(__name__)
+
 
 class ExpediaDiscreteChoiceDatasetReader(ExpediaDatasetReader):
     def __init__(self, random_state=None, n_objects=5, **kwargs):
         super(ExpediaDiscreteChoiceDatasetReader, self).__init__(
             learning_problem=DISCRETE_CHOICE, **kwargs
         )
-        self.logger = logging.getLogger(ExpediaDiscreteChoiceDatasetReader.__name__)
         self.random_state = check_random_state(random_state)
         self.n_objects = n_objects
         self.hdf5file_path = os.path.join(self.dirname, "exp_dc.h5")
@@ -44,5 +45,5 @@ class ExpediaDiscreteChoiceDatasetReader(ExpediaDatasetReader):
                 Y.append(y)
             else:
                 clicks.append(y.sum())
-        self.logger.info("Percentage of clicked {}".format(len(clicks) / len(Y)))
+        logger.info("Percentage of clicked {}".format(len(clicks) / len(Y)))
         return X, Y

@@ -1,6 +1,10 @@
+import logging
+
 from csrank.constants import OBJECT_RANKING
 from csrank.numpy_util import scores_to_rankings
 from ..tag_genome_reader import TagGenomeDatasetReader
+
+logger = logging.getLogger(__name__)
 
 
 class TagGenomeObjectRankingDatasetReader(TagGenomeDatasetReader):
@@ -17,7 +21,7 @@ class TagGenomeObjectRankingDatasetReader(TagGenomeDatasetReader):
             raise ValueError(
                 f"dataset_type must be one of {set(dataset_func_dict.keys())}"
             )
-        self.logger.info("Dataset type: {}".format(dataset_type))
+        logger.info("Dataset type: {}".format(dataset_type))
         self.dataset_function = dataset_func_dict[dataset_type]
 
     def make_nearest_neighbour_dataset(self, n_instances, n_objects, seed, **kwargs):

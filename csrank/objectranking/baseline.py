@@ -5,6 +5,8 @@ from sklearn.utils import check_random_state
 from csrank.learner import Learner
 from .object_ranker import ObjectRanker
 
+logger = logging.getLogger(__name__)
+
 
 class RandomBaselineRanker(ObjectRanker, Learner):
     def __init__(self, random_state=None, **kwargs):
@@ -14,7 +16,6 @@ class RandomBaselineRanker(ObjectRanker, Learner):
             :param kwargs: Keyword arguments for the algorithms
         """
 
-        self.logger = logging.getLogger(RandomBaselineRanker.__name__)
         self.random_state = (random_state,)
 
     def fit(self, X, Y, **kwd):

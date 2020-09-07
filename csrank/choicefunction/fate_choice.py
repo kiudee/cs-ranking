@@ -9,6 +9,8 @@ from sklearn.model_selection import train_test_split
 from csrank.core.fate_network import FATENetwork
 from .choice_functions import ChoiceFunctions
 
+logger = logging.getLogger(__name__)
+
 
 class FATEChoiceFunction(ChoiceFunctions, FATENetwork):
     def __init__(
@@ -95,7 +97,6 @@ class FATEChoiceFunction(ChoiceFunctions, FATENetwork):
             random_state=random_state,
             **kwargs,
         )
-        self.logger = logging.getLogger(FATEChoiceFunction.__name__)
         self.threshold = 0.5
 
     def _construct_layers(self, **kwargs):
@@ -111,7 +112,7 @@ class FATEChoiceFunction(ChoiceFunctions, FATENetwork):
             **kwargs
                 Keyword arguments passed into the joint layers
         """
-        self.logger.info(
+        logger.info(
             "Construct joint layers hidden units {} and layers {} ".format(
                 self.n_hidden_joint_units, self.n_hidden_joint_layers
             )
@@ -124,7 +125,7 @@ class FATEChoiceFunction(ChoiceFunctions, FATENetwork):
                     self.n_hidden_joint_units, name="joint_layer_{}".format(i), **kwargs
                 )
             )
-        self.logger.info("Construct output score node")
+        logger.info("Construct output score node")
         self.scorer = Dense(
             1,
             name="output_node",
@@ -168,7 +169,7 @@ class FATEChoiceFunction(ChoiceFunctions, FATENetwork):
             try:
                 super().fit(X_train, Y_train, **kwargs)
             finally:
-                self.logger.info(
+                logger.info(
                     "Fitting utility function finished. Start tuning threshold."
                 )
                 self.threshold = self._tune_threshold(

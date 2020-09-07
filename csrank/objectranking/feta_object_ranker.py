@@ -8,6 +8,7 @@ from csrank.losses import hinged_rank_loss
 from .object_ranker import ObjectRanker
 
 __all__ = ["FETAObjectRanker"]
+logger = logging.getLogger(__name__)
 
 
 class FETAObjectRanker(ObjectRanker, FETANetwork):
@@ -97,4 +98,3 @@ class FETAObjectRanker(ObjectRanker, FETANetwork):
             random_state=random_state,
             **kwargs,
         )
-        self.logger = logging.getLogger(FETAObjectRanker.__name__)

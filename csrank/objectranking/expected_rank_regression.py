@@ -13,6 +13,8 @@ from ..dataset_reader.objectranking.util import complete_linear_regression_datas
 
 __all__ = ["ExpectedRankRegression"]
 
+logger = logging.getLogger(__name__)
+
 
 class ExpectedRankRegression(ObjectRanker, Learner):
     def __init__(
@@ -67,7 +69,6 @@ class ExpectedRankRegression(ObjectRanker, Learner):
         self.alpha = alpha
         self.l1_ratio = l1_ratio
         self.tol = tol
-        self.logger = logging.getLogger(ExpectedRankRegression.__name__)
         self.fit_intercept = fit_intercept
         self.random_state = random_state
         self.weights = None
@@ -89,14 +90,14 @@ class ExpectedRankRegression(ObjectRanker, Learner):
                 Keyword arguments for the fit function
         """
         self.random_state_ = check_random_state(self.random_state)
-        self.logger.debug("Creating the Dataset")
+        logger.debug("Creating the Dataset")
         x_train, y_train = complete_linear_regression_dataset(X, Y)
-        self.logger.debug("Finished the Dataset")
+        logger.debug("Finished the Dataset")
         if self.alpha < 1e-3:
             self.model_ = LinearRegression(
                 normalize=self.normalize, fit_intercept=self.fit_intercept
             )
-            self.logger.info("LinearRegression")
+            logger.info("LinearRegression")
         else:
             if self.l1_ratio >= 0.01:
                 self.model_ = ElasticNet(
@@ -107,7 +108,7 @@ class ExpectedRankRegression(ObjectRanker, Learner):
                     fit_intercept=self.fit_intercept,
                     random_state=self.random_state_,
                 )
-                self.logger.info("Elastic Net")
+                logger.info("Elastic Net")
             else:
                 self.model_ = Ridge(
                     alpha=self.alpha,
@@ -116,22 +117,20 @@ class ExpectedRankRegression(ObjectRanker, Learner):
                     fit_intercept=self.fit_intercept,
                     random_state=self.random_state_,
                 )
-                self.logger.info("Ridge")
-        self.logger.debug("Finished Creating the model, now fitting started")
+                logger.info("Ridge")
+        logger.debug("Finished Creating the model, now fitting started")
         self.model_.fit(x_train, y_train)
         self.weights = self.model_.coef_.flatten()
         if self.fit_intercept:
             self.weights = np.append(self.weights, self.model_.intercept_)
-        self.logger.debug("Fitting Complete")
+        logger.debug("Fitting Complete")
 
     def _predict_scores_fixed(self, X, **kwargs):
         n_instances, n_objects, n_features = X.shape
-        self.logger.info(
-            "For Test instances {} objects {} features {}".format(*X.shape)
-        )
+        logger.info("For Test instances {} objects {} features {}".format(*X.shape))
         X1 = X.reshape(n_instances * n_objects, n_features)
         scores = n_objects - self.model_.predict(X1)
         scores = scores.reshape(n_instances, n_objects)
         scores = normalize(scores)
-        self.logger.info("Done predicting scores")
+        logger.info("Done predicting scores")
         return scores

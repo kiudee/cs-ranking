@@ -17,6 +17,8 @@ except ImportError:
 
     raise MissingExtraError("pandas", "data")
 
+logger = logging.getLogger(__name__)
+
 
 class IntelligentSystemGroupDatasetReader(DatasetReader):
     def __init__(self, random_state=None, **kwargs):
@@ -26,7 +28,6 @@ class IntelligentSystemGroupDatasetReader(DatasetReader):
             **kwargs,
         )
 
-        self.logger = logging.getLogger(IntelligentSystemGroupDatasetReader.__name__)
         self.train_files = glob.glob(os.path.join(self.dirname, "*.txt"))
         self.train_files.sort()
         self.train_files_names = []
@@ -49,7 +50,7 @@ class IntelligentSystemGroupDatasetReader(DatasetReader):
             self.train_files_names.append(name)
             self.X[name] = features.as_matrix()
             self.Y[name] = labels.as_matrix()
-        self.logger.info("Dataset files: " + repr(self.train_files_names))
+        logger.info("Dataset files: " + repr(self.train_files_names))
 
     def get_single_train_test_split(self, name="cold"):
         cv_iter = ShuffleSplit(

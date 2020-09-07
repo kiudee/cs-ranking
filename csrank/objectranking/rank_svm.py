@@ -5,6 +5,7 @@ from csrank.objectranking.object_ranker import ObjectRanker
 from ..dataset_reader.objectranking.util import generate_complete_pairwise_dataset
 
 __all__ = ["RankSVM"]
+logger = logging.getLogger(__name__)
 
 
 class RankSVM(ObjectRanker, PairwiseSVM):
@@ -54,15 +55,14 @@ class RankSVM(ObjectRanker, PairwiseSVM):
             random_state=random_state,
             **kwargs,
         )
-        self.logger = logging.getLogger(RankSVM.__name__)
-        self.logger.info("Initializing network")
+        logger.info("Initializing network")
 
     def fit(self, X, Y, **kwargs):
         _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
         super().fit(X, Y, **kwargs)
 
     def _convert_instances_(self, X, Y):
-        self.logger.debug("Creating the Dataset")
+        logger.debug("Creating the Dataset")
         (
             x_train,
             garbage,
@@ -72,7 +72,5 @@ class RankSVM(ObjectRanker, PairwiseSVM):
         ) = generate_complete_pairwise_dataset(X, Y)
         del garbage
         assert x_train.shape[1] == self.n_object_features_fit_
-        self.logger.debug(
-            "Finished the Dataset with instances {}".format(x_train.shape[0])
-        )
+        logger.debug("Finished the Dataset with instances {}".format(x_train.shape[0]))
         return x_train, y_single
