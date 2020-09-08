@@ -72,14 +72,19 @@ class CmpNetChoiceFunction(ChoiceFunctions, CmpNetCore):
                 Batch size to use during training
             random_state : int, RandomState instance or None
                 Seed of the pseudorandom generator or a RandomState instance
-            **kwargs
-                Keyword arguments for the algorithms
+            hidden_dense_layer__{kwarg}
+                Arguments to be passed to the Dense layers (or NormalizedDense
+                if batch_normalization is enabled). See the keras documentation
+                for those classes for available options.
 
             References
             ----------
                 [1] Leonardo Rigutini, Tiziano Papini, Marco Maggini, and Franco Scarselli. 2011. SortNet: Learning to Rank by a Neural Preference Function. IEEE Trans. Neural Networks 22, 9 (2011), 1368–1380. https://doi.org/10.1109/TNN.2011.2160875
 
         """
+        self._store_kwargs(
+            kwargs, {"optimizer__", "kernel_regularizer__", "hidden_dense_layer__"}
+        )
         super().__init__(
             n_hidden=n_hidden,
             n_units=n_units,
@@ -92,7 +97,6 @@ class CmpNetChoiceFunction(ChoiceFunctions, CmpNetCore):
             metrics=metrics,
             batch_size=batch_size,
             random_state=random_state,
-            **kwargs,
         )
         logger.info("Initializing network")
         self.threshold = 0.5

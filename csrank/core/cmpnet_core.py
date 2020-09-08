@@ -10,7 +10,6 @@ from keras.regularizers import l2
 import numpy as np
 from sklearn.utils import check_random_state
 
-from csrank.constants import allowed_dense_kwargs
 from csrank.layers import NormalizedDense
 from csrank.learner import Learner
 
@@ -47,14 +46,12 @@ class CmpNetCore(Learner):
 
         self.n_hidden = n_hidden
         self.n_units = n_units
-        keys = list(kwargs.keys())
-        for key in keys:
-            if key not in allowed_dense_kwargs:
-                del kwargs[key]
-        self.kwargs = kwargs
         self.random_state = random_state
+        self._store_kwargs(
+            kwargs, {"kernel_regularizer__", "optimizer__", "hidden_dense_layer__"}
+        )
 
-    def _construct_layers(self, **kwargs):
+    def _construct_layers(self):
 
         self.output_node = Dense(
             1, activation="sigmoid", kernel_regularizer=self.kernel_regularizer_
@@ -62,14 +59,22 @@ class CmpNetCore(Learner):
 
         self.x1 = Input(shape=(self.n_object_features_fit_,))
         self.x2 = Input(shape=(self.n_object_features_fit_,))
+        hidden_dense_kwargs = {
+            "kernel_regularizer": self.kernel_regularizer_,
+            "kernel_initializer": self.kernel_initializer,
+            "activation": self.activation,
+        }
+        hidden_dense_kwargs.update(self._get_prefix_attributes("hidden_dense_layer__"))
         if self.batch_normalization:
             self.hidden_layers = [
-                NormalizedDense(self.n_units, name="hidden_{}".format(x), **kwargs)
+                NormalizedDense(
+                    self.n_units, name="hidden_{}".format(x), **hidden_dense_kwargs
+                )
                 for x in range(self.n_hidden)
             ]
         else:
             self.hidden_layers = [
-                Dense(self.n_units, name="hidden_{}".format(x), **kwargs)
+                Dense(self.n_units, name="hidden_{}".format(x), **hidden_dense_kwargs)
                 for x in range(self.n_hidden)
             ]
         assert len(self.hidden_layers) == self.n_hidden
@@ -152,12 +157,7 @@ class CmpNetCore(Learner):
         x1, x2, y_double = self._convert_instances_(X, Y)
 
         logger.debug("Instances created {}".format(x1.shape[0]))
-        self._construct_layers(
-            kernel_regularizer=self.kernel_regularizer_,
-            kernel_initializer=self.kernel_initializer,
-            activation=self.activation,
-            **self.kwargs,
-        )
+        self._construct_layers()
         self.model_ = self.construct_model()
 
         logger.debug("Finished Creating the model, now fitting started")

@@ -76,8 +76,10 @@ class CmpNet(ObjectRanker, CmpNetCore):
                Batch size to use during training
            random_state : int, RandomState instance or None
                Seed of the pseudorandom generator or a RandomState instance
-           **kwargs
-               Keyword arguments for the algorithms
+           hidden_dense_layer__{kwarg}
+               Arguments to be passed to the Dense layers (or NormalizedDense
+               if batch_normalization is enabled). See the keras documentation
+               for those classes for available options.
 
 
            References

@@ -8,7 +8,6 @@ from keras.optimizers import SGD
 from keras.regularizers import l2
 from sklearn.utils import check_random_state
 
-from csrank.constants import allowed_dense_kwargs
 from csrank.layers import create_input_lambda
 from csrank.layers import NormalizedDense
 from csrank.learner import Learner
@@ -61,8 +60,8 @@ class ListNet(ObjectRanker, Learner):
                 Whether to use batch normalization in each hidden layer
             kernel_regularizer : uninitialized keras regularizer
                 Regularizer function applied to all the hidden weight matrices.
-+           kernel_regularizer__{kwarg}
-+               Arguments to be passed to the kernel regularizer on initialization, such as kernel_regularizer__l.
+            kernel_regularizer__{kwarg}
+                Arguments to be passed to the kernel regularizer on initialization, such as kernel_regularizer__l.
             activation : function or string
                 Type of activation function to use in each hidden layer
             kernel_initializer : function or string
@@ -78,8 +77,14 @@ class ListNet(ObjectRanker, Learner):
                 Batch size to use during training
             random_state : int, RandomState instance or None
                 Seed of the pseudorandom generator or a RandomState instance
-            **kwargs
-                Keyword arguments for the algorithms
+            hidden_dense_layer__{kwarg}
+                Arguments to be passed to the Dense layers (or NormalizedDense
+                if batch_normalization is enabled). See the keras documentation
+                for those classes for available options.
+            hidden_dense_layer__{kwarg}
+                Arguments to be passed to the Dense layers (or NormalizedDense
+                if batch_normalization is enabled). See the keras documentation
+                for those classes for available options.
 
             References
             ----------
@@ -95,29 +100,35 @@ class ListNet(ObjectRanker, Learner):
         self.optimizer = optimizer
         self.n_hidden = n_hidden
         self.n_units = n_units
-        keys = list(kwargs.keys())
-        for key in keys:
-            if key not in allowed_dense_kwargs:
-                del kwargs[key]
-        self.kwargs = kwargs
 
         self.batch_size = batch_size
         self.random_state = random_state
         self._scoring_model = None
+        self._store_kwargs(
+            kwargs, {"hidden_dense__", "optimizer__", "kernel_regularizer__"}
+        )
 
-    def _construct_layers(self, **kwargs):
+    def _construct_layers(self):
         self.input_layer = Input(shape=(self.n_top, self.n_object_features_fit_))
         self.output_node = Dense(
             1, activation="linear", kernel_regularizer=self.kernel_regularizer_
         )
+        hidden_dense_kwargs = {
+            "kernel_regularizer": self.kernel_regularizer_,
+            "kernel_initializer": self.kernel_initializer,
+            "activation": self.activation,
+        }
+        hidden_dense_kwargs.update(self._get_prefix_attributes("hidden_dense_layer__"))
         if self.batch_normalization:
             self.hidden_layers = [
-                NormalizedDense(self.n_units, name="hidden_{}".format(x), **kwargs)
+                NormalizedDense(
+                    self.n_units, name="hidden_{}".format(x), **hidden_dense_kwargs
+                )
                 for x in range(self.n_hidden)
             ]
         else:
             self.hidden_layers = [
-                Dense(self.n_units, name="hidden_{}".format(x), **kwargs)
+                Dense(self.n_units, name="hidden_{}".format(x), **hidden_dense_kwargs)
                 for x in range(self.n_hidden)
             ]
         assert len(self.hidden_layers) == self.n_hidden
@@ -166,12 +177,7 @@ class ListNet(ObjectRanker, Learner):
         _n_instances, _n_objects, self.n_object_features_fit_ = X.shape
         self._initialize_optimizer()
         self._initialize_regularizer()
-        self._construct_layers(
-            kernel_regularizer=self.kernel_regularizer_,
-            kernel_initializer=self.kernel_initializer,
-            activation=self.activation,
-            **self.kwargs,
-        )
+        self._construct_layers()
         logger.debug("Creating top-k dataset")
         X, Y = self._create_topk(X, Y)
         logger.debug("Finished creating the dataset")

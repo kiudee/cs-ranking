@@ -89,9 +89,14 @@ class FETADiscreteChoiceFunction(DiscreteObjectChooser, FETANetwork):
                 Batch size to use for training
             random_state : int or object
                 Numpy random state
-            **kwargs
-                Keyword arguments for the hidden units
+            hidden_dense_layer__{kwarg}
+                Arguments to be passed to the Dense layers (or NormalizedDense
+                if batch_normalization is enabled). See the keras documentation
+                for those classes for available options.
         """
+        self._store_kwargs(
+            kwargs, {"optimizer__", "kernel_regularizer__", "hidden_dense_layer__"}
+        )
         super().__init__(
             n_hidden=n_hidden,
             n_units=n_units,
@@ -107,35 +112,48 @@ class FETADiscreteChoiceFunction(DiscreteObjectChooser, FETANetwork):
             metrics=metrics,
             batch_size=batch_size,
             random_state=random_state,
-            **kwargs,
         )
 
-    def _construct_layers(self, **kwargs):
+    def _construct_layers(self):
         self.input_layer = Input(
             shape=(self.n_objects_fit_, self.n_object_features_fit_)
         )
         # Todo: Variable sized input
         # X = Input(shape=(None, n_features))
+        hidden_dense_kwargs = {
+            "kernel_regularizer": self.kernel_regularizer_,
+            "kernel_initializer": self.kernel_initializer,
+            "activation": self.activation,
+        }
+        hidden_dense_kwargs.update(self._get_prefix_attributes("hidden_dense_layer__"))
         if self.batch_normalization:
             if self.add_zeroth_order_model:
                 self.hidden_layers_zeroth = [
                     NormalizedDense(
-                        self.n_units, name="hidden_zeroth_{}".format(x), *kwargs
+                        self.n_units,
+                        name="hidden_zeroth_{}".format(x),
+                        **hidden_dense_kwargs,
                     )
                     for x in range(self.n_hidden)
                 ]
             self.hidden_layers = [
-                NormalizedDense(self.n_units, name="hidden_{}".format(x), **kwargs)
+                NormalizedDense(
+                    self.n_units, name="hidden_{}".format(x), **hidden_dense_kwargs
+                )
                 for x in range(self.n_hidden)
             ]
         else:
             if self.add_zeroth_order_model:
                 self.hidden_layers_zeroth = [
-                    Dense(self.n_units, name="hidden_zeroth_{}".format(x), **kwargs)
+                    Dense(
+                        self.n_units,
+                        name="hidden_zeroth_{}".format(x),
+                        **hidden_dense_kwargs,
+                    )
                     for x in range(self.n_hidden)
                 ]
             self.hidden_layers = [
-                Dense(self.n_units, name="hidden_{}".format(x), **kwargs)
+                Dense(self.n_units, name="hidden_{}".format(x), **hidden_dense_kwargs)
                 for x in range(self.n_hidden)
             ]
         assert len(self.hidden_layers) == self.n_hidden
