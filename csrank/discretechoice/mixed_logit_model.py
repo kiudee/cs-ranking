@@ -80,13 +80,7 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
                 f"Regularization function {regularization} is unknown. Must be one of {known_regularization_functions}"
             )
         self.regularization = regularization
-        self._config = None
         self.n_mixtures = n_mixtures
-        self.trace = None
-        self.trace_vi = None
-        self.Xt = None
-        self.Yt = None
-        self.p = None
 
     @property
     def model_configuration(self):
@@ -111,14 +105,14 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
                 \\text{sd}_w \\sim \\text{HalfCauchy}(\\beta=1.0) \\\\
                 \\text{weights} \\sim \\text{Normal}(\\text{mu}=\\text{mu}_w, \\text{sd}=\\text{sd}_w)
         """
-        if self._config is None:
+        if not hasattr(self, "config_"):
             if self.regularization == "l2":
                 weight = pm.Normal
                 prior = "sd"
             elif self.regularization == "l1":
                 weight = pm.Laplace
                 prior = "b"
-            self._config = {
+            self.config_ = {
                 "weights": [
                     weight,
                     {
@@ -128,9 +122,9 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
                 ]
             }
             logger.info(
-                "Creating model with config {}".format(print_dictionary(self._config))
+                "Creating model with config {}".format(print_dictionary(self.config_))
             )
-        return self._config
+        return self.config_
 
     def construct_model(self, X, Y):
         """
@@ -155,16 +149,18 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
             -------
              model : pymc3 Model :class:`pm.Model`
         """
+        self.trace_ = None
+        self.trace_vi = None
         self.loss_function_ = likelihood_dict.get(self.loss_function, None)
         with pm.Model() as self.model:
-            self.Xt = theano.shared(X)
-            self.Yt = theano.shared(Y)
+            self.Xt_ = theano.shared(X)
+            self.Yt_ = theano.shared(Y)
             shapes = {"weights": (self.n_object_features_fit_, self.n_mixtures)}
             weights_dict = create_weight_dictionary(self.model_configuration, shapes)
-            utility = tt.dot(self.Xt, weights_dict["weights"])
-            self.p = tt.mean(ttu.softmax(utility, axis=1), axis=2)
+            utility = tt.dot(self.Xt_, weights_dict["weights"])
+            self.p_ = tt.mean(ttu.softmax(utility, axis=1), axis=2)
             LogLikelihood(
-                "yl", loss_func=self.loss_function_, p=self.p, observed=self.Yt
+                "yl", loss_func=self.loss_function_, p=self.p_, observed=self.Yt_
             )
         logger.info("Model construction completed")
 
@@ -223,7 +219,7 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
         fit_pymc3_model(self, sampler, draws, tune, vi_params, **kwargs)
 
     def _predict_scores_fixed(self, X, **kwargs):
-        summary = dict(pm.summary(self.trace)["mean"])
+        summary = dict(pm.summary(self.trace_)["mean"])
         weights = np.zeros((self.n_object_features_fit_, self.n_mixtures))
         for i, k in product(range(self.n_object_features_fit_), range(self.n_mixtures)):
             weights[i][k] = summary["weights[{},{}]".format(i, k)]

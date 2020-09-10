@@ -103,7 +103,6 @@ class ListNet(ObjectRanker, Learner):
 
         self.batch_size = batch_size
         self.random_state = random_state
-        self._scoring_model = None
         self._store_kwargs(
             kwargs, {"hidden_dense__", "optimizer__", "kernel_regularizer__"}
         )
@@ -233,15 +232,15 @@ class ListNet(ObjectRanker, Learner):
             scoring_model: keras model :class:`Model`
                 scoring model used to predict utility score for each object
         """
-        if self._scoring_model is None:
+        if not hasattr(self, "scoring_model_"):
             logger.info("Creating scoring model")
             inp = Input(shape=(self.n_object_features_fit_,))
             x = inp
             for hidden_layer in self.hidden_layers:
                 x = hidden_layer(x)
             output_score = self.output_node(x)
-            self._scoring_model = Model(inputs=inp, outputs=output_score)
-        return self._scoring_model
+            self.scoring_model_ = Model(inputs=inp, outputs=output_score)
+        return self.scoring_model_
 
     def _predict_scores_fixed(self, X, **kwargs):
         n_inst, n_obj, n_feat = X.shape

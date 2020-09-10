@@ -65,14 +65,6 @@ class FETALinearCore(Learner):
         self.loss_function = loss_function
         self.epochs_drop = epochs_drop
         self.drop = drop
-        self.current_lr = None
-        self.weight1 = None
-        self.bias1 = None
-        self.weight2 = None
-        self.bias2 = None
-        self.w_out = None
-        self.optimizer = None
-        self.W_last = None
 
     def _construct_model_(self, n_objects):
         self.X = tf.placeholder(
@@ -98,7 +90,7 @@ class FETALinearCore(Learner):
         self.b2 = tf.Variable(
             self.random_state_.normal(loc=0, scale=std, size=1), dtype=tf.float32
         )
-        self.W_out = tf.Variable(
+        self.W_out_ = tf.Variable(
             self.random_state_.normal(loc=0, scale=std, size=2),
             dtype=tf.float32,
             name="W_out",
@@ -118,7 +110,7 @@ class FETALinearCore(Learner):
         outputs = tf.reduce_mean(outputs, axis=-1)
         outputs = tf.transpose(outputs)
         zero_outputs = tf.tensordot(self.X, self.W2, axes=1) + self.b2
-        scores = tf.sigmoid(self.W_out[0] * zero_outputs + self.W_out[1] * outputs)
+        scores = tf.sigmoid(self.W_out_[0] * zero_outputs + self.W_out_[1] * outputs)
         scores = tf.cast(scores, tf.float32)
         self.loss = self.loss_function(self.Y, scores)
         self.optimizer = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(
@@ -139,8 +131,8 @@ class FETALinearCore(Learner):
             The current epoch.
         """
         step = math.floor((1 + epoch) / self.epochs_drop)
-        self.current_lr = self.learning_rate * math.pow(self.drop, step)
-        self.optimizer = tf.train.GradientDescentOptimizer(self.current_lr).minimize(
+        self.current_lr_ = self.learning_rate * math.pow(self.drop, step)
+        self.optimizer = tf.train.GradientDescentOptimizer(self.current_lr_).minimize(
             self.loss
         )
 
@@ -178,11 +170,11 @@ class FETALinearCore(Learner):
                     epochs, training_cost.mean()
                 )
             )
-            self.weight1 = tf_session.run(self.W1)
-            self.bias1 = tf_session.run(self.b1)
-            self.weight2 = tf_session.run(self.W2)
-            self.bias2 = tf_session.run(self.b2)
-            self.W_last = tf_session.run(self.W_out)
+            self.weight1_ = tf_session.run(self.W1)
+            self.bias1_ = tf_session.run(self.b1)
+            self.weight2_ = tf_session.run(self.W2)
+            self.bias2_ = tf_session.run(self.b2)
+            self.W_last_ = tf_session.run(self.W_out_)
 
     def _fit_(self, X, Y, epochs, n_instances, tf_session, verbose):
         try:
@@ -228,12 +220,12 @@ class FETALinearCore(Learner):
             x2 = X[:, j]
             x1x2 = np.concatenate((x1, x2), axis=1)
             x2x1 = np.concatenate((x2, x1), axis=1)
-            n_g = np.dot(x1x2, self.weight1) + self.bias1
-            n_l = np.dot(x2x1, self.weight1) + self.bias1
+            n_g = np.dot(x1x2, self.weight1_) + self.bias1_
+            n_l = np.dot(x2x1, self.weight1_) + self.bias1_
             outputs[i].append(n_g)
             outputs[j].append(n_l)
         outputs = np.array(outputs)
         outputs = np.mean(outputs, axis=1).T
-        scores_zero = np.dot(X, self.weight2) + self.bias2
-        scores = sigmoid(self.W_last[0] * scores_zero + self.W_last[1] * outputs)
+        scores_zero = np.dot(X, self.weight2_) + self.bias2_
+        scores = sigmoid(self.W_last_[0] * scores_zero + self.W_last_[1] * outputs)
         return scores

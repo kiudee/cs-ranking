@@ -70,14 +70,12 @@ class FATENetworkCore(Learner):
         self.kernel_regularizer = kernel_regularizer
         self.batch_size = batch_size
         self.optimizer = optimizer
-        self.joint_layers = None
-        self.scorer = None
         self._initialize_optimizer()
         self._initialize_regularizer()
+        self._construct_layers()
         self._store_kwargs(
             kwargs, {"optimizer__", "kernel_regularizer__", "hidden_dense_layer__"}
         )
-        self._construct_layers()
 
     def _construct_layers(self):
         """
@@ -176,7 +174,6 @@ class FATENetwork(FATENetworkCore):
             kernel_initializer=self.kernel_initializer,
             kernel_regularizer=self.kernel_regularizer_,
         )
-        self.is_variadic = True
 
     def _create_set_layers(self, **kwargs):
         """
@@ -237,7 +234,7 @@ class FATENetwork(FATENetworkCore):
         return models
 
     def get_weights(self, n_objects=None):
-        if self.is_variadic:
+        if self.is_variadic_:
             if n_objects is not None:
                 weights = self.models_[n_objects].get_weights()
             else:
@@ -247,7 +244,7 @@ class FATENetwork(FATENetworkCore):
         return weights
 
     def set_weights(self, weights, n_objects=None):
-        if self.is_variadic:
+        if self.is_variadic_:
             if n_objects is not None:
                 self.models_[n_objects].set_weights(weights)
             else:
@@ -317,7 +314,7 @@ class FATENetwork(FATENetworkCore):
             if generator is not None:
                 logger.error("Variadic training does not support generators yet.")
                 raise NotImplementedError
-            self.is_variadic = True
+            self.is_variadic_ = True
             decay_rate = global_lr / epochs
             learning_rate = global_lr
             freq = self._bucket_frequencies(X, min_bucket_size=min_bucket_size)
@@ -371,7 +368,7 @@ class FATENetwork(FATENetworkCore):
                     )
                 learning_rate /= 1 + decay_rate * epoch
         else:
-            self.is_variadic = False
+            self.is_variadic_ = False
 
             if not hasattr(self, "model_") or refit:
                 if generator is not None:

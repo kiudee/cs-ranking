@@ -60,8 +60,6 @@ class PairwiseSVMChoiceFunction(ChoiceFunctions, PairwiseSVM):
             random_state=random_state,
             **kwargs,
         )
-        logger.info("Initializing network")
-        self.threshold = 0.5
 
     def _convert_instances_(self, X, Y):
         logger.debug("Creating the Dataset")
@@ -109,9 +107,9 @@ class PairwiseSVMChoiceFunction(ChoiceFunctions, PairwiseSVM):
                 logger.info(
                     "Fitting utility function finished. Start tuning threshold."
                 )
-                self.threshold = self._tune_threshold(
+                self.threshold_ = self._tune_threshold(
                     X_val, Y_val, thin_thresholds=thin_thresholds, verbose=verbose
                 )
         else:
             super().fit(X, Y, **kwd)
-            self.threshold = 0.5
+            self.threshold_ = 0.5

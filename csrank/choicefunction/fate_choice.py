@@ -96,7 +96,6 @@ class FATEChoiceFunction(ChoiceFunctions, FATENetwork):
             random_state=random_state,
             **kwargs,
         )
-        self.threshold = 0.5
 
     def _construct_layers(self):
         """
@@ -174,9 +173,9 @@ class FATEChoiceFunction(ChoiceFunctions, FATENetwork):
                 logger.info(
                     "Fitting utility function finished. Start tuning threshold."
                 )
-                self.threshold = self._tune_threshold(
+                self.threshold_ = self._tune_threshold(
                     X_val, Y_val, thin_thresholds=thin_thresholds, verbose=verbose
                 )
         else:
             super().fit(X, Y, **kwargs)
-            self.threshold = 0.5
+            self.threshold_ = 0.5

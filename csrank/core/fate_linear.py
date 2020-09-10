@@ -32,12 +32,6 @@ class FATELinearCore(Learner):
         self.loss_function = loss_function
         self.epochs_drop = epochs_drop
         self.drop = drop
-        self.current_lr = None
-        self.weight1 = None
-        self.bias1 = None
-        self.weight2 = None
-        self.bias2 = None
-        self.optimizer = None
 
     def _construct_model_(self, n_objects):
         self.X = tf.placeholder(
@@ -80,16 +74,16 @@ class FATELinearCore(Learner):
         self.X_con = tf.concat([self.X, self.set_rep], axis=-1)
         scores = tf.sigmoid(tf.tensordot(self.X_con, self.W2, axes=1) + self.b2)
         scores = tf.cast(scores, tf.float32)
-        self.loss = self.loss_function(self.Y, scores)
-        self.optimizer = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(
-            self.loss
-        )
+        self.loss_ = self.loss_function(self.Y, scores)
+        self.optimizer_ = tf.train.GradientDescentOptimizer(
+            self.learning_rate
+        ).minimize(self.loss_)
 
     def step_decay(self, epoch):
         step = math.floor((1 + epoch) / self.epochs_drop)
-        self.current_lr = self.learning_rate * math.pow(self.drop, step)
-        self.optimizer = tf.train.GradientDescentOptimizer(self.current_lr).minimize(
-            self.loss
+        self.current_lr_ = self.learning_rate * math.pow(self.drop, step)
+        self.optimizer_ = tf.train.GradientDescentOptimizer(self.current_lr_).minimize(
+            self.loss_
         )
 
     def fit(
@@ -104,16 +98,16 @@ class FATELinearCore(Learner):
         with tf.Session() as tf_session:
             tf_session.run(init)
             self._fit_(X, Y, epochs, n_instances, tf_session, verbose)
-            training_cost = tf_session.run(self.loss, feed_dict={self.X: X, self.Y: Y})
+            training_cost = tf_session.run(self.loss_, feed_dict={self.X: X, self.Y: Y})
             logger.info(
                 "Fitting completed {} epochs done with loss {}".format(
                     epochs, training_cost.mean()
                 )
             )
-            self.weight1 = tf_session.run(self.W1)
-            self.bias1 = tf_session.run(self.b1)
-            self.weight2 = tf_session.run(self.W2)
-            self.bias2 = tf_session.run(self.b2)
+            self.weight1_ = tf_session.run(self.W1)
+            self.bias1_ = tf_session.run(self.b1)
+            self.weight2_ = tf_session.run(self.W2)
+            self.bias2_ = tf_session.run(self.b2)
 
     def _fit_(self, X, Y, epochs, n_instances, tf_session, verbose):
         try:
@@ -121,29 +115,29 @@ class FATELinearCore(Learner):
                 for start in range(0, n_instances, self.batch_size):
                     end = np.min([start + self.batch_size, n_instances])
                     tf_session.run(
-                        self.optimizer,
+                        self.optimizer_,
                         feed_dict={self.X: X[start:end], self.Y: Y[start:end]},
                     )
                     if verbose == 1:
                         progress_bar(end, n_instances, status="Fitting")
                 if verbose == 1:
-                    c = tf_session.run(self.loss, feed_dict={self.X: X, self.Y: Y})
+                    c = tf_session.run(self.loss_, feed_dict={self.X: X, self.Y: Y})
                     print("Epoch {}: cost {} ".format((epoch + 1), np.mean(c)))
                 if (epoch + 1) % 100 == 0:
-                    c = tf_session.run(self.loss, feed_dict={self.X: X, self.Y: Y})
+                    c = tf_session.run(self.loss_, feed_dict={self.X: X, self.Y: Y})
                     logger.info("Epoch {}: cost {} ".format((epoch + 1), np.mean(c)))
                 self.step_decay(epoch)
         except KeyboardInterrupt:
             logger.info("Interrupted")
-            c = tf_session.run(self.loss, feed_dict={self.X: X, self.Y: Y})
+            c = tf_session.run(self.loss_, feed_dict={self.X: X, self.Y: Y})
             logger.info("Epoch {}: cost {} ".format((epoch + 1), np.mean(c)))
 
     def _predict_scores_fixed(self, X, **kwargs):
         n_instances, n_objects, n_features = X.shape
         assert n_features == self.n_object_features_fit_
-        rep = np.mean(np.dot(X, self.weight1), axis=1) + self.bias1
+        rep = np.mean(np.dot(X, self.weight1_), axis=1) + self.bias1_
         rep = np.tile(rep[:, np.newaxis, :], (1, n_objects, 1))
         X_n = np.concatenate((X, rep), axis=2)
-        scores = np.dot(X_n, self.weight2) + self.bias2
+        scores = np.dot(X_n, self.weight2_) + self.bias2_
         scores = sigmoid(scores)
         return scores

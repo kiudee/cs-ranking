@@ -41,10 +41,10 @@ class ChoiceFunctions(metaclass=ABCMeta):
         if isinstance(scores, dict):
             result = dict()
             for n, score in scores.items():
-                result[n] = score > self.threshold
+                result[n] = score > self.threshold_
                 result[n] = np.array(result[n], dtype=int)
         else:
-            result = scores > self.threshold
+            result = scores > self.threshold_
             result = np.array(result, dtype=int)
         return result
 

@@ -71,7 +71,6 @@ class ExpectedRankRegression(ObjectRanker, Learner):
         self.tol = tol
         self.fit_intercept = fit_intercept
         self.random_state = random_state
-        self.weights = None
 
     def fit(self, X, Y, **kwargs):
         """
@@ -120,9 +119,9 @@ class ExpectedRankRegression(ObjectRanker, Learner):
                 logger.info("Ridge")
         logger.debug("Finished Creating the model, now fitting started")
         self.model_.fit(x_train, y_train)
-        self.weights = self.model_.coef_.flatten()
+        self.weights_ = self.model_.coef_.flatten()
         if self.fit_intercept:
-            self.weights = np.append(self.weights, self.model_.intercept_)
+            self.weights_ = np.append(self.weights_, self.model_.intercept_)
         logger.debug("Fitting Complete")
 
     def _predict_scores_fixed(self, X, **kwargs):
