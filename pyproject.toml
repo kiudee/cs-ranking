@@ -53,9 +53,11 @@ pytest-cov = "^2.10.1"
 nbsphinx = "^0.7.1"
 IPython = "^7.18.1"
 
-[tool.poetry.extras]
-data = ["psycopg2-binary", "pandas", "h5py", "pygmo"]
-probabilistic = ["pymc3", "theano"]
+# [tool.poetry.extras]
+# These are temporarily made mandatory due to an issue in our optional imports.
+# See https://github.com/kiudee/cs-ranking/issues/137.
+# data = ["psycopg2-binary", "pandas", "h5py", "pygmo"]
+# probabilistic = ["pymc3", "theano"]
 
 [build-system]
 requires = ["poetry>=0.12"]
