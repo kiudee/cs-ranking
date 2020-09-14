@@ -63,21 +63,14 @@ __ https://help.github.com/en/github/getting-started-with-github/fork-a-repo
 
        $ git clone git@github.com:your_github_username_here/cs-ranking.git
 
-3. Optionally set up a virtual environment for development.
-   Assuming you have `virtualenvwrapper`__ installed:
-
-__ https://virtualenvwrapper.readthedocs.io/en/latest/
+3. Install your local copy using `poetry`_. This is how you set up your fork
+   for local development::
 
    .. code-block:: bash
 
-       $ mkvirtualenv cs-ranking
+       $ cd cs-ranking
+       $ poetry install
 
-3. Install the required dependencies (including optional dependencies):
-
-   .. code-block:: bash
-
-       $ cd cs-ranking/
-       $ pip install -r requirements-dev.txt
 
 4. Set up `pre-commit`__ for this repository, which was installed in the
    previous step. This will make sure that the changes you make adhere to our
@@ -87,25 +80,17 @@ __ https://pre-commit.com/
 
    .. code-block:: bash
 
-       $ pre-commit install
+       $ poetry run pre-commit install
 
    You can run all pre-commit hooks on all files using
 
    .. code-block:: bash
 
-       $ pre-commit run --all-files
+       $ poetry run pre-commit run --all-files
 
    The hooks will be run automatically when you run `git commit`.
 
-5. Install cs-ranking `for local development`__:
-
-__ https://stackoverflow.com/questions/19048732/python-setup-py-develop-vs-install
-
-   .. code-block:: bash
-
-       $ python setup.py develop
-
-6. Create a branch for your modifications:
+5. Create a branch for your modifications:
 
    .. code-block:: bash
 
@@ -113,16 +98,16 @@ __ https://stackoverflow.com/questions/19048732/python-setup-py-develop-vs-insta
 
    Now you can make your changes locally.
 
-7. When you're done making changes, check that the test suite still passes:
+6. When you're done making changes, check that the test suite still passes:
 
    .. code-block:: bash
 
-       $ pytest
+       $ poetry run pytest
 
    Fetch some coffee.
    This might take several minutes.
 
-8. Commit your changes and push your branch to GitHub:
+7. Commit your changes and push your branch to GitHub:
 
    .. code-block:: bash
 
@@ -149,7 +134,7 @@ __ https://stackoverflow.com/questions/19048732/python-setup-py-develop-vs-insta
 
 __ https://chris.beams.io/posts/git-commit/
 
-9. Submit__ a pull request through the GitHub website.
+8. Submit__ a pull request through the GitHub website.
    Keep the guidelines in the next section in mind.
 
 __ https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request
@@ -193,7 +178,7 @@ To run a subset of tests:
 
 .. code-block:: bash
 
-    $ pytest <path-to-file>
+    $ poetry run pytest <path-to-file>
 
 Help Wanted
 ~~~~~~~~~~~
@@ -226,3 +211,6 @@ Then run
     $ git push --tags
 
 The new version will automatically be released on PyPi.
+
+
+.. _poetry: https://python-poetry.org/
