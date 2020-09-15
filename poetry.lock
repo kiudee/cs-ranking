@@ -26,7 +26,7 @@ python-versions = "*"
 version = "1.4.4"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Disable App Nap on OS X 10.9"
 marker = "sys_platform == \"darwin\""
 name = "appnope"
@@ -113,7 +113,7 @@ version = "2.8.0"
 pytz = ">=2015.7"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Specifications for callback functions passed in to an API"
 name = "backcall"
 optional = false
@@ -246,7 +246,7 @@ version = "0.10.0"
 six = "*"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Decorators for Humans"
 name = "decorator"
 optional = false
@@ -454,7 +454,7 @@ python-versions = "*"
 version = "1.0.1"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "IPython: Productive Interactive Computing"
 name = "ipython"
 optional = false
@@ -494,7 +494,7 @@ python-versions = "*"
 version = "0.2.0"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "An autocompletion tool for Python that can be used for text editors."
 name = "jedi"
 optional = false
@@ -935,7 +935,7 @@ python-versions = "*"
 version = "1.4.2"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "A Python Parser"
 name = "parso"
 optional = false
@@ -982,7 +982,7 @@ python-versions = ">=2.6"
 version = "5.5.0"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Pexpect allows easy control of interactive console applications."
 marker = "sys_platform != \"win32\""
 name = "pexpect"
@@ -994,7 +994,7 @@ version = "4.8.0"
 ptyprocess = ">=0.5"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Tiny 'shelve'-like database with concurrency support"
 name = "pickleshare"
 optional = false
@@ -1054,7 +1054,7 @@ python = "<3.8"
 version = "*"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Library for building powerful interactive command lines in Python"
 name = "prompt-toolkit"
 optional = false
@@ -1085,7 +1085,7 @@ python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*"
 version = "2.8.6"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Run a subprocess in a pseudo terminal"
 marker = "sys_platform != \"win32\""
 name = "ptyprocess"
@@ -1793,7 +1793,7 @@ pathtools = ">=0.1.1"
 watchmedo = ["PyYAML (>=3.10)", "argh (>=0.24.1)"]
 
 [[package]]
-category = "dev"
+category = "main"
 description = "Measures the displayed width of unicode strings in a terminal"
 name = "wcwidth"
 optional = false
@@ -1879,10 +1879,10 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [extras]
-docs = ["Sphinx", "sphinx_rtd_theme", "sphinxcontrib-bibtex"]
+docs = ["Sphinx", "sphinx_rtd_theme", "sphinxcontrib-bibtex", "nbsphinx"]
 
 [metadata]
-content-hash = "f7da359bfe5498bdb725bac25e04319abc6064693d61c5695f211ab169b86f08"
+content-hash = "80bc9b7d9bafdf1ced072c843e2c673813c58fd034df98087d8284e950cd967c"
 lock-version = "1.0"
 python-versions = "^3.7"
 
