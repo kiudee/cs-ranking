@@ -35,6 +35,10 @@ h5py = "^2.7"
 pygmo = "^2.7"
 pymc3 = "^3.8"
 theano = "^1.0"
+Sphinx = {version = "^3.2.1", optional = true}
+sphinx_rtd_theme = {version = "^0.5.0", optional = true}
+sphinxcontrib-bibtex = {version = "^1.0.0", optional = true}
+nbsphinx = {version = "^0.7.1", optional = true}
 
 [tool.poetry.dev-dependencies]
 pre-commit = "^2.7.1"
@@ -53,11 +57,13 @@ pytest-cov = "^2.10.1"
 nbsphinx = "^0.7.1"
 IPython = "^7.18.1"
 
-# [tool.poetry.extras]
+[tool.poetry.extras]
 # These are temporarily made mandatory due to an issue in our optional imports.
 # See https://github.com/kiudee/cs-ranking/issues/137.
 # data = ["psycopg2-binary", "pandas", "h5py", "pygmo"]
 # probabilistic = ["pymc3", "theano"]
+# https://readthedocs.org/ needs these to build our documentation:
+docs = ["Sphinx", "sphinx_rtd_theme", "sphinxcontrib-bibtex", "nbsphinx"]
 
 [build-system]
 requires = ["poetry>=0.12"]
