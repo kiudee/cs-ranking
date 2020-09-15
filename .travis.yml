@@ -4,48 +4,52 @@ python:
 
 cache:
   directories:
-    - $HOME/miniconda3
     - $HOME/.cache/pre-commit
 
 addons:
-  apt_packages:
-    - pandoc
+  apt:
+    packages:
+      - pandoc
 
-before_install:
-  - . ./scripts/install_miniconda.sh
+install: pip install -U poetry tox-travis codecov coverage travis-sphinx
+script: tox
+after_success: coverage combine && codecov
 
-install:
-  - PYTHON_VERSION=3.7
-  - . ./scripts/create_testenv.sh
-  - pip install codecov
-  - conda install --yes sphinx ipython
-  - pip install -I git+https://github.com/Syntaf/travis-sphinx.git
-  - pip install nbsphinx sphinx_rtd_theme
+stages:
+  - test
+  - docs
+  - name: deploy
 
-env:
-  - TESTCMD="--cov-append csrank/tests/test_choice_functions.py"
-  - TESTCMD="--cov-append csrank/tests/test_discrete_choice.py"
-  - TESTCMD="--cov-append csrank/tests/test_ranking.py"
-  - TESTCMD="--cov-append csrank/tests/test_fate.py csrank/tests/test_losses.py csrank/tests/test_metrics.py csrank/tests/test_util.py csrank/tests/test_callbacks.py"
+jobs:
+  fast_finish: true
+  include:
+    - python: 3.7
+      env: TOXENV=test1
+    - python: 3.7
+      env: TOXENV=test2
+    - python: 3.7
+      env: TOXENV=test3
+    - python: 3.7
+      env: TOXENV=test4
+    - python: 3.7
+      env: TOXENV=lint
+    - stage: docs
+      python: 3.7
+      env: TOXENV=docs
 
-script:
-  - pre-commit run --all-files # https://pre-commit.com/#usage-in-continuous-integration
-  - pytest -v --cov=csrank --ignore experiments $TESTCMD
-  - travis-sphinx --outdir docs/_build build -n --source=docs
-
-after_success:
-  - codecov
+before_deploy:
+  - pip install --upgrade pip
+  - pip install poetry
+  - poetry config pypi-token.pypi $PYPI_PASSWORD
 
 deploy:
-  - provider: pypi
-    distributions: sdist bdist_wheel
-    user: __token__
-    password:
-      secure: INa6/h17ejVh3vxAGc4V7uLY30tJON2n/PWV3y0x0DnAR+pH5LiR3ZIE8/CNu1NpH+R7I1u2m0PHLYh5H8XpuewHaToer4p41jIiGF6WXnUg6PQN7zuBk9tqgmJElr+aYp/oK/B6VHTfFwEk2QlXmcqVofpKQNWrzm6+EMWXJjSs3Z9XyGIJvzJ2ihaHvr4URlNfjX98Ij0uIzzEBzN7RSJISQQo672F0b+JvgR3nQYfa5Sp4ijBnEuTtU2BYiXcojaT283O49DL0LGQHApIu0Blf79FXA2QJET65ujIQDxKBZ+WhPEHupwIiBsJ1JLl5C0wBj0UAXyogypXhm9tXfOwB12MLsbT8pbH7YMY4vS8lKtXltWTw66JbruNxECCcvHMw6SnCX0D1H40LKCvQLLJ4L2IOkVcpLI702Tlf13OF4kic+OGfSBv0nRDTLzyvMU5NACoMLnBipbpN4qXKeJdoHWOKECiRYFqZLacxPSGXx/RteiEpi25Ghgk2x53Y6pNCpzW118qW/Ij2LvPffB9PT/BPe0MIjveDLJ3PI93xevDljyZHE8v7JGOPo4gX3YA4hYwMB6gZtO+bdIemGQIP5ymrIpKqSDw/CpFLUCUVzL8sOu5AE3pbDFUGdn5njSex7Leafs+px7IH6dLE2MQqCU1o9Qr4V4FTuxta60=
-    skip_existing: true
+  - provider: script
+    script: poetry publish -v --build
     on:
       tags: true
+      python: 3.7
       repo: kiudee/cs-ranking
+      branch: master
   - provider: pages
     skip_cleanup: true
     github_token: $GH_TOKEN
