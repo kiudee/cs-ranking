@@ -41,7 +41,6 @@ class RankNetCore(Learner):
         self.n_hidden = n_hidden
         self.n_units = n_units
         self.batch_size = batch_size
-        self._scoring_model = None
         self.random_state = random_state
         self._store_kwargs(
             kwargs, {"optimizer__", "kernel_regularizer__", "hidden_dense_layer__"}
@@ -177,15 +176,15 @@ class RankNetCore(Learner):
              model: keras :class:`Model`
                 Neural network to learn the non-linear utility score
         """
-        if self._scoring_model is None:
+        if not hasattr(self, "scoring_model_"):
             logger.info("creating scoring model")
             inp = Input(shape=(self.n_object_features_fit_,))
             x = inp
             for hidden_layer in self.hidden_layers:
                 x = hidden_layer(x)
             output_score = self.output_node(x)
-            self._scoring_model = Model(inputs=[inp], outputs=output_score)
-        return self._scoring_model
+            self.scoring_model_ = Model(inputs=[inp], outputs=output_score)
+        return self.scoring_model_
 
     def _predict_scores_fixed(self, X, **kwargs):
         n_instances, n_objects, n_features = X.shape

@@ -117,18 +117,18 @@ def fit_pymc3_model(self, sampler, draws, tune, vi_params, **kwargs):
     if sampler == "variational":
         with self.model:
             try:
-                self.trace = pm.sample(chains=2, cores=8, tune=5, draws=5)
-                vi_params["start"] = self.trace[-1]
-                self.trace_vi = pm.fit(**vi_params)
-                self.trace = self.trace_vi.sample(draws=draws)
+                self.trace_ = pm.sample(chains=2, cores=8, tune=5, draws=5)
+                vi_params["start"] = self.trace_[-1]
+                self.trace_vi_ = pm.fit(**vi_params)
+                self.trace_ = self.trace_vi_.sample(draws=draws)
             except Exception as e:
                 if hasattr(e, "message"):
                     message = e.message
                 else:
                     message = e
                 logger.error(message)
-                self.trace_vi = None
-        if self.trace_vi is None and self.trace is None:
+                self.trace_vi_ = None
+        if self.trace_vi_ is None and self.trace_ is None:
             with self.model:
                 logger.info(
                     "Error in vi ADVI sampler using Metropolis sampler with draws {}".format(
@@ -141,7 +141,7 @@ def fit_pymc3_model(self, sampler, draws, tune, vi_params, **kwargs):
     elif sampler == "metropolis":
         with self.model:
             start = pm.find_MAP()
-            self.trace = pm.sample(
+            self.trace_ = pm.sample(
                 chains=2,
                 cores=8,
                 tune=tune,
@@ -152,6 +152,6 @@ def fit_pymc3_model(self, sampler, draws, tune, vi_params, **kwargs):
             )
     else:
         with self.model:
-            self.trace = pm.sample(
+            self.trace_ = pm.sample(
                 chains=2, cores=8, tune=tune, draws=draws, **kwargs, step=pm.NUTS()
             )

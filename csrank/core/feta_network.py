@@ -54,8 +54,6 @@ class FETANetwork(Learner):
         self.add_zeroth_order_model = add_zeroth_order_model
         self.n_hidden = n_hidden
         self.n_units = n_units
-        self._pairwise_model = None
-        self._zero_order_model = None
         self._store_kwargs(
             kwargs, {"optimizer__", "kernel_regularizer__", "hidden_dense_layer__"}
         )
@@ -120,22 +118,25 @@ class FETANetwork(Learner):
 
     @property
     def zero_order_model(self):
-        if self._zero_order_model is None and self.add_zeroth_order_model:
-            logger.info("Creating zeroth model")
-            inp = Input(shape=(self.n_object_features_fit_,))
+        if not hasattr(self, "zero_order_model_"):
+            if self.add_zeroth_order_model:
+                logger.info("Creating zeroth model")
+                inp = Input(shape=(self.n_object_features_fit_,))
 
-            x = inp
-            for hidden in self.hidden_layers_zeroth:
-                x = hidden(x)
-            zeroth_output = self.output_node_zeroth(x)
+                x = inp
+                for hidden in self.hidden_layers_zeroth:
+                    x = hidden(x)
+                zeroth_output = self.output_node_zeroth(x)
 
-            self._zero_order_model = Model(inputs=[inp], outputs=zeroth_output)
-            logger.info("Done creating zeroth model")
-        return self._zero_order_model
+                self.zero_order_model_ = Model(inputs=[inp], outputs=zeroth_output)
+                logger.info("Done creating zeroth model")
+            else:
+                self.zero_order_model_ = None
+        return self.zero_order_model_
 
     @property
     def pairwise_model(self):
-        if self._pairwise_model is None:
+        if not hasattr(self, "pairwise_model_"):
             logger.info("Creating pairwise model")
             x1 = Input(shape=(self.n_object_features_fit_,))
             x2 = Input(shape=(self.n_object_features_fit_,))
@@ -154,9 +155,9 @@ class FETANetwork(Learner):
             n_l = self.output_node(merged_right)
 
             merged_output = concatenate([n_g, n_l])
-            self._pairwise_model = Model(inputs=[x1, x2], outputs=merged_output)
+            self.pairwise_model_ = Model(inputs=[x1, x2], outputs=merged_output)
             logger.info("Done creating pairwise model")
-        return self._pairwise_model
+        return self.pairwise_model_
 
     def _predict_pair(self, a, b, only_pairwise=False, **kwargs):
         # TODO: Is this working correctly?

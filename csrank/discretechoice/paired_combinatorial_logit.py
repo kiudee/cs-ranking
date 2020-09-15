@@ -99,12 +99,6 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
                 f"Regularization function {regularization} is unknown. Must be one of {known_regularization_functions}"
             )
         self.regularization = regularization
-        self._config = None
-        self.trace = None
-        self.trace_vi = None
-        self.Xt = None
-        self.Yt = None
-        self.p = None
 
     @property
     def model_configuration(self):
@@ -134,14 +128,14 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
                 configuration : dict
                     Dictionary containing the priors applies on the weights
         """
-        if self._config is None:
+        if not hasattr(self, "config_"):
             if self.regularization == "l2":
                 weight = pm.Normal
                 prior = "sd"
             elif self.regularization == "l1":
                 weight = pm.Laplace
                 prior = "b"
-            self._config = {
+            self.config_ = {
                 "weights": [
                     weight,
                     {
@@ -151,9 +145,9 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
                 ]
             }
             logger.info(
-                "Creating model with config {}".format(print_dictionary(self._config))
+                "Creating model with config {}".format(print_dictionary(self.config_))
             )
-        return self._config
+        return self.config_
 
     #
 
@@ -260,17 +254,19 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
             -------
              model : pymc3 Model :class:`pm.Model`
         """
+        self.trace_ = None
+        self.trace_vi_ = None
         self.loss_function_ = likelihood_dict.get(self.loss_function, None)
         with pm.Model() as self.model:
-            self.Xt = theano.shared(X)
-            self.Yt = theano.shared(Y)
+            self.Xt_ = theano.shared(X)
+            self.Yt_ = theano.shared(Y)
             shapes = {"weights": self.n_object_features_fit_}
             weights_dict = create_weight_dictionary(self.model_configuration, shapes)
             lambda_k = pm.Uniform("lambda_k", self.alpha, 1.0, shape=self.n_nests)
-            utility = tt.dot(self.Xt, weights_dict["weights"])
-            self.p = self.get_probabilities(utility, lambda_k)
+            utility = tt.dot(self.Xt_, weights_dict["weights"])
+            self.p_ = self.get_probabilities(utility, lambda_k)
             LogLikelihood(
-                "yl", loss_func=self.loss_function_, p=self.p, observed=self.Yt
+                "yl", loss_func=self.loss_function_, p=self.p_, observed=self.Yt_
             )
         logger.info("Model construction completed")
 
@@ -334,7 +330,7 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
         fit_pymc3_model(self, sampler, draws, tune, vi_params, **kwargs)
 
     def _predict_scores_fixed(self, X, **kwargs):
-        mean_trace = dict(pm.summary(self.trace)["mean"])
+        mean_trace = dict(pm.summary(self.trace_)["mean"])
         weights = np.array(
             [
                 mean_trace["weights[{}]".format(i)]

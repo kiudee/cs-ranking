@@ -72,12 +72,6 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
                 f"Regularization function {regularization} is unknown. Must be one of {known_regularization_functions}"
             )
         self.regularization = regularization
-        self._config = None
-        self.trace = None
-        self.trace_vi = None
-        self.Xt = None
-        self.Yt = None
-        self.p = None
 
     @property
     def model_configuration(self):
@@ -102,14 +96,14 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
                 \\text{sd}_w \\sim \\text{HalfCauchy}(\\beta=1.0) \\\\
                 \\text{weights} \\sim \\text{Normal}(\\text{mu}=\\text{mu}_w, \\text{sd}=\\text{sd}_w)
         """
-        if self._config is None:
+        if not hasattr(self, "config_"):
             if self.regularization == "l2":
                 weight = pm.Normal
                 prior = "sd"
             elif self.regularization == "l1":
                 weight = pm.Laplace
                 prior = "b"
-            self._config = {
+            self.config_ = {
                 "weights": [
                     weight,
                     {
@@ -119,9 +113,9 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
                 ]
             }
             logger.info(
-                "Creating model with config {}".format(print_dictionary(self._config))
+                "Creating model with config {}".format(print_dictionary(self.config_))
             )
-        return self._config
+        return self.config_
 
     def construct_model(self, X, Y):
         """
@@ -146,6 +140,8 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
             -------
              model : pymc3 Model :class:`pm.Model`
         """
+        self.trace_ = None
+        self.trace_vi_ = None
         logger.info(
             "Creating model_args config {}".format(
                 print_dictionary(self.model_configuration)
@@ -153,17 +149,17 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
         )
         self.loss_function_ = likelihood_dict.get(self.loss_function, None)
         with pm.Model() as self.model:
-            self.Xt = theano.shared(X)
-            self.Yt = theano.shared(Y)
+            self.Xt_ = theano.shared(X)
+            self.Yt_ = theano.shared(Y)
             shapes = {"weights": self.n_object_features_fit_}
             # shapes = {'weights': (self.n_object_features_fit_, 3)}
             weights_dict = create_weight_dictionary(self.model_configuration, shapes)
             intercept = pm.Normal("intercept", mu=0, sd=10)
-            utility = tt.dot(self.Xt, weights_dict["weights"]) + intercept
-            self.p = ttu.softmax(utility, axis=1)
+            utility = tt.dot(self.Xt_, weights_dict["weights"]) + intercept
+            self.p_ = ttu.softmax(utility, axis=1)
 
             LogLikelihood(
-                "yl", loss_func=self.loss_function_, p=self.p, observed=self.Yt
+                "yl", loss_func=self.loss_function_, p=self.p_, observed=self.Yt_
             )
         logger.info("Model construction completed")
 
@@ -222,7 +218,7 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
         fit_pymc3_model(self, sampler, draws, tune, vi_params, **kwargs)
 
     def _predict_scores_fixed(self, X, **kwargs):
-        d = dict(pm.summary(self.trace)["mean"])
+        d = dict(pm.summary(self.trace_)["mean"])
         intercept = 0.0
         weights = np.array(
             [d["weights[{}]".format(i)] for i in range(self.n_object_features_fit_)]

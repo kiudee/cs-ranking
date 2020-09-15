@@ -115,7 +115,6 @@ class FETAChoiceFunction(ChoiceFunctions, FETANetwork):
             batch_size=batch_size,
             random_state=random_state,
         )
-        self.threshold = 0.5
 
     def _construct_layers(self):
         self.input_layer = Input(
@@ -305,12 +304,12 @@ class FETAChoiceFunction(ChoiceFunctions, FETANetwork):
                 logger.info(
                     "Fitting utility function finished. Start tuning threshold."
                 )
-                self.threshold = self._tune_threshold(
+                self.threshold_ = self._tune_threshold(
                     X_val, Y_val, thin_thresholds=thin_thresholds, verbose=verbose
                 )
         else:
             super().fit(X, Y, epochs, callbacks, validation_split, verbose, **kwd)
-            self.threshold = 0.5
+            self.threshold_ = 0.5
 
     def sub_sampling(self, X, Y):
         if self.n_objects_fit_ <= self.max_number_of_objects:

@@ -99,16 +99,6 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
                 f"Regularization function {regularization} is unknown. Must be one of {known_regularization_functions}"
             )
         self.regularization = regularization
-        self._config = None
-        self.cluster_model = None
-        self.features_nests = None
-        self.trace = None
-        self.trace_vi = None
-        self.Xt = None
-        self.Yt = None
-        self.p = None
-        self.y_nests = None
-        self.threshold = 5e6
 
     @property
     def model_configuration(self):
@@ -140,14 +130,14 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
                 configuration : dict
                     Dictionary containing the priors applies on the weights
         """
-        if self._config is None:
+        if not hasattr(self, "config_"):
             if self.regularization == "l2":
                 weight = pm.Normal
                 prior = "sd"
             elif self.regularization == "l1":
                 weight = pm.Laplace
                 prior = "b"
-            self._config = {
+            self.config_ = {
                 "weights": [
                     weight,
                     {
@@ -164,9 +154,9 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
                 ],
             }
             logger.info(
-                "Creating model with config {}".format(print_dictionary(self._config))
+                "Creating model with config {}".format(print_dictionary(self.config_))
             )
-        return self._config
+        return self.config_
 
     def create_nests(self, X):
         """
@@ -188,14 +178,14 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         self.random_state_ = self.random_state_
         n, n_obj, n_dim = X.shape
         objects = X.reshape(n * n_obj, n_dim)
-        if self.cluster_model is None:
-            self.cluster_model = MiniBatchKMeans(
+        if not hasattr(self, "cluster_model_"):
+            self.cluster_model_ = MiniBatchKMeans(
                 n_clusters=self.n_nests, random_state=self.random_state_
             ).fit(objects)
-            self.features_nests = self.cluster_model.cluster_centers_
-            prediction = self.cluster_model.labels_
+            self.features_nests_ = self.cluster_model_.cluster_centers_
+            prediction = self.cluster_model_.labels_
         else:
-            prediction = self.cluster_model.predict(objects)
+            prediction = self.cluster_model_.predict(objects)
         Yn = []
         for i in np.arange(0, n * n_obj, step=n_obj):
             nest_ids = prediction[i : i + n_obj]
@@ -204,11 +194,11 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         return Yn
 
     def _eval_utility(self, weights):
-        utility = tt.zeros(tuple(self.y_nests.shape))
+        utility = tt.zeros(tuple(self.y_nests_.shape))
         for i in range(self.n_nests):
-            rows, cols = tt.eq(self.y_nests, i).nonzero()
+            rows, cols = tt.eq(self.y_nests_, i).nonzero()
             utility = tt.set_subtensor(
-                utility[rows, cols], tt.dot(self.Xt[rows, cols], weights[i])
+                utility[rows, cols], tt.dot(self.Xt_[rows, cols], weights[i])
             )
         return utility
 
@@ -246,14 +236,14 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
                 Choice probabilities :math:`P_i` of the objects :math:`x_i \\in Q` in the query sets
 
         """
-        n_instances, n_objects = self.y_nests.shape
+        n_instances, n_objects = self.y_nests_.shape
         pni_k = tt.zeros((n_instances, n_objects))
         ivm = tt.zeros((n_instances, self.n_nests))
         for i in range(self.n_nests):
-            rows, cols = tt.neq(self.y_nests, i).nonzero()
+            rows, cols = tt.neq(self.y_nests_, i).nonzero()
             sub_tensor = tt.set_subtensor(utility[rows, cols], -1e50)
             ink = ttu.logsumexp(sub_tensor)
-            rows, cols = tt.eq(self.y_nests, i).nonzero()
+            rows, cols = tt.eq(self.y_nests_, i).nonzero()
             pni_k = tt.set_subtensor(
                 pni_k[rows, cols], tt.exp(sub_tensor - ink)[rows, cols]
             )
@@ -261,7 +251,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         pk = tt.exp(ivm - ttu.logsumexp(ivm))
         pn_k = tt.zeros((n_instances, n_objects))
         for i in range(self.n_nests):
-            rows, cols = tt.eq(self.y_nests, i).nonzero()
+            rows, cols = tt.eq(self.y_nests_, i).nonzero()
             p = tt.ones((n_instances, n_objects)) * pk[:, i][:, None]
             pn_k = tt.set_subtensor(pn_k[rows, cols], p[rows, cols])
         p = pni_k * pn_k
@@ -314,17 +304,20 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
              model : pymc3 Model :class:`pm.Model`
         """
         self.loss_function_ = likelihood_dict.get(self.loss_function, None)
-        if np.prod(X.shape) > self.threshold:
-            upper_bound = int(self.threshold / np.prod(X.shape[1:]))
+        self.threshold_ = 5e6
+        self.trace_ = None
+        self.trace_vi_ = None
+        if np.prod(X.shape) > self.threshold_:
+            upper_bound = int(self.threshold_ / np.prod(X.shape[1:]))
             indices = self.random_state_.choice(X.shape[0], upper_bound, replace=False)
             X = X[indices, :, :]
             Y = Y[indices, :]
         logger.info("Train Set instances {} objects {} features {}".format(*X.shape))
         y_nests = self.create_nests(X)
         with pm.Model() as self.model:
-            self.Xt = theano.shared(X)
-            self.Yt = theano.shared(Y)
-            self.y_nests = theano.shared(y_nests)
+            self.Xt_ = theano.shared(X)
+            self.Yt_ = theano.shared(Y)
+            self.y_nests_ = theano.shared(y_nests)
             shapes = {
                 "weights": self.n_object_features_fit_,
                 "weights_k": self.n_object_features_fit_,
@@ -334,11 +327,11 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
             lambda_k = pm.Uniform("lambda_k", self.alpha, 1.0, shape=self.n_nests)
             weights = weights_dict["weights"] / lambda_k[:, None]
             utility = self._eval_utility(weights)
-            utility_k = tt.dot(self.features_nests, weights_dict["weights_k"])
-            self.p = self.get_probabilities(utility, lambda_k, utility_k)
+            utility_k = tt.dot(self.features_nests_, weights_dict["weights_k"])
+            self.p_ = self.get_probabilities(utility, lambda_k, utility_k)
 
             LogLikelihood(
-                "yl", loss_func=self.loss_function_, p=self.p, observed=self.Yt
+                "yl", loss_func=self.loss_function_, p=self.p_, observed=self.Yt_
             )
         logger.info("Model construction completed")
 
@@ -401,7 +394,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
 
     def _predict_scores_fixed(self, X, **kwargs):
         y_nests = self.create_nests(X)
-        mean_trace = dict(pm.summary(self.trace)["mean"])
+        mean_trace = dict(pm.summary(self.trace_)["mean"])
         weights = np.array(
             [
                 mean_trace["weights[{}]".format(i)]
@@ -418,7 +411,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
             [mean_trace["lambda_k[{}]".format(i)] for i in range(self.n_nests)]
         )
         weights = weights / lambda_k[:, None]
-        utility_k = np.dot(self.features_nests, weights_k)
+        utility_k = np.dot(self.features_nests_, weights_k)
         utility = self._eval_utility_np(X, y_nests, weights)
         scores = self._get_probabilities_np(y_nests, utility, lambda_k, utility_k)
         return scores

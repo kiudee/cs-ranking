@@ -72,12 +72,6 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
             )
         self.regularization = regularization
         self.random_state = random_state
-        self.trace = None
-        self.trace_vi = None
-        self.Xt = None
-        self.Yt = None
-        self.p = None
-        self.threshold = 0.5
 
     @property
     def model_configuration(self):
@@ -150,16 +144,18 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
                 print_dictionary(self.model_configuration)
             )
         )
+        self.trace_ = None
+        self.trace_vi_ = None
         with pm.Model() as self.model:
-            self.Xt = theano.shared(X)
-            self.Yt = theano.shared(Y)
+            self.Xt_ = theano.shared(X)
+            self.Yt_ = theano.shared(Y)
             shapes = {"weights": self.n_object_features_fit_}
             # shapes = {'weights': (self.n_object_features_fit_, 3)}
             weights_dict = create_weight_dictionary(self.model_configuration, shapes)
             intercept = pm.Normal("intercept", mu=0, sd=10)
-            utility = tt.dot(self.Xt, weights_dict["weights"]) + intercept
-            self.p = ttu.sigmoid(utility)
-            BinaryCrossEntropyLikelihood("yl", p=self.p, observed=self.Yt)
+            utility = tt.dot(self.Xt_, weights_dict["weights"]) + intercept
+            self.p_ = ttu.sigmoid(utility)
+            BinaryCrossEntropyLikelihood("yl", p=self.p_, observed=self.Yt_)
         logger.info("Model construction completed")
 
     def fit(
@@ -234,7 +230,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
                 logger.info(
                     "Fitting utility function finished. Start tuning threshold."
                 )
-                self.threshold = self._tune_threshold(
+                self.threshold_ = self._tune_threshold(
                     X_val, Y_val, thin_thresholds=thin_thresholds, verbose=verbose
                 )
         else:
@@ -255,7 +251,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
                 },
                 **kwargs,
             )
-            self.threshold = 0.5
+            self.threshold_ = 0.5
 
     def _fit(
         self,
@@ -276,7 +272,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
         fit_pymc3_model(self, sampler, draws, tune, vi_params, **kwargs)
 
     def _predict_scores_fixed(self, X, **kwargs):
-        d = dict(pm.summary(self.trace)["mean"])
+        d = dict(pm.summary(self.trace_)["mean"])
         intercept = 0.0
         weights = np.array(
             [d["weights[{}]".format(i)] for i in range(self.n_object_features_fit_)]
