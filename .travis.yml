@@ -50,10 +50,3 @@ deploy:
       python: 3.7
       repo: kiudee/cs-ranking
       branch: master
-  - provider: pages
-    skip_cleanup: true
-    github_token: $GH_TOKEN
-    local_dir: docs/_build/
-    on:
-      branch: master
-      repo: kiudee/cs-ranking
