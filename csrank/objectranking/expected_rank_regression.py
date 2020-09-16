@@ -72,6 +72,10 @@ class ExpectedRankRegression(ObjectRanker, Learner):
         self.fit_intercept = fit_intercept
         self.random_state = random_state
 
+    def _pre_fit(self):
+        super()._pre_fit()
+        self.random_state_ = check_random_state(self.random_state)
+
     def fit(self, X, Y, **kwargs):
         """
             Fit an ExpectedRankRegression on the provided set of queries X and preferences Y of those objects.
@@ -88,7 +92,7 @@ class ExpectedRankRegression(ObjectRanker, Learner):
             **kwargs
                 Keyword arguments for the fit function
         """
-        self.random_state_ = check_random_state(self.random_state)
+        self._pre_fit()
         logger.debug("Creating the Dataset")
         x_train, y_train = complete_linear_regression_dataset(X, Y)
         logger.debug("Finished the Dataset")

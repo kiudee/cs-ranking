@@ -139,6 +139,12 @@ class ListNet(ObjectRanker, Learner):
         Y_topk = Y[mask].reshape(n_inst, self.n_top)
         return X_topk, Y_topk
 
+    def _pre_fit(self):
+        super()._pre_fit()
+        self.random_state_ = check_random_state(self.random_state)
+        self._initialize_optimizer()
+        self._initialize_regularizer()
+
     def fit(
         self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd
     ):
@@ -172,10 +178,8 @@ class ListNet(ObjectRanker, Learner):
             **kwd
                 Keyword arguments for the fit function
         """
-        self.random_state_ = check_random_state(self.random_state)
+        self._pre_fit()
         _n_instances, _n_objects, self.n_object_features_fit_ = X.shape
-        self._initialize_optimizer()
-        self._initialize_regularizer()
         self._construct_layers()
         logger.debug("Creating top-k dataset")
         X, Y = self._create_topk(X, Y)

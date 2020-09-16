@@ -264,6 +264,12 @@ class FETANetwork(Learner):
         )
         return model
 
+    def _pre_fit(self):
+        super()._pre_fit()
+        self._initialize_optimizer()
+        self._initialize_regularizer()
+        self.random_state_ = check_random_state(self.random_state)
+
     def fit(
         self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd
     ):
@@ -290,13 +296,11 @@ class FETANetwork(Learner):
             **kwd :
                 Keyword arguments for the fit function
         """
+        self._pre_fit()
         _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
-        self._initialize_optimizer()
-        self._initialize_regularizer()
         self._construct_layers()
 
         logger.debug("Enter fit function...")
-        self.random_state_ = check_random_state(self.random_state)
 
         X, Y = self.sub_sampling(X, Y)
         self.model_ = self.construct_model()

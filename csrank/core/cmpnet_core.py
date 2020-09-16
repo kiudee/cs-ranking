@@ -95,8 +95,6 @@ class CmpNetCore(Learner):
             model: keras :class:`Model`
                 Neural network to learn the CmpNet utility score
         """
-        self._initialize_optimizer()
-        self._initialize_regularizer()
         x1x2 = concatenate([self.x1, self.x2])
         x2x1 = concatenate([self.x2, self.x1])
         logger.debug("Creating the model")
@@ -115,6 +113,12 @@ class CmpNetCore(Learner):
             metrics=list(self.metrics),
         )
         return model
+
+    def _pre_fit(self):
+        super()._pre_fit()
+        self.random_state_ = check_random_state(self.random_state)
+        self._initialize_optimizer()
+        self._initialize_regularizer()
 
     def fit(
         self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd
@@ -151,8 +155,7 @@ class CmpNetCore(Learner):
             **kwd :
                 Keyword arguments for the fit function
         """
-        self.random_state_ = check_random_state(self.random_state)
-        self._initialize_regularizer()
+        self._pre_fit()
         _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
         x1, x2, y_double = self._convert_instances_(X, Y)
 

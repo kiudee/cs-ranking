@@ -438,6 +438,12 @@ class FATENetwork(FATENetworkCore):
         )
         return model
 
+    def _pre_fit(self):
+        super()._pre_fit()
+        self.random_state_ = check_random_state(self.random_state)
+        self._initialize_optimizer()
+        self._initialize_regularizer()
+
     def fit(
         self,
         X,
@@ -494,10 +500,8 @@ class FATENetwork(FATENetworkCore):
             **kwargs :
                 Keyword arguments for the fit function
         """
-        self.random_state_ = check_random_state(self.random_state)
+        self._pre_fit()
         _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
-        self._initialize_optimizer()
-        self._initialize_regularizer()
         self._fit(
             X=X,
             Y=Y,

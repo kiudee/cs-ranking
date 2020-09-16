@@ -328,6 +328,7 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
             **kwargs :
                 Keyword arguments for the fit function of :meth:`pymc3.fit`or :meth:`pymc3.sample`
         """
+        self._pre_fit()
         _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
         if self.n_nests is None:
             # TODO this looks like a bug to me, but it was already done this way
