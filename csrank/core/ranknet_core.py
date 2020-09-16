@@ -107,6 +107,12 @@ class RankNetCore(Learner):
     def _convert_instances_(self, X, Y):
         raise NotImplementedError
 
+    def _pre_fit(self):
+        super()._pre_fit()
+        self.random_state_ = check_random_state(self.random_state)
+        self._initialize_optimizer()
+        self._initialize_regularizer()
+
     def fit(
         self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd
     ):
@@ -139,15 +145,13 @@ class RankNetCore(Learner):
             **kwd :
                 Keyword arguments for the fit function
         """
-        self.random_state_ = check_random_state(self.random_state)
+        self._pre_fit()
         _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
         X1, X2, Y_single = self._convert_instances_(X, Y)
 
         logger.debug("Instances created {}".format(X1.shape[0]))
         logger.debug("Creating the model")
 
-        self._initialize_optimizer()
-        self._initialize_regularizer()
         self._construct_layers()
 
         # Model with input as two objects and output as probability of x1>x2

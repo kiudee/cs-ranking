@@ -75,6 +75,21 @@ class Learner(BaseEstimator, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
+    def _pre_fit(self):
+        """Perform stateful initialization before fitting.
+
+        This function is for initialization that does not depend on the data,
+        but still requires some processing and therefore should not happen in
+        __init__. Examples include initialization of optimizers, construction
+        of NeuralNetwork layers (if it can be done without knowledge of the
+        data) etc.
+
+        You should always call this function before fit, even if you do not
+        override it. If you override it, you should call the super method first
+        so that general initializations can be inherited.
+        """
+        pass
+
     @abstractmethod
     def _predict_scores_fixed(self, X, **kwargs):
         """

@@ -58,6 +58,7 @@ class ModelSelector(metaclass=ABCMeta):
         self.models = dict()
 
     def fit(self, X, Y):
+        self._pre_fit()
         model_args = dict()
         for param_key in self.parameter_keys:
             model_args[param_key] = self.uniform_prior

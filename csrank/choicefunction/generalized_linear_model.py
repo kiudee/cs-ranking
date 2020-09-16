@@ -158,6 +158,10 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
             BinaryCrossEntropyLikelihood("yl", p=self.p_, observed=self.Yt_)
         logger.info("Model construction completed")
 
+    def _pre_fit(self):
+        super()._pre_fit()
+        self.random_state_ = check_random_state(self.random_state)
+
     def fit(
         self,
         X,
@@ -217,7 +221,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
             **kwargs :
                 Keyword arguments for the fit function
         """
-        self.random_state_ = check_random_state(self.random_state)
+        self._pre_fit()
         if tune_size > 0:
             X_train, X_val, Y_train, Y_val = train_test_split(
                 X, Y, test_size=tune_size, random_state=self.random_state_

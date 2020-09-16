@@ -270,6 +270,10 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
             )
         logger.info("Model construction completed")
 
+    def _pre_fit(self):
+        super()._pre_fit()
+        self.random_state_ = check_random_state(self.random_state)
+
     def fit(
         self,
         X,
@@ -320,7 +324,7 @@ class PairedCombinatorialLogit(DiscreteObjectChooser, Learner):
            **kwargs :
                Keyword arguments for the fit function of :meth:`pymc3.fit`or :meth:`pymc3.sample`
        """
-        self.random_state_ = check_random_state(self.random_state)
+        self._pre_fit()
         _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
         self.nests_indices = np.array(
             list(combinations(np.arange(self.n_objects_fit_), 2))

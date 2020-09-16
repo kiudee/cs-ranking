@@ -54,6 +54,10 @@ class PairwiseSVM(Learner):
         self.random_state = random_state
         self.fit_intercept = fit_intercept
 
+    def _pre_fit(self):
+        super()._pre_fit()
+        self.random_state_ = check_random_state(self.random_state)
+
     def fit(self, X, Y, **kwargs):
         """
             Fit a generic preference learning model on a provided set of queries.
@@ -69,7 +73,7 @@ class PairwiseSVM(Learner):
                 Keyword arguments for the fit function
 
         """
-        self.random_state_ = check_random_state(self.random_state)
+        self._pre_fit()
         _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
         x_train, y_single = self._convert_instances_(X, Y)
         if self.use_logistic_regression:

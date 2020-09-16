@@ -136,6 +136,10 @@ class FETALinearCore(Learner):
             self.loss
         )
 
+    def _pre_fit(self):
+        super()._pre_fit()
+        self.random_state_ = check_random_state(self.random_state)
+
     def fit(
         self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd
     ):
@@ -155,7 +159,7 @@ class FETALinearCore(Learner):
             predict the target variables and adjust its parameters by gradient
             descent `epochs` times.
         """
-        self.random_state_ = check_random_state(self.random_state)
+        self._pre_fit()
         # Global Variables Initializer
         n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
         self._construct_model_(self.n_objects_fit_)

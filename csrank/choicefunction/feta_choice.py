@@ -286,6 +286,7 @@ class FETAChoiceFunction(ChoiceFunctions, FETANetwork):
             **kwd :
                 Keyword arguments for the fit function
         """
+        self._pre_fit()
         if tune_size > 0:
             X_train, X_val, Y_train, Y_val = train_test_split(
                 X, Y, test_size=tune_size, random_state=self.random_state

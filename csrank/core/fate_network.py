@@ -70,9 +70,6 @@ class FATENetworkCore(Learner):
         self.kernel_regularizer = kernel_regularizer
         self.batch_size = batch_size
         self.optimizer = optimizer
-        self._initialize_optimizer()
-        self._initialize_regularizer()
-        self._construct_layers()
         self._store_kwargs(
             kwargs, {"optimizer__", "kernel_regularizer__", "hidden_dense_layer__"}
         )
@@ -148,6 +145,12 @@ class FATENetworkCore(Learner):
 
         return scores
 
+    def _pre_fit(self):
+        super()._pre_fit()
+        self._initialize_optimizer()
+        self._initialize_regularizer()
+        self._construct_layers()
+
 
 class FATENetwork(FATENetworkCore):
     def __init__(self, n_hidden_set_layers=1, n_hidden_set_units=1, **kwargs):
@@ -168,12 +171,6 @@ class FATENetwork(FATENetworkCore):
 
         self.n_hidden_set_layers = n_hidden_set_layers
         self.n_hidden_set_units = n_hidden_set_units
-        self.set_layer = None
-        self._create_set_layers(
-            activation=self.activation,
-            kernel_initializer=self.kernel_initializer,
-            kernel_regularizer=self.kernel_regularizer_,
-        )
 
     def _create_set_layers(self, **kwargs):
         """
@@ -186,11 +183,11 @@ class FATENetwork(FATENetworkCore):
             )
         )
         if self.n_hidden_set_layers >= 1:
-            self.set_layer = DeepSet(
+            self.set_layer_ = DeepSet(
                 units=self.n_hidden_set_units, layers=self.n_hidden_set_layers, **kwargs
             )
         else:
-            self.set_layer = None
+            self.set_layer_ = None
 
     @staticmethod
     def _bucket_frequencies(X, min_bucket_size=32):
@@ -308,6 +305,7 @@ class FATENetwork(FATENetworkCore):
             **kwargs :
                 Keyword arguments for the fit function
         """
+        self._pre_fit()
         if optimizer is not None:
             self.optimizer = optimizer
         if isinstance(X, dict):
@@ -422,7 +420,7 @@ class FATENetwork(FATENetworkCore):
 
         """
         input_layer = Input(shape=(n_objects, n_features), name="input_node")
-        set_repr = self.set_layer(input_layer)
+        set_repr = self.set_layer_(input_layer)
         scores = self.join_input_layers(
             input_layer,
             set_repr,
@@ -437,6 +435,17 @@ class FATENetwork(FATENetworkCore):
             metrics=list(self.metrics),
         )
         return model
+
+    def _pre_fit(self):
+        super()._pre_fit()
+        self.random_state_ = check_random_state(self.random_state)
+        self._initialize_optimizer()
+        self._initialize_regularizer()
+        self._create_set_layers(
+            activation=self.activation,
+            kernel_initializer=self.kernel_initializer,
+            kernel_regularizer=self.kernel_regularizer_,
+        )
 
     def fit(
         self,
@@ -494,10 +503,7 @@ class FATENetwork(FATENetworkCore):
             **kwargs :
                 Keyword arguments for the fit function
         """
-        self.random_state_ = check_random_state(self.random_state)
         _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
-        self._initialize_optimizer()
-        self._initialize_regularizer()
         self._fit(
             X=X,
             Y=Y,
@@ -596,9 +602,9 @@ class FATENetwork(FATENetworkCore):
             shape=(n_objects, self.n_object_features_fit_), name="input_node"
         )
         if self.n_hidden_set_layers >= 1:
-            self.set_layer(input_layer_scorer)
-            fr = self.set_layer.cached_models[n_objects].predict(X, **kwargs)
-            del self.set_layer.cached_models[n_objects]
+            self.set_layer_(input_layer_scorer)
+            fr = self.set_layer_.cached_models[n_objects].predict(X, **kwargs)
+            del self.set_layer_.cached_models[n_objects]
             X_n = np.empty(
                 (fr.shape[0], n_objects, fr.shape[1] + self.n_object_features_fit_),
                 dtype="float",

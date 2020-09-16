@@ -96,6 +96,7 @@ class PairwiseSVMChoiceFunction(ChoiceFunctions, PairwiseSVM):
                 Keyword arguments for the fit function
 
         """
+        self._pre_fit()
         _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
         if tune_size > 0:
             X_train, X_val, Y_train, Y_val = train_test_split(

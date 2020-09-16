@@ -18,8 +18,12 @@ class RandomBaselineDC(DiscreteObjectChooser, Learner):
 
         self.random_state = random_state
 
-    def fit(self, X, Y, **kwd):
+    def _pre_fit(self):
+        super()._pre_fit()
         self.random_state_ = check_random_state(self.random_state)
+
+    def fit(self, X, Y, **kwd):
+        self._pre_fit()
 
     def _predict_scores_fixed(self, X, **kwargs):
         n_instances, n_objects, n_features = X.shape
