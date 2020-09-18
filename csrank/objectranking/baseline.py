@@ -16,7 +16,7 @@ class RandomBaselineRanker(ObjectRanker, Learner):
             :param kwargs: Keyword arguments for the algorithms
         """
 
-        self.random_state = (random_state,)
+        self.random_state = random_state
 
     def _pre_fit(self):
         super()._pre_fit()
