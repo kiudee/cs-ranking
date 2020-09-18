@@ -3,6 +3,8 @@
 https://scikit-learn.org/stable/developers/develop.html#rolling-your-own-estimator
 """
 
+import numpy as np
+
 from functools import partial
 
 import pytest
@@ -80,12 +82,32 @@ def test_all_estimators(Estimator):
         else:
             return check.__name__
 
-    for (estimator, check) in check_estimator(Estimator, generate_only=True):
+    def _increase_x_dimension(self, X):
+        n_instances, n_objects = X.shape
+        n_features = 1
+        return X.reshape((n_instances, n_objects, n_features))
+
+    class WrappedEstimator(Estimator):
+        # scikit learn assumes that "X" is an array of one-dimensional
+        # feature vectors. Our learners however assume an array of objects
+        # as a "feature vector", hence they expect one more dimension.
+        # This is one scikit-learn API expectation that we do not fulfill.
+        # This thin wrapper is needed so that we can still use the other
+        # estimator checks. It just pretends every feature is itself a
+        # one-feature object.
+
+        def fit(self, X, Y, *args, **kwargs):
+            super().fit(_increase_x_dimension(X), Y, *args, **kwargs)
+
+        def predict(self, X, *args, **kwargs):
+            super().predict(_increase_x_dimension(X), *args, **kwargs)
+
+    for (estimator, check) in check_estimator(WrappedEstimator, generate_only=True):
         # checks that attempt to call "fit" do not work since our estimators
         # expect a 3-dimensional data shape while scikit-learn assumes two
         # dimensions (an array of 1d data).
         if not get_check_name(check) in {
-            "check_estimators_dtypes",
+            # "check_estimators_dtypes",
             "check_fit_score_takes_y",
             "check_estimators_fit_returns_self",
             "check_complex_data",
