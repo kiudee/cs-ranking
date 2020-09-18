@@ -54,12 +54,12 @@ def test_all_estimators(Estimator):
         # dimensions (an array of 1d data).
         if not get_check_name(check) in {
             # "check_estimators_dtypes",
-            "check_fit_score_takes_y",
-            "check_estimators_fit_returns_self",
-            "check_complex_data",
-            "check_dtype_object",
-            "check_estimators_empty_data_messages",
-            "check_pipeline_consistency",
+            # "check_fit_score_takes_y",
+            # "check_pipeline_consistency",
+            "check_estimators_fit_returns_self", # fails for all
+            "check_complex_data", # fails for CmpNet
+            "check_dtype_object", # fails for ExpectedRankRegression
+            "check_estimators_empty_data_messages", # fails for all
             "check_estimators_nan_inf",
             "check_estimators_overwrite_params",
             "check_estimator_sparse_data",
