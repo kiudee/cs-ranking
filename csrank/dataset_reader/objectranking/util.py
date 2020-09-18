@@ -35,7 +35,7 @@ def generate_pairwise_instances(features):
 
 def generate_complete_pairwise_dataset(X, Y):
     """
-        Generates the pairiwse preference data from the given rankings.The ranking amongst the objects in a query set
+        Generates the pairwise preference data from the given rankings.The ranking amongst the objects in a query set
         :math:`Q = \\{x_1, x_2, x_3\\}` is represented by :math:`\\pi = (2,1,3)`, such that :math:`\\pi(2)=1` is the position of the :math:`x_2`.
         One can extract the following *pairwise preferences* :math:`x_2 \\succ x_1, x_2 \\succ x_3 and x_1 \\succ x_3`.
         This function generates pairwise preferences which can be used to learn different :class:`ObjectRanker` as:

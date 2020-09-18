@@ -10,84 +10,29 @@ from functools import partial
 import pytest
 from sklearn.utils.estimator_checks import check_estimator
 
-from csrank.choicefunction import CmpNetChoiceFunction
-from csrank.choicefunction import FATEChoiceFunction
-from csrank.choicefunction import FATELinearChoiceFunction
-from csrank.choicefunction import FETAChoiceFunction
-from csrank.choicefunction import FETALinearChoiceFunction
-from csrank.choicefunction import GeneralizedLinearModel
-from csrank.choicefunction import PairwiseSVMChoiceFunction
-from csrank.choicefunction import RankNetChoiceFunction
-from csrank.discretechoice import CmpNetDiscreteChoiceFunction
-from csrank.discretechoice import FATEDiscreteChoiceFunction
-from csrank.discretechoice import FATELinearDiscreteChoiceFunction
-from csrank.discretechoice import FETADiscreteChoiceFunction
-from csrank.discretechoice import FETALinearDiscreteChoiceFunction
-from csrank.discretechoice import GeneralizedNestedLogitModel
-from csrank.discretechoice import MixedLogitModel
-from csrank.discretechoice import MultinomialLogitModel
-from csrank.discretechoice import NestedLogitModel
-from csrank.discretechoice import PairedCombinatorialLogit
-from csrank.discretechoice import PairwiseSVMDiscreteChoiceFunction
-from csrank.discretechoice import RankNetDiscreteChoiceFunction
-from csrank.objectranking import CmpNet
-from csrank.objectranking import ExpectedRankRegression
-from csrank.objectranking import FATELinearObjectRanker
-from csrank.objectranking import FATEObjectRanker
-from csrank.objectranking import FETALinearObjectRanker
-from csrank.objectranking import FETAObjectRanker
-from csrank.objectranking import ListNet
-from csrank.objectranking import RankNet
-from csrank.objectranking import RankSVM
+from csrank import objectranking
+
+
+def get_check_name(check):
+    if isinstance(check, partial):
+        return check.func.__name__
+    else:
+        return check.__name__
+
+
+def _reshape_x(X):
+    n_instances, n_objects = X.shape
+    n_features = 1
+    return X.reshape((n_instances, n_objects, n_features))
 
 
 @pytest.mark.parametrize(
     "Estimator",
-    [
-        CmpNet,
-        CmpNetChoiceFunction,
-        CmpNetDiscreteChoiceFunction,
-        ExpectedRankRegression,
-        FATEChoiceFunction,
-        FATEDiscreteChoiceFunction,
-        FATELinearChoiceFunction,
-        FATELinearDiscreteChoiceFunction,
-        FATELinearObjectRanker,
-        FATEObjectRanker,
-        FETAChoiceFunction,
-        FETADiscreteChoiceFunction,
-        FETALinearChoiceFunction,
-        FETALinearDiscreteChoiceFunction,
-        FETALinearObjectRanker,
-        FETAObjectRanker,
-        GeneralizedLinearModel,
-        GeneralizedNestedLogitModel,
-        ListNet,
-        MixedLogitModel,
-        MultinomialLogitModel,
-        NestedLogitModel,
-        PairedCombinatorialLogit,
-        PairwiseSVMChoiceFunction,
-        PairwiseSVMDiscreteChoiceFunction,
-        RankNet,
-        RankNetChoiceFunction,
-        RankNetDiscreteChoiceFunction,
-        RankSVM,
-    ],
+    # TODO write wrappers for choice, discretechoice
+    objectranking.algorithms,
 )
 def test_all_estimators(Estimator):
-    def get_check_name(check):
-        if isinstance(check, partial):
-            return check.func.__name__
-        else:
-            return check.__name__
-
-    def _increase_x_dimension(self, X):
-        n_instances, n_objects = X.shape
-        n_features = 1
-        return X.reshape((n_instances, n_objects, n_features))
-
-    class WrappedEstimator(Estimator):
+    class WrappedRanker(Estimator):
         # scikit learn assumes that "X" is an array of one-dimensional
         # feature vectors. Our learners however assume an array of objects
         # as a "feature vector", hence they expect one more dimension.
@@ -95,14 +40,15 @@ def test_all_estimators(Estimator):
         # This thin wrapper is needed so that we can still use the other
         # estimator checks. It just pretends every feature is itself a
         # one-feature object.
-
         def fit(self, X, Y, *args, **kwargs):
-            super().fit(_increase_x_dimension(X), Y, *args, **kwargs)
+            Xnew = _reshape_x(X)
+            Ynew = Xnew.argsort(axis=1).argsort(axis=1).squeeze(axis=-1)
+            super().fit(Xnew, Ynew, *args, **kwargs)
 
         def predict(self, X, *args, **kwargs):
-            super().predict(_increase_x_dimension(X), *args, **kwargs)
+            super().predict(_reshape_x(X), *args, **kwargs)
 
-    for (estimator, check) in check_estimator(WrappedEstimator, generate_only=True):
+    for (estimator, check) in check_estimator(WrappedRanker, generate_only=True):
         # checks that attempt to call "fit" do not work since our estimators
         # expect a 3-dimensional data shape while scikit-learn assumes two
         # dimensions (an array of 1d data).

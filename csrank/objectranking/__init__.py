@@ -9,15 +9,17 @@ from .list_net import ListNet
 from .rank_net import RankNet
 from .rank_svm import RankSVM
 
-__all__ = [
-    "CmpNet",
-    "ExpectedRankRegression",
-    "FATEObjectRanker",
-    "FATELinearObjectRanker",
-    "FETAObjectRanker",
-    "FETALinearObjectRanker",
-    "ListNet",
-    "RankNet",
-    "RankSVM",
-    "RandomBaselineRanker",
+algorithms = [
+    CmpNet,
+    ExpectedRankRegression,
+    FATEObjectRanker,
+    FATELinearObjectRanker,
+    FETAObjectRanker,
+    FETALinearObjectRanker,
+    ListNet,
+    RankNet,
+    RankSVM,
+    RandomBaselineRanker,
 ]
+
+__all__ = [ algo.__name__ for algo in algorithms ]
