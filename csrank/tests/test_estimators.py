@@ -53,24 +53,20 @@ def test_all_estimators(Estimator):
         # expect a 3-dimensional data shape while scikit-learn assumes two
         # dimensions (an array of 1d data).
         if not get_check_name(check) in {
-            # "check_estimators_dtypes",
-            # "check_fit_score_takes_y",
-            # "check_pipeline_consistency",
             "check_estimators_fit_returns_self", # fails for all
             "check_complex_data", # fails for CmpNet
             "check_dtype_object", # fails for ExpectedRankRegression
             "check_estimators_empty_data_messages", # fails for all
-            "check_estimators_nan_inf",
-            "check_estimators_overwrite_params",
-            "check_estimator_sparse_data",
-            "check_estimators_pickle",
-            "check_fit2d_predict1d",
-            "check_methods_subset_invariance",
-            "check_fit2d_1sample",
-            "check_fit2d_1feature",
-            "check_dict_unchanged",
-            "check_dont_overwrite_parameters",
-            "check_fit_idempotent",
-            "check_fit1d",
+            "check_estimators_nan_inf", # fails for CmpNet
+            "check_estimators_overwrite_params", # fails for FATELinearObjectRanker
+            "check_estimator_sparse_data", # fails for ExpectedRankRegression
+            "check_estimators_pickle", # fails for ExpectedRankRegression
+            "check_fit2d_predict1d", # fails for ExpectedRankRegression
+            "check_methods_subset_invariance", # fails for ExpectedRankRegression
+            "check_fit2d_1sample", # fails for FETAObjectRanker
+            "check_fit2d_1feature", # fails for ExpectedRankRegression
+            "check_dict_unchanged", # fails for ListNet
+            "check_dont_overwrite_parameters", # fails for CmpNet
+            "check_fit_idempotent", # fails for ExpectedRankRegression
         }:
             check(estimator)
