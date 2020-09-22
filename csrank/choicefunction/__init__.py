@@ -20,4 +20,4 @@ algorithms = [
     RankNetChoiceFunction,
 ]
 
-__all__ = [ algo.__name__ for algo in algorithms ]
+__all__ = [algo.__name__ for algo in algorithms]

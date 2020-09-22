@@ -7,6 +7,7 @@ from .object_ranker import ObjectRanker
 
 logger = logging.getLogger(__name__)
 
+
 class RandomBaselineRanker(ObjectRanker, Learner):
     def __init__(self, random_state=None, **kwargs):
         """

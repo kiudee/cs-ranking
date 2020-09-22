@@ -53,20 +53,20 @@ def test_all_estimators(Estimator):
         # expect a 3-dimensional data shape while scikit-learn assumes two
         # dimensions (an array of 1d data).
         if not get_check_name(check) in {
-            "check_estimators_fit_returns_self", # fails for all
-            "check_complex_data", # fails for CmpNet
-            "check_dtype_object", # fails for ExpectedRankRegression
-            "check_estimators_empty_data_messages", # fails for all
-            "check_estimators_nan_inf", # fails for CmpNet
-            "check_estimators_overwrite_params", # fails for FATELinearObjectRanker
-            "check_estimator_sparse_data", # fails for ExpectedRankRegression
-            "check_estimators_pickle", # fails for ExpectedRankRegression
-            "check_fit2d_predict1d", # fails for ExpectedRankRegression
-            "check_methods_subset_invariance", # fails for ExpectedRankRegression
-            "check_fit2d_1sample", # fails for FETAObjectRanker
-            "check_fit2d_1feature", # fails for ExpectedRankRegression
-            "check_dict_unchanged", # fails for ListNet
-            "check_dont_overwrite_parameters", # fails for CmpNet
-            "check_fit_idempotent", # fails for ExpectedRankRegression
+            "check_estimators_fit_returns_self",  # fails for all
+            "check_complex_data",  # fails for CmpNet
+            "check_dtype_object",  # fails for ExpectedRankRegression
+            "check_estimators_empty_data_messages",  # fails for all
+            "check_estimators_nan_inf",  # fails for CmpNet
+            "check_estimators_overwrite_params",  # fails for FATELinearObjectRanker
+            "check_estimator_sparse_data",  # fails for ExpectedRankRegression
+            "check_estimators_pickle",  # fails for ExpectedRankRegression
+            "check_fit2d_predict1d",  # fails for ExpectedRankRegression
+            "check_methods_subset_invariance",  # fails for ExpectedRankRegression
+            "check_fit2d_1sample",  # fails for FETAObjectRanker
+            "check_fit2d_1feature",  # fails for ExpectedRankRegression
+            "check_dict_unchanged",  # fails for ListNet
+            "check_dont_overwrite_parameters",  # fails for CmpNet
+            "check_fit_idempotent",  # fails for ExpectedRankRegression
         }:
             check(estimator)
