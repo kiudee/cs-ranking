@@ -43,7 +43,7 @@ def test_all_estimators(Estimator):
         def fit(self, X, Y, *args, **kwargs):
             Xnew = _reshape_x(X)
             Ynew = Xnew.argsort(axis=1).argsort(axis=1).squeeze(axis=-1)
-            super().fit(Xnew, Ynew, *args, **kwargs)
+            return super().fit(Xnew, Ynew, *args, **kwargs)
 
         def predict(self, X, *args, **kwargs):
             super().predict(_reshape_x(X), *args, **kwargs)
