@@ -3,8 +3,6 @@
 https://scikit-learn.org/stable/developers/develop.html#rolling-your-own-estimator
 """
 
-import numpy as np
-
 from functools import partial
 
 import pytest
