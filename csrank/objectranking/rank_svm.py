@@ -60,7 +60,7 @@ class RankSVM(ObjectRanker, PairwiseSVM):
     def fit(self, X, Y, **kwargs):
         self._pre_fit()
         _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
-        super().fit(X, Y, **kwargs)
+        return super().fit(X, Y, **kwargs)
 
     def _convert_instances_(self, X, Y):
         logger.debug("Creating the Dataset")

@@ -199,6 +199,7 @@ class ListNet(ObjectRanker, Learner):
             **kwd,
         )
         logger.debug("Fitting Complete")
+        return self
 
     def construct_model(self):
         """

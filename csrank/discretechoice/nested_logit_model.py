@@ -392,6 +392,7 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         self.random_state_ = check_random_state(self.random_state)
         self.construct_model(X, Y)
         fit_pymc3_model(self, sampler, draws, tune, vi_params, **kwargs)
+        return self
 
     def _predict_scores_fixed(self, X, **kwargs):
         y_nests = self.create_nests(X)

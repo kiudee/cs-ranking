@@ -170,6 +170,7 @@ class RankNetCore(Learner):
         )
 
         logger.debug("Fitting Complete")
+        return self
 
     @property
     def scoring_model(self):

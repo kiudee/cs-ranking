@@ -103,6 +103,7 @@ class PairwiseSVM(Learner):
         if self.fit_intercept:
             self.weights_ = np.append(self.weights_, self.model_.intercept_)
         logger.debug("Fitting Complete")
+        return self
 
     def _predict_scores_fixed(self, X, **kwargs):
         assert X.shape[-1] == self.n_object_features_fit_

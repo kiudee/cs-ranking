@@ -127,6 +127,7 @@ class ExpectedRankRegression(ObjectRanker, Learner):
         if self.fit_intercept:
             self.weights_ = np.append(self.weights_, self.model_.intercept_)
         logger.debug("Fitting Complete")
+        return self
 
     def _predict_scores_fixed(self, X, **kwargs):
         n_instances, n_objects, n_features = X.shape

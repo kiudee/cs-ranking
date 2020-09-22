@@ -27,7 +27,7 @@ def test_construction_core():
             pass
 
         def fit(self, *args, **kwargs):
-            pass
+            return self
 
     grc = MockClass()
     grc._initialize_optimizer()

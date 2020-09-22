@@ -316,6 +316,7 @@ class FETANetwork(Learner):
             verbose=verbose,
             **kwd,
         )
+        return self
 
     def sub_sampling(self, X, Y):
         if self.n_objects_fit_ > self.max_number_of_objects:

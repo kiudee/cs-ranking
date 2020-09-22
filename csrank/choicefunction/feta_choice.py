@@ -311,6 +311,7 @@ class FETAChoiceFunction(ChoiceFunctions, FETANetwork):
         else:
             super().fit(X, Y, epochs, callbacks, validation_split, verbose, **kwd)
             self.threshold_ = 0.5
+        return self
 
     def sub_sampling(self, X, Y):
         if self.n_objects_fit_ <= self.max_number_of_objects:

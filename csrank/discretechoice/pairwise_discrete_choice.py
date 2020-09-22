@@ -76,4 +76,4 @@ class PairwiseSVMDiscreteChoiceFunction(DiscreteObjectChooser, PairwiseSVM):
     def fit(self, X, Y, **kwd):
         self._pre_fit()
         _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
-        super().fit(X, Y, **kwd)
+        return super().fit(X, Y, **kwd)

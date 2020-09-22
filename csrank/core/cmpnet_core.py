@@ -175,6 +175,7 @@ class CmpNetCore(Learner):
             **kwd,
         )
         logger.debug("Fitting Complete")
+        return self
 
     def predict_pair(self, a, b, **kwargs):
         return self.model_.predict([a, b], **kwargs)

@@ -166,3 +166,4 @@ class RankNetChoiceFunction(ChoiceFunctions, RankNetCore):
         else:
             super().fit(X, Y, epochs, callbacks, validation_split, verbose, **kwd)
             self.threshold_ = 0.5
+        return self

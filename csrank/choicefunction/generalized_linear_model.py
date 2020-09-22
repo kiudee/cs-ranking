@@ -256,6 +256,7 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
                 **kwargs,
             )
             self.threshold_ = 0.5
+        return self
 
     def _fit(
         self,

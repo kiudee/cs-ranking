@@ -24,6 +24,7 @@ class RandomBaselineRanker(ObjectRanker, Learner):
 
     def fit(self, X, Y, **kwd):
         self._pre_fit()
+        return self
 
     def _predict_scores_fixed(self, X, **kwargs):
         n_instances, n_objects, n_features = X.shape

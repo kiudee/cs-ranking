@@ -518,6 +518,7 @@ class FATENetwork(FATENetworkCore):
             refit=refit,
             **kwargs,
         )
+        return self
 
     def fit_generator(
         self,
