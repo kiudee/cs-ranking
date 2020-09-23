@@ -75,7 +75,6 @@ class PairwiseSVM(Learner):
         """
         self._pre_fit()
         _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
-        x_train, y_single = self._convert_instances_(X, Y)
         if self.use_logistic_regression:
             self.model_ = LogisticRegression(
                 C=self.C,
@@ -93,6 +92,10 @@ class PairwiseSVM(Learner):
             )
             logger.info("Linear SVC model ")
 
+        if self.n_objects_fit_ < 2:
+            # Nothing to learn, cannot create pairwise instances.
+            return self
+        x_train, y_single = self._convert_instances_(X, Y)
         if self.normalize:
             std_scalar = StandardScaler()
             x_train = std_scalar.fit_transform(x_train)
