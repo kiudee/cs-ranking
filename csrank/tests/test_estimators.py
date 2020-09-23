@@ -62,7 +62,6 @@ def test_all_estimators(Estimator):
             "check_fit2d_predict1d",  # fails for ExpectedRankRegression
             "check_methods_subset_invariance",  # fails for ExpectedRankRegression
             "check_fit2d_1sample",  # fails for FETAObjectRanker
-            "check_fit2d_1feature",  # fails for ExpectedRankRegression
             "check_dict_unchanged",  # fails for ListNet
             "check_dont_overwrite_parameters",  # fails for CmpNet
             "check_fit_idempotent",  # fails for ExpectedRankRegression
