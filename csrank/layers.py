@@ -134,7 +134,8 @@ class DeepSet(object):
             set_mappings.append((i, curr))
 
         # TODO: is feature_repr used outside?
-        feature_repr = average([x for (j, x) in set_mappings])
+        x_values = [x for (j, x) in set_mappings]
+        feature_repr = average(x_values) if len(x_values) > 1 else x_values[0]
 
         self.cached_models[n_objects] = Model(inputs=input_layer, outputs=feature_repr)
 

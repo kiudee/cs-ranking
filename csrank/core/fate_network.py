@@ -140,7 +140,9 @@ class FATENetworkCore(Learner):
             for j in range(self.n_hidden_joint_layers):
                 joint = self.joint_layers[j](joint)
             scores.append(self.scorer(joint))
-        scores = concatenate(scores, name="final_scores")
+        scores = (
+            concatenate(scores, name="final_scores") if len(scores) > 1 else scores[0]
+        )
         logger.debug("Done")
 
         return scores
