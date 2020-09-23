@@ -303,6 +303,9 @@ class FETANetwork(Learner):
         logger.debug("Enter fit function...")
 
         X, Y = self.sub_sampling(X, Y)
+        if self.n_objects_fit_ < 2:
+            # Nothing to learn, can't construct a model.
+            return self
         self.model_ = self.construct_model()
         logger.debug("Starting gradient descent...")
 
