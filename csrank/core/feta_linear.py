@@ -162,6 +162,10 @@ class FETALinearCore(Learner):
         self._pre_fit()
         # Global Variables Initializer
         n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
+        if self.n_objects_fit_ < 2:
+            # Nothing to learn here, model cannot be constructed without any
+            # instance pairs.
+            return self
         self._construct_model_(self.n_objects_fit_)
         init = tf.global_variables_initializer()
 
