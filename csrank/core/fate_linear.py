@@ -112,6 +112,7 @@ class FATELinearCore(Learner):
             self.bias1_ = tf_session.run(self.b1)
             self.weight2_ = tf_session.run(self.W2)
             self.bias2_ = tf_session.run(self.b2)
+        return self
 
     def _fit_(self, X, Y, epochs, n_instances, tf_session, verbose):
         try:

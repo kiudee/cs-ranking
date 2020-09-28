@@ -19,6 +19,7 @@ class AllPositive(ChoiceFunctions, Learner):
 
     def fit(self, X, Y, **kwd):
         self._pre_fit()
+        return self
 
     def _predict_scores_fixed(self, X, Y, **kwargs):
         return np.zeros_like(Y) + Y.mean()

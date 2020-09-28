@@ -217,6 +217,7 @@ class MultinomialLogitModel(DiscreteObjectChooser, Learner):
         _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
         self.construct_model(X, Y)
         fit_pymc3_model(self, sampler, draws, tune, vi_params, **kwargs)
+        return self
 
     def _predict_scores_fixed(self, X, **kwargs):
         d = dict(pm.summary(self.trace_)["mean"])

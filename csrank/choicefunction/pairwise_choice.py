@@ -114,3 +114,4 @@ class PairwiseSVMChoiceFunction(ChoiceFunctions, PairwiseSVM):
         else:
             super().fit(X, Y, **kwd)
             self.threshold_ = 0.5
+        return self

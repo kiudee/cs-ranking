@@ -199,6 +199,7 @@ class ListNet(ObjectRanker, Learner):
             **kwd,
         )
         logger.debug("Fitting Complete")
+        return self
 
     def construct_model(self):
         """
@@ -215,7 +216,7 @@ class ListNet(ObjectRanker, Learner):
         for hidden_layer in self.hidden_layers:
             hid = [hidden_layer(x) for x in hid]
         outputs = [self.output_node(x) for x in hid]
-        merged = concatenate(outputs)
+        merged = concatenate(outputs) if len(outputs) > 1 else outputs[0]
         model = Model(inputs=self.input_layer, outputs=merged)
         model.compile(
             loss=self.loss_function,

@@ -180,3 +180,4 @@ class FATEChoiceFunction(ChoiceFunctions, FATENetwork):
         else:
             super().fit(X, Y, **kwargs)
             self.threshold_ = 0.5
+        return self

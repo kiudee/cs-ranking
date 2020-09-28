@@ -147,15 +147,19 @@ class RankNetCore(Learner):
         """
         self._pre_fit()
         _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
-        X1, X2, Y_single = self._convert_instances_(X, Y)
-
-        logger.debug("Instances created {}".format(X1.shape[0]))
         logger.debug("Creating the model")
 
         self._construct_layers()
 
         # Model with input as two objects and output as probability of x1>x2
         self.model_ = self.construct_model()
+
+        if self.n_objects_fit_ < 2:
+            # Nothing to learn, cannot create pairwise comparisons.
+            return self
+        X1, X2, Y_single = self._convert_instances_(X, Y)
+
+        logger.debug("Instances created {}".format(X1.shape[0]))
         logger.debug("Finished Creating the model, now fitting started")
 
         self.model_.fit(
@@ -170,6 +174,7 @@ class RankNetCore(Learner):
         )
 
         logger.debug("Fitting Complete")
+        return self
 
     @property
     def scoring_model(self):

@@ -157,12 +157,15 @@ class CmpNetCore(Learner):
         """
         self._pre_fit()
         _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
-        x1, x2, y_double = self._convert_instances_(X, Y)
 
-        logger.debug("Instances created {}".format(x1.shape[0]))
         self._construct_layers()
         self.model_ = self.construct_model()
 
+        if self.n_objects_fit_ < 2:
+            # Nothing to learn here, no pairwise comparisons can be generated.
+            return self
+        x1, x2, y_double = self._convert_instances_(X, Y)
+        logger.debug("Instances created {}".format(x1.shape[0]))
         logger.debug("Finished Creating the model, now fitting started")
         self.model_.fit(
             [x1, x2],
@@ -175,6 +178,7 @@ class CmpNetCore(Learner):
             **kwd,
         )
         logger.debug("Fitting Complete")
+        return self
 
     def predict_pair(self, a, b, **kwargs):
         return self.model_.predict([a, b], **kwargs)

@@ -6,6 +6,7 @@ from csrank.numpy_util import scores_to_rankings
 class FATEDyadRanker(FATENetwork, DyadRanker):
     def fit(self, Xo, Xc, Y, **kwargs):
         self._pre_fit()
+        return self
 
     def predict_scores(self, Xo, Xc, **kwargs):
         return self.model_.predict([Xo, Xc], **kwargs)

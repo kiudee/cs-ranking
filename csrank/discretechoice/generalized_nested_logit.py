@@ -337,6 +337,7 @@ class GeneralizedNestedLogitModel(DiscreteObjectChooser, Learner):
             self.n_nests = self.n_objects_fit_ + int(self.n_objects_fit_ / 2)
         self.construct_model(X, Y)
         fit_pymc3_model(self, sampler, draws, tune, vi_params, **kwargs)
+        return self
 
     def _predict_scores_fixed(self, X, **kwargs):
         mean_trace = dict(pm.summary(self.trace_)["mean"])

@@ -105,6 +105,7 @@ class ModelSelector(metaclass=ABCMeta):
                         self.parameter_ind[j][1],
                     )
                     self.fit_learner(X, Y, key)
+        return self
 
     def fit_learner(self, X, Y, key):
         learner = self.learner_cls(**self.model_params)
