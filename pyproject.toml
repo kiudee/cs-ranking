@@ -57,6 +57,7 @@ tox = "^3.19.0"
 pytest-cov = "^2.10.1"
 nbsphinx = "^0.7.1"
 IPython = "^7.18.1"
+pytest-xdist = "^2.1.0"
 
 [tool.poetry.extras]
 # These are temporarily made mandatory due to an issue in our optional imports.
