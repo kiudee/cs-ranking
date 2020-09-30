@@ -21,6 +21,11 @@ let
           buildInputs = with pkgs; [ xorg.libX11 ] ++ old.buildInputs;
         }
       );
+      scikit-learn = super.scikit-learn.overridePythonAttrs (
+        old: {
+          patches = [./0001-Relax-init-parameter-type-checks.patch];
+        }
+      );
     });
   };
 in pkgs.mkShell {
