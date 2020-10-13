@@ -76,7 +76,7 @@ Another option is to clone the repository and install CS-Rank using::
 Dependencies
 ------------
 CS-Rank depends on Tensorflow, Keras, NumPy, SciPy, matplotlib, scikit-learn,
-scikit-optimize, joblib and tqdm. For data processing and generation you will
+joblib and tqdm. For data processing and generation you will
 also need PyGMO, H5Py and pandas.
 
 
