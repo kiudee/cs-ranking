@@ -1125,17 +1125,6 @@ version = "1.9.0"
 
 [[package]]
 category = "main"
-description = "PyYAML-based module to produce pretty and readable YAML-serialized data"
-name = "pyaml"
-optional = false
-python-versions = "*"
-version = "20.4.0"
-
-[package.dependencies]
-PyYAML = "*"
-
-[[package]]
-category = "main"
 description = "A BibTeX-compatible bibliography processor in Python"
 name = "pybtex"
 optional = false
@@ -1399,24 +1388,6 @@ threadpoolctl = ">=2.0.0"
 
 [package.extras]
 alldeps = ["numpy (>=1.13.3)", "scipy (>=0.19.1)"]
-
-[[package]]
-category = "main"
-description = "Sequential model-based optimization toolbox."
-name = "scikit-optimize"
-optional = false
-python-versions = "*"
-version = "0.7.4"
-
-[package.dependencies]
-joblib = ">=0.11"
-numpy = ">=1.11.0"
-pyaml = ">=16.9"
-scikit-learn = ">=0.19.1"
-scipy = ">=0.18.0"
-
-[package.extras]
-plots = ["matplotlib (>=2.0.0)"]
 
 [[package]]
 category = "main"
@@ -1933,7 +1904,7 @@ testing = ["jaraco.itertools", "func-timeout"]
 docs = ["Sphinx", "sphinx_rtd_theme", "sphinxcontrib-bibtex", "nbsphinx", "IPython"]
 
 [metadata]
-content-hash = "0ee256f23317a4065c52ebe22255ab41bed1fe6496891e788448652f3f174d21"
+content-hash = "665d0d4af8f05e93eda8eb7ea3194d16e106fbf114befd0c729633ca3dd6f189"
 lock-version = "1.0"
 python-versions = "^3.7"
 
@@ -1991,6 +1962,7 @@ backcall = [
     {file = "backcall-0.2.0.tar.gz", hash = "sha256:5cbdbf27be5e7cfadb448baf0aa95508f91f2bbc6c6437cd9cd06e2a4c215e1e"},
 ]
 black = [
+    {file = "black-20.8b1-py3-none-any.whl", hash = "sha256:70b62ef1527c950db59062cda342ea224d772abdf6adc58b86a45421bab20a6b"},
     {file = "black-20.8b1.tar.gz", hash = "sha256:1c02557aa099101b9d21496f8a914e9ed2222ef70336404eeeac8edba836fbea"},
 ]
 bleach = [
@@ -2619,10 +2591,6 @@ py = [
     {file = "py-1.9.0-py2.py3-none-any.whl", hash = "sha256:366389d1db726cd2fcfc79732e75410e5fe4d31db13692115529d34069a043c2"},
     {file = "py-1.9.0.tar.gz", hash = "sha256:9ca6883ce56b4e8da7e79ac18787889fa5206c79dcc67fb065376cd2fe03f342"},
 ]
-pyaml = [
-    {file = "pyaml-20.4.0-py2.py3-none-any.whl", hash = "sha256:67081749a82b72c45e5f7f812ee3a14a03b3f5c25ff36ec3b290514f8c4c4b99"},
-    {file = "pyaml-20.4.0.tar.gz", hash = "sha256:29a5c2a68660a799103d6949167bd6c7953d031449d08802386372de1db6ad71"},
-]
 pybtex = [
     {file = "pybtex-0.22.2-py2.py3-none-any.whl", hash = "sha256:9ce2ce13d8d4f5a8d3848463f58167dbbbe75a53511f1088eaa6197637cdf8cf"},
     {file = "pybtex-0.22.2.tar.gz", hash = "sha256:00816e5f8570609d8ce3360cd23916bd3e50428a3508127578fdb4dc2b731c1c"},
@@ -2787,10 +2755,6 @@ scikit-learn = [
     {file = "scikit_learn-0.23.2-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:5ce7a8021c9defc2b75620571b350acc4a7d9763c25b7593621ef50f3bd019a2"},
     {file = "scikit_learn-0.23.2-cp38-cp38-win32.whl", hash = "sha256:0d39748e7c9669ba648acf40fb3ce96b8a07b240db6888563a7cb76e05e0d9cc"},
     {file = "scikit_learn-0.23.2-cp38-cp38-win_amd64.whl", hash = "sha256:1b8a391de95f6285a2f9adffb7db0892718950954b7149a70c783dc848f104ea"},
-]
-scikit-optimize = [
-    {file = "scikit-optimize-0.7.4.tar.gz", hash = "sha256:d193b9505d04dc0aade256f10b08124a5e5679fe8c3e90c09ff9e3a60d9f1752"},
-    {file = "scikit_optimize-0.7.4-py2.py3-none-any.whl", hash = "sha256:2ddcb5aa1f0c67396eee68d365de3d66928c40c609f4c12d079cc8151b9f5e76"},
 ]
 scipy = [
     {file = "scipy-1.5.2-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:cca9fce15109a36a0a9f9cfc64f870f1c140cb235ddf27fe0328e6afb44dfed0"},
