@@ -138,7 +138,6 @@ class DatasetReader(metaclass=ABCMeta):
     def get_single_train_test_split(self):
         raise NotImplementedError
 
-    @abstractmethod
     def get_train_test_datasets(self, n_datasets=5):
         splits = np.array(n_datasets)
         return self.splitter(splits)
