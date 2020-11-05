@@ -1,7 +1,9 @@
 from abc import ABCMeta
 from abc import abstractmethod
+import inspect
 import logging
 
+from keras.layers import Dense
 from sklearn.base import BaseEstimator
 
 logger = logging.getLogger(__name__)
@@ -22,6 +24,7 @@ class Learner(BaseEstimator, metaclass=ABCMeta):
 
         Raises an exception if one of the kwargs does not match a whiltelisted prefix.
         """
+        self.allowed_prefixes_ = allowed_prefixes
 
         def starts_with_legal_prefix(key):
             for prefix in allowed_prefixes:
@@ -60,18 +63,83 @@ class Learner(BaseEstimator, metaclass=ABCMeta):
             logger.warning("You specified regularizer parameters but no regularizer.")
             self.kernel_regularizer_ = None
 
+    def set_params(self, **params):
+        """Set a hyper-paramter for this learner.
+
+        Accepts the same parameters as __init__.
+        """
+        allowed_prefixes = (
+            self.allowed_prefixes_ if hasattr(self, "allowed_prefixes_") else []
+        )
+        self._store_kwargs(params, allowed_prefixes)
+
+    def _prefix_to_class_mapping(self):
+        """Map nested parameter prefixes to the classes they are passed to.
+
+        Necessary for get_params.
+        """
+        result = dict()
+        allowed_prefixes = (
+            self.allowed_prefixes_ if hasattr(self, "allowed_prefixes_") else []
+        )
+        for prefix in allowed_prefixes:
+            base_parameter = prefix[:-2]  # prefixes always end with two underscores
+            if hasattr(self, base_parameter):
+                result[prefix] = vars(self)[base_parameter]
+            # This is a hack to work with our common "hidden_dense_layer__"
+            # arguments. They do not correspond to a single hidden_dense_layer
+            # attribute. They are passed to all hidden dense layers that are
+            # part of the network. Therefore we just hardcode the "Dense" class
+            # for them.
+            elif base_parameter == "hidden_dense_layer":
+                result[prefix] = Dense
+            else:
+                raise ValueError(
+                    f"Prefix {prefix} could not be associated to any class."
+                )
+        print(result)
+        return result
+
+    def get_params(self):
+        """Return all hyperparmeters of this learner.
+
+        Limitation: This does not recurse into parameters, so it only works for a
+        single layer.
+        """
+        # Get all the regular parameters form BaseEstimator.
+        result = super().get_params()
+
+        # Handle the parameter that could be passed to uninitialized subclasses
+        # (optimizer__lr etc.).
+        parameters_for_prefix = dict()
+        for (prefix, base_class) in self._prefix_to_class_mapping().items():
+            parameters_for_prefix = dict()
+            print(f"Spec for {prefix}")
+            signature = inspect.signature(base_class)
+            for parameter in signature.parameters:
+                if signature.parameters[parameter].default != inspect._empty:
+                    parameters_for_prefix[parameter] = signature.parameters[
+                        parameter
+                    ].default
+            # Override with explicitly set parameter values
+            parameters_for_prefix.update(self._get_prefix_attributes(prefix))
+            for (arg, default) in parameters_for_prefix.items():
+                result[prefix + arg] = default
+
+        return result
+
     @abstractmethod
     def fit(self, X, Y, **kwargs):
         """
-            Fit the preference learning algorithm on the provided set of queries X and preferences Y of those objects.
-            The provided queries and corresponding preferences are of a fixed size (numpy arrays).
+        Fit the preference learning algorithm on the provided set of queries X and preferences Y of those objects.
+        The provided queries and corresponding preferences are of a fixed size (numpy arrays).
 
-            Parameters
-            ----------
-            X : array-like, shape (n_samples, n_objects, n_features)
-                Feature vectors of the objects
-            Y : array-like, shape (n_samples, n_objects)
-                Preferences of the objects in form of rankings or choices
+        Parameters
+        ----------
+        X : array-like, shape (n_samples, n_objects, n_features)
+            Feature vectors of the objects
+        Y : array-like, shape (n_samples, n_objects)
+            Preferences of the objects in form of rankings or choices
         """
         raise NotImplementedError
 
@@ -93,17 +161,17 @@ class Learner(BaseEstimator, metaclass=ABCMeta):
     @abstractmethod
     def _predict_scores_fixed(self, X, **kwargs):
         """
-            Predict the scores for a given collection of sets of objects of same size.
+        Predict the scores for a given collection of sets of objects of same size.
 
-            Parameters
-            ----------
-            X : array-like, shape (n_samples, n_objects, n_features)
+        Parameters
+        ----------
+        X : array-like, shape (n_samples, n_objects, n_features)
 
 
-            Returns
-            -------
-            Y : array-like, shape (n_samples, n_objects)
-                Returns the scores of each of the objects for each of the samples.
+        Returns
+        -------
+        Y : array-like, shape (n_samples, n_objects)
+            Returns the scores of each of the objects for each of the samples.
         """
         raise NotImplementedError
 
@@ -112,19 +180,19 @@ class Learner(BaseEstimator, metaclass=ABCMeta):
 
     def predict_scores(self, X, **kwargs):
         """
-            Predict the utility scores for each object in the collection of set of objects called a query set.
+        Predict the utility scores for each object in the collection of set of objects called a query set.
 
-            Parameters
-            ----------
-            X : dict or numpy array
-                Dictionary with a mapping from query set size to numpy arrays or a single numpy array of size:
-                (n_instances, n_objects, n_features)
+        Parameters
+        ----------
+        X : dict or numpy array
+            Dictionary with a mapping from query set size to numpy arrays or a single numpy array of size:
+            (n_instances, n_objects, n_features)
 
-            Returns
-            -------
-            Y : dict or numpy array
-                Dictionary with a mapping from query set size to numpy arrays or a single numpy array of size:
-                (n_instances, n_objects)
+        Returns
+        -------
+        Y : dict or numpy array
+            Dictionary with a mapping from query set size to numpy arrays or a single numpy array of size:
+            (n_instances, n_objects)
         """
         logger.info("Predicting scores")
 
@@ -140,22 +208,22 @@ class Learner(BaseEstimator, metaclass=ABCMeta):
 
     def predict(self, X, **kwargs):
         """
-            Predict preferences in the form of rankings or choices for a given collection of sets of objects called
-            a query set using the function :meth:`.predict_for_scores`.
+        Predict preferences in the form of rankings or choices for a given collection of sets of objects called
+        a query set using the function :meth:`.predict_for_scores`.
 
-            Parameters
-            ----------
-            X : dict or numpy array
-                Dictionary with a mapping from the query set size to numpy arrays or a single numpy array of size:
-                (n_instances, n_objects, n_features)
+        Parameters
+        ----------
+        X : dict or numpy array
+            Dictionary with a mapping from the query set size to numpy arrays or a single numpy array of size:
+            (n_instances, n_objects, n_features)
 
 
-            Returns
-            -------
-            Y : dict or numpy array
-                Dictionary with a mapping from the query set size to numpy arrays or a single numpy array containing
-                predicted preferences of size:
-                (n_instances, n_objects)
+        Returns
+        -------
+        Y : dict or numpy array
+            Dictionary with a mapping from the query set size to numpy arrays or a single numpy array containing
+            predicted preferences of size:
+            (n_instances, n_objects)
         """
         logger.debug("Predicting started")
 
