@@ -100,21 +100,36 @@ class Learner(BaseEstimator, metaclass=ABCMeta):
         print(result)
         return result
 
-    def get_params(self):
+    def get_params(self, deep=True):
         """Return all hyperparmeters of this learner.
 
         Limitation: This does not recurse into parameters, so it only works for a
         single layer.
+
+        Parameters
+        ----------
+        deep: bool, default=True
+            Whether or not to return parameters of subobjects as well. Support
+            for this is currently limited, so parameters of subobjects are
+            returned on a best-effort basis if they were passed with the
+            subobject__parameter convention.
+
+        Returns
+        -------
+        dict
+            A dictionary of parameters.
         """
         # Get all the regular parameters form BaseEstimator.
         result = super().get_params()
+
+        if not deep:
+            return result
 
         # Handle the parameter that could be passed to uninitialized subclasses
         # (optimizer__lr etc.).
         parameters_for_prefix = dict()
         for (prefix, base_class) in self._prefix_to_class_mapping().items():
             parameters_for_prefix = dict()
-            print(f"Spec for {prefix}")
             signature = inspect.signature(base_class)
             for parameter in signature.parameters:
                 if signature.parameters[parameter].default != inspect._empty:
