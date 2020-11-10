@@ -114,7 +114,6 @@ class Learner(BaseEstimator, metaclass=ABCMeta):
         parameters_for_prefix = dict()
         for (prefix, base_class) in self._prefix_to_class_mapping().items():
             parameters_for_prefix = dict()
-            print(f"Spec for {prefix}")
             signature = inspect.signature(base_class)
             for parameter in signature.parameters:
                 if signature.parameters[parameter].default != inspect._empty:
