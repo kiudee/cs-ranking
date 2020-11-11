@@ -55,8 +55,6 @@ class Learner(BaseEstimator, metaclass=ABCMeta):
     def _initialize_regularizer(self):
         regularizer_params = self._get_prefix_attributes("kernel_regularizer__")
         if self.kernel_regularizer is not None:
-            print(f"Regularizer is {self.kernel_regularizer}")
-            print(f"Initializing with {regularizer_params}")
             self.kernel_regularizer_ = self.kernel_regularizer(**regularizer_params)
         else:
             # No regularizer is an option.
@@ -97,7 +95,6 @@ class Learner(BaseEstimator, metaclass=ABCMeta):
                 raise ValueError(
                     f"Prefix {prefix} could not be associated to any class."
                 )
-        print(result)
         return result
 
     def get_params(self, deep=True):
