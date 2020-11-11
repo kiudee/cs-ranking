@@ -55,8 +55,6 @@ class Learner(BaseEstimator, metaclass=ABCMeta):
     def _initialize_regularizer(self):
         regularizer_params = self._get_prefix_attributes("kernel_regularizer__")
         if self.kernel_regularizer is not None:
-            print(f"Regularizer is {self.kernel_regularizer}")
-            print(f"Initializing with {regularizer_params}")
             self.kernel_regularizer_ = self.kernel_regularizer(**regularizer_params)
         else:
             # No regularizer is an option.
@@ -68,10 +66,13 @@ class Learner(BaseEstimator, metaclass=ABCMeta):
 
         Accepts the same parameters as __init__.
         """
-        allowed_prefixes = (
-            self.allowed_prefixes_ if hasattr(self, "allowed_prefixes_") else []
-        )
-        self._store_kwargs(params, allowed_prefixes)
+        legal_parameters = self.get_params().keys()
+        for param in params.keys():
+            if param not in legal_parameters:
+                raise TypeError(
+                    f"Unexpected parameter for {type(self).__name__}: `{param}.` Legal parameters are {set(legal_parameters)}."
+                )
+        vars(self).update(params)
 
     def _prefix_to_class_mapping(self):
         """Map nested parameter prefixes to the classes they are passed to.
@@ -97,7 +98,6 @@ class Learner(BaseEstimator, metaclass=ABCMeta):
                 raise ValueError(
                     f"Prefix {prefix} could not be associated to any class."
                 )
-        print(result)
         return result
 
     def get_params(self, deep=True):
