@@ -66,10 +66,13 @@ class Learner(BaseEstimator, metaclass=ABCMeta):
 
         Accepts the same parameters as __init__.
         """
-        allowed_prefixes = (
-            self.allowed_prefixes_ if hasattr(self, "allowed_prefixes_") else []
-        )
-        self._store_kwargs(params, allowed_prefixes)
+        legal_parameters = self.get_params().keys()
+        for param in params.keys():
+            if param not in legal_parameters:
+                raise TypeError(
+                    f"Unexpected parameter for {type(self).__name__}: `{param}.` Legal parameters are {set(legal_parameters)}."
+                )
+        vars(self).update(params)
 
     def _prefix_to_class_mapping(self):
         """Map nested parameter prefixes to the classes they are passed to.
