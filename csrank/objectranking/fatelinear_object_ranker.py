@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 class FATELinearObjectRanker(ObjectRanker, FATELinearCore):
     def __init__(
         self,
-        n_hidden_set_units=2,
+        n_hidden_set_units=32,
         loss_function=hinged_rank_loss,
         learning_rate=1e-3,
         batch_size=256,

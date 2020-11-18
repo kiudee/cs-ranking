@@ -14,10 +14,10 @@ class FATEDiscreteChoiceFunction(DiscreteObjectChooser, FATENetwork):
     def __init__(
         self,
         n_hidden_set_layers=2,
-        n_hidden_set_units=2,
+        n_hidden_set_units=32,
         loss_function="categorical_hinge",
         metrics=("categorical_accuracy",),
-        n_hidden_joint_layers=32,
+        n_hidden_joint_layers=2,
         n_hidden_joint_units=32,
         activation="selu",
         kernel_initializer="lecun_normal",

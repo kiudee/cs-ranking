@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 class FATELinearChoiceFunction(ChoiceFunctions, FATELinearCore):
     def __init__(
         self,
-        n_hidden_set_units=2,
+        n_hidden_set_units=32,
         loss_function=binary_crossentropy,
         learning_rate=1e-3,
         batch_size=256,

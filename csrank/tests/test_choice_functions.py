@@ -58,7 +58,7 @@ choice_functions = {
     FATELINEAR_CHOICE: (
         FATELinearChoiceFunction,
         {},
-        get_vals([0.8014, 0.4906, 0.9998]),
+        get_vals([0.6558, 0.0722, 0.9998]),
     ),
     FETALINEAR_CHOICE: (
         FETALinearChoiceFunction,
