@@ -41,13 +41,39 @@ class ChoiceDatasetGenerator(SyntheticDatasetGenerator):
                 )
             return pareto
 
-        def sample_unit_ball(n_inst=10000, n_features=2, rng=None, radius=1.0):
-            rng = check_random_state(rng)
-            X = rng.randn(n_inst, n_features)
-            u = rng.uniform(size=n_inst)[:, None]
-            X /= np.linalg.norm(X, axis=1, ord=2)[:, None]
-            X *= radius * u
-            return X
+        def sample_from_unit_ball(n_points, dimension, radius, random_state):
+            """Sample points uniformly from a ball.
+
+            The ball has radius `radius` and is centered at the origin.
+
+            Parameters
+            ----------
+            n_points : int
+                The number of points to sample.
+            dimension : int
+                The dimension of the space.
+            radius : float
+                The radius of the ball.
+            random_state: np.random.RandomState
+                A numpy random state.
+
+            Returns
+            -------
+            numpy array of shape (n_points, dimension)
+                A list of points sampled from the ball.
+            """
+            # Sample a random direction for each point
+            directions = random_state.randn(n_points, dimension)
+            # Normalize each direction vector to have length 1 (euclidean
+            # norm).
+            directions /= np.linalg.norm(directions, axis=1, ord=2)[:, None]
+
+            # Sample a length (as a fraction of the radius) uniformly for each
+            # point.
+            u = random_state.uniform(size=n_points)[:, None]
+            lengths = u * radius
+
+            return directions * lengths
 
         def make_randn_pareto_choices(
             n_instances=10000, n_features=2, n_objects=10, data_seed=None, center=0.0
@@ -68,8 +94,11 @@ class ChoiceDatasetGenerator(SyntheticDatasetGenerator):
         X = np.empty((n_instances, n_objects, n_features))
         Y = np.empty((n_instances, n_objects), dtype=int)
         for i in range(int(n_instances / cluster_size)):
-            center = sample_unit_ball(
-                n_inst=1, n_features=n_features, rng=rand, radius=cluster_spread
+            center = sample_from_unit_ball(
+                n_points=1,
+                dimension=n_features,
+                radius=cluster_spread,
+                random_state=rand,
             )
             x, y = make_randn_pareto_choices(
                 n_instances=cluster_size,
