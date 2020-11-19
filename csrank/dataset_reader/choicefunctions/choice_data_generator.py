@@ -27,7 +27,6 @@ class ChoiceDatasetGenerator(SyntheticDatasetGenerator):
         n_objects=10,
         seed=42,
         cluster_spread=1.0,
-        cluster_size=10,
         **kwargs,
     ):
         def pareto_front(X, signs=None):
@@ -93,7 +92,7 @@ class ChoiceDatasetGenerator(SyntheticDatasetGenerator):
         rand = check_random_state(seed)
         X = np.empty((n_instances, n_objects, n_features))
         Y = np.empty((n_instances, n_objects), dtype=int)
-        for i in range(int(n_instances / cluster_size)):
+        for i in range(n_instances):
             center = sample_from_unit_ball(
                 n_points=1,
                 dimension=n_features,
@@ -101,14 +100,14 @@ class ChoiceDatasetGenerator(SyntheticDatasetGenerator):
                 random_state=rand,
             )
             x, y = make_randn_pareto_choices(
-                n_instances=cluster_size,
+                n_instances=1,
                 n_features=n_features,
                 n_objects=n_objects,
                 data_seed=rand,
                 center=center,
             )
-            X[i * cluster_size : (i + 1) * cluster_size] = x
-            Y[i * cluster_size : (i + 1) * cluster_size] = y
+            X[i] = x
+            Y[i] = y
         return X, Y
 
     def make_latent_linear_choices(
