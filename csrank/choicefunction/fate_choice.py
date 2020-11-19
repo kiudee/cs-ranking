@@ -16,8 +16,8 @@ class FATEChoiceFunction(ChoiceFunctions, FATENetwork):
     def __init__(
         self,
         n_hidden_set_layers=2,
-        n_hidden_set_units=2,
-        n_hidden_joint_layers=32,
+        n_hidden_set_units=32,
+        n_hidden_joint_layers=2,
         n_hidden_joint_units=32,
         loss_function=binary_crossentropy,
         activation="selu",

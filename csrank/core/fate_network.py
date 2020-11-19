@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 class FATENetworkCore(Learner):
     def __init__(
         self,
-        n_hidden_joint_layers=32,
+        n_hidden_joint_layers=2,
         n_hidden_joint_units=32,
         activation="selu",
         kernel_initializer="lecun_normal",
@@ -155,7 +155,7 @@ class FATENetworkCore(Learner):
 
 
 class FATENetwork(FATENetworkCore):
-    def __init__(self, n_hidden_set_layers=1, n_hidden_set_units=1, **kwargs):
+    def __init__(self, n_hidden_set_layers=2, n_hidden_set_units=32, **kwargs):
         """
             Create a FATE-network architecture.
             Training and prediction complexity is linear in the number of objects.
