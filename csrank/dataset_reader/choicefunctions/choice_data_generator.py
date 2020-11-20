@@ -27,7 +27,6 @@ class ChoiceDatasetGenerator(SyntheticDatasetGenerator):
         n_objects=10,
         seed=42,
         cluster_spread=1.0,
-        cluster_size=10,
         **kwargs,
     ):
         def pareto_front(X, signs=None):
@@ -41,45 +40,94 @@ class ChoiceDatasetGenerator(SyntheticDatasetGenerator):
                 )
             return pareto
 
-        def sample_unit_ball(n_inst=10000, n_features=2, rng=None, radius=1.0):
-            rng = check_random_state(rng)
-            X = rng.randn(n_inst, n_features)
-            u = rng.uniform(size=n_inst)[:, None]
-            X /= np.linalg.norm(X, axis=1, ord=2)[:, None]
-            X *= radius * u
-            return X
+        def sample_from_unit_ball(n_points, dimension, radius, random_state):
+            """Sample points uniformly from a ball.
 
-        def make_randn_pareto_choices(
-            n_instances=10000, n_features=2, n_objects=10, data_seed=None, center=0.0
+            The ball has radius `radius` and is centered at the origin.
+
+            Parameters
+            ----------
+            n_points : int
+                The number of points to sample.
+            dimension : int
+                The dimension of the space.
+            radius : float
+                The radius of the ball.
+            random_state: np.random.RandomState
+                A numpy random state.
+
+            Returns
+            -------
+            numpy array of shape (n_points, dimension)
+                A list of points sampled from the ball.
+            """
+            # Sample a random direction for each point
+            directions = random_state.randn(n_points, dimension)
+            # Normalize each direction vector to have length 1 (euclidean
+            # norm).
+            directions /= np.linalg.norm(directions, axis=1, ord=2)[:, None]
+
+            # Sample a length (as a fraction of the radius) uniformly for each
+            # point.
+            u = random_state.uniform(size=n_points)[:, None]
+            lengths = u * radius
+
+            return directions * lengths
+
+        def sample_pareto_from_isometric_normal(
+            n_points, dimension, center, random_state
         ):
-            """Generate random objects from a d-dimensional isometric normal distribution.
+            """Generate a Pareto problem from random objects.
+
+            Objects are drawn from a d-dimensional isometric normal
+            distribution.
 
             This should be the easiest possible Pareto-problem, since the model can learn
             a latent-utility which scores how likely a point is on the front (independent
-            of the other points)."""
-            rand = check_random_state(data_seed)
-            X = rand.randn(n_instances, n_objects, n_features)
-            Y = np.empty((n_instances, n_objects), dtype=bool)
-            for i in range(n_instances):
-                Y[i] = pareto_front(X[i])
+            of the other points).
+
+            Parameters
+            ----------
+            n_points : int
+                The number of points to sample.
+            dimension : int
+                The dimension of the space.
+            center : scalar or numpy array
+                An offset that will be added to every point.
+            random_state: np.random.RandomState
+                A numpy random state.
+
+            Returns
+            -------
+            X: numpy array of shape (n_points, dimension)
+                A list of points sampled from the d-dimensional isometric
+                normal distribution.
+            Y. numpy array of shape n_points
+                A binary flag array indicating whether or not the corresponding
+                point is part of the Pareto front.
+            """
+            X = random_state.randn(n_points, dimension)
+            Y = pareto_front(X)
             return X + center, Y
 
         rand = check_random_state(seed)
         X = np.empty((n_instances, n_objects, n_features))
         Y = np.empty((n_instances, n_objects), dtype=int)
-        for i in range(int(n_instances / cluster_size)):
-            center = sample_unit_ball(
-                n_inst=1, n_features=n_features, rng=rand, radius=cluster_spread
+        for i in range(n_instances):
+            center = sample_from_unit_ball(
+                n_points=1,
+                dimension=n_features,
+                radius=cluster_spread,
+                random_state=rand,
             )
-            x, y = make_randn_pareto_choices(
-                n_instances=cluster_size,
-                n_features=n_features,
-                n_objects=n_objects,
-                data_seed=rand,
+            x, y = sample_pareto_from_isometric_normal(
+                n_points=n_objects,
+                dimension=n_features,
                 center=center,
+                random_state=rand,
             )
-            X[i * cluster_size : (i + 1) * cluster_size] = x
-            Y[i * cluster_size : (i + 1) * cluster_size] = y
+            X[i] = x
+            Y[i] = y
         return X, Y
 
     def make_latent_linear_choices(
