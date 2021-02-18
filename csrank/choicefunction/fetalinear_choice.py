@@ -111,11 +111,7 @@ class FETALinearChoiceFunction(FETAChoiceFunction):
     def set_tunable_parameters(
         self, learning_rate=1e-3, batch_size=128, reg_strength=1e-4, **point
     ):
-        n_hidden = point.get("n_hidden", 1)
-        n_units = point.get("n_units", 1)
         super().set_tunable_parameters(
-            n_hidden=n_hidden,
-            n_units=n_units,
             reg_strength=reg_strength,
             learning_rate=learning_rate,
             batch_size=batch_size,

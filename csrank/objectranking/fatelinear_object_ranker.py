@@ -104,13 +104,7 @@ class FATELinearObjectRanker(FATEObjectRanker):
         reg_strength=1e-4,
         **point
     ):
-        n_hidden_joint_layers = point.get("n_hidden_joint_layers", 1)
-        n_hidden_joint_units = point.get("n_hidden_joint_units", 1)
-        n_hidden_set_layers = point.get("n_hidden_set_layers", 1)
         super().set_tunable_parameters(
-            n_hidden_joint_layers=n_hidden_joint_layers,
-            n_hidden_joint_units=n_hidden_joint_units,
-            n_hidden_set_layers=n_hidden_set_layers,
             n_hidden_set_units=n_hidden_set_units,
             reg_strength=reg_strength,
             learning_rate=learning_rate,
