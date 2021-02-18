@@ -4,8 +4,8 @@ from scipy.stats import rankdata
 
 def replace_inf_np(x):
     if np.any(np.isinf(x)):
-        x[np.isinf(x)] = 2e+300
-        x[np.isnan(x)] = 2e+300
+        x[np.isinf(x)] = 2e300
+        x[np.isnan(x)] = 2e300
     return x
 
 
@@ -24,26 +24,26 @@ def logsumexp(x, axis=1):
 
 def softmax(x, axis=1):
     """
-        Take softmax for the given numpy array.
-        :param axis: The axis around which the softmax is applied
-        :param x: array-like, shape (n_samples, ...)
-        :return: softmax taken around the given axis
+    Take softmax for the given numpy array.
+    :param axis: The axis around which the softmax is applied
+    :param x: array-like, shape (n_samples, ...)
+    :return: softmax taken around the given axis
     """
     lse = logsumexp(x, axis=axis)
     return np.exp(x - lse)
 
 
 def sigmoid(x):
-    x = 1. / (1. + np.exp(-x))
+    x = 1.0 / (1.0 + np.exp(-x))
     return x
 
 
 def normalize(x, axis=1):
     """
-        Normalize the given two dimensional numpy array around the row.
-        :param axis: The axis around which the norm is applied
-        :param x: theano or numpy array-like, shape (n_samples, n_objects)
-        :return: normalize the array around the axis=1
+    Normalize the given two dimensional numpy array around the row.
+    :param axis: The axis around which the norm is applied
+    :param x: theano or numpy array-like, shape (n_samples, n_objects)
+    :return: normalize the array around the axis=1
     """
     return x / np.sum(x, axis=axis, keepdims=True)
 

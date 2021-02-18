@@ -15,10 +15,10 @@ def test_hinged_rank_loss():
     assert_almost_equal(
         actual=K.eval(
             hinged_rank_loss(
-                y_true_tensor, K.constant(np.array([[0., 0., 0., 0., 0.]]))
+                y_true_tensor, K.constant(np.array([[0.0, 0.0, 0.0, 0.0, 0.0]]))
             )
         ),
-        desired=np.array([1.]),
+        desired=np.array([1.0]),
         decimal=decimal,
     )
 
@@ -27,7 +27,7 @@ def test_hinged_rank_loss():
     assert_almost_equal(
         actual=K.eval(
             hinged_rank_loss(
-                y_true_tensor, K.constant(np.array([[.2, .1, .0, -0.1, -0.2]]))
+                y_true_tensor, K.constant(np.array([[0.2, 0.1, 0.0, -0.1, -0.2]]))
             )
         ),
         desired=np.array([0.8]),
@@ -41,7 +41,7 @@ def test_plackett_luce_loss():
     assert_almost_equal(
         actual=K.eval(
             plackett_luce_loss(
-                y_true_tensor, K.constant(np.array([[0., 0., 0., 0., 0.]]))
+                y_true_tensor, K.constant(np.array([[0.0, 0.0, 0.0, 0.0, 0.0]]))
             )
         ),
         desired=np.array([4.78749]),
@@ -57,10 +57,10 @@ def test_smooth_rank_loss():
     assert_almost_equal(
         actual=K.eval(
             smooth_rank_loss(
-                y_true_tensor, K.constant(np.array([[0., 0., 0., 0., 0.]]))
+                y_true_tensor, K.constant(np.array([[0.0, 0.0, 0.0, 0.0, 0.0]]))
             )
         ),
-        desired=np.array([1.]),
+        desired=np.array([1.0]),
         decimal=decimal,
     )
 
@@ -68,6 +68,9 @@ def test_smooth_rank_loss():
     # scores:
     assert_almost_equal(
         actual=K.eval(
-            smooth_rank_loss(y_true_tensor,
-                             K.constant(np.array([[.2, .1, .0, -0.1, -0.2]])))),
-        desired=np.array([0.82275984]))
+            smooth_rank_loss(
+                y_true_tensor, K.constant(np.array([[0.2, 0.1, 0.0, -0.1, -0.2]]))
+            )
+        ),
+        desired=np.array([0.82275984]),
+    )

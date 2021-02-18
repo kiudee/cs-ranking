@@ -10,14 +10,20 @@ from ..letor_ranking_dataset_reader import LetorRankingDatasetReader
 
 class LetorRankingDiscreteChoiceDatasetReader(LetorRankingDatasetReader):
     def __init__(self, random_state=None, n_objects=5, **kwargs):
-        super(LetorRankingDiscreteChoiceDatasetReader, self).__init__(learning_problem=DISCRETE_CHOICE, **kwargs)
-        self.logger = logging.getLogger(LetorRankingDiscreteChoiceDatasetReader.__name__)
+        super(LetorRankingDiscreteChoiceDatasetReader, self).__init__(
+            learning_problem=DISCRETE_CHOICE, **kwargs
+        )
+        self.logger = logging.getLogger(
+            LetorRankingDiscreteChoiceDatasetReader.__name__
+        )
         self.random_state = check_random_state(random_state)
         self.n_objects = n_objects
         self.__load_dataset__()
 
     def sub_sampling_function(self, X, Y):
-        return sub_sampling_discrete_choices_from_relevance(Xt=X, Yt=Y, n_objects=self.n_objects)
+        return sub_sampling_discrete_choices_from_relevance(
+            Xt=X, Yt=Y, n_objects=self.n_objects
+        )
 
     def splitter(self, iter):
         pass

@@ -15,7 +15,6 @@ def test_construction_core():
     # Create mock class:
 
     class MockClass(FATENetworkCore, metaclass=ABCMeta):
-
         def set_tunable_parameters(self, **point):
             super().set_tunable_parameters(**point)
 
@@ -45,18 +44,33 @@ def test_construction_core():
     X = np.random.randn(100, n_objects, n_features)
     y = X.sum(axis=2)
     model.fit(x=X, y=y, verbose=0)
-    params = {"n_hidden_joint_units": 2, "n_hidden_joint_layers": 10, "reg_strength": 1e-3, "learning_rate": 1e-1,
-              "batch_size": 32}
+    params = {
+        "n_hidden_joint_units": 2,
+        "n_hidden_joint_layers": 10,
+        "reg_strength": 1e-3,
+        "learning_rate": 1e-1,
+        "batch_size": 32,
+    }
     grc.set_tunable_parameters(**params)
     assert grc.n_hidden_joint_units == params["n_hidden_joint_units"]
     assert grc.n_hidden_joint_layers == params["n_hidden_joint_layers"]
     assert grc.batch_size == params["batch_size"]
     rtol = 1e-2
     atol = 1e-4
-    assert np.isclose(grc.optimizer.get_config()['lr'], params["learning_rate"], rtol=rtol, atol=atol, equal_nan=False)
+    assert np.isclose(
+        grc.optimizer.get_config()["lr"],
+        params["learning_rate"],
+        rtol=rtol,
+        atol=atol,
+        equal_nan=False,
+    )
     config = grc.kernel_regularizer.get_config()
-    val1 = np.isclose(config["l1"], params["reg_strength"], rtol=rtol, atol=atol, equal_nan=False)
-    val2 = np.isclose(config["l2"], params["reg_strength"], rtol=rtol, atol=atol, equal_nan=False)
+    val1 = np.isclose(
+        config["l1"], params["reg_strength"], rtol=rtol, atol=atol, equal_nan=False
+    )
+    val2 = np.isclose(
+        config["l2"], params["reg_strength"], rtol=rtol, atol=atol, equal_nan=False
+    )
     assert val1 or val2
 
 

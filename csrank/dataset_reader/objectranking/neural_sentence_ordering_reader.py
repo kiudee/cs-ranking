@@ -11,8 +11,11 @@ from ..dataset_reader import DatasetReader
 
 class SentenceOrderingDatasetReader(DatasetReader):
     def __init__(self, n_dims=25, n_objects=5, **kwargs):
-        super(SentenceOrderingDatasetReader, self).__init__(learning_problem=OBJECT_RANKING,
-                                                            dataset_folder='sentence_ordering', **kwargs)
+        super(SentenceOrderingDatasetReader, self).__init__(
+            learning_problem=OBJECT_RANKING,
+            dataset_folder="sentence_ordering",
+            **kwargs
+        )
         self.logger = logging.getLogger(name=SentenceOrderingDatasetReader.__name__)
         dimensions = [25, 50, 100, 200]
         d_files = ["test_{}_dim.h5", "train_{}_dim.h5"]
@@ -26,9 +29,9 @@ class SentenceOrderingDatasetReader(DatasetReader):
         self.__load_dataset__()
 
     def __load_dataset__(self):
-        file = h5py.File(self.train_file, 'r')
+        file = h5py.File(self.train_file, "r")
         self.X_train, self.Y_train = self.get_rankings_dict(file)
-        file = h5py.File(self.test_file, 'r')
+        file = h5py.File(self.test_file, "r")
         self.X_test, self.Y_test = self.get_rankings_dict(file)
         self.logger.info("Done loading the dataset")
 
@@ -48,7 +51,9 @@ class SentenceOrderingDatasetReader(DatasetReader):
         Y = []
         for n in self.X_train.keys():
             if n > self.n_objects:
-                x, y = sub_sampling_rankings(self.X_train[n], self.Y_train[n], n_objects=self.n_objects)
+                x, y = sub_sampling_rankings(
+                    self.X_train[n], self.Y_train[n], n_objects=self.n_objects
+                )
                 if len(X) == 0:
                     X = np.copy(x)
                     Y = np.copy(y)
@@ -58,7 +63,9 @@ class SentenceOrderingDatasetReader(DatasetReader):
         if self.n_objects in self.X_train.keys():
             X = np.concatenate([X, np.copy(self.X_train[self.n_objects])], axis=0)
             Y = np.concatenate([Y, np.copy(self.Y_train[self.n_objects])], axis=0)
-        self.logger.info("Sampled instances {} objects {}".format(X.shape[0], X.shape[1]))
+        self.logger.info(
+            "Sampled instances {} objects {}".format(X.shape[0], X.shape[1])
+        )
         return X, Y
 
     def splitter(self, iter):

@@ -9,9 +9,9 @@ from .object_ranker import ObjectRanker
 class RandomBaselineRanker(ObjectRanker, Learner):
     def __init__(self, random_state=None, **kwargs):
         """
-            Baseline assigns the average number of chosen objects in the given choice sets and chooses all the objects.
+        Baseline assigns the average number of chosen objects in the given choice sets and chooses all the objects.
 
-            :param kwargs: Keyword arguments for the algorithms
+        :param kwargs: Keyword arguments for the algorithms
         """
 
         self.logger = logging.getLogger(RandomBaselineRanker.__name__)

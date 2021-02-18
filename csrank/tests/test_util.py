@@ -9,7 +9,7 @@ from csrank.tuning import check_learner_class
 
 
 def test_tensorify():
-    a = np.array([1., 2.])
+    a = np.array([1.0, 2.0])
     out = tensorify(a)
     assert isinstance(out, tf.Tensor)
 
@@ -22,8 +22,7 @@ def test_synthetic_iterator():
     def func(a, b):
         return (b, a)
 
-    it = SyntheticIterator(dataset_function=func,
-                           a=41, b=2)
+    it = SyntheticIterator(dataset_function=func, a=41, b=2)
     for i, (x, y) in enumerate(it):
         if i == 1:
             break

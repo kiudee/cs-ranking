@@ -5,13 +5,18 @@ from ..mnist_dataset_reader import MNISTDatasetReader
 
 
 class MNISTChoiceDatasetReader(MNISTDatasetReader):
-    def __init__(self, dataset_type='unique', **kwargs):
-        dataset_func_dict = {"unique": self.create_dataset_unique, "largest": self.create_dataset_largest,
-                             'mode': self.create_dataset_mode}
+    def __init__(self, dataset_type="unique", **kwargs):
+        dataset_func_dict = {
+            "unique": self.create_dataset_unique,
+            "largest": self.create_dataset_largest,
+            "mode": self.create_dataset_mode,
+        }
         if dataset_type not in dataset_func_dict.keys():
             dataset_type = "unique"
         self.dataset_function = dataset_func_dict[dataset_type]
-        super(MNISTChoiceDatasetReader, self).__init__(learning_problem=CHOICE_FUNCTION, **kwargs)
+        super(MNISTChoiceDatasetReader, self).__init__(
+            learning_problem=CHOICE_FUNCTION, **kwargs
+        )
         self.logger.info("Dataset type {}".format(dataset_type))
 
     def create_dataset_largest(self):
@@ -24,9 +29,13 @@ class MNISTChoiceDatasetReader(MNISTDatasetReader):
         for i in range(n_total):
             remaining = self.X_raw[self.y_labels <= largest_numbers[i]]
             while True:
-                indices = self.random_state.choice(len(remaining), size=self.n_objects, replace=False)
+                indices = self.random_state.choice(
+                    len(remaining), size=self.n_objects, replace=False
+                )
                 self.X[i] = remaining[indices]
-                y_number[i] = self.y_labels[self.y_labels <= largest_numbers[i]][indices]
+                y_number[i] = self.y_labels[self.y_labels <= largest_numbers[i]][
+                    indices
+                ]
                 if largest_numbers[i] in y_number[i]:
                     break
         self.Y = (y_number == largest_numbers[:, None]).astype(int)
@@ -39,7 +48,9 @@ class MNISTChoiceDatasetReader(MNISTDatasetReader):
         self.Y = np.zeros((n_total, self.n_objects), dtype=int)
         all_indices = np.arange(len(self.X_raw))
         for i in range(n_total):
-            indices = self.random_state.choice(all_indices, size=self.n_objects, replace=False)
+            indices = self.random_state.choice(
+                all_indices, size=self.n_objects, replace=False
+            )
             labels = self.y_labels[indices]
             numbers, counts = np.unique(labels, return_counts=True)
             modes = numbers[np.where(counts == np.max(counts))[0]]
@@ -55,7 +66,9 @@ class MNISTChoiceDatasetReader(MNISTDatasetReader):
         all_indices = np.arange(len(self.X_raw))
         for i in range(n_total):
             while True:
-                indices = self.random_state.choice(all_indices, size=self.n_objects, replace=False)
+                indices = self.random_state.choice(
+                    all_indices, size=self.n_objects, replace=False
+                )
                 labels = self.y_labels[indices]
                 numbers, counts = np.unique(labels, return_counts=True)
                 unique_numbers = numbers[np.where(counts == 1)[0]]

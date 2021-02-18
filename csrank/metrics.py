@@ -50,11 +50,17 @@ from keras import backend as K
 
 from csrank.tensorflow_util import scores_to_rankings, get_instances_objects, tensorify
 
-__all__ = ['zero_one_rank_loss', 'zero_one_rank_loss_for_scores',
-           'zero_one_rank_loss_for_scores_ties',
-           'make_ndcg_at_k_loss', 'kendalls_tau_for_scores',
-           'spearman_correlation_for_scores', "zero_one_accuracy",
-           "zero_one_accuracy_for_scores", "topk_categorical_accuracy"]
+__all__ = [
+    "zero_one_rank_loss",
+    "zero_one_rank_loss_for_scores",
+    "zero_one_rank_loss_for_scores_ties",
+    "make_ndcg_at_k_loss",
+    "kendalls_tau_for_scores",
+    "spearman_correlation_for_scores",
+    "zero_one_accuracy",
+    "zero_one_accuracy_for_scores",
+    "topk_categorical_accuracy",
+]
 
 
 def zero_one_rank_loss(y_true, y_pred):
@@ -66,12 +72,13 @@ def zero_one_rank_loss(y_true, y_pred):
 
     # Calculate Transpositions
     transpositions = tf.logical_and(mask, mask2)
-    transpositions = K.sum(K.cast(transpositions, dtype='float32'), axis=[1, 2])
+    transpositions = K.sum(K.cast(transpositions, dtype="float32"), axis=[1, 2])
 
     n_objects = K.max(y_true) + 1
-    transpositions += (K.sum(K.cast(mask3, dtype='float32'), axis=[1, 2])
-                       - n_objects) / 4.
-    denominator = K.cast((n_objects * (n_objects - 1.)) / 2., dtype='float32')
+    transpositions += (
+        K.sum(K.cast(mask3, dtype="float32"), axis=[1, 2]) - n_objects
+    ) / 4.0
+    denominator = K.cast((n_objects * (n_objects - 1.0)) / 2.0, dtype="float32")
     result = transpositions / denominator
     return K.mean(result)
 
@@ -79,8 +86,8 @@ def zero_one_rank_loss(y_true, y_pred):
 def zero_one_accuracy(y_true, y_pred):
     y_true, y_pred = tensorify(y_true), tensorify(y_pred)
     n_instances, n_objects = get_instances_objects(y_true)
-    equal_ranks = K.cast(K.all(K.equal(y_pred, y_true), axis=1), dtype='float32')
-    denominator = K.cast(n_instances, dtype='float32')
+    equal_ranks = K.cast(K.all(K.equal(y_pred, y_true), axis=1), dtype="float32")
+    denominator = K.cast(n_instances, dtype="float32")
     zero_one_loss = K.sum(equal_ranks) / denominator
     return zero_one_loss
 
@@ -91,18 +98,19 @@ def zero_one_rank_loss_for_scores(y_true, s_pred):
 
 def zero_one_rank_loss_for_scores_ties(y_true, s_pred):
     y_true, s_pred = tensorify(y_true), tensorify(s_pred)
-    n_objects = K.cast(K.max(y_true) + 1, dtype='float32')
+    n_objects = K.cast(K.max(y_true) + 1, dtype="float32")
     mask = K.greater(y_true[:, None] - y_true[:, :, None], 0)
     mask2 = K.greater(s_pred[:, None] - s_pred[:, :, None], 0)
     mask3 = K.equal(s_pred[:, None] - s_pred[:, :, None], 0)
 
     # Calculate Transpositions
     transpositions = tf.logical_and(mask, mask2)
-    transpositions = K.sum(K.cast(transpositions, dtype='float32'), axis=[1, 2])
-    transpositions += (K.sum(K.cast(mask3, dtype='float32'), axis=[1, 2])
-                       - n_objects) / 4.
+    transpositions = K.sum(K.cast(transpositions, dtype="float32"), axis=[1, 2])
+    transpositions += (
+        K.sum(K.cast(mask3, dtype="float32"), axis=[1, 2]) - n_objects
+    ) / 4.0
 
-    denominator = n_objects * (n_objects - 1.) / 2.
+    denominator = n_objects * (n_objects - 1.0) / 2.0
     result = transpositions / denominator
     return K.mean(result)
 
@@ -110,20 +118,21 @@ def zero_one_rank_loss_for_scores_ties(y_true, s_pred):
 def make_ndcg_at_k_loss(k=5):
     def ndcg(y_true, y_pred):
         y_true, y_pred = tensorify(y_true), tensorify(y_pred)
-        n_objects = K.cast(K.int_shape(y_pred)[1], 'float32')
-        relevance = K.pow(2., ((n_objects - y_true) * 60) / n_objects) - 1.
-        relevance_pred = K.pow(2., ((n_objects - y_pred) * 60) / n_objects) - 1.
+        n_objects = K.cast(K.int_shape(y_pred)[1], "float32")
+        relevance = K.pow(2.0, ((n_objects - y_true) * 60) / n_objects) - 1.0
+        relevance_pred = K.pow(2.0, ((n_objects - y_pred) * 60) / n_objects) - 1.0
 
         # Calculate ideal dcg:
         toprel, toprel_ind = tf.nn.top_k(relevance, k)
-        log_term = K.log(K.arange(k, dtype='float32') + 2.) / K.log(2.)
+        log_term = K.log(K.arange(k, dtype="float32") + 2.0) / K.log(2.0)
         idcg = K.sum(toprel / log_term, axis=-1, keepdims=True)
         # Calculate actual dcg:
         toppred, toppred_ind = tf.nn.top_k(relevance_pred, k)
         row_ind = K.cumsum(K.ones_like(toppred_ind), axis=0) - 1
         ind = K.stack([row_ind, toppred_ind], axis=-1)
-        pred_rel = K.sum(tf.gather_nd(relevance, ind) / log_term, axis=-1,
-                         keepdims=True)
+        pred_rel = K.sum(
+            tf.gather_nd(relevance, ind) / log_term, axis=-1, keepdims=True
+        )
         gain = pred_rel / idcg
         return gain
 
@@ -131,21 +140,23 @@ def make_ndcg_at_k_loss(k=5):
 
 
 def kendalls_tau_for_scores(y_true, y_pred):
-    return 1. - 2. * zero_one_rank_loss_for_scores(y_true, y_pred)
+    return 1.0 - 2.0 * zero_one_rank_loss_for_scores(y_true, y_pred)
 
 
 def spearman_correlation_for_scores(y_true, y_pred):
     y_true, y_pred = tensorify(y_true), tensorify(y_pred)
     n_instances, n_objects = get_instances_objects(y_true)
     predicted_rankings = scores_to_rankings(n_objects, y_pred)
-    y_true = K.cast(y_true, dtype='float32')
+    y_true = K.cast(y_true, dtype="float32")
     sum_of_squared_distances = tf.constant(0.0)
     for i in np.arange(K.int_shape(y_pred)[1]):
         objects_pred = predicted_rankings[:, i]
         objects_true = y_true[:, i]
         t = (objects_pred - objects_true) ** 2
         sum_of_squared_distances = sum_of_squared_distances + tf.reduce_sum(t)
-    denominator = K.cast(n_objects * (n_objects ** 2 - 1) * n_instances, dtype='float32')
+    denominator = K.cast(
+        n_objects * (n_objects ** 2 - 1) * n_instances, dtype="float32"
+    )
     spearman_correlation = 1 - (6 * sum_of_squared_distances) / denominator
     return spearman_correlation
 
@@ -154,9 +165,11 @@ def zero_one_accuracy_for_scores(y_true, y_pred):
     y_true, y_pred = tensorify(y_true), tensorify(y_pred)
     n_instances, n_objects = get_instances_objects(y_true)
     predicted_rankings = scores_to_rankings(n_objects, y_pred)
-    y_true = K.cast(y_true, dtype='float32')
-    equal_ranks = K.cast(K.all(K.equal(predicted_rankings, y_true), axis=1), dtype='float32')
-    denominator = K.cast(n_instances, dtype='float32')
+    y_true = K.cast(y_true, dtype="float32")
+    equal_ranks = K.cast(
+        K.all(K.equal(predicted_rankings, y_true), axis=1), dtype="float32"
+    )
+    denominator = K.cast(n_instances, dtype="float32")
     zero_one_loss = K.sum(equal_ranks) / denominator
     return zero_one_loss
 
@@ -165,7 +178,7 @@ def topk_categorical_accuracy(k=5):
     def topk_acc(y_true, y_pred):
         y_true, y_pred = tensorify(y_true), tensorify(y_pred)
         acc = tf.nn.in_top_k(y_pred, tf.argmax(y_true, axis=-1), k=k)
-        acc = K.cast(acc, dtype='float32')
+        acc = K.cast(acc, dtype="float32")
         return acc
 
     return topk_acc
@@ -308,9 +321,9 @@ def err(y_true, y_pred, utility_function=None, probability_mapping=None):
     # Using y_true and the probability mapping, we can derive the
     # probability that each object satisfies the users need (we need to
     # map over the flattened array and then restore the shape):
-    satisfied_probs = tf.reshape(tf.map_fn(
-        probability_mapping, tf.reshape(y_true, (-1,))
-    ), tf.shape(y_true))
+    satisfied_probs = tf.reshape(
+        tf.map_fn(probability_mapping, tf.reshape(y_true, (-1,))), tf.shape(y_true)
+    )
 
     # sort satisfied probabilities according to the predicted ranking
     rows = tf.range(0, ninstances)
@@ -323,11 +336,17 @@ def err(y_true, y_pred, utility_function=None, probability_mapping=None):
     # And from the positions predicted in y_pred we can further derive
     # the utilities of each object given their position:
     utilities = tf.map_fn(
-        utility_function, tf.range(1, nobjects + 1), dtype=tf.float64,
+        utility_function,
+        tf.range(1, nobjects + 1),
+        dtype=tf.float64,
     )
 
-    discount_at_rank = tf.cast(not_satisfied_n_times, tf.float64) * tf.reshape(utilities, (1, -1))
-    discounted_document_values = tf.cast(satisfied_at_rank, tf.float64) * discount_at_rank
+    discount_at_rank = tf.cast(not_satisfied_n_times, tf.float64) * tf.reshape(
+        utilities, (1, -1)
+    )
+    discounted_document_values = (
+        tf.cast(satisfied_at_rank, tf.float64) * discount_at_rank
+    )
     results = tf.reduce_sum(discounted_document_values, axis=1)
 
     return K.mean(results)

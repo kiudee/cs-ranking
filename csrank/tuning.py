@@ -13,25 +13,45 @@ from skopt import Optimizer
 from skopt.space import check_dimension, Categorical, Integer
 from skopt.utils import cook_estimator, normalize_dimensions, dump, load
 
-from csrank.constants import OBJECT_RANKING, LABEL_RANKING, DISCRETE_CHOICE, \
-    DYAD_RANKING, CHOICE_FUNCTION
+from csrank.constants import (
+    OBJECT_RANKING,
+    LABEL_RANKING,
+    DISCRETE_CHOICE,
+    DYAD_RANKING,
+    CHOICE_FUNCTION,
+)
 from csrank.learner import Learner
 from csrank.metrics import *
 from csrank.metrics_np import *
 from csrank.tensorflow_util import get_mean_loss
 from csrank.tunable import Tunable
-from csrank.util import duration_till_now, create_dir_recursively, \
-    seconds_to_time, \
-    convert_to_loss
+from csrank.util import (
+    duration_till_now,
+    create_dir_recursively,
+    seconds_to_time,
+    convert_to_loss,
+)
 
 PARAMETER_OPTIMIZER = "ParameterOptimizer"
 
-accuracy_scores = [f1_measure, precision, recall, instance_informedness, zero_one_accuracy,
-                   zero_one_accuracy_for_scores_np,
-                   zero_one_accuracy_for_scores, kendalls_tau_for_scores_np, spearman_correlation_for_scores_scipy,
-                   kendalls_tau_for_scores,
-                   spearman_correlation_for_scores, make_ndcg_at_k_loss, categorical_accuracy_np,
-                   topk_categorical_accuracy_np, topk_categorical_accuracy, categorical_accuracy]
+accuracy_scores = [
+    f1_measure,
+    precision,
+    recall,
+    instance_informedness,
+    zero_one_accuracy,
+    zero_one_accuracy_for_scores_np,
+    zero_one_accuracy_for_scores,
+    kendalls_tau_for_scores_np,
+    spearman_correlation_for_scores_scipy,
+    kendalls_tau_for_scores,
+    spearman_correlation_for_scores,
+    make_ndcg_at_k_loss,
+    categorical_accuracy_np,
+    topk_categorical_accuracy_np,
+    topk_categorical_accuracy,
+    categorical_accuracy,
+]
 
 
 class TuningCallback(object):
@@ -55,8 +75,18 @@ class TuningCallback(object):
 
 
 class ParameterOptimizer(Learner):
-    def __init__(self, learner, optimizer_path, tunable_parameter_ranges, fit_params=None, random_state=None,
-                 tuning_callbacks=None, validation_loss=None, learning_problem=OBJECT_RANKING, **kwd):
+    def __init__(
+        self,
+        learner,
+        optimizer_path,
+        tunable_parameter_ranges,
+        fit_params=None,
+        random_state=None,
+        tuning_callbacks=None,
+        validation_loss=None,
+        learning_problem=OBJECT_RANKING,
+        **kwd
+    ):
         """
 
         Parameters
@@ -94,24 +124,38 @@ class ParameterOptimizer(Learner):
             self.tuning_callbacks = []
         else:
             self.tuning_callbacks = tuning_callbacks
-        loss_funcs = {OBJECT_RANKING: zero_one_rank_loss, LABEL_RANKING: zero_one_rank_loss,
-                      DISCRETE_CHOICE: categorical_accuracy, DYAD_RANKING: zero_one_rank_loss,
-                      CHOICE_FUNCTION: f1_measure}
+        loss_funcs = {
+            OBJECT_RANKING: zero_one_rank_loss,
+            LABEL_RANKING: zero_one_rank_loss,
+            DISCRETE_CHOICE: categorical_accuracy,
+            DYAD_RANKING: zero_one_rank_loss,
+            CHOICE_FUNCTION: f1_measure,
+        }
         if validation_loss is None:
             self.validation_loss = loss_funcs[learning_problem]
-            self.logger.info('Loss function is not specified, using {}'.format(loss_funcs[learning_problem].__name__))
+            self.logger.info(
+                "Loss function is not specified, using {}".format(
+                    loss_funcs[learning_problem].__name__
+                )
+            )
         else:
             self.validation_loss = validation_loss
-            self.logger.info('Using Loss function {}'.format(self.validation_loss.__name__))
+            self.logger.info(
+                "Using Loss function {}".format(self.validation_loss.__name__)
+            )
 
         if self.validation_loss in accuracy_scores:
             self.validation_loss = convert_to_loss(self.validation_loss)
-            self.logger.info('Loss function specified is an accuracy converting '
-                             '{}'.format(self.validation_loss.__name__))
+            self.logger.info(
+                "Loss function specified is an accuracy converting "
+                "{}".format(self.validation_loss.__name__)
+            )
 
         if fit_params is None:
             self._fit_params = {}
-            self.logger.warning("Fit params are empty, the default parameters will be applied")
+            self.logger.warning(
+                "Fit params are empty, the default parameters will be applied"
+            )
         else:
             self._fit_params = fit_params
 
@@ -124,24 +168,25 @@ class ParameterOptimizer(Learner):
             cb.set_optimizer(opt)
 
     def _callbacks_on_optimization_begin(self):
-        self.logger.info('optimizer begin')
+        self.logger.info("optimizer begin")
         for cb in self.tuning_callbacks:
             cb.on_optimization_begin()
 
     def _callbacks_on_optimization_end(self):
-        self.logger.info('optimizer end')
+        self.logger.info("optimizer end")
         for cb in self.tuning_callbacks:
             cb.on_optimization_end()
 
     def _callbacks_on_iteration_begin(self, t):
         self.logger.info(
             "********************** optimizer iteration begin ****************"
-            "****** " + repr(t))
+            "****** " + repr(t)
+        )
         for cb in self.tuning_callbacks:
             cb.on_iteration_begin(t)
 
     def _callbacks_on_iteration_end(self, t):
-        self.logger.info('current optimizer iteration end ' + repr(t))
+        self.logger.info("current optimizer iteration end " + repr(t))
         for cb in self.tuning_callbacks:
             cb.on_iteration_end(t)
 
@@ -160,7 +205,9 @@ class ParameterOptimizer(Learner):
             param_dict = dict()
             for j, p in enumerate(ranges.keys()):
                 param_dict[p] = point[i + j]
-            self.logger.info('obj: {}, current parameters {}'.format(type(obj).__name__, param_dict))
+            self.logger.info(
+                "obj: {}, current parameters {}".format(type(obj).__name__, param_dict)
+            )
             obj.set_tunable_parameters(**param_dict)
             i += len(ranges)
 
@@ -174,12 +221,23 @@ class ParameterOptimizer(Learner):
             time_taken = duration_till_now(start)
         except:
             self.logger.error(traceback.format_exc())
-            self.logger.info("For current parameter error occurred so taking loss as maximum value")
+            self.logger.info(
+                "For current parameter error occurred so taking loss as maximum value"
+            )
             loss = 1.00
             time_taken = duration_till_now(start)
         return loss, time_taken
 
-    def fit(self, X, Y, total_duration=600, n_iter=100, cv_iter=None, acq_func='gp_hedge', **kwargs):
+    def fit(
+        self,
+        X,
+        Y,
+        total_duration=600,
+        n_iter=100,
+        cv_iter=None,
+        acq_func="gp_hedge",
+        **kwargs
+    ):
         start = datetime.now()
 
         def splitter(itr):
@@ -203,7 +261,9 @@ class ParameterOptimizer(Learner):
                 yield X_train, Y_train, X_test, Y_test
 
         if cv_iter is None:
-            cv_iter = ShuffleSplit(n_splits=3, test_size=0.1, random_state=self.random_state)
+            cv_iter = ShuffleSplit(
+                n_splits=3, test_size=0.1, random_state=self.random_state
+            )
         if isinstance(X, dict):
             splits = dict()
             for n_obj, arr in X.items():
@@ -217,17 +277,12 @@ class ParameterOptimizer(Learner):
         # Here we fix a random seed for all simulations to correlate the random
         # streams:
 
-        seed = self.random_state.randint(2 ** 32, dtype='uint32')
-        self.logger.debug('Random seed for the ranking algorithm: {}'.format(
-            seed))
-        opt_seed = self.random_state.randint(2 ** 32, dtype='uint32')
-        self.logger.debug('Random seed for the optimizer: {}'.format(
-            opt_seed
-        ))
-        gp_seed = self.random_state.randint(2 ** 32, dtype='uint32')
-        self.logger.debug('Random seed for the GP surrogate: {}'.format(
-            gp_seed
-        ))
+        seed = self.random_state.randint(2 ** 32, dtype="uint32")
+        self.logger.debug("Random seed for the ranking algorithm: {}".format(seed))
+        opt_seed = self.random_state.randint(2 ** 32, dtype="uint32")
+        self.logger.debug("Random seed for the optimizer: {}".format(opt_seed))
+        gp_seed = self.random_state.randint(2 ** 32, dtype="uint32")
+        self.logger.debug("Random seed for the GP surrogate: {}".format(gp_seed))
         n_iter = self.set_optimizer(n_iter, opt_seed, acq_func, gp_seed, **kwargs)
 
         self._callbacks_set_optimizer(self.opt)
@@ -235,7 +290,11 @@ class ParameterOptimizer(Learner):
         time_taken = duration_till_now(start)
         total_duration -= time_taken
         max_fit_duration = -np.inf
-        self.logger.info('Time left for {} iterations is {}'.format(n_iter, seconds_to_time(total_duration)))
+        self.logger.info(
+            "Time left for {} iterations is {}".format(
+                n_iter, seconds_to_time(total_duration)
+            )
+        )
 
         try:
             for t in range(n_iter):
@@ -243,26 +302,25 @@ class ParameterOptimizer(Learner):
                     break
                 start = datetime.now()
                 self._callbacks_on_iteration_begin(t)
-                self.logger.info('Starting optimization iteration: {}'.format(t))
+                self.logger.info("Starting optimization iteration: {}".format(t))
                 if t > 0:
                     self.log_best_params()
                 next_point = self.opt.ask()
-                self.logger.info('Next parameters:\n{}'.format(next_point))
+                self.logger.info("Next parameters:\n{}".format(next_point))
                 results = []
                 running_times = []
                 if isinstance(X, dict):
                     for X_train, Y_train, X_test, Y_test in splitter_dict(splits):
                         result, time_taken = self._fit_ranker(
-                            X_train, Y_train,
-                            X_test, Y_test, next_point)
+                            X_train, Y_train, X_test, Y_test, next_point
+                        )
                         running_times.append(time_taken)
                         results.append(result)
                 else:
                     for X_train, Y_train, X_test, Y_test in splitter(splits):
                         result, time_taken = self._fit_ranker(
-                            X_train, Y_train,
-                            X_test, Y_test,
-                            next_point)
+                            X_train, Y_train, X_test, Y_test, next_point
+                        )
                         running_times.append(time_taken)
                         results.append(result)
 
@@ -275,8 +333,14 @@ class ParameterOptimizer(Learner):
                 if max_fit_duration < np.sum(running_times):
                     max_fit_duration = np.sum(running_times)
 
-                self.logger.info('Validation error for the parameters is {:.4f}'.format(mean_result))
-                self.logger.info('Time taken for the parameters is {}'.format(seconds_to_time(np.sum(running_times))))
+                self.logger.info(
+                    "Validation error for the parameters is {:.4f}".format(mean_result)
+                )
+                self.logger.info(
+                    "Time taken for the parameters is {}".format(
+                        seconds_to_time(np.sum(running_times))
+                    )
+                )
                 if "ps" in self.opt.acq_func:
                     self.opt.tell(next_point, [mean_result, mean_fitting_duration])
                 else:
@@ -284,29 +348,50 @@ class ParameterOptimizer(Learner):
                 self._callbacks_on_iteration_end(t)
 
                 self.logger.info(
-                    "Main optimizer iterations done {} and saving the model".format(np.array(self.opt.yi).shape[0]))
+                    "Main optimizer iterations done {} and saving the model".format(
+                        np.array(self.opt.yi).shape[0]
+                    )
+                )
                 dump(self.opt, self.optimizer_path)
 
                 time_taken = duration_till_now(start)
                 total_duration -= time_taken
-                self.logger.info('Time left for simulations is {} '.format(seconds_to_time(total_duration)))
+                self.logger.info(
+                    "Time left for simulations is {} ".format(
+                        seconds_to_time(total_duration)
+                    )
+                )
 
                 # Delete Tensorflow graph, to prevent memory leaks:
                 K.clear_session()
                 sess = tf.Session()
                 K.set_session(sess)
                 if (total_duration - max_fit_duration) < 0:
-                    self.logger.info('Maximum time required by model to validate parameter values {}'.format(
-                        seconds_to_time(max_fit_duration)))
-                    self.logger.info('At iteration {} simulation stops, due to time deficiency'.format(t))
+                    self.logger.info(
+                        "Maximum time required by model to validate parameter values {}".format(
+                            seconds_to_time(max_fit_duration)
+                        )
+                    )
+                    self.logger.info(
+                        "At iteration {} simulation stops, due to time deficiency".format(
+                            t
+                        )
+                    )
                     break
 
         except KeyboardInterrupt:
-            self.logger.debug('Optimizer interrupted saving the model at {}'.format(self.optimizer_path))
+            self.logger.debug(
+                "Optimizer interrupted saving the model at {}".format(
+                    self.optimizer_path
+                )
+            )
             self.log_best_params()
         else:
-            self.logger.debug('Finally, fit a model on the complete training set and storing the model at {}'.format(
-                self.optimizer_path))
+            self.logger.debug(
+                "Finally, fit a model on the complete training set and storing the model at {}".format(
+                    self.optimizer_path
+                )
+            )
 
         finally:
             K.clear_session()
@@ -329,40 +414,56 @@ class ParameterOptimizer(Learner):
             best_i = np.argmin(np.array(self.opt.yi)[:, 0])
             best_loss = self.opt.yi[best_i]
             best_params = self.opt.Xi[best_i]
-            self.logger.info("Best parameters so far with a loss of {:.4f}:\n {}".format(best_loss[0], best_params))
+            self.logger.info(
+                "Best parameters so far with a loss of {:.4f}:\n {}".format(
+                    best_loss[0], best_params
+                )
+            )
         else:
             best_i = np.argmin(self.opt.yi)
             best_loss = self.opt.yi[best_i]
             best_params = self.opt.Xi[best_i]
-            self.logger.info("Best parameters so far with a loss of {:.4f}:\n {}".format(best_loss, best_params))
+            self.logger.info(
+                "Best parameters so far with a loss of {:.4f}:\n {}".format(
+                    best_loss, best_params
+                )
+            )
 
     def set_optimizer(self, n_iter, opt_seed, acq_func, gp_seed, **kwargs):
-        self.logger.info('Retrieving model stored at: {}'.format(self.optimizer_path))
+        self.logger.info("Retrieving model stored at: {}".format(self.optimizer_path))
         try:
             optimizer = load(self.optimizer_path)
-            self.logger.info('Loading model stored at: {}'.format(self.optimizer_path))
+            self.logger.info("Loading model stored at: {}".format(self.optimizer_path))
             finished_iter = np.array(optimizer.yi).shape[0]
             if finished_iter == 0:
                 optimizer = None
-                self.logger.info('Optimizer did not finish any iterations so setting optimizer to null')
+                self.logger.info(
+                    "Optimizer did not finish any iterations so setting optimizer to null"
+                )
         except KeyError:
-            self.logger.error('Cannot open the file {}'.format(self.optimizer_path))
+            self.logger.error("Cannot open the file {}".format(self.optimizer_path))
             optimizer = None
 
         except ValueError:
-            self.logger.error('Cannot open the file {}'.format(self.optimizer_path))
+            self.logger.error("Cannot open the file {}".format(self.optimizer_path))
             optimizer = None
         except FileNotFoundError:
-            self.logger.error('No such file or directory: {}'.format(self.optimizer_path))
+            self.logger.error(
+                "No such file or directory: {}".format(self.optimizer_path)
+            )
             optimizer = None
 
         if optimizer is not None:
             n_iter = n_iter - finished_iter
             if n_iter < 0:
                 n_iter = 0
-            self.logger.info('Iterations already done: {} and running iterations {}'.format(finished_iter, n_iter))
+            self.logger.info(
+                "Iterations already done: {} and running iterations {}".format(
+                    finished_iter, n_iter
+                )
+            )
             self.opt = optimizer
-            self.logger.debug('Setting the provided optimizer')
+            self.logger.debug("Setting the provided optimizer")
             self.log_best_params()
         else:
             transformed = []
@@ -370,16 +471,32 @@ class ParameterOptimizer(Learner):
                 transformed.append(check_dimension(param))
             self.logger.info("Parameter Space: {}".format(transformed))
             norm_space = normalize_dimensions(transformed)
-            self.logger.info("Parameter Space after transformation: {}".format(norm_space))
-            categorical_space = np.array([isinstance(s, Categorical) or isinstance(s, Integer) for s in norm_space])
+            self.logger.info(
+                "Parameter Space after transformation: {}".format(norm_space)
+            )
+            categorical_space = np.array(
+                [
+                    isinstance(s, Categorical) or isinstance(s, Integer)
+                    for s in norm_space
+                ]
+            )
             self.logger.info("categorical_space: {}".format(categorical_space))
             if np.all(categorical_space):
-                base_estimator = cook_estimator("RF", space=norm_space, random_state=gp_seed)
+                base_estimator = cook_estimator(
+                    "RF", space=norm_space, random_state=gp_seed
+                )
             else:
-                base_estimator = cook_estimator("GP", space=norm_space, random_state=gp_seed, noise="gaussian")
+                base_estimator = cook_estimator(
+                    "GP", space=norm_space, random_state=gp_seed, noise="gaussian"
+                )
 
-            self.opt = Optimizer(dimensions=self.parameter_ranges, random_state=opt_seed, base_estimator=base_estimator,
-                                 acq_func=acq_func, **kwargs)
+            self.opt = Optimizer(
+                dimensions=self.parameter_ranges,
+                random_state=opt_seed,
+                base_estimator=base_estimator,
+                acq_func=acq_func,
+                **kwargs
+            )
 
         return n_iter
 
@@ -387,35 +504,35 @@ class ParameterOptimizer(Learner):
         if self.model is not None:
             return self.model.predict_pair(a, b, **kwargs)
         else:
-            self.logger.error('The ranking model was not fit yet.')
+            self.logger.error("The ranking model was not fit yet.")
             raise AttributeError
 
     def _predict_scores_fixed(self, X, **kwargs):
         if self.model is not None:
             return self.model._predict_scores_fixed(X, **kwargs)
         else:
-            self.logger.error('The ranking model was not fit yet.')
+            self.logger.error("The ranking model was not fit yet.")
             raise AttributeError
 
     def predict_scores(self, X, **kwargs):
         if self.model is not None:
             return self.model.predict_scores(X, **kwargs)
         else:
-            self.logger.error('The ranking model was not fit yet.')
+            self.logger.error("The ranking model was not fit yet.")
             raise AttributeError
 
     def predict(self, X, **kwargs):
         if self.model is not None:
             return self.model.predict(X, **kwargs)
         else:
-            self.logger.error('The ranking model was not fit yet.')
+            self.logger.error("The ranking model was not fit yet.")
             raise AttributeError
 
     def predict_for_scores(self, scores, **kwargs):
         if self.model is not None:
             return self.model.predict_for_scores(scores, **kwargs)
         else:
-            self.logger.error('The ranking model was not fit yet.')
+            self.logger.error("The ranking model was not fit yet.")
             raise AttributeError
 
     def set_tunable_parameters(self, **point):
@@ -423,13 +540,13 @@ class ParameterOptimizer(Learner):
 
 
 def check_learner_class(ranker):
-    """ Function which checks if the ranker is an instance of the :class:`csrank.tunning.Tunable` class
+    """Function which checks if the ranker is an instance of the :class:`csrank.tunning.Tunable` class
 
     Parameters
     ----------
     ranker: object
         The ranker object to be checked
     """
-    if not (isinstance(ranker, Tunable) and hasattr(ranker, 'set_tunable_parameters')):
-        logging.error('The given object ranker is not tunable')
+    if not (isinstance(ranker, Tunable) and hasattr(ranker, "set_tunable_parameters")):
+        logging.error("The given object ranker is not tunable")
         raise AttributeError

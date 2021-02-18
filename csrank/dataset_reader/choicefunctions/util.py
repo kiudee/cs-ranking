@@ -14,11 +14,25 @@ def sub_sampling_choices_from_relevance(Xt, Yt, n_objects=5, offset=2):
             c_max = n_objects if n_objects < len(choices) else len(choices) + 1
             sizes = rs.choice(np.arange(1, c_max), size=bucket_size)
             if len(zeros) > n_objects - 1:
-                idx = np.array([np.append(rs.choice(choices, size=size, replace=False),
-                                          rs.choice(zeros, size=(n_objects - size), replace=False)) for size in sizes])
+                idx = np.array(
+                    [
+                        np.append(
+                            rs.choice(choices, size=size, replace=False),
+                            rs.choice(zeros, size=(n_objects - size), replace=False),
+                        )
+                        for size in sizes
+                    ]
+                )
             else:
-                idx = np.array([np.append(rs.choice(choices, size=size, replace=False),
-                                          rs.choice(zeros, size=(n_objects - size), replace=True)) for size in sizes])
+                idx = np.array(
+                    [
+                        np.append(
+                            rs.choice(choices, size=size, replace=False),
+                            rs.choice(zeros, size=(n_objects - size), replace=True),
+                        )
+                        for size in sizes
+                    ]
+                )
             for i in idx:
                 np.random.shuffle(i)
             if len(X_train) == 0:

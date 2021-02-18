@@ -5,8 +5,12 @@ import numpy as np
 
 from csrank.numpy_util import ranking_ordering_conversion
 
-__all__ = ['generate_complete_pairwise_dataset', 'complete_linear_regression_dataset',
-           'complete_linear_regression_dataset', "sub_sampling_rankings"]
+__all__ = [
+    "generate_complete_pairwise_dataset",
+    "complete_linear_regression_dataset",
+    "complete_linear_regression_dataset",
+    "sub_sampling_rankings",
+]
 
 
 def generate_pairwise_instances(features):
@@ -31,43 +35,43 @@ def generate_pairwise_instances(features):
 
 def generate_complete_pairwise_dataset(X, Y):
     """
-        Generates the pairiwse preference data from the given rankings.The ranking amongst the objects in a query set
-        :math:`Q = \{x_1, x_2, x_3\}` is represented by :math:`\pi = (2,1,3)`, such that :math:`\pi(2)=1` is the position of the :math:`x_2`.
-        One can extract the following *pairwise preferences* :math:`x_2 \succ x_1, x_2 \succ x_3 and x_1 \succ x_3`.
-        This function generates pairwise preferences which can be used to learn different :class:`ObjectRanker` as:
-            1. :class:`RankNet`
-            2. :class:`CmpNet`
-            3. :class:`RankSVM`
+    Generates the pairiwse preference data from the given rankings.The ranking amongst the objects in a query set
+    :math:`Q = \{x_1, x_2, x_3\}` is represented by :math:`\pi = (2,1,3)`, such that :math:`\pi(2)=1` is the position of the :math:`x_2`.
+    One can extract the following *pairwise preferences* :math:`x_2 \succ x_1, x_2 \succ x_3 and x_1 \succ x_3`.
+    This function generates pairwise preferences which can be used to learn different :class:`ObjectRanker` as:
+        1. :class:`RankNet`
+        2. :class:`CmpNet`
+        3. :class:`RankSVM`
 
-        Parameters
-        ----------
-        X : numpy array (n_instances, n_objects, n_features)
-            Feature vectors of the objects
-        Y : numpy array (n_instances, n_objects)
-            Rankings of the given objects
+    Parameters
+    ----------
+    X : numpy array (n_instances, n_objects, n_features)
+        Feature vectors of the objects
+    Y : numpy array (n_instances, n_objects)
+        Rankings of the given objects
 
-        Returns
-        -------
-        x_train: array-like, shape (n_samples, n_features)
-            The difference vector between the two objects with pairwise preference :math:`x_2 \succ x_1`, i.e.
-            :math:`x_2-x_1` with n_samples=:math:`n_{instances} \cdot (n_{objects} \\choose 2)`. :class:`RankSVM` uses
-            it as input.
-        x_train1: array-like, shape (n_samples, n_features)
-            The first object :math:`x_2` of the pairwise preference :math:`x_2 \succ x_1`, with
-            n_samples=:math:`n_{instances} \cdot (n_{objects} \\choose 2)`. :class:`RankNet` and :class:`CmpNet` uses it
-            as input.
-        x_train2: array-like, shape (n_samples, n_features)
-            The second object :math:`x_1` of the pairwise preference :math:`x_2 \succ x_1`, with
-            n_samples=:math:`n_{instances} \cdot (n_{objects} \\choose 2)`. :class:`RankNet` and :class:`CmpNet` uses it
-            as input.
-        y_double: array-like, shape (n_samples, 2)
-            The preference :math:`x_2 \succ x_1` between the objects :math:`x_2` and :math:`x_1`, i.e. (1,0)
-            with n_samples=:math:`n_{instances} \cdot (n_{objects} \\choose 2)`. :class:`CmpNet` uses it
-            as input.
-        y_double: array-like, shape (n_samples)
-            The preference :math:`x_2 \succ x_1` between the objects :math:`x_2` and :math:`x_1`, i.e. 1
-            with n_samples=:math:`n_{instances} \cdot (n_{objects} \\choose 2)`.:class:`RankNet` and :class:`RankSVM`
-            uses it as output.
+    Returns
+    -------
+    x_train: array-like, shape (n_samples, n_features)
+        The difference vector between the two objects with pairwise preference :math:`x_2 \succ x_1`, i.e.
+        :math:`x_2-x_1` with n_samples=:math:`n_{instances} \cdot (n_{objects} \\choose 2)`. :class:`RankSVM` uses
+        it as input.
+    x_train1: array-like, shape (n_samples, n_features)
+        The first object :math:`x_2` of the pairwise preference :math:`x_2 \succ x_1`, with
+        n_samples=:math:`n_{instances} \cdot (n_{objects} \\choose 2)`. :class:`RankNet` and :class:`CmpNet` uses it
+        as input.
+    x_train2: array-like, shape (n_samples, n_features)
+        The second object :math:`x_1` of the pairwise preference :math:`x_2 \succ x_1`, with
+        n_samples=:math:`n_{instances} \cdot (n_{objects} \\choose 2)`. :class:`RankNet` and :class:`CmpNet` uses it
+        as input.
+    y_double: array-like, shape (n_samples, 2)
+        The preference :math:`x_2 \succ x_1` between the objects :math:`x_2` and :math:`x_1`, i.e. (1,0)
+        with n_samples=:math:`n_{instances} \cdot (n_{objects} \\choose 2)`. :class:`CmpNet` uses it
+        as input.
+    y_double: array-like, shape (n_samples)
+        The preference :math:`x_2 \succ x_1` between the objects :math:`x_2` and :math:`x_1`, i.e. 1
+        with n_samples=:math:`n_{instances} \cdot (n_{objects} \\choose 2)`.:class:`RankNet` and :class:`RankSVM`
+        uses it as output.
     """
     try:
         n_instances, n_objects, n_features = X.shape

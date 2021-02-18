@@ -12,7 +12,7 @@ class DyadRanker(metaclass=ABCMeta):
 
     @abstractmethod
     def fit(self, Xo, Xc, Y, **kwargs):
-        """ Fit the contextual object ranking algorithm for object features
+        """Fit the contextual object ranking algorithm for object features
          Xo and context features Xc and orderings Y for the objects.
 
         Parameters
@@ -33,7 +33,7 @@ class DyadRanker(metaclass=ABCMeta):
 
     @abstractmethod
     def predict(self, Xo, Xc, **kwargs):
-        """ Predict orderings for the objects for a given context vector.
+        """Predict orderings for the objects for a given context vector.
 
         Parameters
         ----------
@@ -50,7 +50,7 @@ class DyadRanker(metaclass=ABCMeta):
 
     @abstractmethod
     def predict_scores(self, Xo, Xc, **kwargs):
-        """ Predict scores for a given collection of sets of objects.
+        """Predict scores for a given collection of sets of objects.
 
         Parameters
         ----------
@@ -67,7 +67,7 @@ class DyadRanker(metaclass=ABCMeta):
         raise NotImplementedError
 
     def __call__(self, Xo, Xc, *args, **kwargs):
-        """ Predicts orderings for a new set of objects Xo.
+        """Predicts orderings for a new set of objects Xo.
 
         Parameters
         ----------

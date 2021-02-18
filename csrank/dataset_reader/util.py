@@ -8,20 +8,21 @@ from sklearn.preprocessing import StandardScaler
 
 
 def strongly_connected_components(graph):
-    """ Find the strongly connected components in a graph using
-        Tarjan's algorithm.
-        # Taken from http://www.logarithmic.net/pfh-files/blog/01208083168/sort.py
+    """Find the strongly connected components in a graph using
+    Tarjan's algorithm.
+    # Taken from http://www.logarithmic.net/pfh-files/blog/01208083168/sort.py
 
-        graph should be a dictionary mapping node names to
-        lists of successor nodes.
-        """
+    graph should be a dictionary mapping node names to
+    lists of successor nodes.
+    """
 
     result = []
     stack = []
     low = {}
 
     def visit(node):
-        if node in low: return
+        if node in low:
+            return
 
         num = len(low)
         low[node] = num
@@ -69,7 +70,9 @@ def create_pairwise_prob_matrix(n_objects):
         for i, j in iter.combinations(np.arange(n_objects), 2):
             pairwise_prob[i, j] = np.random.rand(1)[0]
             pairwise_prob[j, i] = 1.0 - pairwise_prob[i, j]
-        for comp in strongly_connected_components(create_graph_pairwise_matrix(pairwise_prob)):
+        for comp in strongly_connected_components(
+            create_graph_pairwise_matrix(pairwise_prob)
+        ):
             if len(comp) >= 3:
                 non_transitive = True
                 break
@@ -90,7 +93,9 @@ def quicksort(arr, matrix):
 
 def get_similarity_matrix(file_path):
     data_frame = pd.read_csv(file_path)
-    similarity_dictionary = data_frame.set_index('col_major_index')['similarity'].to_dict()
+    similarity_dictionary = data_frame.set_index("col_major_index")[
+        "similarity"
+    ].to_dict()
     return similarity_dictionary
 
 
@@ -99,7 +104,7 @@ def get_key_for_indices(idx1, idx2):
 
 
 def distance_metric_multilabel(x_labels, y_labels, X, Y):
-    similarity = f1_score(x_labels, y_labels, average='macro')
+    similarity = f1_score(x_labels, y_labels, average="macro")
     similarity = np.dot(X, Y) / (np.linalg.norm(X) * np.linalg.norm(Y)) + similarity
     return similarity
 

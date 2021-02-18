@@ -7,7 +7,7 @@ from keras.metrics import binary_accuracy
 from csrank.tuning import check_learner_class
 from ..tuning import ParameterOptimizer
 
-OPTIMIZER_PATH = os.path.join(os.getcwd(), 'opt')
+OPTIMIZER_PATH = os.path.join(os.getcwd(), "opt")
 
 n_instances = 500
 n_features = 3
@@ -18,7 +18,6 @@ def optimizer():
     from ..tunable import Tunable
 
     class RankerStub(Tunable):
-
         def fit(self, X, Y, **kwargs):
             self.seed = int(np.sum(list(self.__dict__.values())))
 
@@ -40,7 +39,7 @@ def optimizer():
     test_params = {
         rankers[0]: dict(a=(1.0, 4.0)),
         ranker: dict(b=(4.0, 7.0), c=(7.0, 10.0)),
-        rankers[1]: dict(d=(10.0, 13.0))
+        rankers[1]: dict(d=(10.0, 13.0)),
     }
 
     opt = ParameterOptimizer(
@@ -48,7 +47,7 @@ def optimizer():
         optimizer_path=OPTIMIZER_PATH,
         tunable_parameter_ranges=test_params,
         ranker_params=dict(),
-        validation_loss=binary_accuracy
+        validation_loss=binary_accuracy,
     )
     return opt, rankers, test_params
 

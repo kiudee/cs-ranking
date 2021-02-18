@@ -13,9 +13,10 @@ from ..dataset_reader import DatasetReader
 
 class SurveyDatasetReader(DatasetReader):
     def __init__(self, random_state=None, **kwargs):
-        super(SurveyDatasetReader, self).__init__(learning_problem=LABEL_RANKING, dataset_folder='survey_data',
-                                                  **kwargs)
-        self.train_file = os.path.join(self.dirname, 'rawdata_all.dta')
+        super(SurveyDatasetReader, self).__init__(
+            learning_problem=LABEL_RANKING, dataset_folder="survey_data", **kwargs
+        )
+        self.train_file = os.path.join(self.dirname, "rawdata_all.dta")
         self.random_state = check_random_state(random_state)
         self.__load_dataset__()
 
@@ -25,7 +26,7 @@ class SurveyDatasetReader(DatasetReader):
         features = []
         for row in df.itertuples():
             orderings.append(row[4:8])
-            context_feature = [float(i) if i != '.' else np.NAN for i in row[13:33]]
+            context_feature = [float(i) if i != "." else np.NAN for i in row[13:33]]
             features.append(context_feature)
         X = np.array(features)
         X = Imputer().fit_transform(X)
@@ -37,7 +38,9 @@ class SurveyDatasetReader(DatasetReader):
         self.__check_dataset_validity__()
 
     def get_single_train_test_split(self):
-        cv_iter = ShuffleSplit(n_splits=1, test_size=0.3, random_state=self.random_state)
+        cv_iter = ShuffleSplit(
+            n_splits=1, test_size=0.3, random_state=self.random_state
+        )
         (train_idx, test_idx) = list(cv_iter.split(self.X))[0]
         return self.X[train_idx], self.Y[train_idx], self.X[test_idx], self.Y[test_idx]
 
