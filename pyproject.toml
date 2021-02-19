@@ -13,7 +13,7 @@ scikit-learn = "^0.19"
 scikit-optimize = "^0.7"
 pandas = ">=0.22,<1.0.0"
 h5py = "^3.1.0"
-pygmo = "^2.16.1"
+pygmo = { version = "^2.16.1", markers = "sys_platform != 'win32'"}
 psycopg2-binary = "^2.8.6"
 docopt = "^0.6.2"
 joblib = "^1.0.1"
@@ -21,12 +21,16 @@ tqdm = "^4.57.0"
 Keras = ">=2.1.5,<2.3"
 pymc3 = ">=3.5,<3.7"
 tensorflow = "^1.5"
+tensorflow-gpu = {version = "^1.5", optional = true}
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.2"
 nox = "^2020.12.31"
 nox-poetry = "^0.8.1"
 black = "^20.8b1"
+
+[tool.poetry.extras]
+gpu = ["tensorflow-gpu"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
