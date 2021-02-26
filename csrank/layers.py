@@ -1,10 +1,11 @@
 import logging
 
-from keras.layers import BatchNormalization, Dense, Activation, Input, Lambda
+import tensorflow as tf
+from keras.layers import Activation, BatchNormalization, Dense, Input, Lambda
 from keras.layers.merge import average
 from keras.models import Model
 
-__all__ = ["NormalizedDense", "DeepSet", "create_input_lambda"]
+__all__ = ["NormalizedDense", "DeepSet", "DeepSetSDA", "create_input_lambda"]
 
 
 class NormalizedDense(object):
@@ -153,3 +154,38 @@ class DeepSet(object):
 def create_input_lambda(i):
     """Extracts off an object tensor from an input tensor"""
     return Lambda(lambda x: x[:, i])
+
+
+class DeepSetSDA(tf.keras.layers.Layer):
+    def __init__(
+        self,
+        output_dim,
+        input_shape=None,
+        set_layers=2,
+        set_units=16,
+        activation="tanh",
+        **kwargs
+    ):
+        super(DeepSetSDA, self).__init__(**kwargs)
+        self.output_dim = output_dim
+        self.set_layers = set_layers
+        self.set_units = set_units
+        self.activation = activation
+        self.embedding = tf.keras.Sequential()
+        for i in range(self.set_layers):
+            if i == 0:
+                self.embedding.add(
+                    tf.keras.layers.Dense(units=self.set_units, input_shape=input_shape)
+                )
+            else:
+                self.embedding.add(tf.keras.layers.Dense(units=self.set_units))
+            self.embedding.add(tf.keras.layers.Activation(self.activation))
+        self.embedding.add(tf.keras.layers.Dense(self.output_dim))
+
+    def call(self, x, **kwargs):
+        emb = self.embedding(x)
+        agg = tf.reduce_mean(emb, axis=-2)
+        return agg
+
+    def compute_output_shape(self, input_shape):
+        return input_shape[0], self.output_dim
