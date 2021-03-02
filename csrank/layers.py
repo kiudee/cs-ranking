@@ -164,6 +164,7 @@ class DeepSetSDA(tf.keras.layers.Layer):
         set_layers=2,
         set_units=16,
         activation="tanh",
+        kernel_regularizer=None,
         **kwargs
     ):
         super(DeepSetSDA, self).__init__(**kwargs)
@@ -171,16 +172,29 @@ class DeepSetSDA(tf.keras.layers.Layer):
         self.set_layers = set_layers
         self.set_units = set_units
         self.activation = activation
+        self.kernel_regularizer = kernel_regularizer
         self.embedding = tf.keras.Sequential()
         for i in range(self.set_layers):
             if i == 0:
                 self.embedding.add(
-                    tf.keras.layers.Dense(units=self.set_units, input_shape=input_shape)
+                    tf.keras.layers.Dense(
+                        units=self.set_units,
+                        input_shape=input_shape,
+                        kernel_regularizer=self.kernel_regularizer,
+                    )
                 )
             else:
-                self.embedding.add(tf.keras.layers.Dense(units=self.set_units))
+                self.embedding.add(
+                    tf.keras.layers.Dense(
+                        units=self.set_units, kernel_regularizer=self.kernel_regularizer
+                    )
+                )
             self.embedding.add(tf.keras.layers.Activation(self.activation))
-        self.embedding.add(tf.keras.layers.Dense(self.output_dim))
+        self.embedding.add(
+            tf.keras.layers.Dense(
+                self.output_dim, kernel_regularizer=self.kernel_regularizer
+            )
+        )
 
     def call(self, x, **kwargs):
         emb = self.embedding(x)
@@ -188,4 +202,6 @@ class DeepSetSDA(tf.keras.layers.Layer):
         return agg
 
     def compute_output_shape(self, input_shape):
-        return input_shape[0], self.output_dim
+        if len(input_shape) <= 2:
+            return (self.output_dim,)
+        return (*input_shape[:-2], self.output_dim)
