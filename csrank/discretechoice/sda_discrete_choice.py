@@ -21,7 +21,7 @@ class SDADiscreteChoiceFunction(SDACore, DiscreteObjectChooser):
         regularization_strength=1e-4,
         batch_size=128,
         activation="tanh",
-        loss_function="mse",
+        loss_function="categorical_hinge",
         metrics=["categorical_accuracy"],
         optimizer="adam",
         **kwargs
