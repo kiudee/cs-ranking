@@ -130,6 +130,12 @@ class SDACore(Learner):
     def predict_for_scores(self, scores, **kwargs):
         return scores
 
+    def predict_scores(self, X, **kwargs):
+        return super().predict_scores(X, **kwargs)
+
+    def predict(self, X, **kwargs):
+        return super().predict(X, **kwargs)
+
     def get_weights(self, **kwargs):
         if self.model is not None:
             return self.model.get_weights()
