@@ -54,14 +54,14 @@ class SDACore(Learner):
         self._optimizer_config = self.optimizer.get_config()
         self.regularization_strength = l2(regularization_strength)
         self.model = None
-        self._construct_layers(n_features, **kwargs)
+        self._construct_layers(**kwargs)
 
-    def _construct_layers(self, n_features, **kwargs):
+    def _construct_layers(self, **kwargs):
         # ell x linear layer f_i
         self.linear_embeddings = tf.keras.layers.Dense(
             units=self.n_linear_units,
             activation="linear",
-            input_shape=(n_features,),
+            input_shape=(self.n_features,),
             kernel_regularizer=self.regularization_strength,
         )
         # 2x set NN (2 hidden layers with 16 units)
@@ -82,7 +82,7 @@ class SDACore(Learner):
             kernel_regularizer=self.regularization_strength,
         )
 
-    def construct_model(self, n_objects, n_features):
+    def construct_model(self, n_features, n_objects):
         input_layer = Input(shape=(n_objects, n_features), name="input_node")
         lin_scores = self.linear_embeddings(input_layer)
 
@@ -104,6 +104,16 @@ class SDACore(Learner):
             loss=self.loss_function, optimizer=self.optimizer, metrics=self.metrics
         )
         return model
+
+    def clear_memory(self, n_objects, **kwargs):
+        weights = self.model.get_weights()
+        K.clear_session()
+        sess = tf.Session()
+        K.set_session(sess)
+        self.optimizer = self.optimizer.from_config(self._optimizer_config)
+        self._construct_layers()
+        self.model = self.construct_model(self.n_features, n_objects)
+        self.model.set_weights(weights)
 
     def fit(self, X, Y, batch_size=None, **kwargs):
         n_instances, n_objects, n_features = X.shape
@@ -161,6 +171,6 @@ class SDACore(Learner):
         self.optimizer = self.optimizer.from_config(self._optimizer_config)
         K.set_value(self.optimizer.lr, learning_rate)
 
-        self._construct_layers(self.n_features)
+        self._construct_layers()
         if hasattr(self, "model"):
             self.model = None
