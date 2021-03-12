@@ -1,58 +1,15 @@
-import os
-
-from keras.optimizers import SGD
 import numpy as np
 import pytest
-import tensorflow as tf
 
-from csrank.constants import CMPNET
 from csrank.constants import ERR
-from csrank.constants import FATE_RANKER
-from csrank.constants import FATELINEAR_RANKER
-from csrank.constants import FETA_RANKER
-from csrank.constants import FETALINEAR_RANKER
-from csrank.constants import LISTNET
-from csrank.constants import RANKNET
 from csrank.constants import RANKSVM
 from csrank.metrics_np import zero_one_accuracy_np
 from csrank.metrics_np import zero_one_rank_loss_for_scores_ties_np
 from csrank.objectranking import *
-from csrank.objectranking.fate_object_ranker import FATEObjectRanker
-
-optimizer_common_args = {
-    "optimizer": SGD,
-    "optimizer__lr": 1e-3,
-    "optimizer__momentum": 0.9,
-    "optimizer__nesterov": True,
-}
 
 object_rankers = {
-    FATELINEAR_RANKER: (
-        FATELinearObjectRanker,
-        {"n_hidden_set_units": 12, "batch_size": 1},
-        (0.0, 1.0),
-    ),
-    FETALINEAR_RANKER: (FETALinearObjectRanker, {}, (0.0, 1.0)),
-    FETA_RANKER: (
-        FETAObjectRanker,
-        {"add_zeroth_order_model": True, **optimizer_common_args},
-        (0.0, 1.0),
-    ),
-    RANKNET: (RankNet, optimizer_common_args.copy(), (0.0, 1.0)),
-    CMPNET: (CmpNet, optimizer_common_args.copy(), (0.0, 1.0),),
-    LISTNET: (ListNet, {"n_top": 3, **optimizer_common_args}, (0.0, 1.0)),
     ERR: (ExpectedRankRegression, {}, (0.0, 1.0)),
     RANKSVM: (RankSVM, {}, (0.0, 1.0)),
-    FATE_RANKER: (
-        FATEObjectRanker,
-        {
-            "n_hidden_joint_layers": 1,
-            "n_hidden_set_layers": 1,
-            "n_hidden_joint_units": 5,
-            "n_hidden_set_units": 5,
-        },
-        (0.0, 1.0),
-    ),
 }
 
 
@@ -66,8 +23,6 @@ def trivial_ranking_problem():
 
 @pytest.mark.parametrize("ranker_name", list(object_rankers.keys()))
 def test_object_ranker_fixed(trivial_ranking_problem, ranker_name):
-    tf.set_random_seed(0)
-    os.environ["KERAS_BACKEND"] = "tensorflow"
     np.random.seed(123)
     x, y = trivial_ranking_problem
     ranker, params, (loss, acc) = object_rankers[ranker_name]

@@ -1,19 +1,9 @@
-import os
-
-from keras.optimizers import SGD
 import numpy as np
 from pymc3.variational.callbacks import CheckParametersConvergence
 import pytest
-import tensorflow as tf
 
 from csrank.choicefunction import *
-from csrank.constants import CMPNET_CHOICE
-from csrank.constants import FATE_CHOICE
-from csrank.constants import FATELINEAR_CHOICE
-from csrank.constants import FETA_CHOICE
-from csrank.constants import FETALINEAR_CHOICE
 from csrank.constants import GLM_CHOICE
-from csrank.constants import RANKNET_CHOICE
 from csrank.constants import RANKSVM_CHOICE
 from csrank.metrics_np import auc_score
 from csrank.metrics_np import f1_measure
@@ -26,12 +16,6 @@ choice_metrics = {
     "Informedness": instance_informedness,
     "AucScore": auc_score,
 }
-optimizer_common_args = {
-    "optimizer": SGD,
-    "optimizer__lr": 1e-3,
-    "optimizer__momentum": 0.9,
-    "optimizer__nesterov": True,
-}
 
 
 def get_vals(values):
@@ -39,42 +23,6 @@ def get_vals(values):
 
 
 choice_functions = {
-    FETA_CHOICE: (
-        FETAChoiceFunction,
-        {"add_zeroth_order_model": True, **optimizer_common_args},
-        get_vals([0.946, 0.9684, 0.9998]),
-    ),
-    FATE_CHOICE: (
-        FATEChoiceFunction,
-        {
-            "n_hidden_joint_layers": 1,
-            "n_hidden_set_layers": 1,
-            "n_hidden_joint_units": 5,
-            "n_hidden_set_units": 5,
-            **optimizer_common_args,
-        },
-        get_vals([0.8185, 0.6070, 0.9924]),
-    ),
-    FATELINEAR_CHOICE: (
-        FATELinearChoiceFunction,
-        {},
-        get_vals([0.6558, 0.0722, 0.9998]),
-    ),
-    FETALINEAR_CHOICE: (
-        FETALinearChoiceFunction,
-        {},
-        get_vals([0.8782, 0.8894, 0.9998]),
-    ),
-    RANKNET_CHOICE: (
-        RankNetChoiceFunction,
-        optimizer_common_args.copy(),
-        get_vals([0.9522, 0.9866, 1.0]),
-    ),
-    CMPNET_CHOICE: (
-        CmpNetChoiceFunction,
-        optimizer_common_args.copy(),
-        get_vals([0.8554, 0.8649, 0.966]),
-    ),
     GLM_CHOICE: (GeneralizedLinearModel, {}, get_vals([0.9567, 0.9955, 1.0])),
     RANKSVM_CHOICE: (PairwiseSVMChoiceFunction, {}, get_vals([0.9522, 0.9955, 1.0])),
 }
@@ -90,8 +38,6 @@ def trivial_choice_problem():
 
 @pytest.mark.parametrize("name", list(choice_functions.keys()))
 def test_choice_function_fixed(trivial_choice_problem, name):
-    tf.set_random_seed(0)
-    os.environ["KERAS_BACKEND"] = "tensorflow"
     np.random.seed(123)
     x, y = trivial_choice_problem
     choice_function = choice_functions[name][0]

@@ -4,10 +4,6 @@ Discrete Choice Models
 
 .. currentmodule:: csrank.discretechoice
 .. autosummary::
-   FATEDiscreteChoiceFunction
-   FETADiscreteChoiceFunction
-   RankNetDiscreteChoiceFunction
-   CmpNetDiscreteChoiceFunction
    PairwiseSVMDiscreteChoiceFunction
    GeneralizedNestedLogitModel
    MixedLogitModel
@@ -16,5 +12,5 @@ Discrete Choice Models
    PairedCombinatorialLogit
 
 .. automodule:: csrank.discretechoice
-   :members: FATEDiscreteChoiceFunction, FETADiscreteChoiceFunction, RankNetDiscreteChoiceFunction, CmpNetDiscreteChoiceFunction, PairwiseSVMDiscreteChoiceFunction, GeneralizedNestedLogitModel, MixedLogitModel, MultinomialLogitModel, NestedLogitModel, PairedCombinatorialLogit
+   :members: PairwiseSVMDiscreteChoiceFunction, GeneralizedNestedLogitModel, MixedLogitModel, MultinomialLogitModel, NestedLogitModel, PairedCombinatorialLogit
    :undoc-members:

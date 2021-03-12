@@ -30,8 +30,6 @@ jobs:
     - python: 3.7.9
       env: TOXENV=test3
     - python: 3.7.9
-      env: TOXENV=test4
-    - python: 3.7.9
       env: TOXENV=lint
     - stage: docs
       python: 3.7.9
