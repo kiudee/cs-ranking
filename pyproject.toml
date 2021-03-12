@@ -23,8 +23,6 @@ scikit-learn = "^0.23.2"
 docopt = "^0.6.2"
 joblib = "^0.16.0"
 tqdm = "^4.11.2"
-keras = "~2.3" # 2.4 delegates to tf, needs tf2
-tensorflow = "^1.5"
 # These should be optional, but are temporarily made mandatory due
 # to an issue in our optional imports. See
 # https://github.com/kiudee/cs-ranking/issues/137.
