@@ -189,7 +189,10 @@ class LetorListwiseDatasetReader(DatasetReader, metaclass=ABCMeta):
                 rel_deg = int(information[0])
                 qid = information[1].split(" ")[0]
                 x = np.array(
-                    [float(l.split(":")[1]) for l in information[1].split(" ")[1:-1]]
+                    [
+                        float(elem.split(":")[1])
+                        for elem in information[1].split(" ")[1:-1]
+                    ]
                 )
                 x = np.insert(x, len(x), rel_deg)
                 if qid not in dataset:
