@@ -10,6 +10,6 @@ in pkgs.mkShell {
     # then uncomment the `pythonEnv`. See [1] for more information.
     # [1] https://github.com/nix-community/poetry2nix/issues/280#issuecomment-815064853
     # pythonEnv
-    pkgs.python37.pkgs.poetry
+    pkgs.python38.pkgs.poetry
   ];
 }

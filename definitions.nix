@@ -12,8 +12,7 @@ in {
   inherit pkgs;
   pythonEnv = pkgs.poetry2nix.mkPoetryEnv {
     projectDir = ./.;
-    # For tensorflow 1.15 https://github.com/nix-community/poetry2nix/issues/180
-    python = pkgs.python37;
+    python = pkgs.python38;
     overrides = pkgs.poetry2nix.overrides.withDefaults (self: super: {
       sphinx-rtd-theme = super.sphinx_rtd_theme;
       pillow = super.pillow.overridePythonAttrs (
@@ -22,6 +21,12 @@ in {
           buildInputs = with pkgs; [ xorg.libX11 ] ++ old.buildInputs;
         }
       );
+      matplotlib = super.matplotlib.overridePythonAttrs (
+        old: {
+          propagatedBuildInputs = (old.propagatedBuildInputs or [ ]) ++ [ self.certifi ];
+        }
+      );
+      theano = self.theano-pymc;
     });
     };
 }

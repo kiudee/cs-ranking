@@ -16,7 +16,7 @@ repository = "https://github.com/kiudee/cs-ranking"
 documentation = "https://kiudee.github.io/cs-ranking/"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8"
 numpy = "^1.12.1"
 scipy = "^1.5.2"
 scikit-learn = "^0.23.2"
