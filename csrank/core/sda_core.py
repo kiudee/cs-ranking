@@ -17,7 +17,7 @@ def kinked_tanh(x, slope=1.5):
     )
 
 
-def weighted_average(inputs):
+def weighted_average(inputs, slope=1.5):
     lin_scores, w, r, slope = inputs
     w = tf.expand_dims(w, -1)
     r = tf.expand_dims(r, -1)
@@ -109,7 +109,9 @@ class SDACore(Learner):
         w = self.w_network(lin_scores)
         r = self.r_network(lin_scores)
 
-        scores = Lambda(weighted_average)((lin_scores, w, r, self.tanh_slope))
+        scores = Lambda(weighted_average)(
+            (lin_scores, w, r), arguments=dict(slope=self.tanh_slope)
+        )
 
         model = Model(inputs=input_layer, outputs=scores)
         model.compile(
