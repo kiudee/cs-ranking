@@ -108,8 +108,8 @@ class SDACore(Learner):
         w = self.w_network(lin_scores)
         r = self.r_network(lin_scores)
 
-        scores = Lambda(weighted_average)(
-            (lin_scores, w, r), arguments=dict(slope=self.tanh_slope)
+        scores = Lambda(weighted_average, arguments=dict(slope=self.tanh_slope))(
+            (lin_scores, w, r)
         )
 
         model = Model(inputs=input_layer, outputs=scores)
