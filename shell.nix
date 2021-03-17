@@ -1,5 +1,5 @@
 { # `git ls-remote https://github.com/nixos/nixpkgs-channels nixos-unstable`
-  nixpkgs-rev ? "fc3766140c4b5369042515da67c9496762054e91"
+  nixpkgs-rev ? "266dc8c3d052f549826ba246d06787a219533b8f"
   # pin nixpkgs to the specified revision if not overridden
 , pkgsPath ? builtins.fetchTarball {
     name = "nixpkgs-${nixpkgs-rev}";
@@ -13,7 +13,6 @@ let
     # For tensorflow 1.15 https://github.com/nix-community/poetry2nix/issues/180
     python = pkgs.python37;
     overrides = pkgs.poetry2nix.overrides.withDefaults (self: super: {
-      # https://github.com/nix-community/poetry2nix/issues/166
       sphinx-rtd-theme = super.sphinx_rtd_theme;
       pillow = super.pillow.overridePythonAttrs (
         old: {
