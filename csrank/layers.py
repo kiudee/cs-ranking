@@ -1,7 +1,8 @@
 import logging
 
 import tensorflow as tf
-from keras.layers import Activation, BatchNormalization, Dense, Input, Lambda
+from keras import Sequential
+from keras.layers import Activation, BatchNormalization, Dense, Input, Lambda, Layer
 from keras.layers.merge import average
 from keras.models import Model
 
@@ -156,7 +157,7 @@ def create_input_lambda(i):
     return Lambda(lambda x: x[:, i])
 
 
-class DeepSetSDA(tf.keras.layers.Layer):
+class DeepSetSDA(Layer):
     def __init__(
         self,
         output_dim,
@@ -173,11 +174,11 @@ class DeepSetSDA(tf.keras.layers.Layer):
         self.set_units = set_units
         self.activation = activation
         self.kernel_regularizer = kernel_regularizer
-        self.embedding = tf.keras.Sequential()
+        self.embedding = Sequential()
         for i in range(self.set_layers):
             if i == 0:
                 self.embedding.add(
-                    tf.keras.layers.Dense(
+                    Dense(
                         units=self.set_units,
                         input_shape=input_shape,
                         kernel_regularizer=self.kernel_regularizer,
@@ -185,13 +186,13 @@ class DeepSetSDA(tf.keras.layers.Layer):
                 )
             else:
                 self.embedding.add(
-                    tf.keras.layers.Dense(
+                    Dense(
                         units=self.set_units, kernel_regularizer=self.kernel_regularizer
                     )
                 )
-            self.embedding.add(tf.keras.layers.Activation(self.activation))
+            self.embedding.add(Activation(self.activation))
         self.embedding.add(
-            tf.keras.layers.Dense(
+            Dense(
                 self.output_dim, kernel_regularizer=self.kernel_regularizer
             )
         )

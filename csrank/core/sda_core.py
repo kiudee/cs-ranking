@@ -4,6 +4,7 @@ import tensorflow as tf
 from keras import Input, Model
 from keras import backend as K
 from keras import optimizers
+from keras.layers import Dense
 from keras.regularizers import l2
 
 from csrank.layers import DeepSetSDA
@@ -58,7 +59,7 @@ class SDACore(Learner):
 
     def _construct_layers(self, **kwargs):
         # ell x linear layer f_i
-        self.linear_embeddings = tf.keras.layers.Dense(
+        self.linear_embeddings = Dense(
             units=self.n_linear_units,
             activation="linear",
             input_shape=(self.n_features,),
