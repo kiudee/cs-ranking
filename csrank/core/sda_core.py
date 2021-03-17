@@ -101,7 +101,9 @@ class SDACore(Learner):
         lin_scores = self.linear_embeddings(input_layer)
 
         # Reshape to (n_batch, n_linear_units, n_objects, 1)
-        lin_scores = tf.transpose(tf.expand_dims(lin_scores, -1), perm=[0, 2, 1, 3])
+        lin_scores = Lambda(
+            lambda x: tf.transpose(tf.expand_dims(x, -1), perm=[0, 2, 1, 3])
+        )(lin_scores)
 
         # Compute set scores (n_batch, n_linear_units, 1, 1)
         w = self.w_network(lin_scores)
