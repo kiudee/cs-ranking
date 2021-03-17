@@ -4,7 +4,7 @@ import tensorflow as tf
 from keras import Input, Model
 from keras import backend as K
 from keras import optimizers
-from keras.layers import Dense
+from keras.layers import Dense, Lambda
 from keras.regularizers import l2
 
 from csrank.layers import DeepSetSDA
@@ -98,7 +98,8 @@ class SDACore(Learner):
         mu = kinked_tanh(lin_scores - r, slope=self.tanh_slope)
 
         # result (n_batch, n_objects)
-        scores = tf.reduce_sum(w * mu, axis=(-1, -3))
+        sum_layer = Lambda(lambda x: tf.reduce_sum(x, axis=(-1, -3)))
+        scores = sum_layer(w * mu)
 
         model = Model(inputs=input_layer, outputs=scores)
         model.compile(
