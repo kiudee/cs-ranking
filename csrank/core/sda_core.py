@@ -49,7 +49,6 @@ class SDACore(Learner):
         optimizer="adam",
         **kwargs
     ):
-        super().__init__(**kwargs)
         self.logger = logging.getLogger(SDACore.__name__)
         self.n_features = n_features
         self.tanh_slope = tanh_slope

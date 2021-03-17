@@ -19,8 +19,7 @@ plt.style.use('default')
 
 __all__ = ['learners_map', 'get_dataset_name', 'get_results_for_dataset', 'get_combined_results', 'MNIST', 'LETOR',
            'get_combined_results_plot', 'create_df', 'metric_name_dict', 'learning_models_dict', 'bar_plot_for_problem',
-           'bar_plot_for_problem2', 'get_ranges_dataset', 'learning_functions_dict', 'create_final_result',
-           'get_hash_string', 'get_letor_string']
+           'bar_plot_for_problem2', 'get_ranges_dataset', 'learning_functions_dict', 'create_final_result']
 DIR_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 config_file_path = os.path.join(DIR_PATH, 'config', 'clusterdb.json')
 learners_map = {CHOICE_FUNCTION: "ChoiceModel", OBJECT_RANKING: "Ranker", DISCRETE_CHOICE: "DiscreteChoiceModel"}
@@ -36,6 +35,7 @@ m_map = {"categoricalaccuracy": "Accuracy", 'hammingaccuracy': 'HammingAccuracy'
          "ndcgtopall": "NDCGTopAll"}
 MNIST = "MNIST"
 LETOR = "LETOR"
+
 
 
 def get_hash_string(logger, job):
@@ -420,13 +420,13 @@ def bar_plot_for_problem(df, learning_problem, start, params, extension):
         plt.ylim(start, end)
         plt.xticks(init_index, uds, fontsize=7)
         plt.yticks(np.arange(start, end, 0.1), fontsize=7)
-        # plt.xlabel("Dataset", fontsize=8)
+        #plt.xlabel("Dataset", fontsize=8)
         col = col.replace("$0/1$ Ranking Accuracy", "$0/1$ Ranking \n Accuracy")
         plt.ylabel(col, fontsize=8)
         plt.tight_layout()
         f_path = fname.format(learning_problem, i, extension)
         fig_param['fname'] = f_path
-        # fig_param[' bbox_extra_artists'] = (legd,)
+        #fig_param[' bbox_extra_artists'] = (legd,)
         plt.savefig(**fig_param)
         plt.show()
         i += 1
@@ -455,7 +455,7 @@ def bar_plot_for_problem2(df, learning_problem, start, params, extension):
         subps = [ax1, ax2]
     else:
         dfs = [df]
-        fig, ax = plt.subplots(figsize=(5.63, 3), frameon=True, edgecolor='k', facecolor='white')
+        fig, ax = plt.subplots(figsize=(5.63, 2.6), frameon=True, edgecolor='k', facecolor='white')
         subps = [ax]
     for sub_df, ax in zip(dfs, subps):
         uds = np.array(sub_df.Dataset.unique())

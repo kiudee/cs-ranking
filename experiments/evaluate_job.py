@@ -109,6 +109,7 @@ if __name__ == "__main__":
             hash_file = os.path.join(DIR_PATH, MODEL_FOLDER, "{}.h5".format(hash_value))
             create_dir_recursively(hash_file, True)
             learner_params['n_objects'], learner_params['n_object_features'] = X_train.shape[1:]
+            learner_params['n_features'] = learner_params['n_object_features']
             learner_params["random_state"] = random_state
             logger.info("learner params {}".format(print_dictionary(learner_params)))
             hp_params = create_optimizer_parameters(fit_params, hp_ranges, learner_params, learner_name, hash_file)
