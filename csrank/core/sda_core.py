@@ -17,6 +17,19 @@ def kinked_tanh(x, slope=1.5):
     )
 
 
+def weighted_average(inputs):
+    lin_scores, w, r, slope = inputs
+    w = tf.expand_dims(w, -1)
+    r = tf.expand_dims(r, -1)
+
+    # (n_batch, n_linear_units, n_objects, 1)
+    mu = kinked_tanh(lin_scores - r, slope=slope)
+
+    # result (n_batch, n_objects)
+    sum_layer = tf.reduce_sum(w * mu, axis=(-1, -3))
+    return sum_layer
+
+
 class SDACore(Learner):
     def __init__(
         self,
@@ -91,15 +104,10 @@ class SDACore(Learner):
         lin_scores = tf.transpose(tf.expand_dims(lin_scores, -1), perm=[0, 2, 1, 3])
 
         # Compute set scores (n_batch, n_linear_units, 1, 1)
-        w = tf.expand_dims(self.w_network(lin_scores), -1)
-        r = tf.expand_dims(self.r_network(lin_scores), -1)
+        w = self.w_network(lin_scores)
+        r = self.r_network(lin_scores)
 
-        # (n_batch, n_linear_units, n_objects, 1)
-        mu = kinked_tanh(lin_scores - r, slope=self.tanh_slope)
-
-        # result (n_batch, n_objects)
-        sum_layer = Lambda(lambda x: tf.reduce_sum(x, axis=(-1, -3)))
-        scores = sum_layer(w * mu)
+        scores = Lambda(weighted_average)((lin_scores, w, r, self.tanh_slope))
 
         model = Model(inputs=input_layer, outputs=scores)
         model.compile(
