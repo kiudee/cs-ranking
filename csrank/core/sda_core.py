@@ -18,7 +18,7 @@ def kinked_tanh(x, slope=1.5):
 
 
 def weighted_average(inputs, slope=1.5):
-    lin_scores, w, r, slope = inputs
+    lin_scores, w, r = inputs
     w = tf.expand_dims(w, -1)
     r = tf.expand_dims(r, -1)
 
