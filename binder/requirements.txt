@@ -102,7 +102,7 @@ sphinxcontrib-qthelp==1.0.3; python_version >= "3.5"
 sphinxcontrib-serializinghtml==1.1.4; python_version >= "3.5"
 tensorboard==1.15.0; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.2.0"
 tensorflow-estimator==1.15.1
-tensorflow==1.15.5
+tensorflow==2.4.0
 termcolor==1.1.0
 testpath==0.4.4; python_version >= "3.6"
 theano-pymc==1.1.2; python_version >= "3.7"
