@@ -8,14 +8,16 @@ from .generalized_linear_model import GeneralizedLinearModel
 from .pairwise_choice import PairwiseSVMChoiceFunction
 from .ranknet_choice import RankNetChoiceFunction
 
-__all__ = [
-    "AllPositive",
-    "CmpNetChoiceFunction",
-    "FATEChoiceFunction",
-    "FATELinearChoiceFunction",
-    "FETAChoiceFunction",
-    "FETALinearChoiceFunction",
-    "GeneralizedLinearModel",
-    "PairwiseSVMChoiceFunction",
-    "RankNetChoiceFunction",
+algorithms = [
+    AllPositive,
+    CmpNetChoiceFunction,
+    FATEChoiceFunction,
+    FATELinearChoiceFunction,
+    FETAChoiceFunction,
+    FETALinearChoiceFunction,
+    GeneralizedLinearModel,
+    PairwiseSVMChoiceFunction,
+    RankNetChoiceFunction,
 ]
+
+__all__ = [algo.__name__ for algo in algorithms]

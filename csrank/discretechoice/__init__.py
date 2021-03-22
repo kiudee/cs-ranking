@@ -13,19 +13,21 @@ from .paired_combinatorial_logit import PairedCombinatorialLogit
 from .pairwise_discrete_choice import PairwiseSVMDiscreteChoiceFunction
 from .ranknet_discrete_choice import RankNetDiscreteChoiceFunction
 
-__all__ = [
-    "RandomBaselineDC",
-    "CmpNetDiscreteChoiceFunction",
-    "FATEDiscreteChoiceFunction",
-    "FATELinearDiscreteChoiceFunction",
-    "FETADiscreteChoiceFunction",
-    "FETALinearDiscreteChoiceFunction",
-    "GeneralizedNestedLogitModel",
-    "MixedLogitModel",
-    "ModelSelector",
-    "MultinomialLogitModel",
-    "NestedLogitModel",
-    "PairedCombinatorialLogit",
-    "PairwiseSVMDiscreteChoiceFunction",
-    "RankNetDiscreteChoiceFunction",
+algorithms = [
+    RandomBaselineDC,
+    CmpNetDiscreteChoiceFunction,
+    FATEDiscreteChoiceFunction,
+    FATELinearDiscreteChoiceFunction,
+    FETADiscreteChoiceFunction,
+    FETALinearDiscreteChoiceFunction,
+    GeneralizedNestedLogitModel,
+    MixedLogitModel,
+    ModelSelector,
+    MultinomialLogitModel,
+    NestedLogitModel,
+    PairedCombinatorialLogit,
+    PairwiseSVMDiscreteChoiceFunction,
+    RankNetDiscreteChoiceFunction,
 ]
+
+__all__ = [algo.__name__ for algo in algorithms]
