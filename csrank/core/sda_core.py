@@ -5,7 +5,9 @@ from keras import Input, Model
 from keras import backend as K
 from keras import optimizers
 from keras.layers import Dense, Lambda
+from keras.optimizers import SGD
 from keras.regularizers import l2
+from sklearn.utils import check_random_state
 
 from csrank.layers import DeepSetSDA
 from csrank.learner import Learner
@@ -13,7 +15,7 @@ from csrank.learner import Learner
 
 def kinked_tanh(x, slope=1.5):
     return tf.tanh(x) * (
-        tf.cast(x < 0, dtype=tf.float32) * slope + tf.cast(x >= 0, dtype=tf.float32)
+            tf.cast(x < 0, dtype=tf.float32) * slope + tf.cast(x >= 0, dtype=tf.float32)
     )
 
 
@@ -32,22 +34,23 @@ def weighted_average(inputs, slope=1.5):
 
 class SDACore(Learner):
     def __init__(
-        self,
-        n_features,
-        tanh_slope=1.5,
-        n_linear_units=24,
-        n_w_units=16,
-        n_w_layers=2,
-        n_r_units=16,
-        n_r_layers=2,
-        learning_rate=1e-3,
-        regularization_strength=1e-4,
-        batch_size=128,
-        activation="tanh",
-        loss_function="mse",
-        metrics=None,
-        optimizer="adam",
-        **kwargs
+            self,
+            n_features,
+            tanh_slope=1.5,
+            n_linear_units=24,
+            n_w_units=16,
+            n_w_layers=2,
+            n_r_units=16,
+            n_r_layers=2,
+            learning_rate=1e-3,
+            regularization_strength=1e-4,
+            batch_size=128,
+            activation="tanh",
+            loss_function="mse",
+            metrics=None,
+            optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
+            random_state=None,
+            **kwargs
     ):
         self.logger = logging.getLogger(SDACore.__name__)
         self.n_features = n_features
@@ -68,6 +71,7 @@ class SDACore(Learner):
         self.regularization_strength = l2(regularization_strength)
         self.model = None
         self._construct_layers(**kwargs)
+        self.random_state = check_random_state(random_state)
 
     def _construct_layers(self, **kwargs):
         # ell x linear layer f_i
@@ -140,9 +144,6 @@ class SDACore(Learner):
     def _predict_scores_fixed(self, X, **kwargs):
         return self.model.predict(X)
 
-    def predict_for_scores(self, scores, **kwargs):
-        return scores
-
     def predict_scores(self, X, **kwargs):
         return super().predict_scores(X, **kwargs)
 
@@ -160,17 +161,17 @@ class SDACore(Learner):
         raise AttributeError("No model has been fit yet.")
 
     def set_tunable_parameters(
-        self,
-        learning_rate=1e-3,
-        batch_size=128,
-        regularization_strength=1e-4,
-        tanh_slope=1.5,
-        n_linear_units=24,
-        n_w_units=16,
-        n_w_layers=2,
-        n_r_units=16,
-        n_r_layers=2,
-        **point
+            self,
+            learning_rate=1e-3,
+            batch_size=128,
+            regularization_strength=1e-4,
+            tanh_slope=1.5,
+            n_linear_units=24,
+            n_w_units=16,
+            n_w_layers=2,
+            n_r_units=16,
+            n_r_layers=2,
+            **point
     ):
         self.tanh_slope = tanh_slope
         self.n_linear_units = n_linear_units

@@ -61,6 +61,7 @@ cfs = {
     FATELINEAR_CHOICE: FATELinearChoiceFunction,
     RANKSVM_CHOICE: PairwiseSVMChoiceFunction,
     SDA_CHOICE: SDAChoiceFunction,
+    SDA_CHOICE_FIXED: SDAChoiceFunction,
     RANDOM_CHOICE: AllPositive,
 }
 ors = {
@@ -89,6 +90,7 @@ dcms = {
     FATELINEAR_DC: FATELinearDiscreteChoiceFunction,
     FETALINEAR_DC: FETALinearDiscreteChoiceFunction,
     SDA_DC: SDADiscreteChoiceFunction,
+    SDA_DC_FIXED: SDADiscreteChoiceFunction,
     RANDOM_DC: RandomBaselineDC,
 }
 

@@ -110,3 +110,4 @@ copy_from_remote.sh
 
 *.sh
 /.pytest_cache/
+/singularity/

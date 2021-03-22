@@ -3,3 +3,5 @@
 /fate.ipynb
 /othermodels.ipynb
 /temporary/
+/datasets/
+*.ipynb

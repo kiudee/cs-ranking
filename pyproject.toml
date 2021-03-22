@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "cs-ranking"
+name = "csrank"
 version = "0.1.0"
 description = ""
-authors = ["Your Name <you@example.com>"]
+authors = ["Karlson Pfannschmidt <kiudee@mail.upb.de>"]
 
 [tool.poetry.dependencies]
 python = "^3.7.1"

@@ -38,6 +38,7 @@ RANKSVM_CHOICE = "ranksvm_choice"
 GLM_CHOICE = "glm_choice"
 RANDOM_CHOICE = "random_choice"
 SDA_CHOICE = 'sda_choice'
+SDA_CHOICE_FIXED = 'sda_fixed_choice'
 
 TAG_GENOME_OR = "tag_genome_or"
 TAG_GENOME_DC = "tag_genome_dc"
@@ -57,6 +58,8 @@ PCL = "paired_combinatorial_logit"
 RANKSVM_DC = "ranksvm_dc"
 MLM = "mixed_logit_model"
 SDA_DC = 'sda_dc'
+SDA_DC_FIXED = 'sda_dc_fixed'
+
 
 DCFS = [
     FETA_DC,
@@ -71,6 +74,7 @@ DCFS = [
     PCL,
     MLM,
     SDA_DC,
+    SDA_DC_FIXED,
     RANDOM_DC
 ]
 DCMS = [
@@ -86,6 +90,7 @@ DCMS = [
     "PairedLogit",
     "MixedLogit",
     'SDA',
+    'SDA-Fixed',
     "Random"
 ]
 
@@ -98,6 +103,7 @@ CHOICE_FUNCTIONS = [
     RANKSVM_CHOICE,
     GLM_CHOICE,
     SDA_CHOICE,
+    SDA_CHOICE_FIXED,
     RANDOM_CHOICE,
 ]
 CHOICE_MODELS = [
@@ -109,6 +115,7 @@ CHOICE_MODELS = [
     "PairwiseSVM",
     "GenLinearModel",
     "SDA",
+    'SDA-Fixed',
     "AllPositive",
 ]
 
