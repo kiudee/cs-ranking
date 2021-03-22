@@ -2,7 +2,9 @@ import numpy as np
 from pymc3.variational.callbacks import CheckParametersConvergence
 import pytest
 import torch
+from torch import optim
 
+from csrank.constants import FATE_DC
 from csrank.constants import GEV
 from csrank.constants import MLM
 from csrank.constants import MNL
@@ -10,6 +12,7 @@ from csrank.constants import NLM
 from csrank.constants import PCL
 from csrank.constants import RANKSVM_DC
 from csrank.dataset_reader.discretechoice.util import convert_to_label_encoding
+from csrank.discretechoice import FATEDiscreteChoiceFunction
 from csrank.discretechoice import GeneralizedNestedLogitModel
 from csrank.discretechoice import MixedLogitModel
 from csrank.discretechoice import MultinomialLogitModel
@@ -32,6 +35,24 @@ def get_vals(values=[1.0, 1.0]):
 
 
 discrete_choice_functions = {
+    FATE_DC: (
+        FATEDiscreteChoiceFunction,
+        {
+            "max_epochs": 100,
+            "n_hidden_joint_layers": 1,
+            "n_hidden_set_layers": 1,
+            "n_hidden_joint_units": 5,
+            "n_hidden_set_units": 5,
+            "optimizer": optim.SGD,
+            "optimizer__lr": 1e-3,
+            "optimizer__momentum": 0.9,
+            "optimizer__nesterov": True,
+            # We evaluate the estimators in-sample. These tests are just small
+            # sanity checks, so overfitting is okay here.
+            "train_split": None,
+        },
+        get_vals([1.0, 1.0]),
+    ),
     MNL: (MultinomialLogitModel, {}, get_vals([0.998, 1.0])),
     NLM: (NestedLogitModel, {}, get_vals()),
     PCL: (PairedCombinatorialLogit, {}, get_vals()),

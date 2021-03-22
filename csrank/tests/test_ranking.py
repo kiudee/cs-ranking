@@ -1,17 +1,38 @@
 import numpy as np
 import pytest
 import torch
+from torch import optim
 
 from csrank.constants import ERR
+from csrank.constants import FATE_RANKER
 from csrank.constants import RANKSVM
 from csrank.metrics_np import zero_one_accuracy_np
 from csrank.metrics_np import zero_one_rank_loss_for_scores_ties_np
 from csrank.objectranking import ExpectedRankRegression
+from csrank.objectranking import FATEObjectRanker
 from csrank.objectranking import RankSVM
 
 object_rankers = {
     ERR: (ExpectedRankRegression, {}, (0.0, 1.0)),
     RANKSVM: (RankSVM, {}, (0.0, 1.0)),
+    FATE_RANKER: (
+        FATEObjectRanker,
+        {
+            "max_epochs": 100,
+            "n_hidden_joint_layers": 1,
+            "n_hidden_set_layers": 1,
+            "n_hidden_joint_units": 5,
+            "n_hidden_set_units": 5,
+            "optimizer": optim.SGD,
+            "optimizer__lr": 1e-3,
+            "optimizer__momentum": 0.9,
+            "optimizer__nesterov": True,
+            # We evaluate the estimators in-sample. These tests are just small
+            # sanity checks, so overfitting is okay here.
+            "train_split": None,
+        },
+        (0.0, 1.0),
+    ),
 }
 
 
