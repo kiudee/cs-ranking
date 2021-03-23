@@ -1,6 +1,7 @@
 import numpy as np
 from pymc3.variational.callbacks import CheckParametersConvergence
 import pytest
+import torch
 
 from csrank.constants import GEV
 from csrank.constants import MLM
@@ -48,6 +49,10 @@ def trivial_discrete_choice_problem():
 @pytest.mark.parametrize("name", list(discrete_choice_functions.keys()))
 def test_discrete_choice_function_fixed(trivial_discrete_choice_problem, name):
     np.random.seed(123)
+    # There are some caveats with pytorch reproducibility. See the comment on
+    # the corresponding line of `test_choice_functions.py` for details.
+    torch.manual_seed(123)
+    torch.use_deterministic_algorithms(True)
     x, y = trivial_discrete_choice_problem
     choice_function = discrete_choice_functions[name][0]
     params, accuracies = (

@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+import torch
 
 from csrank.constants import ERR
 from csrank.constants import RANKSVM
@@ -24,6 +25,10 @@ def trivial_ranking_problem():
 @pytest.mark.parametrize("ranker_name", list(object_rankers.keys()))
 def test_object_ranker_fixed(trivial_ranking_problem, ranker_name):
     np.random.seed(123)
+    # There are some caveats with pytorch reproducibility. See the comment on
+    # the corresponding line of `test_choice_functions.py` for details.
+    torch.manual_seed(123)
+    torch.use_deterministic_algorithms(True)
     x, y = trivial_ranking_problem
     ranker, params, (loss, acc) = object_rankers[ranker_name]
     ranker = ranker(**params)

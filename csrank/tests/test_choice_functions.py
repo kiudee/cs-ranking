@@ -1,6 +1,7 @@
 import numpy as np
 from pymc3.variational.callbacks import CheckParametersConvergence
 import pytest
+import torch
 
 from csrank.choicefunction import *
 from csrank.constants import GLM_CHOICE
@@ -39,6 +40,14 @@ def trivial_choice_problem():
 @pytest.mark.parametrize("name", list(choice_functions.keys()))
 def test_choice_function_fixed(trivial_choice_problem, name):
     np.random.seed(123)
+    # Pytorch does not guarantee full reproducibility in different settings
+    # [1]. This may become a problem in the test suite, in which case we should
+    # increase the tolerance. These are only "sanity checks" on small data sets
+    # anyway and the exact values do not mean much here.
+    # [1] https://pytorch.org/docs/stable/notes/randomness.html
+    torch.manual_seed(123)
+    # Trade off performance for better reproducibility.
+    torch.use_deterministic_algorithms(True)
     x, y = trivial_choice_problem
     choice_function = choice_functions[name][0]
     params, accuracies = choice_functions[name][1], choice_functions[name][2]
