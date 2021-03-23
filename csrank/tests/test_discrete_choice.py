@@ -39,7 +39,9 @@ discrete_choice_functions = {
 @pytest.fixture(scope="module")
 def trivial_discrete_choice_problem():
     random_state = np.random.RandomState(42)
-    x = random_state.randn(500, 5, 2)
+    # pytorch uses 32 bit floats by default. That should be precise enough and
+    # makes it easier to use pytorch and non-pytorch estimators interchangeably.
+    x = random_state.randn(500, 5, 2).astype(np.float32)
     w = random_state.rand(2)
     y_true = np.argmax(np.dot(x, w), axis=1)
     y_true = convert_to_label_encoding(y_true, 5)

@@ -17,7 +17,9 @@ object_rankers = {
 @pytest.fixture(scope="module")
 def trivial_ranking_problem():
     random_state = np.random.RandomState(123)
-    x = random_state.randn(2, 5, 1)
+    # pytorch uses 32 bit floats by default. That should be precise enough and
+    # makes it easier to use pytorch and non-pytorch estimators interchangeably.
+    x = random_state.randn(2, 5, 1).astype(np.float32)
     y_true = x.argsort(axis=1).argsort(axis=1).squeeze(axis=-1)
     return x, y_true
 

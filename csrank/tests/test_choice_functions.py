@@ -32,8 +32,12 @@ choice_functions = {
 @pytest.fixture(scope="module")
 def trivial_choice_problem():
     random_state = np.random.RandomState(42)
-    x = random_state.randn(200, 5, 1)
-    y_true = np.array(x.squeeze(axis=-1) > np.mean(x))
+    # pytorch uses 32 bit floats by default. That should be precise enough and
+    # makes it easier to use pytorch and non-pytorch estimators interchangeably.
+    x = random_state.randn(200, 5, 1).astype(np.float32)
+    # The pytorch estimators expect booleans to be encoded as a 32 bit float
+    # (1.0 for True, 0.0 for false).
+    y_true = np.array(x.squeeze(axis=-1) > np.mean(x), dtype=np.float32)
     return x, y_true
 
 
