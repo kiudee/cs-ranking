@@ -84,7 +84,8 @@ def get_dataset_name(name):
     named["list_Y_2008_N_5".title()] = "{}-MQ2008list 5 Objects".format(LETOR)
     named["EXPEDIA_N_10".title()] = "Expedia 10 Objects"
     named["EXPEDIA_N_5".title()] = "Expedia 5 Objects"
-    named["pareto".title()] = "Pareto-front"
+    named["pareto_2".title()] = "Pareto-front-2D"
+    named["pareto_5".title()] = "Pareto-front-5D"
     if name not in named.keys():
         named[name] = name.lower().title()
     return named[name]
@@ -120,6 +121,8 @@ def get_results_for_dataset(DATASET, logger, learning_problem=DISCRETE_CHOICE, d
             job['dataset'] = job['dataset']
         else:
             job['dataset'] = job['dataset_params']['dataset_type']
+            if job['dataset'] == 'pareto':
+                job['dataset'] = job['dataset'] + '_' + str(job['dataset_params']['n_features'])
         job['dataset'] = job['dataset'].title()
         values = list(job.values())
         keys = list(job.keys())
@@ -143,6 +146,8 @@ def get_results_for_dataset(DATASET, logger, learning_problem=DISCRETE_CHOICE, d
                 job['dataset'] = job['dataset']
             else:
                 job['dataset'] = job['dataset_params']['dataset_type']
+                if job['dataset'] == 'pareto':
+                    job['dataset'] = job['dataset'] + '_' + str(job['dataset_params']['n_features'])
             job['dataset'] = job['dataset'].title()
             values = list(job.values())
             keys = list(job.keys())
@@ -199,6 +204,8 @@ def get_ranges_dataset(DATASET, logger, learning_problem=DISCRETE_CHOICE, latex_
             job['dataset'] = job['dataset']
         else:
             job['dataset'] = job['dataset_params']['dataset_type']
+            if job['dataset'] == 'pareto':
+                job['dataset'] = job['dataset'] + '_' + str(job['dataset_params']['n_features'])
         job['dataset'] = job['dataset'].title()
         values = list(job.values())
         keys = list(job.keys())
@@ -222,6 +229,8 @@ def get_ranges_dataset(DATASET, logger, learning_problem=DISCRETE_CHOICE, latex_
                 job['dataset'] = job['dataset']
             else:
                 job['dataset'] = job['dataset_params']['dataset_type']
+                if job['dataset'] == 'pareto':
+                    job['dataset'] = job['dataset'] + '_' + str(job['dataset_params']['n_features'])
             job['dataset'] = job['dataset'].title()
             values = list(job.values())
             keys = list(job.keys())
@@ -246,7 +255,6 @@ def get_ranges_dataset(DATASET, logger, learning_problem=DISCRETE_CHOICE, latex_
                 for key, val in sorted(d.items(), key=lambda item: item[0]):
                     d[key] = val
                 return d
-
             # print(one_row[-1], flatten(one_row[-1]))
             one_row[-1] = flatten(one_row[-1])
             del group['hp_ranges']

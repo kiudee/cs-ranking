@@ -16,7 +16,7 @@ class RankNetChoiceFunction(RankNetCore, ChoiceFunctions):
         n_hidden=2,
         n_units=8,
         loss_function="binary_crossentropy",
-        batch_normalization=True,
+        batch_normalization=False,
         kernel_regularizer=l2(l=1e-4),
         kernel_initializer="lecun_normal",
         activation="relu",

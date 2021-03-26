@@ -9,24 +9,24 @@ from csrank.core.sda_core import SDACore
 
 class SDAChoiceFunction(SDACore, ChoiceFunctions):
     def __init__(
-        self,
-        n_features,
-        threshold=0.5,
-        tanh_slope=1.5,
-        n_linear_units=24,
-        n_w_units=16,
-        n_w_layers=2,
-        n_r_units=16,
-        n_r_layers=2,
-        learning_rate=1e-3,
-        regularization_strength=1e-4,
-        dropout_rate=None,
-        batch_size=128,
-        activation="tanh",
-        loss_function="binary_crossentropy",
-        metrics=None,
-        optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
-        **kwargs
+            self,
+            n_features,
+            threshold=0.5,
+            tanh_slope=1.5,
+            n_linear_units=24,
+            n_w_units=16,
+            n_w_layers=2,
+            n_r_units=16,
+            n_r_layers=2,
+            learning_rate=1e-3,
+            regularization_strength=1e-4,
+            dropout_rate=None,
+            batch_size=128,
+            activation="tanh",
+            loss_function="binary_crossentropy",
+            metrics=None,
+            optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9, clipnorm=1.),
+            **kwargs
     ):
         super().__init__(
             n_features=n_features,

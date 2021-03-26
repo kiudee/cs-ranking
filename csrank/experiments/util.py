@@ -62,6 +62,7 @@ cfs = {
     RANKSVM_CHOICE: PairwiseSVMChoiceFunction,
     SDA_CHOICE: SDAChoiceFunction,
     SDA_CHOICE_FIXED: SDAChoiceFunction,
+    SDA_CHOICE_DROPOUT:SDAChoiceFunction,
     RANDOM_CHOICE: AllPositive,
 }
 ors = {
@@ -91,6 +92,7 @@ dcms = {
     FETALINEAR_DC: FETALinearDiscreteChoiceFunction,
     SDA_DC: SDADiscreteChoiceFunction,
     SDA_DC_FIXED: SDADiscreteChoiceFunction,
+    SDA_DC_DROPOUT:SDADiscreteChoiceFunction,
     RANDOM_DC: RandomBaselineDC,
 }
 
@@ -192,6 +194,7 @@ def get_dataset_reader(dataset_name, dataset_params):
 def create_optimizer_parameters(fit_params, hp_ranges, learner_params, learner_name, hash_file):
     hp_params = {}
     learner_func = learners[learner_name]
+    print(learner_params)
     learner = learner_func(**learner_params)
     learner.hash_file = hash_file
     if learner_name in hp_ranges.keys():
