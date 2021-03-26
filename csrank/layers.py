@@ -2,7 +2,15 @@ import logging
 
 import tensorflow as tf
 from keras import Sequential
-from keras.layers import Activation, BatchNormalization, Dense, Input, Lambda, Layer
+from keras.layers import (
+    Activation,
+    BatchNormalization,
+    Dense,
+    Input,
+    Lambda,
+    Layer,
+    Dropout,
+)
 from keras.layers.merge import average
 from keras.models import Model
 
@@ -166,6 +174,7 @@ class DeepSetSDA(Layer):
         set_units=16,
         activation="tanh",
         kernel_regularizer=None,
+        dropout_rate=None,
         **kwargs
     ):
         super(DeepSetSDA, self).__init__(**kwargs)
@@ -175,6 +184,7 @@ class DeepSetSDA(Layer):
         self.activation = activation
         self.kernel_regularizer = kernel_regularizer
         self.embedding = Sequential()
+        self.dropout_rate = dropout_rate
         for i in range(self.set_layers):
             if i == 0:
                 self.embedding.add(
@@ -184,6 +194,7 @@ class DeepSetSDA(Layer):
                         kernel_regularizer=self.kernel_regularizer,
                     )
                 )
+
             else:
                 self.embedding.add(
                     Dense(
@@ -191,10 +202,10 @@ class DeepSetSDA(Layer):
                     )
                 )
             self.embedding.add(Activation(self.activation))
+            if self.dropout_rate is not None:
+                self.embedding.add(Dropout(self.dropout_rate))
         self.embedding.add(
-            Dense(
-                self.output_dim, kernel_regularizer=self.kernel_regularizer
-            )
+            Dense(self.output_dim, kernel_regularizer=self.kernel_regularizer)
         )
 
     def call(self, x, **kwargs):

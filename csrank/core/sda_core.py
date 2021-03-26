@@ -15,7 +15,7 @@ from csrank.learner import Learner
 
 def kinked_tanh(x, slope=1.5):
     return tf.tanh(x) * (
-            tf.cast(x < 0, dtype=tf.float32) * slope + tf.cast(x >= 0, dtype=tf.float32)
+        tf.cast(x < 0, dtype=tf.float32) * slope + tf.cast(x >= 0, dtype=tf.float32)
     )
 
 
@@ -34,23 +34,24 @@ def weighted_average(inputs, slope=1.5):
 
 class SDACore(Learner):
     def __init__(
-            self,
-            n_features,
-            tanh_slope=1.5,
-            n_linear_units=24,
-            n_w_units=16,
-            n_w_layers=2,
-            n_r_units=16,
-            n_r_layers=2,
-            learning_rate=1e-3,
-            regularization_strength=1e-4,
-            batch_size=128,
-            activation="tanh",
-            loss_function="mse",
-            metrics=None,
-            optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
-            random_state=None,
-            **kwargs
+        self,
+        n_features,
+        tanh_slope=1.5,
+        n_linear_units=24,
+        n_w_units=16,
+        n_w_layers=2,
+        n_r_units=16,
+        n_r_layers=2,
+        learning_rate=1e-3,
+        regularization_strength=1e-4,
+        dropout_rate=None,
+        batch_size=128,
+        activation="tanh",
+        loss_function="mse",
+        metrics=None,
+        optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
+        random_state=None,
+        **kwargs
     ):
         self.logger = logging.getLogger(SDACore.__name__)
         self.n_features = n_features
@@ -69,6 +70,7 @@ class SDACore(Learner):
         K.set_value(self.optimizer.lr, self.learning_rate)
         self._optimizer_config = self.optimizer.get_config()
         self.regularization_strength = l2(regularization_strength)
+        self.dropout_rate = dropout_rate
         self.model = None
         self._construct_layers(**kwargs)
         self.random_state = check_random_state(random_state)
@@ -89,6 +91,7 @@ class SDACore(Learner):
             set_units=self.n_w_units,
             activation=self.activation,
             kernel_regularizer=self.regularization_strength,
+            dropout_rate=self.dropout_rate,
         )
         self.r_network = DeepSetSDA(
             output_dim=1,
@@ -97,6 +100,7 @@ class SDACore(Learner):
             set_units=self.n_r_units,
             activation=self.activation,
             kernel_regularizer=self.regularization_strength,
+            dropout_rate=self.dropout_rate,
         )
 
     def construct_model(self, n_features, n_objects):
@@ -161,17 +165,18 @@ class SDACore(Learner):
         raise AttributeError("No model has been fit yet.")
 
     def set_tunable_parameters(
-            self,
-            learning_rate=1e-3,
-            batch_size=128,
-            regularization_strength=1e-4,
-            tanh_slope=1.5,
-            n_linear_units=24,
-            n_w_units=16,
-            n_w_layers=2,
-            n_r_units=16,
-            n_r_layers=2,
-            **point
+        self,
+        learning_rate=1e-3,
+        batch_size=128,
+        regularization_strength=1e-4,
+        tanh_slope=1.5,
+        n_linear_units=24,
+        n_w_units=16,
+        n_w_layers=2,
+        n_r_units=16,
+        n_r_layers=2,
+        dropout_rate=None,
+        **point
     ):
         self.tanh_slope = tanh_slope
         self.n_linear_units = n_linear_units
@@ -181,6 +186,7 @@ class SDACore(Learner):
         self.n_r_layers = n_r_layers
         self.batch_size = batch_size
         self.regularization_strength = l2(regularization_strength)
+        self.dropout_rate = dropout_rate
 
         self.optimizer = self.optimizer.from_config(self._optimizer_config)
         K.set_value(self.optimizer.lr, learning_rate)

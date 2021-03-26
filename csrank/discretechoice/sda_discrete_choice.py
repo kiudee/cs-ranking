@@ -8,22 +8,24 @@ from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
 
 class SDADiscreteChoiceFunction(SDACore, DiscreteObjectChooser):
     def __init__(
-            self,
-            n_features,
-            tanh_slope=1.5,
-            n_linear_units=24,
-            n_w_units=16,
-            n_w_layers=2,
-            n_r_units=16,
-            n_r_layers=2,
-            learning_rate=1e-3,
-            regularization_strength=1e-4,
-            batch_size=128,
-            activation="tanh",
-            loss_function="categorical_hinge",
-            metrics=["categorical_accuracy"],
-            optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
-            **kwargs):
+        self,
+        n_features,
+        tanh_slope=1.5,
+        n_linear_units=24,
+        n_w_units=16,
+        n_w_layers=2,
+        n_r_units=16,
+        n_r_layers=2,
+        learning_rate=1e-3,
+        regularization_strength=1e-4,
+        dropout_rate=None,
+        batch_size=128,
+        activation="tanh",
+        loss_function="categorical_hinge",
+        metrics=["categorical_accuracy"],
+        optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
+        **kwargs
+    ):
         super().__init__(
             n_features=n_features,
             tanh_slope=tanh_slope,
@@ -34,6 +36,7 @@ class SDADiscreteChoiceFunction(SDACore, DiscreteObjectChooser):
             n_r_layers=n_r_layers,
             learning_rate=learning_rate,
             regularization_strength=regularization_strength,
+            dropout_rate=dropout_rate,
             batch_size=batch_size,
             activation=activation,
             loss_function=loss_function,
