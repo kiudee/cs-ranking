@@ -237,8 +237,8 @@ class DBConnector(metaclass=ABCMeta):
             for column in results.keys():
                 if column not in ["job_id", "cluster_id"]:
                     alter_table_command = (
-                        "ALTER TABLE %s ADD COLUMN %s double precision"
-                        % (results_table, column)
+                            "ALTER TABLE %s ADD COLUMN %s double precision"
+                            % (results_table, column)
                     )
                     self.cursor_db.execute(alter_table_command)
             self.close_connection()
@@ -279,7 +279,10 @@ class DBConnector(metaclass=ABCMeta):
             )
             self.cursor_db.execute(select_job)
             old_results = self.cursor_db.fetchone()
-            if float(old_results[2]) < float(results[list(results.keys())[2]]):
+            idx = 2
+            if experiment_table == 'choice_function':
+                idx = 7
+            if float(old_results[idx]) < float(results[list(results.keys())[idx]]):
                 update_result = "UPDATE {0} set {1} where job_id= %s ".format(
                     results_table, update_str
                 )
@@ -401,7 +404,7 @@ class DBConnector(metaclass=ABCMeta):
                 query = dict(query)
                 self.logger.info("Duplicate job {}".format(query["job_id"]))
                 if self.get_hash_value_for_job(job_desc) == self.get_hash_value_for_job(
-                    query
+                        query
                 ):
                     new_job_id = query["job_id"]
                     self.logger.info(
@@ -468,7 +471,7 @@ class DBConnector(metaclass=ABCMeta):
         return new_job_id
 
     def insert_new_jobs_with_different_fold(
-        self, dataset="synthetic_dc", learner="fate_choice", folds=4
+            self, dataset="synthetic_dc", learner="fate_choice", folds=4
     ):
         self.init_connection()
         avail_jobs = "{}.avail_jobs".format(self.schema)
