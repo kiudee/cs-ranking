@@ -45,13 +45,17 @@ class DatasetReader(metaclass=ABCMeta):
         self.Y = None
         self.Xc = None
         self.learning_problem = learning_problem
-        #dirname = os.path.dirname(
+        # dirname = os.path.dirname(
         #    os.path.abspath(inspect.getfile(inspect.currentframe()))
-        #).replace("dataset_reader", "datasets")
-        if 'pc2' in os.environ['HOME']:
-            dirname = os.path.join(os.environ['PFS_FOLDER'], 'cs-ranking', 'csrank', 'datasets')
+        # ).replace("dataset_reader", "datasets")
+        if "pc2" in os.environ["HOME"]:
+            dirname = os.path.join(
+                os.environ["PFS_FOLDER"], "cs-ranking", "csrank", "datasets"
+            )
         else:
-            dirname = os.path.join(os.environ['HOME'], 'cs-ranking', 'csrank', 'datasets')
+            dirname = os.path.join(
+                os.environ["HOME"], "cs-ranking", "csrank", "datasets"
+            )
 
         if dataset_folder is not None:
             self.dirname = os.path.join(dirname, dataset_folder)

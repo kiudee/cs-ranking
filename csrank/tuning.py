@@ -77,16 +77,16 @@ class TuningCallback(object):
 
 class ParameterOptimizer(Learner):
     def __init__(
-            self,
-            learner,
-            optimizer_path,
-            tunable_parameter_ranges,
-            fit_params=None,
-            random_state=None,
-            tuning_callbacks=None,
-            validation_loss=None,
-            learning_problem=OBJECT_RANKING,
-            **kwd
+        self,
+        learner,
+        optimizer_path,
+        tunable_parameter_ranges,
+        fit_params=None,
+        random_state=None,
+        tuning_callbacks=None,
+        validation_loss=None,
+        learning_problem=OBJECT_RANKING,
+        **kwd
     ):
         """
 
@@ -230,14 +230,14 @@ class ParameterOptimizer(Learner):
         return loss, time_taken
 
     def fit(
-            self,
-            X,
-            Y,
-            total_duration=600,
-            n_iter=100,
-            cv_iter=None,
-            acq_func="gp_hedge",
-            **kwargs
+        self,
+        X,
+        Y,
+        total_duration=600,
+        n_iter=100,
+        cv_iter=None,
+        acq_func="gp_hedge",
+        **kwargs
     ):
         start = datetime.now()
 

@@ -15,20 +15,20 @@ from csrank.util import print_dictionary
 
 class RankNetCore(Learner):
     def __init__(
-            self,
-            n_object_features,
-            n_hidden=2,
-            n_units=8,
-            loss_function="binary_crossentropy",
-            batch_normalization=False,
-            kernel_regularizer=l2(l=1e-4),
-            kernel_initializer="lecun_normal",
-            activation="relu",
-            optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
-            metrics=["binary_accuracy"],
-            batch_size=256,
-            random_state=None,
-            **kwargs
+        self,
+        n_object_features,
+        n_hidden=2,
+        n_units=8,
+        loss_function="binary_crossentropy",
+        batch_normalization=False,
+        kernel_regularizer=l2(l=1e-4),
+        kernel_initializer="lecun_normal",
+        activation="relu",
+        optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9),
+        metrics=["binary_accuracy"],
+        batch_size=256,
+        random_state=None,
+        **kwargs
     ):
         self.logger = logging.getLogger(RankNetCore.__name__)
         self.n_object_features = n_object_features
@@ -68,7 +68,9 @@ class RankNetCore(Learner):
             1, activation="sigmoid", kernel_regularizer=self.kernel_regularizer
         )
         self.output_layer_score = Dense(1, activation="linear")
-        self.logger.info("batch_normalization {}, kwargs {}".format(self.batch_normalization, kwargs))
+        self.logger.info(
+            "batch_normalization {}, kwargs {}".format(self.batch_normalization, kwargs)
+        )
         if self.batch_normalization:
             self.hidden_layers = [
                 NormalizedDense(self.n_units, name="hidden_{}".format(x), **kwargs)
@@ -113,7 +115,7 @@ class RankNetCore(Learner):
         raise NotImplemented
 
     def fit(
-            self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd
+        self, X, Y, epochs=10, callbacks=None, validation_split=0.1, verbose=0, **kwd
     ):
         """
         Fit a generic preference learning RankNet model on a provided set of queries. The provided queries can be of
@@ -225,13 +227,13 @@ class RankNetCore(Learner):
             self.logger.info("Cannot clear the memory")
 
     def set_tunable_parameters(
-            self,
-            n_hidden=32,
-            n_units=2,
-            reg_strength=1e-4,
-            learning_rate=1e-3,
-            batch_size=128,
-            **point
+        self,
+        n_hidden=32,
+        n_units=2,
+        reg_strength=1e-4,
+        learning_rate=1e-3,
+        batch_size=128,
+        **point
     ):
         """
         Set tunable parameters of the RankNet network to the values provided.

@@ -37,9 +37,9 @@ CMPNET_CHOICE = "cmpnet_choice"
 RANKSVM_CHOICE = "ranksvm_choice"
 GLM_CHOICE = "glm_choice"
 RANDOM_CHOICE = "random_choice"
-SDA_CHOICE = 'sda_choice'
-SDA_CHOICE_FIXED = 'sda_fixed_choice'
-SDA_CHOICE_DROPOUT = 'sda_dropout_choice'
+SDA_CHOICE = "sda_choice"
+SDA_CHOICE_FIXED = "sda_fixed_choice"
+SDA_CHOICE_DROPOUT = "sda_dropout_choice"
 
 TAG_GENOME_OR = "tag_genome_or"
 TAG_GENOME_DC = "tag_genome_dc"
@@ -58,9 +58,9 @@ GEV = "generalized_extreme_value"
 PCL = "paired_combinatorial_logit"
 RANKSVM_DC = "ranksvm_dc"
 MLM = "mixed_logit_model"
-SDA_DC = 'sda_dc'
-SDA_DC_FIXED = 'sda_dc_fixed'
-SDA_DC_DROPOUT = 'sda_dropout_dc'
+SDA_DC = "sda_dc"
+SDA_DC_FIXED = "sda_dc_fixed"
+SDA_DC_DROPOUT = "sda_dropout_dc"
 
 DCFS = [
     FETA_DC,
@@ -77,16 +77,16 @@ DCFS = [
     GEV,
     PCL,
     MLM,
-    RANDOM_DC
+    RANDOM_DC,
 ]
 DCMS = [
     "FETA-Net",
     "FATE-Net",
     "FETA-Linear",
     "FATE-Linear",
-    'SDA',
-    'SDA-Fixed',
-    'SDA-Dropout',
+    "SDA",
+    "SDA-Fixed",
+    "SDA-Dropout",
     "RankNet",
     "PairwiseSVM",
     "LogitModel",
@@ -94,7 +94,7 @@ DCMS = [
     "GenNestedLogit",
     "PairedLogit",
     "MixedLogit",
-    "Random"
+    "Random",
 ]
 
 CHOICE_FUNCTIONS = [
@@ -116,8 +116,8 @@ CHOICE_MODELS = [
     "FETA-Linear",
     "FATE-Linear",
     "SDA",
-    'SDA-Fixed',
-    'SDA-Dropout',
+    "SDA-Fixed",
+    "SDA-Dropout",
     "RankNet",
     "PairwiseSVM",
     "GenLinearModel",

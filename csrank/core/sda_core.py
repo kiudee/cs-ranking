@@ -49,7 +49,7 @@ class SDACore(Learner):
         activation="tanh",
         loss_function="mse",
         metrics=None,
-        optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9, clipnorm=1.),
+        optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9, clipnorm=1.0),
         random_state=None,
         **kwargs
     ):

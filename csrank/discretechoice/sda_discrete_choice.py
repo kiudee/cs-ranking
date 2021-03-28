@@ -23,7 +23,7 @@ class SDADiscreteChoiceFunction(SDACore, DiscreteObjectChooser):
         activation="tanh",
         loss_function="categorical_hinge",
         metrics=["categorical_accuracy"],
-        optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9, clipnorm=1.),
+        optimizer=SGD(lr=1e-4, nesterov=True, momentum=0.9, clipnorm=1.0),
         **kwargs
     ):
         super().__init__(
