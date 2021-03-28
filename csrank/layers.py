@@ -8,7 +8,6 @@ from keras.layers import (
     Dense,
     Input,
     Lambda,
-    Layer,
     Dropout,
 )
 from keras.layers.merge import average
@@ -165,11 +164,11 @@ def create_input_lambda(i):
     return Lambda(lambda x: x[:, i])
 
 
-class DeepSetSDA(Layer):
+class DeepSetSDA(Model):
     def __init__(
         self,
+        input_shape,
         output_dim,
-        input_shape=None,
         set_layers=2,
         set_units=16,
         activation="tanh",
@@ -183,8 +182,8 @@ class DeepSetSDA(Layer):
         self.set_units = set_units
         self.activation = activation
         self.kernel_regularizer = kernel_regularizer
-        self.embedding = Sequential()
         self.dropout_rate = dropout_rate
+        self.embedding = Sequential()
         for i in range(self.set_layers):
             if i == 0:
                 self.embedding.add(
