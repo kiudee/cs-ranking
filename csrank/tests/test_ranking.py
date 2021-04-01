@@ -34,10 +34,7 @@ def test_object_ranker_fixed(trivial_ranking_problem, ranker_name):
     x, y = trivial_ranking_problem
     ranker, params, (loss, acc) = object_rankers[ranker_name]
     ranker = ranker(**params)
-    if "linear" in ranker_name:
-        ranker.fit(x, y, epochs=10, validation_split=0, verbose=False)
-    else:
-        ranker.fit(x, y, epochs=100, validation_split=0, verbose=False)
+    ranker.fit(x, y)
     pred_scores = ranker.predict_scores(x)
     pred_loss = zero_one_rank_loss_for_scores_ties_np(y, pred_scores)
     rtol = 1e-2

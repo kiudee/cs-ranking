@@ -72,10 +72,8 @@ def test_discrete_choice_function_fixed(trivial_discrete_choice_problem, name):
                 "callbacks": [CheckParametersConvergence()],
             },
         )
-    elif "linear" in name:
-        learner.fit(x, y, epochs=10, validation_split=0, verbose=False)
     else:
-        learner.fit(x, y, epochs=100, validation_split=0, verbose=False)
+        learner.fit(x, y)
     s_pred = learner.predict_scores(x)
     y_pred = learner.predict_for_scores(s_pred)
     y_pred_2 = learner.predict(x)
