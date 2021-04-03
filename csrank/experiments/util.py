@@ -229,7 +229,7 @@ def create_optimizer_parameters(
 
 
 def create_optimizer_parameters2(
-    fit_params, hp_ranges, learner, learner_name, hash_file
+        fit_params, hp_ranges, learner, learner_name, hash_file
 ):
     hp_params = {}
     learner.hash_file = hash_file
@@ -273,14 +273,14 @@ def get_scores(object, batch_size, X_test, Y_test, logger):
             if isinstance(object, AllPositive):
                 s_pred = object.predict_scores(X_test, Y_test)
             elif isinstance(
-                object,
-                (
-                    GeneralizedLinearModel,
-                    PairedCombinatorialLogit,
-                    MultinomialLogitModel,
-                    NestedLogitModel,
-                    GeneralizedNestedLogitModel,
-                ),
+                    object,
+                    (
+                            GeneralizedLinearModel,
+                            PairedCombinatorialLogit,
+                            MultinomialLogitModel,
+                            NestedLogitModel,
+                            GeneralizedNestedLogitModel,
+                    ),
             ):
                 s_pred = object.predict_scores(X_test)
             else:

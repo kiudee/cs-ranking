@@ -61,7 +61,7 @@ class FETALinearChoiceFunction(FETAChoiceFunction):
             add_zeroth_order_model=True,
             loss_function=loss_function,
             batch_normalization=False,
-            activation="selu",
+            activation="linear",
             kernel_initializer="lecun_normal",
             kernel_regularizer=l2(l=1e-4),
             optimizer=SGD(lr=learning_rate, nesterov=True, momentum=0.9),

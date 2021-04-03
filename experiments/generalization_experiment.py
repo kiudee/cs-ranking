@@ -132,12 +132,15 @@ if __name__ == '__main__':
         name, param, dataset = job["learner"], job["learner_params"], job["dataset"]
         param['n_objects'], param['n_object_features'] = job['dataset_params']['n_objects'], job['dataset_params'].get(
             'n_features', 0)
+        param['n_features'] = param['n_object_features']
         hash_file = os.path.join(DIR_PATH, MODEL_FOLDER, "{}.h5".format(job['hash_value']))
         if param['n_object_features'] == 0:
             if 'tag_genome' in dataset:
                 param['n_object_features'] = 1128
+                param['n_features'] = 1128
             elif 'mnist' in dataset:
                 param['n_object_features'] = 128
+                param['n_features'] = 128
         learner = learners[name](**param)
         learner.hash_file = hash_file
         all_learners[name] = learner
@@ -207,11 +210,7 @@ if __name__ == '__main__':
             logger.info("Model already present {}".format(model_name))
         if optimizer is None:
             logger.info("Optimizer is not loaded properly {}".format(model_name))
-        if learner_name in [FATELINEAR_RANKER, FETALINEAR_RANKER, FATELINEAR_DC, FETALINEAR_DC] or \
-                (model_name not in models_done and learner_name not in [PCL]):
-            if learner_name in [FATELINEAR_RANKER, FETALINEAR_RANKER, FATELINEAR_DC, FETALINEAR_DC]:
-                fit_params["epochs"] = 500
-                model_name = learner_name + "_2"
+        if model_name not in models_done and learner_name not in [PCL]:
             learner = all_learners[learner_name]
             logger.info("learner params {}".format(print_dictionary(learner_params)))
             if learner_name in hp_ranges.keys():

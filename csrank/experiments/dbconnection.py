@@ -279,25 +279,17 @@ class DBConnector(metaclass=ABCMeta):
             )
             self.cursor_db.execute(select_job)
             old_results = self.cursor_db.fetchone()
-            idx = 2
-            if experiment_table == "choice_function":
-                idx = 7
-            if float(old_results[idx]) < float(results[list(results.keys())[idx]]):
-                update_result = "UPDATE {0} set {1} where job_id= %s ".format(
-                    results_table, update_str
-                )
-                self.logger.info(update_result)
-                values_tuples.append(results["job_id"])
-                self.logger.info("values {}".format(tuple(values_tuples)))
-                self.cursor_db.execute(update_result, tuple(values_tuples))
-                if self.cursor_db.rowcount == 1:
-                    self.logger.info("The job {} is updated".format(results["job_id"]))
-            else:
-                self.logger.info(
-                    "Old results {} are better not updating {}".format(
-                        old_results, results
-                    )
-                )
+
+            update_result = "UPDATE {0} set {1} where job_id= %s ".format(
+                results_table, update_str
+            )
+            self.logger.info(update_result)
+            values_tuples.append(results["job_id"])
+            self.logger.info("values {}".format(tuple(values_tuples)))
+            self.cursor_db.execute(update_result, tuple(values_tuples))
+            if self.cursor_db.rowcount == 1:
+                self.logger.info("The job {} is updated".format(results["job_id"]))
+            self.logger.info("Old results {}, New Results {}".format(old_results, results))
         self.close_connection()
 
     def append_error_string_in_running_job(self, job_id, error_message, **kwargs):
