@@ -2,6 +2,13 @@
 
 |Build Status| |Coverage| |Binder|
 
+****
+NOTE
+****
+
+This repository is currently in the process of being migrated to pytorch. Most
+of the documentation is not accurate anymore.
+
 ************
 Introduction
 ************
