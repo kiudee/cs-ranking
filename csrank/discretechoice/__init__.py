@@ -8,7 +8,6 @@ from .paired_combinatorial_logit import PairedCombinatorialLogit
 from .pairwise_discrete_choice import PairwiseSVMDiscreteChoiceFunction
 
 __all__ = [
-    "RandomBaselineDC",
     "GeneralizedNestedLogitModel",
     "MixedLogitModel",
     "ModelSelector",
@@ -16,4 +15,5 @@ __all__ = [
     "NestedLogitModel",
     "PairedCombinatorialLogit",
     "PairwiseSVMDiscreteChoiceFunction",
+    "RandomBaselineDC",
 ]

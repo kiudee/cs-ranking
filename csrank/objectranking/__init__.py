@@ -4,6 +4,6 @@ from .rank_svm import RankSVM
 
 __all__ = [
     "ExpectedRankRegression",
-    "RankSVM",
     "RandomBaselineRanker",
+    "RankSVM",
 ]
