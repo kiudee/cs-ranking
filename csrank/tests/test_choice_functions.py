@@ -3,7 +3,8 @@ from pymc3.variational.callbacks import CheckParametersConvergence
 import pytest
 import torch
 
-from csrank.choicefunction import *
+from csrank.choicefunction import GeneralizedLinearModel
+from csrank.choicefunction import PairwiseSVMChoiceFunction
 from csrank.constants import GLM_CHOICE
 from csrank.constants import RANKSVM_CHOICE
 from csrank.metrics_np import auc_score

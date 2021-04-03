@@ -10,7 +10,12 @@ from csrank.constants import NLM
 from csrank.constants import PCL
 from csrank.constants import RANKSVM_DC
 from csrank.dataset_reader.discretechoice.util import convert_to_label_encoding
-from csrank.discretechoice import *
+from csrank.discretechoice import GeneralizedNestedLogitModel
+from csrank.discretechoice import MixedLogitModel
+from csrank.discretechoice import MultinomialLogitModel
+from csrank.discretechoice import NestedLogitModel
+from csrank.discretechoice import PairedCombinatorialLogit
+from csrank.discretechoice import PairwiseSVMDiscreteChoiceFunction
 from csrank.metrics_np import categorical_accuracy_np
 from csrank.metrics_np import subset_01_loss
 from csrank.metrics_np import topk_categorical_accuracy_np

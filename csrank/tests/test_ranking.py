@@ -6,7 +6,8 @@ from csrank.constants import ERR
 from csrank.constants import RANKSVM
 from csrank.metrics_np import zero_one_accuracy_np
 from csrank.metrics_np import zero_one_rank_loss_for_scores_ties_np
-from csrank.objectranking import *
+from csrank.objectranking import ExpectedRankRegression
+from csrank.objectranking import RankSVM
 
 object_rankers = {
     ERR: (ExpectedRankRegression, {}, (0.0, 1.0)),
