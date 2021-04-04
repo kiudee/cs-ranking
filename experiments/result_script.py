@@ -458,7 +458,8 @@ def bar_plot_for_problem2(df, learning_problem, start, params, extension):
         df1 = df[df.Dataset.str.contains('|'.join(u_datasets[0:mid]))]
         df2 = df[df.Dataset.str.contains('|'.join(u_datasets[mid:]))]
         dfs = [df1, df2]
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(5.63, 5.2), frameon=True, edgecolor='k', facecolor='white')
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(5.63, 5.2), frameon=True, edgecolor='k', facecolor='white',
+                                       sharey=True)
         fig.subplots_adjust(wspace=0.0, hspace=0.0)
         subps = [ax1, ax2]
     else:
