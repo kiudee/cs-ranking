@@ -5,11 +5,13 @@ from torch import optim
 
 from csrank.constants import ERR
 from csrank.constants import FATE_RANKER
+from csrank.constants import FETA_RANKER
 from csrank.constants import RANKSVM
 from csrank.metrics_np import zero_one_accuracy_np
 from csrank.metrics_np import zero_one_rank_loss_for_scores_ties_np
 from csrank.objectranking import ExpectedRankRegression
 from csrank.objectranking import FATEObjectRanker
+from csrank.objectranking import FETAObjectRanker
 from csrank.objectranking import RankSVM
 
 skorch_common_args = {
@@ -33,6 +35,27 @@ object_rankers = {
             "n_hidden_set_layers": 1,
             "n_hidden_joint_units": 5,
             "n_hidden_set_units": 5,
+            **skorch_common_args,
+        },
+        (0.0, 1.0),
+    ),
+    FETA_RANKER: (
+        FETAObjectRanker,
+        {
+            "n_hidden": 1,
+            "n_units": 8,
+            "add_zeroth_order_model": False,
+            **skorch_common_args,
+        },
+        (0.0, 1.0),
+    ),
+    FETA_RANKER
+    + "zeroth_order_model": (
+        FETAObjectRanker,
+        {
+            "n_hidden": 1,
+            "n_units": 8,
+            "add_zeroth_order_model": True,
             **skorch_common_args,
         },
         (0.0, 1.0),
