@@ -11,6 +11,7 @@ refers to the number of input features :math:`H_o` refers to the number of
 input and output features respectively.
 """
 
+import torch
 import torch.nn as nn
 
 # Refer to Figure 1 of https://arxiv.org/pdf/1901.10860.pdf for an overview of
@@ -156,3 +157,129 @@ class DenseNeuralNetwork(nn.Module):
             result = self.activation(layer(result))
         result = self.output_layer(result)
         return result
+
+
+def _flip_pairs(pairs):
+    """Flip the order of concatenated feature vectors.
+
+    Given a tensor of concatenated feature vectors, such as this one
+
+    >>> pairs = torch.tensor([
+    ...     [1,  2,  3,  4],
+    ...     [5,  6,  7,  8],
+    ...     [9, 10, 11, 12],
+    ... ])
+
+    this function will return a tensor of concatenated feature vectors where
+    the order of the objects is reversed:
+
+    >>> _flip_pairs(pairs)
+    tensor([[ 3,  4,  1,  2],
+            [ 7,  8,  5,  6],
+            [11, 12,  9, 10]])
+
+    Parameters
+    ----------
+    pairs: tensor of dimension N >= 1
+        The tensor of pairs. It is assumed that the last dimension consists of
+        concatenated feature vectors of equal length, i.e. that its size is
+        even.
+
+    Returns
+    -------
+    tensor: of dimension N
+        The tensor of pairs with the order of the feature vectors reversed.
+    """
+    previous_shape = pairs.shape
+    assert previous_shape[-1] % 2 == 0
+    # split concatenated objects
+    new_shape = previous_shape[:-1] + (2, previous_shape[-1] // 2)
+    split_pairs = pairs.view(*new_shape)
+
+    # reverse the order of the objects
+    reverse_split_pairs = split_pairs.flip(-2)
+
+    # concatenate the feature vectors again
+    reverse_pairs = reverse_split_pairs.view(pairs.shape)
+    return reverse_pairs
+
+
+class CmpNN(nn.Module):
+    r"""A pairwise preference module with weight sharing.
+
+    This module lifts a "core preference module" to a comparative neural
+    network with weight sharing. It uses shared weights for the computations
+    :math:`U_1(x_1, x_2)` and :math:`U_1(x_2, x_1)`, which should produce a
+    more consistent result. The architecture was originally proposed in [1]_.
+    That original proposal suggested a single linear layer for the "core
+    preference module", but this implementation generalizes the approach to any
+    other "zeroth order module".
+
+    The architecture works by evaluating the "core" network on the object
+    pairing in both orders (:math:`U_1(x_1, x_2)` and :math:`U_1(x_2, x_1)`)
+    and then aggregating the result. The weights of the two evaluations are
+    shared, therefore passing the objects in the opposite order will use the
+    same weights for the pairwise evaluations and then aggregate those
+    evaluations with swapped weights.
+
+    According to the original architecture this network should return two
+    outputs: One that indicates the "evidence" that the first input is
+    preferable to the second one, and one that indicates the opposite. The two
+    outputs would be swapped when the inputs are swapped. For ease of
+    integration with other utility modules, we have decided to only return the
+    first output. The other output can be accessed by swapping the inputs. That
+    is a bit less efficient for inference, but makes it easier to use this as
+    an exchangeable component.
+
+    Parameters
+    ----------
+    pairwise_preference_core: instantiated pytorch module
+        This module is used for the pairwise evaluations. The original paper
+        [1]_ suggests to use a simple linear layer. This module should expect
+        an input of shape :math:`(N, 2 \cdot F)` where :math:`F` is the size of
+        a feature vector, and produce an output of shape :math:`(N, C)` where
+        :math:`C` is the core output size.
+    core_encoding_size: int
+        The size of an object encoding that is returned by the pairwise
+        preference core.
+
+    References
+    ----------
+    .. [1] Rigutini, L., Papini, T., Maggini, M., & Scarselli, F. (2011).
+    SortNet: Learning to rank by a neural preference function. IEEE
+    transactions on neural networks, 22(9), 1368-1380.
+    """
+
+    def __init__(self, pairwise_preference_core, core_encoding_size):
+        super().__init__()
+        # The core of the network. Just one layer in the original paper. See
+        # Figure 1 of [1]. Should expect input size 2*n_features and have
+        # output size n_hidden.
+        self.pairwise_preference_core = pairwise_preference_core
+        # Predict the outputs N_<, N_> (depending on the order in which the inputs are passed)
+        self.final_layer = nn.Linear(core_encoding_size * 2, 1)
+        # self.pairwise_comparison_module = pairwise_comparison_module
+
+    def forward(self, pairs):
+        reverse_pairs = _flip_pairs(pairs)
+        comparisons = self.pairwise_preference_core(pairs)
+        # Both hidden outputs are aggregated in final layer
+        reverse_comparisons = self.pairwise_preference_core(reverse_pairs)
+        # "x preferable to y", denoted N_> in the paper
+        output_one = self.final_layer(torch.cat([comparisons, reverse_comparisons], -1))
+        # "y preferable to x", denoted N_< in the paper
+
+        # output_two is equal to output_one of the reversed input (by design).
+        # We could use this to build up the pairwise comparison matrix. That
+        # would be more efficient, but also a bit more complex. It should only
+        # make a difference for inference.
+
+        # output_two = self.final_layer(torch.cat([reverse_comparisons, comparisons], -1))
+        # return torch.cat([output_one, output_two], -1)
+
+        # Note that if the inputs are switched then "comparisons" and "reverse
+        # comparisons" are switched and therefore also output_one and
+        # output_two are switched. That ensures consistency (i.e. that the
+        # preference is independent of the order in which the inputs where
+        # given).
+        return output_one
