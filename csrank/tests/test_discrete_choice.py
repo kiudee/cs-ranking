@@ -4,6 +4,7 @@ import pytest
 import torch
 from torch import optim
 
+from csrank.constants import CMPNET_DC
 from csrank.constants import FATE_DC
 from csrank.constants import FETA_DC
 from csrank.constants import GEV
@@ -13,6 +14,7 @@ from csrank.constants import NLM
 from csrank.constants import PCL
 from csrank.constants import RANKSVM_DC
 from csrank.dataset_reader.discretechoice.util import convert_to_label_encoding
+from csrank.discretechoice import CmpNetDiscreteChoiceFunction
 from csrank.discretechoice import FATEDiscreteChoiceFunction
 from csrank.discretechoice import FETADiscreteChoiceFunction
 from csrank.discretechoice import GeneralizedNestedLogitModel
@@ -48,6 +50,11 @@ skorch_common_args = {
 }
 
 discrete_choice_functions = {
+    CMPNET_DC: (
+        CmpNetDiscreteChoiceFunction,
+        {"n_hidden": 2, "n_units": 8, **skorch_common_args},
+        get_vals([1.0, 1.0]),
+    ),
     FATE_DC: (
         FATEDiscreteChoiceFunction,
         {
