@@ -12,24 +12,28 @@ from csrank.objectranking import ExpectedRankRegression
 from csrank.objectranking import FATEObjectRanker
 from csrank.objectranking import RankSVM
 
+skorch_common_args = {
+    "max_epochs": 100,
+    "optimizer": optim.SGD,
+    "optimizer__lr": 1e-3,
+    "optimizer__momentum": 0.9,
+    "optimizer__nesterov": True,
+    # We evaluate the estimators in-sample. These tests are just small
+    # sanity checks, so overfitting is okay here.
+    "train_split": None,
+}
+
 object_rankers = {
     ERR: (ExpectedRankRegression, {}, (0.0, 1.0)),
     RANKSVM: (RankSVM, {}, (0.0, 1.0)),
     FATE_RANKER: (
         FATEObjectRanker,
         {
-            "max_epochs": 100,
             "n_hidden_joint_layers": 1,
             "n_hidden_set_layers": 1,
             "n_hidden_joint_units": 5,
             "n_hidden_set_units": 5,
-            "optimizer": optim.SGD,
-            "optimizer__lr": 1e-3,
-            "optimizer__momentum": 0.9,
-            "optimizer__nesterov": True,
-            # We evaluate the estimators in-sample. These tests are just small
-            # sanity checks, so overfitting is okay here.
-            "train_split": None,
+            **skorch_common_args,
         },
         (0.0, 1.0),
     ),

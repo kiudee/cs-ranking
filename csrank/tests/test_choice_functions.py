@@ -27,24 +27,28 @@ def get_vals(values):
     return dict(zip(choice_metrics.keys(), values))
 
 
+skorch_common_args = {
+    "max_epochs": 100,
+    "optimizer": optim.SGD,
+    "optimizer__lr": 1e-3,
+    "optimizer__momentum": 0.9,
+    "optimizer__nesterov": True,
+    # We evaluate the estimators in-sample. These tests are just small
+    # sanity checks, so overfitting is okay here.
+    "train_split": None,
+}
+
 choice_functions = {
     GLM_CHOICE: (GeneralizedLinearModel, {}, get_vals([0.9567, 0.9955, 1.0])),
     RANKSVM_CHOICE: (PairwiseSVMChoiceFunction, {}, get_vals([0.9522, 0.9955, 1.0])),
     FATE_CHOICE: (
         FATEChoiceFunction,
         {
-            "max_epochs": 100,
             "n_hidden_joint_layers": 1,
             "n_hidden_set_layers": 1,
             "n_hidden_joint_units": 5,
             "n_hidden_set_units": 5,
-            "optimizer": optim.SGD,
-            "optimizer__lr": 1e-3,
-            "optimizer__momentum": 0.9,
-            "optimizer__nesterov": True,
-            # We evaluate the estimators in-sample. These tests are just small
-            # sanity checks, so overfitting is okay here.
-            "train_split": None,
+            **skorch_common_args,
         },
         get_vals([0.7177, 0.3119, 1.0]),
     ),

@@ -34,22 +34,26 @@ def get_vals(values=[1.0, 1.0]):
     return dict(zip(metrics.keys(), values))
 
 
+skorch_common_args = {
+    "max_epochs": 100,
+    "optimizer": optim.SGD,
+    "optimizer__lr": 1e-3,
+    "optimizer__momentum": 0.9,
+    "optimizer__nesterov": True,
+    # We evaluate the estimators in-sample. These tests are just small
+    # sanity checks, so overfitting is okay here.
+    "train_split": None,
+}
+
 discrete_choice_functions = {
     FATE_DC: (
         FATEDiscreteChoiceFunction,
         {
-            "max_epochs": 100,
             "n_hidden_joint_layers": 1,
             "n_hidden_set_layers": 1,
             "n_hidden_joint_units": 5,
             "n_hidden_set_units": 5,
-            "optimizer": optim.SGD,
-            "optimizer__lr": 1e-3,
-            "optimizer__momentum": 0.9,
-            "optimizer__nesterov": True,
-            # We evaluate the estimators in-sample. These tests are just small
-            # sanity checks, so overfitting is okay here.
-            "train_split": None,
+            **skorch_common_args,
         },
         get_vals([1.0, 1.0]),
     ),
