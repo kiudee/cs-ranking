@@ -18,8 +18,7 @@ algorithms.
 We implement the following new object ranking/choice architectures:
 
 * FATE (First aggregate then evaluate)
-* FETA (First evaluate then aggregate) (currently not available due to the
-  PyTorch migration)
+* FETA (First evaluate then aggregate)
 
 In addition, we also implement these algorithms for choice functions:
 
