@@ -96,7 +96,7 @@ discrete_choice_functions = {
     MLM: (MixedLogitModel, {}, get_vals()),
     RANKNET_DC: (
         RankNetDiscreteChoiceFunction,
-        skorch_common_args.copy(),
+        {"n_hidden": 2, "n_units": 8, **skorch_common_args},
         get_vals([1.0, 1.0]),
     ),
     RANKSVM_DC: (PairwiseSVMDiscreteChoiceFunction, {}, get_vals([0.982, 0.982])),

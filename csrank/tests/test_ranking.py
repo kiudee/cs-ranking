@@ -69,7 +69,11 @@ object_rankers = {
         },
         (0.0, 1.0),
     ),
-    RANKNET: (RankNetObjectRanker, skorch_common_args.copy(), (0.0, 1.0)),
+    RANKNET: (
+        RankNetObjectRanker,
+        {"n_hidden": 2, "n_units": 8, **skorch_common_args},
+        (0.0, 1.0),
+    ),
 }
 
 

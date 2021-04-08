@@ -86,7 +86,7 @@ choice_functions = {
     ),
     RANKNET_CHOICE: (
         RankNetChoiceFunction,
-        skorch_common_args.copy(),
+        {"n_hidden": 2, "n_units": 8, **skorch_common_args},
         get_vals([0.9202, 0.9198, 1.0]),
     ),
 }
