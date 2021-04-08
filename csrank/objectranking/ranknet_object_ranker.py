@@ -39,8 +39,8 @@ class RankNetObjectRanker(SkorchObjectRanker):
         self,
         n_hidden=2,
         n_units=8,
-        criterion=HingedRankLoss,
         activation=nn.SELU,
+        criterion=HingedRankLoss,
         **kwargs
     ):
         self.n_hidden = n_hidden
