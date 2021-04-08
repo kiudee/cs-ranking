@@ -24,6 +24,10 @@ class FETAChoiceFunction(SkorchChoiceFunction):
         Whether or not to add a zeroth order utility model, i.e. a model that
         evaluates an object independent from the context.
 
+    activation : torch activation function (class)
+        The activation function that should be used for each layer of the
+        pairwise utility module and the zeroth order module (if enabled).
+
     criterion : torch criterion (class)
         The criterion that is used to evaluate and optimize the module.
 
