@@ -9,10 +9,12 @@ from csrank.choicefunction import FATEChoiceFunction
 from csrank.choicefunction import FETAChoiceFunction
 from csrank.choicefunction import GeneralizedLinearModel
 from csrank.choicefunction import PairwiseSVMChoiceFunction
+from csrank.choicefunction import RankNetChoiceFunction
 from csrank.constants import CMPNET_CHOICE
 from csrank.constants import FATE_CHOICE
 from csrank.constants import FETA_CHOICE
 from csrank.constants import GLM_CHOICE
+from csrank.constants import RANKNET_CHOICE
 from csrank.constants import RANKSVM_CHOICE
 from csrank.metrics_np import auc_score
 from csrank.metrics_np import f1_measure
@@ -88,6 +90,11 @@ choice_functions = {
             **skorch_common_args,
         },
         get_vals([0.9368, 0.9617, 1.0]),
+    ),
+    RANKNET_CHOICE: (
+        RankNetChoiceFunction,
+        skorch_common_args.copy(),
+        get_vals([0.9202, 0.9198, 1.0]),
     ),
 }
 
