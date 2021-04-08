@@ -12,6 +12,7 @@ from csrank.constants import MLM
 from csrank.constants import MNL
 from csrank.constants import NLM
 from csrank.constants import PCL
+from csrank.constants import RANKNET_DC
 from csrank.constants import RANKSVM_DC
 from csrank.dataset_reader.discretechoice.util import convert_to_label_encoding
 from csrank.discretechoice import CmpNetDiscreteChoiceFunction
@@ -23,6 +24,7 @@ from csrank.discretechoice import MultinomialLogitModel
 from csrank.discretechoice import NestedLogitModel
 from csrank.discretechoice import PairedCombinatorialLogit
 from csrank.discretechoice import PairwiseSVMDiscreteChoiceFunction
+from csrank.discretechoice import RankNetDiscreteChoiceFunction
 from csrank.metrics_np import categorical_accuracy_np
 from csrank.metrics_np import subset_01_loss
 from csrank.metrics_np import topk_categorical_accuracy_np
@@ -92,6 +94,11 @@ discrete_choice_functions = {
     PCL: (PairedCombinatorialLogit, {}, get_vals()),
     GEV: (GeneralizedNestedLogitModel, {}, get_vals()),
     MLM: (MixedLogitModel, {}, get_vals()),
+    RANKNET_DC: (
+        RankNetDiscreteChoiceFunction,
+        skorch_common_args.copy(),
+        get_vals([1.0, 1.0]),
+    ),
     RANKSVM_DC: (PairwiseSVMDiscreteChoiceFunction, {}, get_vals([0.982, 0.982])),
 }
 
