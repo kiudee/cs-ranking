@@ -2,7 +2,7 @@
 Choice Functions
 ****************
 
-.. currentmodule:: csrank.choicefunctions
+.. currentmodule:: csrank.choicefunction
 .. autosummary::
 
    GeneralizedLinearModel
