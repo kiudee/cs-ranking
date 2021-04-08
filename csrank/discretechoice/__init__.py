@@ -1,4 +1,5 @@
 from .baseline import RandomBaselineDC
+from .cmpnet_discrete_choice import CmpNetDiscreteChoiceFunction
 from .fate_discrete_choice import FATEDiscreteChoiceFunction
 from .feta_discrete_choice import FETADiscreteChoiceFunction
 from .generalized_nested_logit import GeneralizedNestedLogitModel
@@ -10,6 +11,7 @@ from .paired_combinatorial_logit import PairedCombinatorialLogit
 from .pairwise_discrete_choice import PairwiseSVMDiscreteChoiceFunction
 
 __all__ = [
+    "CmpNetDiscreteChoiceFunction",
     "FATEDiscreteChoiceFunction",
     "FETADiscreteChoiceFunction",
     "GeneralizedNestedLogitModel",

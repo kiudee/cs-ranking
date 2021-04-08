@@ -3,12 +3,14 @@ import pytest
 import torch
 from torch import optim
 
+from csrank.constants import CMPNET
 from csrank.constants import ERR
 from csrank.constants import FATE_RANKER
 from csrank.constants import FETA_RANKER
 from csrank.constants import RANKSVM
 from csrank.metrics_np import zero_one_accuracy_np
 from csrank.metrics_np import zero_one_rank_loss_for_scores_ties_np
+from csrank.objectranking import CmpNetObjectRanker
 from csrank.objectranking import ExpectedRankRegression
 from csrank.objectranking import FATEObjectRanker
 from csrank.objectranking import FETAObjectRanker
@@ -26,6 +28,11 @@ skorch_common_args = {
 }
 
 object_rankers = {
+    CMPNET: (
+        CmpNetObjectRanker,
+        {"n_hidden": 2, "n_units": 8, **skorch_common_args},
+        (0.0, 1.0),
+    ),
     ERR: (ExpectedRankRegression, {}, (0.0, 1.0)),
     RANKSVM: (RankSVM, {}, (0.0, 1.0)),
     FATE_RANKER: (

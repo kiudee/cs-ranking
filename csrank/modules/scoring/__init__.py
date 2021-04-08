@@ -9,7 +9,8 @@ the implemented pytorch estimators such as ``FATEDiscreteObjectChooser`` for
 examples.
 """
 
+from .cmpnet import CmpNetScoring
 from .fate import FATEScoring
 from .feta import FETAScoring
 
-__all__ = ["FATEScoring", "FETAScoring"]
+__all__ = ["CmpNetScoring", "FATEScoring", "FETAScoring"]
