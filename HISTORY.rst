@@ -9,6 +9,9 @@ History
   likely need to adapt to this new version if you have been using estimators
   from version 1.x.
 
+* The RankNet and CmpNet estimators are now trained with a loss that applies to
+  the whole result (the general/discrete choice or ranking). They were
+  previously trained on object pairs with different loss functions.
 1.3.0 (Unreleased)
 ------------------
 
