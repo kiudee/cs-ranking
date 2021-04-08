@@ -23,7 +23,7 @@ We implement the following new object ranking/choice architectures:
 
 In addition, we also implement these algorithms for choice functions:
 
-* RankNetChoiceFunction (currently not available due to the PyTorch migration)
+* RankNetChoiceFunction
 * GeneralizedLinearModel
 * PairwiseSVMChoiceFunction
 
@@ -34,8 +34,7 @@ setting:
 * MixedLogitModel
 * NestedLogitModel
 * PairedCombinatorialLogit
-* RankNetDiscreteChoiceFunction (currently not available due to the PyTorch
-  migration)
+* RankNetDiscreteChoiceFunction
 * PairwiseSVMDiscreteChoiceFunction
 
 
