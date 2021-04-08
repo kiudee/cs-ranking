@@ -47,6 +47,12 @@ class CmpNetScoring(nn.Module):
         The size of the embedding that the pairwise preference core should
         produce before the results are aggregated by the final layer. See the
         documentation of ``CmpNet`` for a more detailed understanding.
+
+    References
+    ----------
+    .. [1] Rigutini, L., Papini, T., Maggini, M., & Scarselli, F. (2011).
+    SortNet: Learning to rank by a neural preference function. IEEE
+    transactions on neural networks, 22(9), 1368-1380.
     """
 
     def __init__(

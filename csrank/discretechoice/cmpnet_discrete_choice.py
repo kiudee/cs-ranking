@@ -11,7 +11,8 @@ from csrank.modules.scoring.cmpnet import CmpNetScoring
 class CmpNetDiscreteChoiceFunction(SkorchDiscreteChoiceFunction):
     """A discrete choice estimator based on the CmpNet-Approach.
 
-    See the documentation of the ``CmpNetScoring`` class for more details.
+    See the documentation of :class:`csrank.modules.scoring.CmpNetScoring` for
+    more details.
 
     Parameters
     ----------
@@ -44,7 +45,7 @@ class CmpNetDiscreteChoiceFunction(SkorchDiscreteChoiceFunction):
         n_hidden=2,
         n_units=8,
         criterion=CategoricalHingeLossMax,
-        activation=nn.ReLU,
+        activation=nn.SELU,
         choice_size=1,
         **kwargs
     ):

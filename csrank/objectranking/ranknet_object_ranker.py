@@ -11,7 +11,8 @@ from csrank.rank_losses import HingedRankLoss
 class RankNetObjectRanker(SkorchObjectRanker):
     """A ranking estimator based on the RankNet-Approach.
 
-    See the documentation of the ``RankNetScoring`` class for more details.
+    See the documentation of :class:`csrank.modules.scoring.RankNetScoring` for
+    more details.
 
     Parameters
     ----------

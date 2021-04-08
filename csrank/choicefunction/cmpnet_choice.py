@@ -10,7 +10,8 @@ from csrank.modules.scoring.cmpnet import CmpNetScoring
 class CmpNetChoiceFunction(SkorchChoiceFunction):
     """A variable choice estimator based on the CmpNet-Approach.
 
-    See the documentation of the ``CmpNetScoring`` class for more details.
+    See the documentation of :class:`csrank.modules.scoring.CmpNetScoring` for
+    more details.
 
     Parameters
     ----------
@@ -36,7 +37,7 @@ class CmpNetChoiceFunction(SkorchChoiceFunction):
     """
 
     def __init__(
-        self, n_hidden=2, n_units=8, criterion=nn.BCELoss, activation=nn.ReLU, **kwargs
+        self, n_hidden=2, n_units=8, criterion=nn.BCELoss, activation=nn.SELU, **kwargs
     ):
         self.n_hidden = n_hidden
         self.n_units = n_units

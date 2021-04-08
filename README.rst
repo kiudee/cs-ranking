@@ -4,9 +4,10 @@
 NOTE
 ****
 
-This repository is currently in the process of a migration from tensorflow to
-PyTorch. You should use the latest released version if you are not interested
-in the partial PyTorch implementation.
+This library has recently been migrated from tensorflow to PyTorch. The 2.0
+version marks a breaking change. Some of the previous functionality is now
+unavailable and some classes behave differently. You can use the latest 1.x
+release if you are looking for the tensorflow based estimators.
 
 *******
 CS-Rank
@@ -18,8 +19,7 @@ algorithms.
 We implement the following new object ranking/choice architectures:
 
 * FATE (First aggregate then evaluate)
-* FETA (First evaluate then aggregate) (currently not available due to the
-  PyTorch migration)
+* FETA (First evaluate then aggregate)
 
 In addition, we also implement these algorithms for choice functions:
 

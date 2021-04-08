@@ -10,6 +10,9 @@ from csrank.modules.scoring.feta import FETAScoring
 class FETAChoiceFunction(SkorchChoiceFunction):
     """A variable choice estimator based on the FETA-Approach.
 
+    See the documentation of :class:`csrank.modules.scoring.FETAScoring` for
+    more details.
+
     Parameters
     ----------
     n_hidden : int

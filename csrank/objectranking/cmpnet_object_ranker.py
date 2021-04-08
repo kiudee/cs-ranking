@@ -11,7 +11,8 @@ from csrank.rank_losses import HingedRankLoss
 class CmpNetObjectRanker(SkorchObjectRanker):
     """A object ranking estimator based on the CmpNet-Approach.
 
-    See the documentation of the ``CmpNetScoring`` class for more details.
+    See the documentation of :class:`csrank.modules.scoring.CmpNetScoring` for
+    more details.
 
     Parameters
     ----------
@@ -41,7 +42,7 @@ class CmpNetObjectRanker(SkorchObjectRanker):
         n_hidden=2,
         n_units=8,
         criterion=HingedRankLoss,
-        activation=nn.ReLU,
+        activation=nn.SELU,
         **kwargs
     ):
         self.n_hidden = n_hidden
