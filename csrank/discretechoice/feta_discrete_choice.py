@@ -11,11 +11,8 @@ from csrank.modules.scoring.feta import FETAScoring
 class FETADiscreteChoiceFunction(SkorchDiscreteChoiceFunction):
     """A discrete choice estimator based on the FETA-Approach.
 
-    Trains a model that first evaluates each object in contexts of limited size
-    and then aggregates these evaluations to arrive at a final
-    object-within-context evaluation.
-
-    The resulting model can then be used for context-sensitive choice.
+    See the documentation of :class:`csrank.modules.scoring.FETAScoring` for
+    more details.
 
     Parameters
     ----------

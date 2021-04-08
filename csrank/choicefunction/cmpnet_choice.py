@@ -10,7 +10,8 @@ from csrank.modules.scoring.cmpnet import CmpNetScoring
 class CmpNetChoiceFunction(SkorchChoiceFunction):
     """A variable choice estimator based on the CmpNet-Approach.
 
-    See the documentation of the ``CmpNetScoring`` class for more details.
+    See the documentation of :class:`csrank.modules.scoring.CmpNetScoring` for
+    more details.
 
     Parameters
     ----------

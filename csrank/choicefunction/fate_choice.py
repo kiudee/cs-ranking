@@ -10,6 +10,9 @@ from csrank.modules.scoring import FATEScoring
 class FATEChoiceFunction(SkorchChoiceFunction):
     """A variable choice estimator based on the FATE-Approach.
 
+    See the documentation of :class:`csrank.modules.scoring.FATEScoring` for
+    more details.
+
     Parameters
     ----------
     n_hidden_set_layers : int

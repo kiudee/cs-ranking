@@ -11,12 +11,8 @@ from csrank.rank_losses import HingedRankLoss
 class FATEObjectRanker(SkorchObjectRanker):
     """A ranking estimator based on the FATE-Approach.
 
-    Trains a model that first aggregates all objects into a context, then
-    evaluates each object within this context.
-
-    The resulting model can then be used for context-sensitive ranking.
-
-    Refer to skorch's documentation for supported parameters.
+    See the documentation of :class:`csrank.modules.scoring.FATEScoring` for
+    more details.
 
     Parameters
     ----------

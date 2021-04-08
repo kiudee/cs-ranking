@@ -11,7 +11,8 @@ from csrank.modules.scoring.ranknet import RankNetScoring
 class RankNetDiscreteChoiceFunction(SkorchDiscreteChoiceFunction):
     """A discrete choice estimator based on the RankNet-Approach.
 
-    See the documentation of the ``RankNetScoring`` class for more details.
+    See the documentation of :class:`csrank.modules.scoring.RankNetScoring` for
+    more details.
 
     Parameters
     ----------

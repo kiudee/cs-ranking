@@ -11,13 +11,8 @@ from csrank.rank_losses import HingedRankLoss
 class FETAObjectRanker(SkorchObjectRanker):
     """A ranking estimator based on the FETA-Approach.
 
-    Trains a model that first evaluates all possible object pairing and then
-    aggregates these evaluations to compute a single score per object. The
-    evaluates are aggregated with a mean reduction.
-
-    The resulting model can then be used for context-sensitive ranking.
-
-    Refer to skorch's documentation for supported parameters.
+    See the documentation of :class:`csrank.modules.scoring.FETAScoring` for
+    more details.
 
     Parameters
     ----------
