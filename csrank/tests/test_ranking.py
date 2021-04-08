@@ -7,6 +7,7 @@ from csrank.constants import CMPNET
 from csrank.constants import ERR
 from csrank.constants import FATE_RANKER
 from csrank.constants import FETA_RANKER
+from csrank.constants import RANKNET
 from csrank.constants import RANKSVM
 from csrank.metrics_np import zero_one_accuracy_np
 from csrank.metrics_np import zero_one_rank_loss_for_scores_ties_np
@@ -14,6 +15,7 @@ from csrank.objectranking import CmpNetObjectRanker
 from csrank.objectranking import ExpectedRankRegression
 from csrank.objectranking import FATEObjectRanker
 from csrank.objectranking import FETAObjectRanker
+from csrank.objectranking import RankNetObjectRanker
 from csrank.objectranking import RankSVM
 
 skorch_common_args = {
@@ -67,6 +69,7 @@ object_rankers = {
         },
         (0.0, 1.0),
     ),
+    RANKNET: (RankNetObjectRanker, skorch_common_args.copy(), (0.0, 1.0)),
 }
 
 

@@ -12,5 +12,6 @@ examples.
 from .cmpnet import CmpNetScoring
 from .fate import FATEScoring
 from .feta import FETAScoring
+from .ranknet import RankNetScoring
 
-__all__ = ["CmpNetScoring", "FATEScoring", "FETAScoring"]
+__all__ = ["CmpNetScoring", "FATEScoring", "FETAScoring", "RankNetScoring"]
