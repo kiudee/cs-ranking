@@ -2,7 +2,14 @@
 History
 =======
 
-Unreleased
+2.0.0 (Unreleased)
+------------------
+
+* The library has been migrated to pytorch. This is a breaking change. You will
+  likely need to adapt to this new version if you have been using estimators
+  from version 1.x.
+
+1.3.0 (Unreleased)
 ------------------
 
 * We no longer override any of the defaults of our default optimizer (SGD). In

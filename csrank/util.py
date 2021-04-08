@@ -7,9 +7,6 @@ from pathlib import Path
 import re
 import sys
 
-from csrank.metrics import make_ndcg_at_k_loss
-from csrank.metrics import zero_one_accuracy
-from csrank.metrics import zero_one_rank_loss
 from csrank.metrics_np import f1_measure
 from csrank.metrics_np import hamming
 from csrank.metrics_np import instance_informedness
@@ -38,9 +35,6 @@ metrics_on_predictions = [
     subset_01_loss,
     hamming,
     instance_informedness,
-    zero_one_rank_loss,
-    zero_one_accuracy,
-    make_ndcg_at_k_loss,
     zero_one_accuracy_np,
 ]
 

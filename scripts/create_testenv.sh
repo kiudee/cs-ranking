@@ -8,7 +8,7 @@ command -v conda >/dev/null 2>&1 || {
 }
 
 ENVNAME="testenv"
-PYTHON_VERSION=${PYTHON_VERSION:-3.7} # if no python specified, use 3.6
+PYTHON_VERSION=${PYTHON_VERSION:-3.8} # if no python specified, use 3.8
 
 if [ -z ${GLOBAL} ]
 then

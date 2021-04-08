@@ -1,19 +1,29 @@
 |Build Status| |Coverage| |Binder|
 
+****
+NOTE
+****
+
+This repository is currently in the process of a migration from tensorflow to
+PyTorch. You should use the latest released version if you are not interested
+in the partial PyTorch implementation.
+
 *******
 CS-Rank
 *******
+
 CS-Rank is a Python package for context-sensitive ranking and choice
 algorithms.
 
 We implement the following new object ranking/choice architectures:
 
 * FATE (First aggregate then evaluate)
-* FETA (First evaluate then aggregate)
+* FETA (First evaluate then aggregate) (currently not available due to the
+  PyTorch migration)
 
 In addition, we also implement these algorithms for choice functions:
 
-* RankNetChoiceFunction
+* RankNetChoiceFunction (currently not available due to the PyTorch migration)
 * GeneralizedLinearModel
 * PairwiseSVMChoiceFunction
 
@@ -24,11 +34,9 @@ setting:
 * MixedLogitModel
 * NestedLogitModel
 * PairedCombinatorialLogit
-* RankNetDiscreteChoiceFunction
+* RankNetDiscreteChoiceFunction (currently not available due to the PyTorch
+  migration)
 * PairwiseSVMDiscreteChoiceFunction
-
-Check out our `interactive notebooks`_ to quickly find out what our package can
-do.
 
 
 Getting started
@@ -73,7 +81,7 @@ Another option is to clone the repository and install CS-Rank using::
 
 Dependencies
 ------------
-CS-Rank depends on Tensorflow, Keras, NumPy, SciPy, matplotlib, scikit-learn,
+CS-Rank depends on PyTorch, skorch, NumPy, SciPy, matplotlib, scikit-learn,
 joblib and tqdm. For data processing and generation you will
 also need PyGMO, H5Py and pandas.
 

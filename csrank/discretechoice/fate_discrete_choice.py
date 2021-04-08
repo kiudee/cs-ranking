@@ -1,136 +1,90 @@
-import logging
+import functools
 
-from keras.layers import Dense
-from keras.optimizers import SGD
-from keras.regularizers import l2
+import torch.nn as nn
 
-from csrank.core.fate_network import FATENetwork
-from csrank.discretechoice.discrete_choice import DiscreteObjectChooser
-
-logger = logging.getLogger(__name__)
+from csrank.discrete_choice_losses import CategoricalHingeLossMax
+from csrank.discretechoice.discrete_choice import SkorchDiscreteChoiceFunction
+from csrank.modules.object_mapping import DenseNeuralNetwork
+from csrank.modules.scoring import FATEScoring
 
 
-class FATEDiscreteChoiceFunction(DiscreteObjectChooser, FATENetwork):
+class FATEDiscreteChoiceFunction(SkorchDiscreteChoiceFunction):
+    """A discrete choice estimator based on the FATE-Approach.
+
+    Trains a model that first evaluates each object in contexts of limited size
+    and then aggregates these evaluations to arrive at a final
+    object-within-context evaluation.
+
+    The resulting model can then be used for context-sensitive choice.
+
+    Parameters
+    ----------
+    n_hidden_set_layers : int
+        The number of hidden layers that should be used for the ``DeepSet``
+        context embedding.
+
+    n_hidden_set_untis : int
+        The number of units per hidden layer that should be used for the
+        ``DeepSet`` context embedding.
+
+    n_hidden_joint_layers : int
+        The number of hidden layers that should be used for the utility
+        function that evaluates each object in the aggregated context.
+
+    n_hidden_joint_units : int
+        The number of units per hidden layer that should used for the utility
+        function that evaluates each object in the aggregated context.
+
+    activation : torch activation function (class)
+        The activation function that should be used for each layer of the two
+        ("set" and "joint) neural networks.
+
+    choice_size : int
+        The size of the target choice set.
+
+    criterion : torch criterion (class)
+        The criterion that is used to evaluate and optimize the module.
+
+    **kwargs : skorch NeuralNet arguments
+        All keyword arguments are passed to the constructor of
+        ``SkorchDiscreteChoice``. See the documentation of that class for more
+        details.
+    """
+
     def __init__(
         self,
         n_hidden_set_layers=2,
         n_hidden_set_units=32,
-        loss_function="categorical_hinge",
-        metrics=("categorical_accuracy",),
         n_hidden_joint_layers=2,
         n_hidden_joint_units=32,
-        activation="selu",
-        kernel_initializer="lecun_normal",
-        kernel_regularizer=l2,
-        optimizer=SGD,
-        batch_size=256,
-        random_state=None,
-        **kwargs,
+        activation=nn.SELU,
+        choice_size=1,
+        criterion=CategoricalHingeLossMax,
+        **kwargs
     ):
-        """
-            Create a FATE-network architecture for leaning discrete choice function. The first-aggregate-then-evaluate
-            approach learns an embedding of each object and then aggregates that into a context representation
-            :math:`\\mu_{C(x)}` and then scores each object :math:`x` using a generalized utility function
-            :math:`U (x, \\mu_{C(x)})`.
-            To make it computationally efficient we take the the context :math:`C(x)` as query set :math:`Q`.
-            The context-representation is evaluated as:
-
-            .. math::
-                \\mu_{C(x)} = \\frac{1}{\\lvert C(x) \\lvert} \\sum_{y \\in C(x)} \\phi(y)
-
-            where :math:`\\phi \\colon \\mathcal{X} \\to \\mathcal{Z}` maps each object :math:`y` to an
-            :math:`m`-dimensional embedding space :math:`\\mathcal{Z} \\subseteq \\mathbb{R}^m`.
-            Training complexity is quadratic in the number of objects and prediction complexity is only linear.
-            The discrete choice for the given query set :math:`Q` is defined as:
-
-            .. math::
-
-                dc(Q) := \\operatorname{argmax}_{x \\in Q}  \\;  U (x, \\mu_{C(x)})
-
-            Parameters
-            ----------
-            n_hidden_set_layers : int
-                Number of set layers.
-            n_hidden_set_units : int
-                Number of hidden set units.
-            n_hidden_joint_layers : int
-                Number of joint layers.
-            n_hidden_joint_units : int
-                Number of joint units.
-            activation : string or function
-                Activation function to use in the hidden units
-            kernel_initializer : function or string
-                Initialization function for the weights of each hidden layer
-            kernel_regularizer : uninitialized keras regularizer
-                Regularizer to use in the hidden units
-            optimizer: Class
-                Uninitialized optimizer class following the keras optimizer interface.
-            optimizer__{kwarg}
-                Arguments to be passed to the optimizer on initialization, such as optimizer__lr.
-            batch_size : int
-                Batch size to use for training
-            loss_function : function
-                Differentiable loss function for the score vector
-            metrics : list
-                List of evaluation metrics (can be non-differentiable)
-            random_state : int or object
-                Numpy random state
-            hidden_dense_layer__{kwarg}
-                Arguments to be passed to the Dense layers. See the keras
-                documentation for ``Dense`` for available options.
-        """
-        self.loss_function = loss_function
-        self.metrics = metrics
-        self._store_kwargs(
-            kwargs, {"optimizer__", "kernel_regularizer__", "hidden_dense_layer__"}
-        )
+        self.n_hidden_set_layers = n_hidden_set_layers
+        self.n_hidden_set_units = n_hidden_set_units
+        self.n_hidden_joint_layers = n_hidden_joint_layers
+        self.n_hidden_joint_units = n_hidden_joint_units
+        self.activation = activation
         super().__init__(
-            n_hidden_set_layers=n_hidden_set_layers,
-            n_hidden_set_units=n_hidden_set_units,
-            n_hidden_joint_layers=n_hidden_joint_layers,
-            n_hidden_joint_units=n_hidden_joint_units,
-            activation=activation,
-            kernel_initializer=kernel_initializer,
-            kernel_regularizer=kernel_regularizer,
-            optimizer=optimizer,
-            batch_size=batch_size,
-            random_state=random_state,
+            module=FATEScoring, criterion=criterion, choice_size=choice_size, **kwargs
         )
 
-    def _construct_layers(self):
-        """
-            Construct basic layers shared by all the objects:
-                * Joint dense hidden layers
-                * Output scoring layer is sigmoid output for choice model
-
-            Connecting the layers is done in join_input_layers and will be done in implementing classes.
-        """
-        logger.info(
-            "Construct joint layers hidden units {} and layers {} ".format(
-                self.n_hidden_joint_units, self.n_hidden_joint_layers
-            )
+    def _get_extra_module_parameters(self):
+        """Return extra parameters that should be passed to the module."""
+        params = super()._get_extra_module_parameters()
+        params["pairwise_utility_module"] = functools.partial(
+            DenseNeuralNetwork,
+            hidden_layers=self.n_hidden_joint_layers,
+            units_per_hidden=self.n_hidden_joint_units,
+            activation=self.activation(),
+            output_size=1,
         )
-        hidden_dense_kwargs = {
-            "kernel_regularizer": self.kernel_regularizer_,
-            "kernel_initializer": self.kernel_initializer,
-            "activation": self.activation,
-        }
-        hidden_dense_kwargs.update(self._get_prefix_attributes("hidden_dense_layer__"))
-        # Create joint hidden layers:
-        self.joint_layers = []
-        for i in range(self.n_hidden_joint_layers):
-            self.joint_layers.append(
-                Dense(
-                    self.n_hidden_joint_units,
-                    name="joint_layer_{}".format(i),
-                    **hidden_dense_kwargs,
-                )
-            )
-
-        logger.info("Construct output score node")
-        self.scorer = Dense(
-            1,
-            name="output_node",
-            activation="sigmoid",
-            kernel_regularizer=self.kernel_regularizer_,
+        params["embedding_module"] = functools.partial(
+            DenseNeuralNetwork,
+            hidden_layers=self.n_hidden_set_layers,
+            units_per_hidden=self.n_hidden_set_units,
+            activation=self.activation(),
         )
+        return params
