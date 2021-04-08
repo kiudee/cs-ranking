@@ -10,5 +10,6 @@ examples.
 """
 
 from .fate import FATEScoring
+from .feta import FETAScoring
 
-__all__ = ["FATEScoring"]
+__all__ = ["FATEScoring", "FETAScoring"]

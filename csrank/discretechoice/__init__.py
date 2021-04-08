@@ -1,5 +1,6 @@
 from .baseline import RandomBaselineDC
 from .fate_discrete_choice import FATEDiscreteChoiceFunction
+from .feta_discrete_choice import FETADiscreteChoiceFunction
 from .generalized_nested_logit import GeneralizedNestedLogitModel
 from .mixed_logit_model import MixedLogitModel
 from .model_selector import ModelSelector
@@ -10,6 +11,7 @@ from .pairwise_discrete_choice import PairwiseSVMDiscreteChoiceFunction
 
 __all__ = [
     "FATEDiscreteChoiceFunction",
+    "FETADiscreteChoiceFunction",
     "GeneralizedNestedLogitModel",
     "MixedLogitModel",
     "ModelSelector",

@@ -5,6 +5,7 @@ import torch
 from torch import optim
 
 from csrank.constants import FATE_DC
+from csrank.constants import FETA_DC
 from csrank.constants import GEV
 from csrank.constants import MLM
 from csrank.constants import MNL
@@ -13,6 +14,7 @@ from csrank.constants import PCL
 from csrank.constants import RANKSVM_DC
 from csrank.dataset_reader.discretechoice.util import convert_to_label_encoding
 from csrank.discretechoice import FATEDiscreteChoiceFunction
+from csrank.discretechoice import FETADiscreteChoiceFunction
 from csrank.discretechoice import GeneralizedNestedLogitModel
 from csrank.discretechoice import MixedLogitModel
 from csrank.discretechoice import MultinomialLogitModel
@@ -53,6 +55,27 @@ discrete_choice_functions = {
             "n_hidden_set_layers": 1,
             "n_hidden_joint_units": 5,
             "n_hidden_set_units": 5,
+            **skorch_common_args,
+        },
+        get_vals([1.0, 1.0]),
+    ),
+    FETA_DC: (
+        FETADiscreteChoiceFunction,
+        {
+            "n_hidden": 1,
+            "n_units": 8,
+            "add_zeroth_order_model": False,
+            **skorch_common_args,
+        },
+        get_vals([1.0, 1.0]),
+    ),
+    FETA_DC
+    + "zeroth_order_model": (
+        FETADiscreteChoiceFunction,
+        {
+            "n_hidden": 1,
+            "n_units": 8,
+            "add_zeroth_order_model": True,
             **skorch_common_args,
         },
         get_vals([1.0, 1.0]),
