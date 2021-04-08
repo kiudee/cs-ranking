@@ -48,14 +48,7 @@ choice_functions = {
     CMPNET_CHOICE: (
         CmpNetChoiceFunction,
         {"n_hidden": 2, "n_units": 8, **skorch_common_args},
-        # The performance looks bad, but this is likely just due to the small
-        # test set and the variance in the results. We get much better
-        # performance when using SELU instead of ReLU here. Increasing the
-        # number of epochs has a similar effect. We stick to the current
-        # configuration because we don't want to tweak the configuration for
-        # this particular test just to get good looking numbers. This is just a
-        # sanity check, the numbers are not representative.
-        get_vals([0.1962, 0.1609, 1.0]),
+        get_vals([0.8728, 0.8864, 1.0]),
     ),
     GLM_CHOICE: (GeneralizedLinearModel, {}, get_vals([0.9567, 0.9955, 1.0])),
     RANKSVM_CHOICE: (PairwiseSVMChoiceFunction, {}, get_vals([0.9522, 0.9955, 1.0])),

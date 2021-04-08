@@ -45,7 +45,7 @@ class CmpNetDiscreteChoiceFunction(SkorchDiscreteChoiceFunction):
         n_hidden=2,
         n_units=8,
         criterion=CategoricalHingeLossMax,
-        activation=nn.ReLU,
+        activation=nn.SELU,
         choice_size=1,
         **kwargs
     ):

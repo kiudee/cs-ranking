@@ -37,7 +37,7 @@ class CmpNetChoiceFunction(SkorchChoiceFunction):
     """
 
     def __init__(
-        self, n_hidden=2, n_units=8, criterion=nn.BCELoss, activation=nn.ReLU, **kwargs
+        self, n_hidden=2, n_units=8, criterion=nn.BCELoss, activation=nn.SELU, **kwargs
     ):
         self.n_hidden = n_hidden
         self.n_units = n_units

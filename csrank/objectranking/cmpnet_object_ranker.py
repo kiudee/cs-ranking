@@ -42,7 +42,7 @@ class CmpNetObjectRanker(SkorchObjectRanker):
         n_hidden=2,
         n_units=8,
         criterion=HingedRankLoss,
-        activation=nn.ReLU,
+        activation=nn.SELU,
         **kwargs
     ):
         self.n_hidden = n_hidden

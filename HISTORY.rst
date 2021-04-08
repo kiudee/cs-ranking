@@ -14,8 +14,8 @@ History
   previously trained on object pairs with different loss functions.
 
 * Behavior and default parameters of the estimators may differ from the
-  previous versions. For example the default RankNet activation is now SELU
-  instead of ReLU.
+  previous versions. For example the default activation for CmpNet and RankNet
+  is now SELU instead of ReLU.
 
 1.3.0 (Unreleased)
 ------------------
