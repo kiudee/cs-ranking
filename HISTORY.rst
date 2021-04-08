@@ -12,6 +12,11 @@ History
 * The RankNet and CmpNet estimators are now trained with a loss that applies to
   the whole result (the general/discrete choice or ranking). They were
   previously trained on object pairs with different loss functions.
+
+* Behavior and default parameters of the estimators may differ from the
+  previous versions. For example the default RankNet activation is now SELU
+  instead of ReLU.
+
 1.3.0 (Unreleased)
 ------------------
 
