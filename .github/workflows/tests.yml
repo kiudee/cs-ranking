@@ -16,7 +16,7 @@ jobs:
     name: Python ${{ matrix.python-version }} (${{ matrix.env.TOXENV }})
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-python@v1
+    - uses: actions/setup-python@v2.2.1
       with:
         python-version: ${{ matrix.python-version }}
         architecture: x64
