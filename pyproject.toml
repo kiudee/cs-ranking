@@ -50,11 +50,11 @@ sphinx-autobuild = "^0.7.1"
 flake8 = "^3.7.9"
 doc8 = "^0.8.1"
 zimports = "^0.2.2"
-tox = "^3.19.0"
 pytest-cov = "^2.10.1"
 nbsphinx = "^0.7.1"
 IPython = "^7.18.1"
 pytest-xdist = "^2.1.0"
+nox = "^2020.12.31"
 
 [tool.poetry.extras]
 # These are temporarily made mandatory due to an issue in our optional imports.
