@@ -20,4 +20,4 @@ jobs:
         architecture: x64
     - run: pip install tox==3.23.0
     - run: pip install poetry==1.1.4
-    - run: tox
+    - run: tox -e ${{ env.TOXENV }}
