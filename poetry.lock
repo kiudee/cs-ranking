@@ -788,6 +788,19 @@ virtualenv = ">=14.0.0"
 tox_to_nox = ["jinja2", "tox"]
 
 [[package]]
+name = "nox-poetry"
+version = "0.8.4"
+description = "nox-poetry"
+category = "dev"
+optional = false
+python-versions = ">=3.6.1,<4.0.0"
+
+[package.dependencies]
+nox = ">=2020.8.22"
+packaging = ">=20.9"
+tomlkit = ">=0.7.0,<0.8.0"
+
+[[package]]
 name = "numpy"
 version = "1.20.2"
 description = "NumPy is the fundamental package for array computing with Python."
@@ -1522,6 +1535,14 @@ optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
+name = "tomlkit"
+version = "0.7.0"
+description = "Style preserving TOML library"
+category = "dev"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+
+[[package]]
 name = "torch"
 version = "1.8.1"
 description = "Tensors and Dynamic neural networks in Python with strong GPU acceleration"
@@ -1680,7 +1701,7 @@ docs = ["Sphinx", "sphinx_rtd_theme", "sphinxcontrib-bibtex", "nbsphinx", "IPyth
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "04c925c036d46df8e47779334da2cd54cab2818b9790ca911199068a8269368a"
+content-hash = "cd2ac1728c6acf4499c65939071f7bf1fd705e6481f1d36e7826808f57f7d96e"
 
 [metadata.files]
 alabaster = [
@@ -2235,6 +2256,10 @@ nox = [
     {file = "nox-2020.12.31-py3-none-any.whl", hash = "sha256:f179d6990f7a0a9cebad01b9ecea34556518b8d3340dfcafdc1d85f2c1a37ea0"},
     {file = "nox-2020.12.31.tar.gz", hash = "sha256:58a662070767ed4786beb46ce3a789fca6f1e689ed3ac15c73c4d0094e4f9dc4"},
 ]
+nox-poetry = [
+    {file = "nox-poetry-0.8.4.tar.gz", hash = "sha256:880536a3f7949c22adc77889165f9222a7c60cc5f81ee8c20a2f22eef4a382b2"},
+    {file = "nox_poetry-0.8.4-py3-none-any.whl", hash = "sha256:d56980487e85fd006f0db5f440781d963be782731158766d2a7551612574417d"},
+]
 numpy = [
     {file = "numpy-1.20.2-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:e9459f40244bb02b2f14f6af0cd0732791d72232bbb0dc4bab57ef88e75f6935"},
     {file = "numpy-1.20.2-cp37-cp37m-manylinux1_i686.whl", hash = "sha256:a8e6859913ec8eeef3dbe9aed3bf475347642d1cdd6217c30f28dee8903528e6"},
@@ -2712,6 +2737,10 @@ threadpoolctl = [
 toml = [
     {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
     {file = "toml-0.10.2.tar.gz", hash = "sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f"},
+]
+tomlkit = [
+    {file = "tomlkit-0.7.0-py2.py3-none-any.whl", hash = "sha256:6babbd33b17d5c9691896b0e68159215a9387ebfa938aa3ac42f4a4beeb2b831"},
+    {file = "tomlkit-0.7.0.tar.gz", hash = "sha256:ac57f29693fab3e309ea789252fcce3061e19110085aa31af5446ca749325618"},
 ]
 torch = [
     {file = "torch-1.8.1-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:f23eeb1a48cc39209d986c418ad7e02227eee973da45c0c42d36b1aec72f4940"},
