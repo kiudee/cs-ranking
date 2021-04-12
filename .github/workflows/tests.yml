@@ -11,7 +11,7 @@ jobs:
               - TOXENV: test2
               - TOXENV: test3
               - TOXENV: lint
-    name: Python ${{ matrix.python-version }}
+    name: Python ${{ matrix.python-version }} (${{ env.TOXENV }})
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v1
