@@ -11,7 +11,7 @@ jobs:
               - TOXENV: test2
               - TOXENV: test3
               - TOXENV: lint
-    name: Python ${{ matrix.python-version }} (${{ env.TOXENV }})
+    name: Python ${{ matrix.python-version }} (${{ matrix.env.TOXENV }})
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v1
@@ -20,4 +20,4 @@ jobs:
         architecture: x64
     - run: pip install tox==3.23.0
     - run: pip install poetry==1.1.4
-    - run: tox -e ${{ env.TOXENV }}
+    - run: tox -e ${{ matrix.env.TOXENV }}
