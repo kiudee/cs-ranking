@@ -7,12 +7,13 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v1
+    - uses: actions/checkout@v2.3.4
+    - uses: actions/setup-python@v2.2.1
       with:
         python-version: '3.8'
         architecture: x64
-    - run: pip install tox==3.23.0
+    - run: pip install nox==2020.12.31
+    - run: pip install nox-poetry==0.8.4
     - run: pip install poetry==1.1.4
     - run: nox
     - run: poetry build
