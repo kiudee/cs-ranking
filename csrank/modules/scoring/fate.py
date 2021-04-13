@@ -102,14 +102,19 @@ class FATEScoring(nn.Module):
         if embedding_size is None:
             embedding_size = n_features
         if pairwise_utility_module is None:
-            pairwise_utility_module = functools.partial(nn.Linear, out_features=1,)
+            pairwise_utility_module = functools.partial(
+                nn.Linear,
+                out_features=1,
+            )
         if embedding_module is None:
             embedding_module = functools.partial(
                 DenseNeuralNetwork, hidden_layers=5, units_per_hidden=64
             )
 
         self.embedding = DeepSet(
-            n_features, embedding_size, embedding_module=embedding_module,
+            n_features,
+            embedding_size,
+            embedding_module=embedding_module,
         )
         self.pairwise_utility_module = pairwise_utility_module(
             n_features + embedding_size

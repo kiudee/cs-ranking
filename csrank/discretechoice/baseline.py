@@ -11,9 +11,9 @@ logger = logging.getLogger(__name__)
 class RandomBaselineDC(DiscreteObjectChooser, Learner):
     def __init__(self, random_state=None, **kwargs):
         """
-            Baseline assigns the average number of chosen objects in the given choice sets and chooses all the objects.
+        Baseline assigns the average number of chosen objects in the given choice sets and chooses all the objects.
 
-            :param kwargs: Keyword arguments for the algorithms
+        :param kwargs: Keyword arguments for the algorithms
         """
 
         self.random_state = random_state
