@@ -41,7 +41,10 @@ class RankNetScoring(nn.Module):
         self,
         n_features,
         object_utility_module=functools.partial(
-            DenseNeuralNetwork, hidden_layers=3, units_per_hidden=20, ouput_features=1,
+            DenseNeuralNetwork,
+            hidden_layers=3,
+            units_per_hidden=20,
+            ouput_features=1,
         ),
     ):
         super().__init__()

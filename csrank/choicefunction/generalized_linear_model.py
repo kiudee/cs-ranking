@@ -34,36 +34,36 @@ logger = logging.getLogger(__name__)
 class GeneralizedLinearModel(ChoiceFunctions, Learner):
     def __init__(self, regularization="l2", random_state=None, **kwargs):
         """
-            Create an instance of the GeneralizedLinearModel model for learning the choice function. This model is
-            adapted from the multinomial logit model :class:`csrank.discretechoice.multinomial_logit_model.MultinomialLogitModel`.
-            The utility score for each object in query set :math:`Q` is defined as :math:`U(x) = w \\cdot x`,
-            where :math:`w` is the weight vector. The probability of choosing an object :math:`x_i` is defined by taking
-            sigmoid over the utility scores:
+        Create an instance of the GeneralizedLinearModel model for learning the choice function. This model is
+        adapted from the multinomial logit model :class:`csrank.discretechoice.multinomial_logit_model.MultinomialLogitModel`.
+        The utility score for each object in query set :math:`Q` is defined as :math:`U(x) = w \\cdot x`,
+        where :math:`w` is the weight vector. The probability of choosing an object :math:`x_i` is defined by taking
+        sigmoid over the utility scores:
 
-            .. math::
+        .. math::
 
-                P(x_i \\lvert Q) = \\frac{1}{1+exp(-U(x_i))}
+            P(x_i \\lvert Q) = \\frac{1}{1+exp(-U(x_i))}
 
-            The choice set is defined as:
+        The choice set is defined as:
 
-            .. math::
+        .. math::
 
-                c(Q) = \\{ x_i \\in Q \\lvert \\, P(x_i \\lvert Q) > t \\}
+            c(Q) = \\{ x_i \\in Q \\lvert \\, P(x_i \\lvert Q) > t \\}
 
-            Parameters
-            ----------
-            regularization : string, optional
-                Regularization technique to be used for estimating the weights
-            random_state : int or object
-                Numpy random state
-            **kwargs
-                Keyword arguments for the algorithms
+        Parameters
+        ----------
+        regularization : string, optional
+            Regularization technique to be used for estimating the weights
+        random_state : int or object
+            Numpy random state
+        **kwargs
+            Keyword arguments for the algorithms
 
-            References
-            ----------
-                [1] Kenneth E Train. „Discrete choice methods with simulation“. In: Cambridge university press, 2009. Chap Logit, pp. 41–86.
+        References
+        ----------
+            [1] Kenneth E Train. „Discrete choice methods with simulation“. In: Cambridge university press, 2009. Chap Logit, pp. 41–86.
 
-                [2] Kenneth Train. Qualitative choice analysis. Cambridge, MA: MIT Press, 1986
+            [2] Kenneth Train. Qualitative choice analysis. Cambridge, MA: MIT Press, 1986
         """
         known_regularization_functions = {"l1", "l2"}
         if regularization not in known_regularization_functions:
@@ -118,26 +118,26 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
 
     def construct_model(self, X, Y):
         """
-            Constructs the linear logit model which evaluated the utility score as :math:`U(x) = w \\cdot x`, where
-            :math:`w` is the weight vector. The probability of choosing the object :math:`x_i` from the query set
-            :math:`Q = \\{x_1, \\ldots ,x_n\\}` is:
+        Constructs the linear logit model which evaluated the utility score as :math:`U(x) = w \\cdot x`, where
+        :math:`w` is the weight vector. The probability of choosing the object :math:`x_i` from the query set
+        :math:`Q = \\{x_1, \\ldots ,x_n\\}` is:
 
-            .. math::
+        .. math::
 
-                P_i =  P(x_i \\lvert Q) = \\frac{1}{1+exp(-U(x_i))}
+            P_i =  P(x_i \\lvert Q) = \\frac{1}{1+exp(-U(x_i))}
 
-            Parameters
-            ----------
-            X : numpy array
-                (n_instances, n_objects, n_features)
-                Feature vectors of the objects
-            Y : numpy array
-                (n_instances, n_objects)
-                Preferences in form of Choices for given objects
+        Parameters
+        ----------
+        X : numpy array
+            (n_instances, n_objects, n_features)
+            Feature vectors of the objects
+        Y : numpy array
+            (n_instances, n_objects)
+            Preferences in form of Choices for given objects
 
-            Returns
-            -------
-             model : pymc3 Model :class:`pm.Model`
+        Returns
+        -------
+         model : pymc3 Model :class:`pm.Model`
         """
         logger.info(
             "Creating model_args config {}".format(
@@ -180,46 +180,46 @@ class GeneralizedLinearModel(ChoiceFunctions, Learner):
         **kwargs,
     ):
         """
-            Fit a generalized logit model on the provided set of queries X and choices Y of those objects. The
-            provided queries and corresponding preferences are of a fixed size (numpy arrays). For learning this network
-            the binary cross entropy loss function for each object :math:`x_i \\in Q` is defined as:
+        Fit a generalized logit model on the provided set of queries X and choices Y of those objects. The
+        provided queries and corresponding preferences are of a fixed size (numpy arrays). For learning this network
+        the binary cross entropy loss function for each object :math:`x_i \\in Q` is defined as:
 
-            .. math::
+        .. math::
 
-                C_{i} =  -y(i)\\log(P_i) - (1 - y(i))\\log(1 - P_i) \\enspace,
+            C_{i} =  -y(i)\\log(P_i) - (1 - y(i))\\log(1 - P_i) \\enspace,
 
-            where :math:`y` is ground-truth choice vector of the objects in the given query set :math:`Q`.
-            The value :math:`y(i) = 1` if object :math:`x_i` is chosen else :math:`y(i) = 0`.
+        where :math:`y` is ground-truth choice vector of the objects in the given query set :math:`Q`.
+        The value :math:`y(i) = 1` if object :math:`x_i` is chosen else :math:`y(i) = 0`.
 
-            Parameters
-            ----------
-            X : numpy array (n_instances, n_objects, n_features)
-                Feature vectors of the objects
-            Y : numpy array (n_instances, n_objects)
-                Choices for given objects in the query
-            sampler : {‘variational’, ‘metropolis’, ‘nuts’}, string
-                The sampler used to estimate the posterior mean and mass matrix from the trace
+        Parameters
+        ----------
+        X : numpy array (n_instances, n_objects, n_features)
+            Feature vectors of the objects
+        Y : numpy array (n_instances, n_objects)
+            Choices for given objects in the query
+        sampler : {‘variational’, ‘metropolis’, ‘nuts’}, string
+            The sampler used to estimate the posterior mean and mass matrix from the trace
 
-                    * **variational** : Run inference methods to estimate posterior mean and diagonal mass matrix
-                    * **metropolis** : Use the MAP as starting point and Metropolis-Hastings sampler
-                    * **nuts** : Use the No-U-Turn sampler
-            vi_params : dict
-                The parameters for the **variational** inference method
-            draws : int
-                The number of samples to draw. Defaults to 500. The number of tuned samples are discarded by default
-            tune : int
-                Number of iterations to tune, defaults to 500. Ignored when using 'SMC'. Samplers adjust
-                the step sizes, scalings or similar during tuning. Tuning samples will be drawn in addition
-                to the number specified in the `draws` argument, and will be discarded unless
-                `discard_tuned_samples` is set to False.
-            tune_size: float (range : [0,1])
-                Percentage of instances to split off to tune the threshold for the choice function
-            thin_thresholds: int
-                The number of instances of scores to skip while tuning the threshold
-            verbose : bool
-                Print verbose information
-            **kwargs :
-                Keyword arguments for the fit function
+                * **variational** : Run inference methods to estimate posterior mean and diagonal mass matrix
+                * **metropolis** : Use the MAP as starting point and Metropolis-Hastings sampler
+                * **nuts** : Use the No-U-Turn sampler
+        vi_params : dict
+            The parameters for the **variational** inference method
+        draws : int
+            The number of samples to draw. Defaults to 500. The number of tuned samples are discarded by default
+        tune : int
+            Number of iterations to tune, defaults to 500. Ignored when using 'SMC'. Samplers adjust
+            the step sizes, scalings or similar during tuning. Tuning samples will be drawn in addition
+            to the number specified in the `draws` argument, and will be discarded unless
+            `discard_tuned_samples` is set to False.
+        tune_size: float (range : [0,1])
+            Percentage of instances to split off to tune the threshold for the choice function
+        thin_thresholds: int
+            The number of instances of scores to skip while tuning the threshold
+        verbose : bool
+            Print verbose information
+        **kwargs :
+            Keyword arguments for the fit function
         """
         self._pre_fit()
         if tune_size > 0:

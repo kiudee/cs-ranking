@@ -22,7 +22,7 @@ class PairwiseSVM(Learner):
         random_state=None,
         **kwargs,
     ):
-        """ Create an instance of the PairwiseSVM model for any preference learner.
+        """Create an instance of the PairwiseSVM model for any preference learner.
 
         Parameters
         ----------
@@ -60,17 +60,17 @@ class PairwiseSVM(Learner):
 
     def fit(self, X, Y, **kwargs):
         """
-            Fit a generic preference learning model on a provided set of queries.
-            The provided queries can be of a fixed size (numpy arrays).
+        Fit a generic preference learning model on a provided set of queries.
+        The provided queries can be of a fixed size (numpy arrays).
 
-            Parameters
-            ----------
-            X : numpy array, shape (n_samples, n_objects, n_features)
-                Feature vectors of the objects
-            Y : numpy array, shape (n_samples, n_objects, n_features)
-                Preferences in form of Orderings or Choices for given n_objects
-            **kwargs
-                Keyword arguments for the fit function
+        Parameters
+        ----------
+        X : numpy array, shape (n_samples, n_objects, n_features)
+            Feature vectors of the objects
+        Y : numpy array, shape (n_samples, n_objects, n_features)
+            Preferences in form of Orderings or Choices for given n_objects
+        **kwargs
+            Keyword arguments for the fit function
 
         """
         self._pre_fit()

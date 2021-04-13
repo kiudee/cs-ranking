@@ -18,36 +18,36 @@ class PairwiseSVMDiscreteChoiceFunction(DiscreteObjectChooser, PairwiseSVM):
         **kwargs,
     ):
         """
-            Create an instance of the :class:`PairwiseSVM` model for learning a discrete choice function.
-            It learns a linear deterministic utility function of the form :math:`U(x) = w \\cdot x`, where :math:`w` is
-            the weight vector. It is estimated using *pairwise preferences* generated from the discrete choices.
-            The discrete choice for the given query set :math:`Q` is defined as:
+        Create an instance of the :class:`PairwiseSVM` model for learning a discrete choice function.
+        It learns a linear deterministic utility function of the form :math:`U(x) = w \\cdot x`, where :math:`w` is
+        the weight vector. It is estimated using *pairwise preferences* generated from the discrete choices.
+        The discrete choice for the given query set :math:`Q` is defined as:
 
-            .. math::
+        .. math::
 
-                ρ(Q)  = \\operatorname{argmax}_{x \\in Q}  \\; U(x)
+            ρ(Q)  = \\operatorname{argmax}_{x \\in Q}  \\; U(x)
 
-            Parameters
-            ----------
-            C : float, optional
-                Penalty parameter of the error term
-            tol : float, optional
-                Optimization tolerance
-            normalize : bool, optional
-                If True, the data will be normalized before fitting.
-            fit_intercept : bool, optional
-                If True, the linear model will also fit an intercept.
-            random_state : int, RandomState instance or None, optional
-                Seed of the pseudorandom generator or a RandomState instance
-            **kwargs
-                Keyword arguments for the algorithms
+        Parameters
+        ----------
+        C : float, optional
+            Penalty parameter of the error term
+        tol : float, optional
+            Optimization tolerance
+        normalize : bool, optional
+            If True, the data will be normalized before fitting.
+        fit_intercept : bool, optional
+            If True, the linear model will also fit an intercept.
+        random_state : int, RandomState instance or None, optional
+            Seed of the pseudorandom generator or a RandomState instance
+        **kwargs
+            Keyword arguments for the algorithms
 
 
-            References
-            ----------
-                [1] Theodoros Evgeniou, Massimiliano Pontil, and Olivier Toubia.„A convex optimization approach to modeling consumer heterogeneity in conjoint estimation“. In: Marketing Science 26.6 (2007), pp. 805–818.
+        References
+        ----------
+            [1] Theodoros Evgeniou, Massimiliano Pontil, and Olivier Toubia.„A convex optimization approach to modeling consumer heterogeneity in conjoint estimation“. In: Marketing Science 26.6 (2007), pp. 805–818.
 
-                [2] Sebastián Maldonado, Ricardo Montoya, and Richard Weber. „Advanced conjoint analysis using feature selection via support vector machines“. In: European Journal of Operational Research 241.2 (2015), pp. 564 –574.
+            [2] Sebastián Maldonado, Ricardo Montoya, and Richard Weber. „Advanced conjoint analysis using feature selection via support vector machines“. In: European Journal of Operational Research 241.2 (2015), pp. 564 –574.
         """
         super().__init__(
             C=C,

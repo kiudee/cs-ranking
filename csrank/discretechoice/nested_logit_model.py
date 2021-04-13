@@ -44,50 +44,50 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         **kwd,
     ):
         """
-            Create an instance of the Nested Logit model for learning the discrete choice function. This model divides
-            objects into disjoint subsets called nests,such that the objects which are similar to each other are in same
-            nest. This model structure is 1-layer of hierarchy and the :math:`\\lambda` for each nest :math:`B_k` signifies
-            the degree of independence and  :math:`1-\\lambda` signifies the correlations between the object in it. We
-            learn two weight vectors and the  :math:`\\lambda s`.
+        Create an instance of the Nested Logit model for learning the discrete choice function. This model divides
+        objects into disjoint subsets called nests,such that the objects which are similar to each other are in same
+        nest. This model structure is 1-layer of hierarchy and the :math:`\\lambda` for each nest :math:`B_k` signifies
+        the degree of independence and  :math:`1-\\lambda` signifies the correlations between the object in it. We
+        learn two weight vectors and the  :math:`\\lambda s`.
 
-            The probability of choosing an object :math:`x_i` from the given query set :math:`Q` is defined by product
-            of choosing the nest in which :math:`x_i` exists and then choosing the the object from the nest.
+        The probability of choosing an object :math:`x_i` from the given query set :math:`Q` is defined by product
+        of choosing the nest in which :math:`x_i` exists and then choosing the the object from the nest.
 
-            .. math::
+        .. math::
 
-                P(x_i \\lvert Q) = P_i = P_{i \\lvert B_k} P_{B_k} \\enspace ,
+            P(x_i \\lvert Q) = P_i = P_{i \\lvert B_k} P_{B_k} \\enspace ,
 
 
-            The discrete choice for the given query set :math:`Q` is defined as:
+        The discrete choice for the given query set :math:`Q` is defined as:
 
-            .. math::
+        .. math::
 
-                dc(Q) := \\operatorname{argmax}_{x_i \\in Q }  \\; P(x_i \\lvert Q)
+            dc(Q) := \\operatorname{argmax}_{x_i \\in Q }  \\; P(x_i \\lvert Q)
 
-            Parameters
-            ----------
-            n_nests : int range : [2,n_objects/2]
-                The number of nests/subsets in which the objects are divided.
-                This may not surpass half the amount of objects this model will
-                be trained on.
-            loss_function : string , {‘categorical_crossentropy’, ‘binary_crossentropy’, ’categorical_hinge’}
-                Loss function to be used for the discrete choice decision from the query set
-            regularization : string, {‘l1’, ‘l2’}, string
-               Regularizer function (L1 or L2) applied to the `kernel` weights matrix
-            alpha: float (range : [0,1])
-                The lower bound of the correlations between the objects in a nest
-            random_state : int or object
-                Numpy random state
-            **kwargs
-                Keyword arguments for the algorithms
+        Parameters
+        ----------
+        n_nests : int range : [2,n_objects/2]
+            The number of nests/subsets in which the objects are divided.
+            This may not surpass half the amount of objects this model will
+            be trained on.
+        loss_function : string , {‘categorical_crossentropy’, ‘binary_crossentropy’, ’categorical_hinge’}
+            Loss function to be used for the discrete choice decision from the query set
+        regularization : string, {‘l1’, ‘l2’}, string
+           Regularizer function (L1 or L2) applied to the `kernel` weights matrix
+        alpha: float (range : [0,1])
+            The lower bound of the correlations between the objects in a nest
+        random_state : int or object
+            Numpy random state
+        **kwargs
+            Keyword arguments for the algorithms
 
-            References
-            ----------
-                [1] Kenneth E Train. „Discrete choice methods with simulation“. In: Cambridge university press, 2009. Chap GEV, pp. 87–111.
+        References
+        ----------
+            [1] Kenneth E Train. „Discrete choice methods with simulation“. In: Cambridge university press, 2009. Chap GEV, pp. 87–111.
 
-                [2] Kenneth Train. Qualitative choice analysis. Cambridge, MA: MIT Press, 1986
+            [2] Kenneth Train. Qualitative choice analysis. Cambridge, MA: MIT Press, 1986
 
-                [3] Kenneth Train and Daniel McFadden. „The goods/leisure tradeoff and disaggregate work trip mode choice models“. In: Transportation research 12.5 (1978), pp. 349–353
+            [3] Kenneth Train and Daniel McFadden. „The goods/leisure tradeoff and disaggregate work trip mode choice models“. In: Transportation research 12.5 (1978), pp. 349–353
         """
         self.n_nests = n_nests
         self.alpha = alpha
@@ -160,19 +160,19 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
 
     def create_nests(self, X):
         """
-            For allocating the objects to different nests we use the clustering algorithm with number of clusters
-            :math:`k` and allocate the similar objects in query set :math:`Q`.
+        For allocating the objects to different nests we use the clustering algorithm with number of clusters
+        :math:`k` and allocate the similar objects in query set :math:`Q`.
 
-            Parameters
-            ----------
-            X : numpy array
-                (n_instances, n_objects, n_features)
-                Feature vectors of the objects in the query sets
+        Parameters
+        ----------
+        X : numpy array
+            (n_instances, n_objects, n_features)
+            Feature vectors of the objects in the query sets
 
-            Returns
-            -------
-            Yn : numpy array
-                (n_instances, n_objects) Values for each object implying the nest it belongs to. For example for :math:`2` nests the value 0 implies that object is allocated to nest 1 and value 1 implies it is allocated to nest 2.
+        Returns
+        -------
+        Yn : numpy array
+            (n_instances, n_objects) Values for each object implying the nest it belongs to. For example for :math:`2` nests the value 0 implies that object is allocated to nest 1 and value 1 implies it is allocated to nest 2.
 
         """
         self.random_state_ = self.random_state_
@@ -285,23 +285,23 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
 
     def construct_model(self, X, Y):
         """
-            Constructs the nested logit model by applying priors on weight vectors **weights** and **weights_k** as per
-            :meth:`model_configuration`. Then we apply a uniform prior to the :math:`\\lambda s`, i.e.
-            :math:`\\lambda s \\sim Uniform(\\text{alpha}, 1.0)`.The probability of choosing the object :math:`x_i` from
-            the query set :math:`Q = \\{x_1, \\ldots ,x_n\\}` is evaluated in :meth:`get_probabilities`.
+        Constructs the nested logit model by applying priors on weight vectors **weights** and **weights_k** as per
+        :meth:`model_configuration`. Then we apply a uniform prior to the :math:`\\lambda s`, i.e.
+        :math:`\\lambda s \\sim Uniform(\\text{alpha}, 1.0)`.The probability of choosing the object :math:`x_i` from
+        the query set :math:`Q = \\{x_1, \\ldots ,x_n\\}` is evaluated in :meth:`get_probabilities`.
 
-            Parameters
-            ----------
-            X : numpy array
-                (n_instances, n_objects, n_features)
-                Feature vectors of the objects
-            Y : numpy array
-                (n_instances, n_objects)
-                Preferences in the form of discrete choices for given objects
+        Parameters
+        ----------
+        X : numpy array
+            (n_instances, n_objects, n_features)
+            Feature vectors of the objects
+        Y : numpy array
+            (n_instances, n_objects)
+            Preferences in the form of discrete choices for given objects
 
-            Returns
-            -------
-             model : pymc3 Model :class:`pm.Model`
+        Returns
+        -------
+         model : pymc3 Model :class:`pm.Model`
         """
         self.loss_function_ = likelihood_dict.get(self.loss_function, None)
         self.threshold_ = 5e6
@@ -350,40 +350,40 @@ class NestedLogitModel(DiscreteObjectChooser, Learner):
         **kwargs,
     ):
         """
-            Fit a nested logit model on the provided set of queries X and choices Y of those objects. The provided
-            queries and corresponding preferences are of a fixed size (numpy arrays). For learning this network the
-            categorical cross entropy loss function for each object :math:`x_i \\in Q` is defined as:
+        Fit a nested logit model on the provided set of queries X and choices Y of those objects. The provided
+        queries and corresponding preferences are of a fixed size (numpy arrays). For learning this network the
+        categorical cross entropy loss function for each object :math:`x_i \\in Q` is defined as:
 
-            .. math::
+        .. math::
 
-                C_{i} =  -y(i)\\log(P_i) \\enspace,
+            C_{i} =  -y(i)\\log(P_i) \\enspace,
 
-            where :math:`y` is ground-truth discrete choice vector of the objects in the given query set :math:`Q`.
-            The value :math:`y(i) = 1` if object :math:`x_i` is chosen else :math:`y(i) = 0`.
+        where :math:`y` is ground-truth discrete choice vector of the objects in the given query set :math:`Q`.
+        The value :math:`y(i) = 1` if object :math:`x_i` is chosen else :math:`y(i) = 0`.
 
-            Parameters
-            ----------
-            X : numpy array (n_instances, n_objects, n_features)
-                Feature vectors of the objects
-            Y : numpy array (n_instances, n_objects)
-                Choices for given objects in the query
-            sampler : {‘variational’, ‘metropolis’, ‘nuts’}, string
-                The sampler used to estimate the posterior mean and mass matrix from the trace
+        Parameters
+        ----------
+        X : numpy array (n_instances, n_objects, n_features)
+            Feature vectors of the objects
+        Y : numpy array (n_instances, n_objects)
+            Choices for given objects in the query
+        sampler : {‘variational’, ‘metropolis’, ‘nuts’}, string
+            The sampler used to estimate the posterior mean and mass matrix from the trace
 
-                    * **variational** : Run inference methods to estimate posterior mean and diagonal mass matrix
-                    * **metropolis** : Use the MAP as starting point and Metropolis-Hastings sampler
-                    * **nuts** : Use the No-U-Turn sampler
-            vi_params : dict
-                The parameters for the **variational** inference method
-            draws : int
-                The number of samples to draw. Defaults to 500. The number of tuned samples are discarded by default
-            tune : int
-                Number of iterations to tune, defaults to 500. Ignored when using 'SMC'. Samplers adjust
-                the step sizes, scalings or similar during tuning. Tuning samples will be drawn in addition
-                to the number specified in the `draws` argument, and will be discarded unless
-                `discard_tuned_samples` is set to False.
-            **kwargs :
-                Keyword arguments for the fit function of :meth:`pymc3.fit`or :meth:`pymc3.sample`
+                * **variational** : Run inference methods to estimate posterior mean and diagonal mass matrix
+                * **metropolis** : Use the MAP as starting point and Metropolis-Hastings sampler
+                * **nuts** : Use the No-U-Turn sampler
+        vi_params : dict
+            The parameters for the **variational** inference method
+        draws : int
+            The number of samples to draw. Defaults to 500. The number of tuned samples are discarded by default
+        tune : int
+            Number of iterations to tune, defaults to 500. Ignored when using 'SMC'. Samplers adjust
+            the step sizes, scalings or similar during tuning. Tuning samples will be drawn in addition
+            to the number specified in the `draws` argument, and will be discarded unless
+            `discard_tuned_samples` is set to False.
+        **kwargs :
+            Keyword arguments for the fit function of :meth:`pymc3.fit`or :meth:`pymc3.sample`
         """
         self._pre_fit()
         _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape

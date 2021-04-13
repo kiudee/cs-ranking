@@ -28,10 +28,10 @@ def logsumexp(x, axis=1):
 
 def softmax(x, axis=1):
     """
-        Take softmax for the given two dimensional theano array.
-        :param axis: The axis around which the softmax is applied
-        :param x: array-like, shape (n_samples, n_objects)
-        :return: softmax taken around the axis=1
+    Take softmax for the given two dimensional theano array.
+    :param axis: The axis around which the softmax is applied
+    :param x: array-like, shape (n_samples, n_objects)
+    :return: softmax taken around the axis=1
     """
     lse = logsumexp(x, axis=axis)
     return tt.exp(x - lse)
@@ -44,9 +44,9 @@ def sigmoid(x):
 
 def normalize(x, axis=1):
     """
-        Normalize the given two dimensional theano array around the row.
-        :param axis: The axis around which the norm is applied
-        :param x: theano or numpy array-like, shape (n_samples, n_objects)
-        :return: normalize the array around the axis=1
+    Normalize the given two dimensional theano array around the row.
+    :param axis: The axis around which the norm is applied
+    :param x: theano or numpy array-like, shape (n_samples, n_objects)
+    :return: normalize the array around the axis=1
     """
     return x / tt.sum(x, axis=axis, keepdims=True)
