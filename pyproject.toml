@@ -14,6 +14,7 @@ classifiers = [
 ]
 repository = "https://github.com/kiudee/cs-ranking"
 documentation = "https://cs-ranking.readthedocs.io/en/latest/"
+readme = "README.rst"
 
 [tool.poetry.dependencies]
 python = "^3.8"
