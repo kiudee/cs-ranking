@@ -202,15 +202,9 @@ Deploying
 ~~~~~~~~~
 
 Make sure all your changes are committed (including an entry in HISTORY.rst).
-Then run
+Then click on `"Draft a new release"`__ at the GitHub repository.
+GitHub Actions will ensure that the package is uploaded to PyPI.
 
-.. code-block:: bash
-
-    $ bump2version patch # possible: major / minor / patch
-    $ git push
-    $ git push --tags
-
-The new version will automatically be released on PyPi.
-
+__ https://github.com/kiudee/cs-ranking/releases/new
 
 .. _poetry: https://python-poetry.org/
