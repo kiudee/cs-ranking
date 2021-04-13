@@ -2,17 +2,17 @@
 Choice Functions
 ****************
 
-.. currentmodule:: csrank.choicefunctions
+.. currentmodule:: csrank.choicefunction
 .. autosummary::
-
+   AllPositive
+   CmpNetChoiceFunction
    FATEChoiceFunction
    FETAChoiceFunction
-   CmpNetChoiceFunction
-   RankNetChoiceFunction
    GeneralizedLinearModel
    PairwiseSVMChoiceFunction
+   RankNetChoiceFunction
 
 
-.. automodule:: csrank.choicefunctions
-   :members: FATEChoiceFunction, FETAChoiceFunction, CmpNetChoiceFunction, RankNetChoiceFunction, GeneralizedLinearModel, PairwiseSVMChoiceFunction
+.. automodule:: csrank.choicefunction
+   :members: AllPositive, CmpNetChoiceFunction, FATEChoiceFunction, FETAChoiceFunction, GeneralizedLinearModel, PairwiseSVMChoiceFunction, RankNetChoiceFunction
    :undoc-members:

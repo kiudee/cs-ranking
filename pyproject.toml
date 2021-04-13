@@ -16,15 +16,13 @@ repository = "https://github.com/kiudee/cs-ranking"
 documentation = "https://kiudee.github.io/cs-ranking/"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8"
 numpy = "^1.12.1"
 scipy = "^1.5.2"
 scikit-learn = "^0.23.2"
 docopt = "^0.6.2"
 joblib = "^0.16.0"
 tqdm = "^4.11.2"
-keras = "~2.3" # 2.4 delegates to tf, needs tf2
-tensorflow = "^1.5"
 # These should be optional, but are temporarily made mandatory due
 # to an issue in our optional imports. See
 # https://github.com/kiudee/cs-ranking/issues/137.
@@ -38,12 +36,13 @@ sphinx_rtd_theme = {version = "^0.5.0", optional = true}
 sphinxcontrib-bibtex = {version = "^1.0.0", optional = true}
 nbsphinx = {version = "^0.7.1", optional = true}
 IPython = {version = "^7.18.1", optional = true}
+torch = "^1.8.0"
+skorch = "^0.9.0"
 
 [tool.poetry.dev-dependencies]
 pre-commit = "^2.7.1"
 black = "^20.8b1"
 pytest = "^6.0.1"
-bump2version = "^1.0.0"
 Sphinx = "^3.2.1"
 sphinx_rtd_theme = "^0.5.0"
 sphinxcontrib-bibtex = "^1.0.0"
@@ -51,11 +50,12 @@ sphinx-autobuild = "^0.7.1"
 flake8 = "^3.7.9"
 doc8 = "^0.8.1"
 zimports = "^0.2.2"
-tox = "^3.19.0"
 pytest-cov = "^2.10.1"
 nbsphinx = "^0.7.1"
 IPython = "^7.18.1"
 pytest-xdist = "^2.1.0"
+nox = "^2020.12.31"
+nox-poetry = "^0.8.4"
 
 [tool.poetry.extras]
 # These are temporarily made mandatory due to an issue in our optional imports.

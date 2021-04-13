@@ -4,15 +4,14 @@ Object Ranking
 
 .. currentmodule:: csrank.objectranking
 .. autosummary::
-
+   CmpNetObjectRanker
+   ExpectedRankRegression
    FATEObjectRanker
    FETAObjectRanker
-   CmpNet
-   ListNet
-   RankNet
-   ExpectedRankRegression
+   RandomBaselineRanker
+   RankNetObjectRanker
    RankSVM
 
 .. automodule:: csrank.objectranking
-   :members: FATEObjectRanker, FETAObjectRanker, CmpNet, ListNet, RankNet, ExpectedRankRegression, RankSVM
+   :members: CmpNetObjectRanker, ExpectedRankRegression, FATEObjectRanker, FETAObjectRanker, RandomBaselineRanker, RankNetObjectRanker, RankSVM
    :undoc-members:

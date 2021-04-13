@@ -1,8 +1,18 @@
-|Build Status| |Coverage| |Binder|
+|Coverage| |Binder|
+
+****
+NOTE
+****
+
+This library has recently been migrated from tensorflow to PyTorch. The 2.0
+version marks a breaking change. Some of the previous functionality is now
+unavailable and some classes behave differently. You can use the latest 1.x
+release if you are looking for the tensorflow based estimators.
 
 *******
 CS-Rank
 *******
+
 CS-Rank is a Python package for context-sensitive ranking and choice
 algorithms.
 
@@ -26,9 +36,6 @@ setting:
 * PairedCombinatorialLogit
 * RankNetDiscreteChoiceFunction
 * PairwiseSVMDiscreteChoiceFunction
-
-Check out our `interactive notebooks`_ to quickly find out what our package can
-do.
 
 
 Getting started
@@ -73,7 +80,7 @@ Another option is to clone the repository and install CS-Rank using::
 
 Dependencies
 ------------
-CS-Rank depends on Tensorflow, Keras, NumPy, SciPy, matplotlib, scikit-learn,
+CS-Rank depends on PyTorch, skorch, NumPy, SciPy, matplotlib, scikit-learn,
 joblib and tqdm. For data processing and generation you will
 also need PyGMO, H5Py and pandas.
 
@@ -111,10 +118,12 @@ License
    :target: https://mybinder.org/v2/gh/kiudee/cs-ranking/master?filepath=docs%2Fnotebooks
 
 .. |Coverage| image:: https://codecov.io/gh/kiudee/cs-ranking/branch/master/graph/badge.svg
-  :target: https://codecov.io/gh/kiudee/cs-ranking
+   :target: https://codecov.io/gh/kiudee/cs-ranking
 
-.. |Build Status| image:: https://travis-ci.org/kiudee/cs-ranking.svg?branch=master
-   :target: https://travis-ci.org/kiudee/cs-ranking
+..
+  |Build Status| image:: https://img.shields.io/github/workflow/status/kiudee/cs-ranking/tests
+  :target: https://github.com/kiudee/cs-ranking/actions
+  :alt: GitHub Workflow Status
 
 
 .. _interactive notebooks: https://mybinder.org/v2/gh/kiudee/cs-ranking/master?filepath=docs%2Fnotebooks

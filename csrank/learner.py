@@ -1,10 +1,9 @@
 from abc import ABCMeta
 from abc import abstractmethod
-import inspect
 import logging
 
-from keras.layers import Dense
 from sklearn.base import BaseEstimator
+from skorch import NeuralNet
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +23,6 @@ class Learner(BaseEstimator, metaclass=ABCMeta):
 
         Raises an exception if one of the kwargs does not match a whiltelisted prefix.
         """
-        self.allowed_prefixes_ = allowed_prefixes
 
         def starts_with_legal_prefix(key):
             for prefix in allowed_prefixes:
@@ -47,101 +45,6 @@ class Learner(BaseEstimator, metaclass=ABCMeta):
         parameters to subclasses.
         """
         return filter_dict_by_prefix(self.__dict__, prefix)
-
-    def _initialize_optimizer(self):
-        optimizer_params = self._get_prefix_attributes("optimizer__")
-        self.optimizer_ = self.optimizer(**optimizer_params)
-
-    def _initialize_regularizer(self):
-        regularizer_params = self._get_prefix_attributes("kernel_regularizer__")
-        if self.kernel_regularizer is not None:
-            self.kernel_regularizer_ = self.kernel_regularizer(**regularizer_params)
-        else:
-            # No regularizer is an option.
-            logger.warning("You specified regularizer parameters but no regularizer.")
-            self.kernel_regularizer_ = None
-
-    def set_params(self, **params):
-        """Set a hyper-paramter for this learner.
-
-        Accepts the same parameters as __init__.
-        """
-        legal_parameters = self.get_params().keys()
-        for param in params.keys():
-            if param not in legal_parameters:
-                raise TypeError(
-                    f"Unexpected parameter for {type(self).__name__}: `{param}.` Legal parameters are {set(legal_parameters)}."
-                )
-        vars(self).update(params)
-
-    def _prefix_to_class_mapping(self):
-        """Map nested parameter prefixes to the classes they are passed to.
-
-        Necessary for get_params.
-        """
-        result = dict()
-        allowed_prefixes = (
-            self.allowed_prefixes_ if hasattr(self, "allowed_prefixes_") else []
-        )
-        for prefix in allowed_prefixes:
-            base_parameter = prefix[:-2]  # prefixes always end with two underscores
-            if hasattr(self, base_parameter):
-                result[prefix] = vars(self)[base_parameter]
-            # This is a hack to work with our common "hidden_dense_layer__"
-            # arguments. They do not correspond to a single hidden_dense_layer
-            # attribute. They are passed to all hidden dense layers that are
-            # part of the network. Therefore we just hardcode the "Dense" class
-            # for them.
-            elif base_parameter == "hidden_dense_layer":
-                result[prefix] = Dense
-            else:
-                raise ValueError(
-                    f"Prefix {prefix} could not be associated to any class."
-                )
-        return result
-
-    def get_params(self, deep=True):
-        """Return all hyperparmeters of this learner.
-
-        Limitation: This does not recurse into parameters, so it only works for a
-        single layer.
-
-        Parameters
-        ----------
-        deep: bool, default=True
-            Whether or not to return parameters of subobjects as well. Support
-            for this is currently limited, so parameters of subobjects are
-            returned on a best-effort basis if they were passed with the
-            subobject__parameter convention.
-
-        Returns
-        -------
-        dict
-            A dictionary of parameters.
-        """
-        # Get all the regular parameters form BaseEstimator.
-        result = super().get_params()
-
-        if not deep:
-            return result
-
-        # Handle the parameter that could be passed to uninitialized subclasses
-        # (optimizer__lr etc.).
-        parameters_for_prefix = dict()
-        for (prefix, base_class) in self._prefix_to_class_mapping().items():
-            parameters_for_prefix = dict()
-            signature = inspect.signature(base_class)
-            for parameter in signature.parameters:
-                if signature.parameters[parameter].default != inspect._empty:
-                    parameters_for_prefix[parameter] = signature.parameters[
-                        parameter
-                    ].default
-            # Override with explicitly set parameter values
-            parameters_for_prefix.update(self._get_prefix_attributes(prefix))
-            for (arg, default) in parameters_for_prefix.items():
-                result[prefix + arg] = default
-
-        return result
 
     @abstractmethod
     def fit(self, X, Y, **kwargs):
@@ -289,3 +192,120 @@ class Learner(BaseEstimator, metaclass=ABCMeta):
             ):
                 return True
         return NotImplemented
+
+
+class SkorchInstanceEstimator(NeuralNet, Learner):
+    """Base estimator for torch-based ranking and choice tasks.
+
+    This establishes the basic interface of a cs-ranking learner that is
+    compatible with scikit-learn. It is based on an skorch estimator with the
+    added assumption that the ``module`` expects the number of features per
+    object as a parameter. The ``module`` should then predict a score for each
+    object which can later be converted to a prediction (i.e. a ranking, a
+    general choice or a discrete choice). To derive a new estimator you should
+    therefore override the constructor to set default values for the ``module``
+    and the ``criterion`` parameter. You should also override the
+    ``predict_for_scores`` function to specify how the scores can be converted
+    to the target prediction. You may use one of the existing mixins such as
+    ``ObjectRanker`` for that purpose.
+
+    See the documentation of ``skorch.NeuralNet`` for a description of the
+    possible parameters.
+    """
+
+    def _get_extra_module_parameters(self):
+        """Return extra parameters that should be passed to the module.
+
+        You should take care to update the dictionary from the ``super``
+        implementation when overriding this function. You usually do not want
+        to just discard the parameters that are specified by the super class.
+        """
+        return {"n_features": self.n_features_}
+
+    def get_params_for(self, prefix):
+        """Return the init parameters for an attribute.
+
+        This extends the ``get_params_for`` function from skorch to inject
+        custom module parameters. This allows us to pass parameters that do not
+        directly correspond to parameters of this estimator while also sticking
+        to the scikit-learn estimator API. Overriding this function is
+        preferable to than overriding ``initialize_module`` since this function
+        does not modify the object's state and we can simply extend the results
+        of a ``super`` delegation.
+        """
+        params = super().get_params_for(prefix)
+
+        if prefix == "module":
+            # Explicitly set parameters override the default values.
+            defaults = self._get_extra_module_parameters()
+            defaults.update(params)
+            return defaults
+        else:
+            return params
+        return params
+
+    def fit(self, X, y=None, **fit_params):
+        """Fit the estimator to data.
+
+        This derives the number of object features from the data and then
+        delegates to ``skorch.NeuralNet.fit``. See the documentation of that
+        method for more details.
+
+        Parameters
+        ----------
+        X : input data
+            May take various forms, such as numpy arrays or torch datasets. See
+            the documentation of ``skorch.NeuralNet.fit`` for more details.
+
+        y : target data
+            May take the same forms as ``x``. This is optional since the target
+            data may already be included in the data structure that is passed
+            as ``X``. See the documentation of ``skorch.NeuralNet.fit`` for
+            more details.
+
+        **fit_params : dict
+            Additional fit parameters. See the documentation of
+            ``skorch.NeuralNet.fit`` for more details.
+        """
+        dataset = self.get_dataset(X, y)
+        (_n_objects, self.n_features_) = dataset[0][0].shape
+        NeuralNet.fit(self, X=dataset, y=None, **fit_params)
+
+    def predict(self, X, **kwargs):
+        """Predict targets for inputs.
+
+        This delegates to ``csrank.Learner.predict``. See the documentation of
+        that function for details.
+
+        Parameters
+        ----------
+        X : dict or numpy array
+            Dictionary with a mapping from the query set size to numpy arrays or a single numpy array of size:
+            (n_instances, n_objects, n_features)
+
+        Returns
+        -------
+        Y : dict or numpy array
+            Dictionary with a mapping from the query set size to numpy arrays or a single numpy array containing
+            predicted preferences of size:
+            (n_instances, n_objects)
+        """
+        return Learner.predict(self, X, **kwargs)
+
+    def _predict_scores_fixed(self, X, **kwargs):
+        """Predict scores for a collection of sets of objects of the same size.
+
+        This simply queries the torch module for a prediction on the input
+        data, which can then be interpreted as scores.
+
+        Parameters
+        ----------
+        X : array-like, shape (n_samples, n_objects, n_features)
+            The input data.
+
+        Returns
+        -------
+        Y : array-like, shape (n_samples, n_objects)
+            The predicted scores.
+        """
+        return self.predict_proba(X, **kwargs)

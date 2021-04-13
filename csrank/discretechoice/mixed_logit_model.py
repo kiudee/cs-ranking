@@ -35,43 +35,43 @@ logger = logging.getLogger(__name__)
 class MixedLogitModel(DiscreteObjectChooser, Learner):
     def __init__(self, n_mixtures=4, loss_function="", regularization="l2", **kwargs):
         """
-            Create an instance of the Mixed Logit model for learning the discrete choice function. In this model we
-            assume weights of this model to be random due to which this model can learn different variations in choices
-            amongst the individuals. The utility score for each object in query set :math:`Q` is defined as
-            :math:`U_r(x) = w_r \\cdot x`, where :math:`w_r` is the k-th sample weight vector from the underlying distribution
-            The probability of choosing an object :math:`x_i` is defined by taking softmax over the
-            utility scores of the objects:
+        Create an instance of the Mixed Logit model for learning the discrete choice function. In this model we
+        assume weights of this model to be random due to which this model can learn different variations in choices
+        amongst the individuals. The utility score for each object in query set :math:`Q` is defined as
+        :math:`U_r(x) = w_r \\cdot x`, where :math:`w_r` is the k-th sample weight vector from the underlying distribution
+        The probability of choosing an object :math:`x_i` is defined by taking softmax over the
+        utility scores of the objects:
 
-            .. math::
+        .. math::
 
-                P(x_i \\lvert Q) = \\frac{1}{R} \\sum_{r=1}^R \\frac{exp(U_r(x_i))}{\\sum_{x_j \\in Q} exp(U_r(x_j))}
+            P(x_i \\lvert Q) = \\frac{1}{R} \\sum_{r=1}^R \\frac{exp(U_r(x_i))}{\\sum_{x_j \\in Q} exp(U_r(x_j))}
 
-            The discrete choice for the given query set :math:`Q` is defined as:
+        The discrete choice for the given query set :math:`Q` is defined as:
 
-            .. math::
+        .. math::
 
-                dc(Q) := \\operatorname{argmax}_{x_i \\in Q }  \\; P(x_i \\lvert Q)
+            dc(Q) := \\operatorname{argmax}_{x_i \\in Q }  \\; P(x_i \\lvert Q)
 
-            Parameters
-            ----------
-            n_mixtures: int (range : [2, inf])
-                The number of logit models (:math:`R`) which are used to estimate the choice probability
-            loss_function : string , {‘categorical_crossentropy’, ‘binary_crossentropy’, ’categorical_hinge’}
-                Loss function to be used for the discrete choice decision from the query set
-            regularization : string, {‘l1’, ‘l2’}, string
-               Regularizer function (L1 or L2) applied to the `kernel` weights matrix
-            random_state : int or object
-                Numpy random state
-            **kwargs
-                Keyword arguments for the algorithms
+        Parameters
+        ----------
+        n_mixtures: int (range : [2, inf])
+            The number of logit models (:math:`R`) which are used to estimate the choice probability
+        loss_function : string , {‘categorical_crossentropy’, ‘binary_crossentropy’, ’categorical_hinge’}
+            Loss function to be used for the discrete choice decision from the query set
+        regularization : string, {‘l1’, ‘l2’}, string
+           Regularizer function (L1 or L2) applied to the `kernel` weights matrix
+        random_state : int or object
+            Numpy random state
+        **kwargs
+            Keyword arguments for the algorithms
 
-            References
-            ----------
-                [1] Kenneth E Train. „Discrete choice methods with simulation“. In: Cambridge university press, 2009. Chap Mixed Logit, pp. 153–172.
+        References
+        ----------
+            [1] Kenneth E Train. „Discrete choice methods with simulation“. In: Cambridge university press, 2009. Chap Mixed Logit, pp. 153–172.
 
-                [2] Kenneth Train. Qualitative choice analysis. Cambridge, MA: MIT Press, 1986
+            [2] Kenneth Train. Qualitative choice analysis. Cambridge, MA: MIT Press, 1986
 
-                [3] Daniel McFadden and Kenneth Train. „Mixed MNL models for discrete response“. In: Journal of applied Econometrics 15.5 (2000), pp. 447–470
+            [3] Daniel McFadden and Kenneth Train. „Mixed MNL models for discrete response“. In: Journal of applied Econometrics 15.5 (2000), pp. 447–470
         """
         self.loss_function = loss_function
         known_regularization_functions = {"l1", "l2"}
@@ -128,26 +128,26 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
 
     def construct_model(self, X, Y):
         """
-            Constructs the mixed logit model by applying priors on weight vectors **weights** as per
-            :meth:`model_configuration`. The probability of choosing the object :math:`x_i` from the query set
-            :math:`Q = \\{x_1, \\ldots ,x_n\\}` assuming we draw :math:`R` samples of the weight vectors is:
+        Constructs the mixed logit model by applying priors on weight vectors **weights** as per
+        :meth:`model_configuration`. The probability of choosing the object :math:`x_i` from the query set
+        :math:`Q = \\{x_1, \\ldots ,x_n\\}` assuming we draw :math:`R` samples of the weight vectors is:
 
-            .. math::
+        .. math::
 
-                P(x_i \\lvert Q) = \\frac{1}{R} \\sum_{r=1}^R \\frac{exp(U_r(x_i))}{\\sum_{x_j \\in Q} exp(U_r(x_j))}
+            P(x_i \\lvert Q) = \\frac{1}{R} \\sum_{r=1}^R \\frac{exp(U_r(x_i))}{\\sum_{x_j \\in Q} exp(U_r(x_j))}
 
-            Parameters
-            ----------
-            X : numpy array
-                (n_instances, n_objects, n_features)
-                Feature vectors of the objects
-            Y : numpy array
-                (n_instances, n_objects)
-                Preferences in the form of discrete choices for given objects
+        Parameters
+        ----------
+        X : numpy array
+            (n_instances, n_objects, n_features)
+            Feature vectors of the objects
+        Y : numpy array
+            (n_instances, n_objects)
+            Preferences in the form of discrete choices for given objects
 
-            Returns
-            -------
-             model : pymc3 Model :class:`pm.Model`
+        Returns
+        -------
+         model : pymc3 Model :class:`pm.Model`
         """
         self.trace_ = None
         self.trace_vi = None
@@ -179,40 +179,40 @@ class MixedLogitModel(DiscreteObjectChooser, Learner):
         **kwargs,
     ):
         """
-            Fit a mixed logit model on the provided set of queries X and choices Y of those objects. The provided
-            queries and corresponding preferences are of a fixed size (numpy arrays). For learning this network
-            the categorical cross entropy loss function for each object :math:`x_i \\in Q` is defined as:
+        Fit a mixed logit model on the provided set of queries X and choices Y of those objects. The provided
+        queries and corresponding preferences are of a fixed size (numpy arrays). For learning this network
+        the categorical cross entropy loss function for each object :math:`x_i \\in Q` is defined as:
 
-            .. math::
+        .. math::
 
-                C_{i} =  -y(i)\\log(P_i) \\enspace,
+            C_{i} =  -y(i)\\log(P_i) \\enspace,
 
-            where :math:`y` is ground-truth discrete choice vector of the objects in the given query set :math:`Q`.
-            The value :math:`y(i) = 1` if object :math:`x_i` is chosen else :math:`y(i) = 0`.
+        where :math:`y` is ground-truth discrete choice vector of the objects in the given query set :math:`Q`.
+        The value :math:`y(i) = 1` if object :math:`x_i` is chosen else :math:`y(i) = 0`.
 
-            Parameters
-            ----------
-            X : numpy array (n_instances, n_objects, n_features)
-                Feature vectors of the objects
-            Y : numpy array (n_instances, n_objects)
-                Choices for given objects in the query
-            sampler : {‘variational’, ‘metropolis’, ‘nuts’}, string
-                The sampler used to estimate the posterior mean and mass matrix from the trace
+        Parameters
+        ----------
+        X : numpy array (n_instances, n_objects, n_features)
+            Feature vectors of the objects
+        Y : numpy array (n_instances, n_objects)
+            Choices for given objects in the query
+        sampler : {‘variational’, ‘metropolis’, ‘nuts’}, string
+            The sampler used to estimate the posterior mean and mass matrix from the trace
 
-                    * **variational** : Run inference methods to estimate posterior mean and diagonal mass matrix
-                    * **metropolis** : Use the MAP as starting point and Metropolis-Hastings sampler
-                    * **nuts** : Use the No-U-Turn sampler
-            vi_params : dict
-                The parameters for the **variational** inference method
-            draws : int
-                The number of samples to draw. Defaults to 500. The number of tuned samples are discarded by default
-            tune : int
-                Number of iterations to tune, defaults to 500. Ignored when using 'SMC'. Samplers adjust
-                the step sizes, scalings or similar during tuning. Tuning samples will be drawn in addition
-                to the number specified in the `draws` argument, and will be discarded unless
-                `discard_tuned_samples` is set to False.
-            **kwargs :
-                Keyword arguments for the fit function of :meth:`pymc3.fit`or :meth:`pymc3.sample`
+                * **variational** : Run inference methods to estimate posterior mean and diagonal mass matrix
+                * **metropolis** : Use the MAP as starting point and Metropolis-Hastings sampler
+                * **nuts** : Use the No-U-Turn sampler
+        vi_params : dict
+            The parameters for the **variational** inference method
+        draws : int
+            The number of samples to draw. Defaults to 500. The number of tuned samples are discarded by default
+        tune : int
+            Number of iterations to tune, defaults to 500. Ignored when using 'SMC'. Samplers adjust
+            the step sizes, scalings or similar during tuning. Tuning samples will be drawn in addition
+            to the number specified in the `draws` argument, and will be discarded unless
+            `discard_tuned_samples` is set to False.
+        **kwargs :
+            Keyword arguments for the fit function of :meth:`pymc3.fit`or :meth:`pymc3.sample`
         """
         self._pre_fit()
         _n_instances, self.n_objects_fit_, self.n_object_features_fit_ = X.shape
