@@ -28,42 +28,42 @@ class ExpectedRankRegression(ObjectRanker, Learner):
         **kwargs,
     ):
         """
-            Create an expected rank regression model.
-            This model normalizes the ranks to [0, 1] and treats them as regression target. For ``α = 0`` we employ
-            simple linear regression. For α > 0 the model becomes ridge regression (when ``l1_ratio = 0``) or
-            elastic net (when ``l1_ratio > 0``). The target for an object :math:`x_k \\in Q` is:
+        Create an expected rank regression model.
+        This model normalizes the ranks to [0, 1] and treats them as regression target. For ``α = 0`` we employ
+        simple linear regression. For α > 0 the model becomes ridge regression (when ``l1_ratio = 0``) or
+        elastic net (when ``l1_ratio > 0``). The target for an object :math:`x_k \\in Q` is:
 
 
-            .. math::
-                r(x_k) = \\frac{\\pi(k)}{n} \\quad ,
+        .. math::
+            r(x_k) = \\frac{\\pi(k)}{n} \\quad ,
 
-            where :math:`\\pi(k)` is the rank of the :math:`x_k`. The regression model learns a function
-            :math:`F \\colon \\mathcal{X} \\to \\mathbb{R}`. The ranking for the given query set :math:`Q` defined as:
+        where :math:`\\pi(k)` is the rank of the :math:`x_k`. The regression model learns a function
+        :math:`F \\colon \\mathcal{X} \\to \\mathbb{R}`. The ranking for the given query set :math:`Q` defined as:
 
-            .. math::
-                ρ(Q)  = \\operatorname{argsort}_{x \\in Q}  \\; -1*F(x)
+        .. math::
+            ρ(Q)  = \\operatorname{argsort}_{x \\in Q}  \\; -1*F(x)
 
 
-            Parameters
-            ----------
-            alpha : float, optional
-                Regularization strength
-            l1_ratio : float, optional
-                Ratio between pure L2 (=0) or pure L1 (=1) regularization.
-            tol : float, optional
-                Optimization tolerance
-            normalize : bool, optional
-                If True, the regressors will be normalized before fitting.
-            fit_intercept : bool, optional
-                If True, the linear model will also fit an intercept.
-            random_state : int, RandomState instance or None, optional
-                Seed of the pseudorandom generator or a RandomState instance
-            **kwargs
-                Keyword arguments for the algorithms
+        Parameters
+        ----------
+        alpha : float, optional
+            Regularization strength
+        l1_ratio : float, optional
+            Ratio between pure L2 (=0) or pure L1 (=1) regularization.
+        tol : float, optional
+            Optimization tolerance
+        normalize : bool, optional
+            If True, the regressors will be normalized before fitting.
+        fit_intercept : bool, optional
+            If True, the linear model will also fit an intercept.
+        random_state : int, RandomState instance or None, optional
+            Seed of the pseudorandom generator or a RandomState instance
+        **kwargs
+            Keyword arguments for the algorithms
 
-            References
-            ----------
-                [1] Kamishima, T., Kazawa, H., & Akaho, S. (2005, November). "Supervised ordering-an empirical survey.", Fifth IEEE International Conference on Data Mining.
+        References
+        ----------
+            [1] Kamishima, T., Kazawa, H., & Akaho, S. (2005, November). "Supervised ordering-an empirical survey.", Fifth IEEE International Conference on Data Mining.
         """
         self.normalize = normalize
         self.alpha = alpha
@@ -78,19 +78,19 @@ class ExpectedRankRegression(ObjectRanker, Learner):
 
     def fit(self, X, Y, **kwargs):
         """
-            Fit an ExpectedRankRegression on the provided set of queries X and preferences Y of those objects.
-            The provided queries and corresponding preferences are of a fixed size (numpy arrays).
+        Fit an ExpectedRankRegression on the provided set of queries X and preferences Y of those objects.
+        The provided queries and corresponding preferences are of a fixed size (numpy arrays).
 
-            Parameters
-            ----------
-            X : numpy array
-                (n_instances, n_objects, n_features)
-                Feature vectors of the objects
-            Y : numpy array
-                (n_instances, n_objects)
-                Rankings of the given objects
-            **kwargs
-                Keyword arguments for the fit function
+        Parameters
+        ----------
+        X : numpy array
+            (n_instances, n_objects, n_features)
+            Feature vectors of the objects
+        Y : numpy array
+            (n_instances, n_objects)
+            Rankings of the given objects
+        **kwargs
+            Keyword arguments for the fit function
         """
         self._pre_fit()
         logger.debug("Creating the Dataset")

@@ -19,33 +19,33 @@ class RankSVM(ObjectRanker, PairwiseSVM):
         **kwargs,
     ):
         """
-            Create an instance of the :class:`PairwiseSVM` model for learning a object ranking function.
-            It learns a linear deterministic utility function of the form :math:`U(x) = w \\cdot x`, where :math:`w` is
-            the weight vector. It is estimated using *pairwise preferences* generated from the rankings.
-            The ranking for the given query set :math:`Q` is defined as:
+        Create an instance of the :class:`PairwiseSVM` model for learning a object ranking function.
+        It learns a linear deterministic utility function of the form :math:`U(x) = w \\cdot x`, where :math:`w` is
+        the weight vector. It is estimated using *pairwise preferences* generated from the rankings.
+        The ranking for the given query set :math:`Q` is defined as:
 
-            .. math::
+        .. math::
 
-                ρ(Q)  = \\operatorname{argsort}_{x \\in Q}  \\; U(x)
+            ρ(Q)  = \\operatorname{argsort}_{x \\in Q}  \\; U(x)
 
-            Parameters
-            ----------
-            C : float, optional
-                Penalty parameter of the error term
-            tol : float, optional
-                Optimization tolerance
-            normalize : bool, optional
-                If True, the data will be normalized before fitting.
-            fit_intercept : bool, optional
-                If True, the linear model will also fit an intercept.
-            random_state : int, RandomState instance or None, optional
-                Seed of the pseudorandom generator or a RandomState instance
-            **kwargs
-                Keyword arguments for the algorithms
+        Parameters
+        ----------
+        C : float, optional
+            Penalty parameter of the error term
+        tol : float, optional
+            Optimization tolerance
+        normalize : bool, optional
+            If True, the data will be normalized before fitting.
+        fit_intercept : bool, optional
+            If True, the linear model will also fit an intercept.
+        random_state : int, RandomState instance or None, optional
+            Seed of the pseudorandom generator or a RandomState instance
+        **kwargs
+            Keyword arguments for the algorithms
 
-            References
-            ----------
-                [1] Joachims, T. (2002, July). "Optimizing search engines using clickthrough data.", Proceedings of the eighth ACM SIGKDD international conference on Knowledge discovery and data mining (pp. 133-142). ACM.
+        References
+        ----------
+            [1] Joachims, T. (2002, July). "Optimizing search engines using clickthrough data.", Proceedings of the eighth ACM SIGKDD international conference on Knowledge discovery and data mining (pp. 133-142). ACM.
         """
         super().__init__(
             C=C,

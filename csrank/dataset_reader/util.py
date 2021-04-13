@@ -14,13 +14,13 @@ except ImportError:
 
 
 def strongly_connected_components(graph):
-    """ Find the strongly connected components in a graph using
-        Tarjan's algorithm.
-        # Taken from http://www.logarithmic.net/pfh-files/blog/01208083168/sort.py
+    """Find the strongly connected components in a graph using
+    Tarjan's algorithm.
+    # Taken from http://www.logarithmic.net/pfh-files/blog/01208083168/sort.py
 
-        graph should be a dictionary mapping node names to
-        lists of successor nodes.
-        """
+    graph should be a dictionary mapping node names to
+    lists of successor nodes.
+    """
 
     result = []
     stack = []
