@@ -13,7 +13,7 @@ classifiers = [
     "Topic :: Software Development",
 ]
 repository = "https://github.com/kiudee/cs-ranking"
-documentation = "https://kiudee.github.io/cs-ranking/"
+documentation = "https://cs-ranking.readthedocs.io/en/latest/"
 
 [tool.poetry.dependencies]
 python = "^3.8"
