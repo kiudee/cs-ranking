@@ -260,7 +260,7 @@ class LetorListwiseDatasetReader(DatasetReader, metaclass=ABCMeta):
         )
         return X, Y
 
-    def sub_sampling_function(self, Xt, Yt):
+    def sub_sampling_function(self, X, Y):
         pass
 
     def convert_output(self, ranking_length):

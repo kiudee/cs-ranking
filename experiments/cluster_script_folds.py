@@ -115,7 +115,7 @@ if __name__ == "__main__":
 
             time_taken = duration_till_now(start)
             logger.info("Time Taken till now: {}  milliseconds".format(seconds_to_time(time_taken)))
-            time_eout_eval = get_duration_seconds('1H')
+            time_eout_eval = get_duration_seconds('1D')
             logger.info("Time spared for the out of sample evaluation : {} ".format(seconds_to_time(time_eout_eval)))
 
             total_duration = duration - time_taken - time_eout_eval

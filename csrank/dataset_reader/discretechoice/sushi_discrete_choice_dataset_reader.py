@@ -40,8 +40,6 @@ class SushiDiscreteChoiceDatasetReader(SushiDatasetReader):
         return self.X, self.Y
 
     def get_single_train_test_split(self):
-        cv_iter = ShuffleSplit(
-            n_splits=1, random_state=self.random_state, test_size=0.20
-        )
+        cv_iter = ShuffleSplit(n_splits=1, random_state=self.random_state, test_size=0.20)
         splits = list(cv_iter.split(self.X))
         return list(self.splitter(splits))[0]

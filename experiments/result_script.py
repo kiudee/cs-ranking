@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from matplotlib import ticker
 
 from csrank.constants import CHOICE_FUNCTION, DISCRETE_CHOICE, OBJECT_RANKING
 from csrank.experiments.constants import OR_MODELS, DCMS, CHOICE_MODELS, OBJECT_RANKERS, DCFS, CHOICE_FUNCTIONS, PCL, \
@@ -255,6 +256,7 @@ def get_ranges_dataset(DATASET, logger, learning_problem=DISCRETE_CHOICE, latex_
                 for key, val in sorted(d.items(), key=lambda item: item[0]):
                     d[key] = val
                 return d
+
             # print(one_row[-1], flatten(one_row[-1]))
             one_row[-1] = flatten(one_row[-1])
             del group['hp_ranges']
@@ -270,6 +272,9 @@ def create_df(columns, data, learning_problem):
     for i in range(len(columns)):
         if "top" in columns[i] and 'ndcg' not in columns[i]:
             columns[i] = "Top-{}".format(columns[i].split("topk")[-1])
+            if 'se' in columns[i]:
+                c = columns[i].split("se")[0]
+                columns[i] = m_map.get(c, c.title()) + "Se"
         elif "se" in columns[i] and columns[i] not in ['dataset', 'subset $0/1$ accuracy']:
             c = columns[i].split("se")[0]
             columns[i] = m_map.get(c, c.title()) + "Se"
@@ -440,13 +445,24 @@ def bar_plot_for_problem(df, learning_problem, start, params, extension):
         i += 1
 
 
-def bar_plot_for_problem2(df, learning_problem, start, params, extension):
-    fig_param = {'facecolor': 'w', 'edgecolor': 'w', 'transparent': False, 'dpi': 800, 'bbox_inches': 'tight',
-                 'pad_inches': 0.05}
+def bar_plot_for_problem2(df, learning_problem, labelpad, params, extension, metric=None):
+    # Setting the style of the plot
+    plt.style.use("science")
+    plt.rc("savefig", bbox="standard")
+    plt.rc('text', usetex=True)
+    plt.rc("font", family="Latin Modern Roman")
+    plt.rc("xtick", labelsize=7)
+    plt.rc("ytick", labelsize=7)
+    colors = plt.cm.get_cmap("tab10").colors
+
+    fig_param = {'facecolor': 'w', 'edgecolor': 'w', 'transparent': False, 'dpi': 800}
     bar_width = 0.20
     opacity = 0.6
     learning_model = learners_map[learning_problem]
-    col = metric_name_dict[learning_problem]
+    if metric is None and metric not in df.columns:
+        col = metric_name_dict[learning_problem]
+    else:
+        col = metric
     fname = os.path.join(DIR_PATH, "journalresults", "{}.{}")
     colse = col + 'Se'
     u_models = [m for m in learning_models_dict[learning_problem] if m in df[learning_model].unique()]
@@ -458,36 +474,56 @@ def bar_plot_for_problem2(df, learning_problem, start, params, extension):
         df1 = df[df.Dataset.str.contains('|'.join(u_datasets[0:mid]))]
         df2 = df[df.Dataset.str.contains('|'.join(u_datasets[mid:]))]
         dfs = [df1, df2]
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(5.63, 5.2), frameon=True, edgecolor='k', facecolor='white',
-                                       sharey=True)
-        fig.subplots_adjust(wspace=0.0, hspace=0.0)
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(4.77377, 3.2), facecolor='white', constrained_layout=True)
+        # fig.subplots_adjust(wspace=0.0, hspace=0.0)
+        fig.set_constrained_layout_pads(hspace=-0.05)
         subps = [ax1, ax2]
     else:
         dfs = [df]
-        fig, ax = plt.subplots(figsize=(5.63, 3), frameon=True, edgecolor='k', facecolor='white')
+        fig, ax = plt.subplots(figsize=(4.77377, 5 / 2.54), facecolor='white', constrained_layout=True)
         subps = [ax]
+
     for sub_df, ax in zip(dfs, subps):
         uds = np.array(sub_df.Dataset.unique())
         init_index = bar_width * (len(u_models) + 1) * np.arange(1, len(uds) + 1)
         index = init_index
         init_index = init_index + bar_width * (len(u_models)) / 2.0
         end = 1.01
-        for model in u_models:
+        for i, model in enumerate(u_models):
             acc = sub_df[sub_df[learning_model] == model][col].values
             errors = sub_df[sub_df[learning_model] == model][colse].values
-            ax.bar(x=index, height=acc, yerr=errors, width=bar_width, alpha=opacity, label=model)
+            ax.bar(x=index, height=acc, yerr=errors, width=bar_width, alpha=opacity, label=model, color=colors[i])
             index = index + bar_width
+        ax.tick_params(
+            axis='x',  # changes apply to the x-axis
+            which='both',  # both major and minor ticks are affected
+            bottom=False,  # ticks along the bottom edge are off
+            top=False,  # ticks along the top edge are off
+            labelbottom=True)  # labels along the bottom edge are off
+        ax.tick_params(
+            axis='y',  # changes apply to the x-axis
+            which='both',  # both major and minor ticks are affected
+            bottom=False,  # ticks along the bottom edge are off
+            top=False,  # ticks along the top edge are off
+            right=False,
+            labelbottom=True)  # labels along the bottom edge are off
+        ax.yaxis.set_major_formatter(ticker.PercentFormatter(xmax=1))
+        ax.yaxis.set_major_locator(ticker.MultipleLocator(0.2))
+        ax.yaxis.set_minor_locator(ticker.MultipleLocator(0.05))
         ax.spines['right'].set_visible(False)
         ax.spines['top'].set_visible(False)
-        ax.tick_params(labelsize=7)
-        ax.set_ylim(start, end)
-        ax.set_yticks(np.arange(start, end, 0.1))
+        # ax.set_ylim(start, end)
+        # ax.set_yticks(np.arange(start, end, 0.1))
         ax.set_xticks(init_index)
         ax.set_xticklabels(uds)
         col = col.replace("$0/1$ Ranking Accuracy", "$0/1$ Ranking \n Accuracy")
-        ax.set_ylabel(col, fontsize=8)
+        col = col.replace("$F_1$ measure", "F$_1$ measure")
+        if learning_problem == DISCRETE_CHOICE and 'Medoid' not in sub_df.Dataset.unique():
+            ax.set_ylabel(col)
+        else:
+            ax.set_ylabel(col, labelpad=labelpad)
+
     plt.legend(**params)
-    plt.tight_layout()
     f_path = fname.format(learning_problem, extension)
     fig_param['fname'] = f_path
     plt.savefig(**fig_param)

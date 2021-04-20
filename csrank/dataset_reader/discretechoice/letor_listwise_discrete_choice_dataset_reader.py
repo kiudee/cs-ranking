@@ -4,7 +4,7 @@ from sklearn.utils import check_random_state
 
 from csrank.constants import DISCRETE_CHOICE
 from .util import (
-    sub_sampling_discrete_choices_from_relevance,
+    sub_sampling_discrete_choices_from_scores,
     convert_to_label_encoding,
 )
 from ..letor_listwise_dataset_reader import LetorListwiseDatasetReader
@@ -22,7 +22,7 @@ class LetorListwiseDiscreteChoiceDatasetReader(LetorListwiseDatasetReader):
         self.n_objects = n_objects
 
     def sub_sampling_function(self, X, Y):
-        return sub_sampling_discrete_choices_from_relevance(
+        return sub_sampling_discrete_choices_from_scores(
             Xt=X, Yt=Y, n_objects=self.n_objects
         )
 

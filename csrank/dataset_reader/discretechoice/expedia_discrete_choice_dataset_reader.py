@@ -33,10 +33,14 @@ class ExpediaDiscreteChoiceDatasetReader(ExpediaDatasetReader):
         X = []
         Y = []
         l = []
+        n = 0
         for name, group in self.train_df.groupby("srch_id"):
             del group["srch_id"]
             vals = group.values
             y = vals[:, -1] + vals[:, -2]
+            if y.sum() == 1.0:
+                self.logger.info("y sum 1".format(y.sum()))
+                n += 1
             if (2 in y) or (y.sum() == 1.0):
                 X.append(vals[:, 0:-2])
                 y[y == np.max(y)] = 1
@@ -44,5 +48,6 @@ class ExpediaDiscreteChoiceDatasetReader(ExpediaDatasetReader):
                 Y.append(y)
             else:
                 l.append(y.sum())
+        self.logger.info("Percentage of clicked hotels {}".format(n / len(Y)))
         self.logger.info("Percentage of clicked {}".format(len(l) / len(Y)))
         return X, Y
