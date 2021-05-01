@@ -444,6 +444,83 @@ def bar_plot_for_problem(df, learning_problem, start, params, extension):
         plt.show()
         i += 1
 
+def plot_generalization(learning_problem, N_OBJECTS_ARRAY, models_dict, extension):
+    datasets = ['medoid', 'hypervolume']
+
+    def get_accuracy(acc):
+        if learning_problem == DISCRETE_CHOICE:
+            mins = 1 / N_OBJECTS_ARRAY
+            acc = (acc - mins) / (1.0 - mins)
+        elif learning_problem == OBJECT_RANKING:
+            acc = 1 - acc
+        return acc
+
+    y_label = metric_name_dict[learning_problem]
+    x_label = "Number of Objects"
+    plot_file = os.path.join(DIR_PATH, 'journalresults', "generalization_{}.{}".format(learning_problem, extension))
+    colors = plt.cm.get_cmap("tab10").colors
+    colors = list(colors) + [(0, 0, 0)]
+    fig, axs = plt.subplots(1, 2, figsize=(4.77377, 5 / 2.54), facecolor='white', constrained_layout=True, sharey=True)
+    fig.set_constrained_layout_pads(hspace=-0.05)
+    for sub_plot, dc in zip(axs, datasets):
+        df_path = os.path.join(DIR_PATH, 'results', "generalization_{}_{}.csv".format(dc, learning_problem))
+        dataFrame = pd.read_csv(df_path, index_col=0)
+        if learning_problem == DISCRETE_CHOICE:
+            dataFrame['feta_dc'] = dataFrame['feta_dc_zero']
+            del dataFrame['feta_dc_zero']
+        if learning_problem == OBJECT_RANKING:
+            dataFrame['feta_ranker'] = dataFrame['feta_ranker_zero']
+            del dataFrame['feta_ranker_zero']
+        models = models_dict[learning_problem]
+        for i, (func, model) in enumerate(models.items()):
+            alpha = 1.0
+            color = colors[i]
+            markersize = 2
+            if "random" in func:
+                color = "black"
+                alpha = 1
+            if func in ["err", "listnet"]:
+                continue
+            if "ranknet" == func:
+                model = model + "/ListNet"
+            if "ranksvm" == func:
+                model = model + "/ERR"
+            acc = get_accuracy(dataFrame[func].values)
+            sub_plot.plot(N_OBJECTS_ARRAY, acc, label=model, color=color, alpha=alpha,
+                          linewidth=1)  # marker=markers[i], markersize=markersize)
+        sub_plot.tick_params(
+            axis='x',  # changes apply to the x-axis
+            which='both',  # both major and minor ticks are affected
+            bottom=True,  # ticks along the bottom edge are off
+            top=True,  # ticks along the top edge are off
+            labelbottom=True)  # labels along the bottom edge are off
+        sub_plot.tick_params(
+            axis='y',  # changes apply to the x-axis
+            which='both',  # both major and minor ticks are affected
+            bottom=True,  # ticks along the bottom edge are off
+            top=True,  # ticks along the top edge are off
+            right=True,
+            labelbottom=True)  # labels along the bottom edge are off
+        sub_plot.yaxis.set_major_formatter(ticker.PercentFormatter(xmax=1))
+        sub_plot.yaxis.set_major_locator(ticker.MultipleLocator(0.2))
+        sub_plot.yaxis.set_minor_locator(ticker.MultipleLocator(0.02))
+        sub_plot.xaxis.set_major_locator(ticker.MultipleLocator(5))
+        sub_plot.xaxis.set_minor_locator(ticker.MultipleLocator(2))
+        # sub_plot.spines['right'].set_visible(False)
+        # sub_plot.spines['top'].set_visible(False)
+        if dc == 'medoid' and learning_problem == DISCRETE_CHOICE:
+            sub_plot.set_ylabel('Normalized Accuracy')
+        else:
+            sub_plot.set_ylabel(ylabel=y_label)
+        sub_plot.set_xlabel(x_label)
+        sub_plot.set_title(dc.title(), horizontalalignment='center', verticalalignment='bottom', fontsize=10)
+        sub_plot.set_xticks(np.arange(3, N_OBJECTS_ARRAY, 2))
+        sub_plot.set_yticks(np.arange(-0.2, 1.0, 0.1))
+    plt.legend(ncol=1, loc=9, bbox_to_anchor=(1.4, 1.2), frameon=False, fontsize=7)
+    fig_param = {'facecolor': 'w', 'edgecolor': 'w', 'transparent': False, 'dpi': 800, 'format': extension}
+    fig_param['fname'] = plot_file
+    plt.savefig(**fig_param)
+    # plt.show()
 
 def bar_plot_for_problem2(df, learning_problem, labelpad, params, extension, metric=None):
     # Setting the style of the plot
