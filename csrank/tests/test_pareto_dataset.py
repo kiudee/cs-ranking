@@ -1,6 +1,6 @@
 import numpy as np
 
-from csrank import ChoiceDatasetGenerator
+from csrank.dataset_reader import ChoiceDatasetGenerator
 
 
 def test_pareto_problem_generation():
