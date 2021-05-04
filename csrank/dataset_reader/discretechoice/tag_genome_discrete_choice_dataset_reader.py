@@ -4,10 +4,10 @@ import numpy as np
 from sklearn.utils import check_random_state
 
 from csrank.constants import DISCRETE_CHOICE
-from csrank.dataset_reader.discretechoice.util import convert_to_label_encoding
 from csrank.dataset_reader.tag_genome_reader import critique_dist
 from csrank.dataset_reader.util import get_key_for_indices
 from ..tag_genome_reader import TagGenomeDatasetReader
+from ...util import convert_to_label_encoding
 
 logger = logging.getLogger(__name__)
 
