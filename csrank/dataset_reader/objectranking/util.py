@@ -1,30 +1,8 @@
-from itertools import combinations
-
 import numpy as np
 
 __all__ = [
     "sub_sampling_rankings",
 ]
-
-
-def generate_pairwise_instances(features):
-    pairs = np.array(list(combinations(features, 2)))
-
-    n_pairs = len(pairs)
-    neg_indices = np.arange(0, n_pairs, 2)
-
-    a, b = np.copy(pairs[neg_indices, 0]), np.copy(pairs[neg_indices, 1])
-    pairs[neg_indices, 1] = a
-    pairs[neg_indices, 0] = b
-
-    X1 = pairs[:, 0]
-    X2 = pairs[:, 1]
-    Y_double = np.ones([n_pairs, 1]) * np.array([1, 0])
-    Y_single = np.repeat(1, n_pairs)
-
-    Y_double[neg_indices] = [0, 1]
-    Y_single[neg_indices] = 0
-    return X1, X2, Y_double, Y_single
 
 
 def sub_sampling_rankings(Xt, Yt, n_objects=5):
