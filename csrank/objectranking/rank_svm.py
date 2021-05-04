@@ -2,7 +2,7 @@ import logging
 
 from csrank.core.pairwise_svm import PairwiseSVM
 from csrank.objectranking.object_ranker import ObjectRanker
-from ..dataset_reader.objectranking.util import generate_complete_pairwise_dataset
+from .util import generate_complete_pairwise_dataset
 
 __all__ = ["RankSVM"]
 logger = logging.getLogger(__name__)
