@@ -9,7 +9,7 @@ from sklearn.utils import check_random_state
 from csrank.learner import Learner
 from csrank.numpy_util import normalize
 from csrank.objectranking.object_ranker import ObjectRanker
-from ..dataset_reader.objectranking.util import complete_linear_regression_dataset
+from .util import complete_linear_regression_dataset
 
 __all__ = ["ExpectedRankRegression"]
 

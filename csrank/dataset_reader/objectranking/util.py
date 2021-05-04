@@ -7,8 +7,6 @@ from csrank.numpy_util import ranking_ordering_conversion
 
 __all__ = [
     "generate_complete_pairwise_dataset",
-    "complete_linear_regression_dataset",
-    "complete_linear_regression_dataset",
     "sub_sampling_rankings",
 ]
 
@@ -102,20 +100,6 @@ def generate_complete_pairwise_dataset(X, Y):
     y_double = np.array(y_double)
     y_single = np.array(y_single)
     return x_train, x_train1, x_train2, y_double, y_single
-
-
-def complete_linear_regression_dataset(X, rankings):
-    X1 = []
-    Y_single = []
-    for features, rank in zip(X, rankings):
-        X1.extend(features)
-        min_rank = np.min(rank, axis=0)
-        max_rank = np.max(rank, axis=0)
-        norm_ranks = (rank - min_rank + 1) / (max_rank - min_rank + 1)
-        Y_single.extend(norm_ranks)
-    X1 = np.array(X1)
-    Y_single = np.array(Y_single)
-    return X1, Y_single
 
 
 def sub_sampling_rankings(Xt, Yt, n_objects=5):
