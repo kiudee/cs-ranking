@@ -9,15 +9,10 @@ from sklearn.gaussian_process.kernels import Matern
 from sklearn.utils import check_random_state
 
 from csrank.constants import DISCRETE_CHOICE
+from csrank.util import convert_to_label_encoding
 from ..synthetic_dataset_generator import SyntheticDatasetGenerator
 from ..util import create_pairwise_prob_matrix
 
-try:
-    from pygmo import hypervolume
-except ImportError:
-    from csrank.util import MissingExtraError, convert_to_label_encoding
-
-    raise MissingExtraError("pygmo", "data")
 
 logger = logging.getLogger(__name__)
 
@@ -108,6 +103,13 @@ class DiscreteChoiceDatasetGenerator(SyntheticDatasetGenerator):
         cluster_spread=1.0,
         **kwd,
     ):
+        try:
+            from pygmo import hypervolume
+        except ImportError:
+            from csrank.util import MissingExtraError
+
+            raise MissingExtraError("pygmo", "data")
+
         def sample_unit_ball(n_f=2, rng=None, radius=1.0):
             rng = check_random_state(rng)
             X = rng.randn(1, n_f)
