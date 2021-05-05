@@ -2,7 +2,6 @@ from importlib.metadata import version
 
 from .choicefunction import *  # noqa
 from .core import *  # noqa
-from .dataset_reader import *  # noqa
 from .discretechoice import *  # noqa
 from .objectranking import *  # noqa
 

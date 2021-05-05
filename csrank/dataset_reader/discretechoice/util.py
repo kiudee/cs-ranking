@@ -1,5 +1,6 @@
 import numpy as np
-from sklearn.preprocessing import LabelBinarizer
+
+from csrank.util import convert_to_label_encoding
 
 
 def sub_sampling_discrete_choices_from_scores(Xt, Yt, n_objects=5):
@@ -60,11 +61,6 @@ def sub_sampling_discrete_choices_from_relevance(Xt, Yt, n_objects=5):
     if len(Y_train) != 0:
         Y_train = convert_to_label_encoding(Y_train, n_objects)
     return X_train, Y_train
-
-
-def convert_to_label_encoding(Y, n_objects):
-    lb = LabelBinarizer().fit(np.arange(n_objects))
-    return lb.transform(Y)
 
 
 def unit_vector(vector):

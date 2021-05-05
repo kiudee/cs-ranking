@@ -9,14 +9,13 @@ from sklearn.gaussian_process.kernels import Matern
 from sklearn.utils import check_random_state
 
 from csrank.constants import DISCRETE_CHOICE
-from .util import convert_to_label_encoding
 from ..synthetic_dataset_generator import SyntheticDatasetGenerator
 from ..util import create_pairwise_prob_matrix
 
 try:
     from pygmo import hypervolume
 except ImportError:
-    from csrank.util import MissingExtraError
+    from csrank.util import MissingExtraError, convert_to_label_encoding
 
     raise MissingExtraError("pygmo", "data")
 

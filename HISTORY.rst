@@ -17,6 +17,9 @@ History
   previous versions. For example the default activation for CmpNet and RankNet
   is now SELU instead of ReLU.
 
+* The dataset generators in `csrank.dataset_reader` are no longer imported
+  on the top level.
+
 1.3.0 (Unreleased)
 ------------------
 

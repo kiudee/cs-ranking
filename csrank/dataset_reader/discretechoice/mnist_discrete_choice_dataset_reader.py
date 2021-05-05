@@ -4,8 +4,8 @@ import numpy as np
 
 from csrank.constants import DISCRETE_CHOICE
 from .util import angle_between
-from .util import convert_to_label_encoding
 from ..mnist_dataset_reader import MNISTDatasetReader
+from ...util import convert_to_label_encoding
 
 logger = logging.getLogger(__name__)
 

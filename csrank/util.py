@@ -7,6 +7,9 @@ from pathlib import Path
 import re
 import sys
 
+import numpy as np
+from sklearn.preprocessing import LabelBinarizer
+
 from csrank.metrics_np import f1_measure
 from csrank.metrics_np import hamming
 from csrank.metrics_np import instance_informedness
@@ -134,3 +137,8 @@ def setup_logging(log_path=None, level=logging.DEBUG):
     )
     logger = logging.getLogger("SetupLogger")
     logger.info("log file path: {}".format(log_path))
+
+
+def convert_to_label_encoding(Y, n_objects):
+    lb = LabelBinarizer().fit(np.arange(n_objects))
+    return lb.transform(Y)

@@ -14,7 +14,6 @@ from csrank.constants import NLM
 from csrank.constants import PCL
 from csrank.constants import RANKNET_DC
 from csrank.constants import RANKSVM_DC
-from csrank.dataset_reader.discretechoice.util import convert_to_label_encoding
 from csrank.discretechoice import CmpNetDiscreteChoiceFunction
 from csrank.discretechoice import FATEDiscreteChoiceFunction
 from csrank.discretechoice import FETADiscreteChoiceFunction
@@ -28,6 +27,7 @@ from csrank.discretechoice import RankNetDiscreteChoiceFunction
 from csrank.metrics_np import categorical_accuracy_np
 from csrank.metrics_np import subset_01_loss
 from csrank.metrics_np import topk_categorical_accuracy_np
+from csrank.util import convert_to_label_encoding
 from csrank.util import metrics_on_predictions
 
 metrics = {
