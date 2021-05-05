@@ -12,13 +12,6 @@ from ..synthetic_dataset_generator import SyntheticDatasetGenerator
 from ..util import create_pairwise_prob_matrix
 from ..util import quicksort
 
-try:
-    from pygmo import hypervolume
-except ImportError:
-    from csrank.util import MissingExtraError
-
-    raise MissingExtraError("pygmo", "data")
-
 
 class ObjectRankingDatasetGenerator(SyntheticDatasetGenerator):
     def __init__(self, dataset_type="medoid", **kwargs):
@@ -155,6 +148,12 @@ class ObjectRankingDatasetGenerator(SyntheticDatasetGenerator):
     def make_hv_dataset(
         self, n_instances=1000, n_objects=5, n_features=5, seed=42, **kwd
     ):
+        try:
+            from pygmo import hypervolume
+        except ImportError:
+            from csrank.util import MissingExtraError
+
+            raise MissingExtraError("pygmo", "data")
         random_state = check_random_state(seed=seed)
         X = random_state.randn(n_instances, n_objects, n_features)
         # Normalize to unit circle and fold to lower quadrant
