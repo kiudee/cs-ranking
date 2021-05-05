@@ -1710,13 +1710,14 @@ flake8-import-order = "*"
 pyflakes = "*"
 
 [extras]
-data = ["psycopg2-binary", "pandas", "h5py", "pygmo"]
+data = ["psycopg2-binary", "pandas", "h5py"]
 docs = ["Sphinx", "sphinx_rtd_theme", "sphinxcontrib-bibtex", "nbsphinx", "IPython"]
+hypervolume = ["pygmo"]
 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "b4b11e0f8c2b869dd9a2fdff2da0ec35b57a7af69ada56a7428cc0a9c4483323"
+content-hash = "eea4f7cab926f8c7c11fab4c2e111a7c4f7f9f8cfc7ba569fdd98891b78afe7a"
 
 [metadata.files]
 alabaster = [

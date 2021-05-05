@@ -59,7 +59,8 @@ nox = "^2020.12.31"
 nox-poetry = "^0.8.4"
 
 [tool.poetry.extras]
-data = ["psycopg2-binary", "pandas", "h5py", "pygmo"]
+hypervolume = ["pygmo"]
+data = ["psycopg2-binary", "pandas", "h5py"]
 # These are temporarily made mandatory due to an issue in our optional imports.
 # See https://github.com/kiudee/cs-ranking/issues/137.
 # probabilistic = ["pymc3", "theano"]
