@@ -72,6 +72,19 @@ def tests(session):
             session.notify("coverage")
 
 
+@session(name="windows-tests", python="3.8", venv_backend="conda")
+def windows(session):
+    """Run the test suite."""
+    session.conda_install("--channel=conda-forge", "pymc3")
+    session.install(".[data]")
+    session.install("coverage[toml]", "pytest", "nox", "nox-poetry")
+    try:
+        session.run("coverage", "run", "--parallel", "-m", "pytest", *session.posargs)
+    finally:
+        if session.interactive:
+            session.notify("coverage")
+
+
 @session
 def coverage(session):
     """Produce the coverage report."""
