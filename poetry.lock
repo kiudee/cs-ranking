@@ -317,14 +317,6 @@ six = "*"
 stevedore = "*"
 
 [[package]]
-name = "docopt"
-version = "0.6.2"
-description = "Pythonic argument parser, that will make you smile"
-category = "main"
-optional = false
-python-versions = "*"
-
-[[package]]
 name = "docutils"
 version = "0.16"
 description = "Docutils -- Python Documentation Utilities"
@@ -1719,7 +1711,7 @@ hypervolume = ["pygmo"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "608306e735af34692c20d32a5eb8f0fead65f68f9c4e8d510256c9b966e435aa"
+content-hash = "3e4748da2760d7affc6700408993035c411778fccad00f66ce2e709ca9df246e"
 
 [metadata.files]
 alabaster = [
@@ -1963,9 +1955,6 @@ distlib = [
 doc8 = [
     {file = "doc8-0.8.1-py2.py3-none-any.whl", hash = "sha256:4d58a5c8c56cedd2b2c9d6e3153be5d956cf72f6051128f0f2255c66227df721"},
     {file = "doc8-0.8.1.tar.gz", hash = "sha256:4d1df12598807cf08ffa9a1d5ef42d229ee0de42519da01b768ff27211082c12"},
-]
-docopt = [
-    {file = "docopt-0.6.2.tar.gz", hash = "sha256:49b3a825280bd66b3aa83585ef59c4a8c82f2c8a522dbe754a8bc8d08c85c491"},
 ]
 docutils = [
     {file = "docutils-0.16-py2.py3-none-any.whl", hash = "sha256:0c5b78adfbf7762415433f5515cd5c9e762339e23369dbe8000d84a4bf4ab3af"},

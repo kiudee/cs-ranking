@@ -21,7 +21,6 @@ python = "^3.8"
 numpy = "^1.12.1"
 scipy = "^1.5.2"
 scikit-learn = "^0.23.2"
-docopt = "^0.6.2"
 joblib = "^0.16.0"
 # These should be optional, but are temporarily made mandatory due
 # to an issue in our optional imports. See
