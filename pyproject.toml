@@ -21,7 +21,6 @@ python = "^3.8"
 numpy = "^1.12.1"
 scipy = "^1.5.2"
 scikit-learn = "^0.23.2"
-joblib = "^0.16.0"
 # These should be optional, but are temporarily made mandatory due
 # to an issue in our optional imports. See
 # https://github.com/kiudee/cs-ranking/issues/137.
@@ -29,6 +28,7 @@ psycopg2-binary = {version = "^2.7", optional = true}
 pandas = {version = "^1.1.1", optional = true}
 h5py = {version = "^3.0", optional = true}
 pygmo = {version = "^2.7", optional = true}
+joblib = {version = "^0.16.0", optional = true}
 pymc3 = "^3.8"
 Sphinx = {version = "^3.2.1", optional = true}
 sphinx_rtd_theme = {version = "^0.5.0", optional = true}
@@ -58,7 +58,7 @@ nox-poetry = "^0.8.4"
 
 [tool.poetry.extras]
 hypervolume = ["pygmo"]
-data = ["psycopg2-binary", "pandas", "h5py"]
+data = ["psycopg2-binary", "pandas", "h5py", "joblib"]
 # These are temporarily made mandatory due to an issue in our optional imports.
 # See https://github.com/kiudee/cs-ranking/issues/137.
 # probabilistic = ["pymc3", "theano"]
