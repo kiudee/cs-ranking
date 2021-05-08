@@ -66,7 +66,15 @@ def tests(session):
     session.install(".[data]")
     session.install("coverage[toml]", "pytest", "nox", "nox-poetry")
     try:
-        session.run("coverage", "run", "--parallel", "-m", "pytest", *session.posargs)
+        session.run(
+            "coverage",
+            "run",
+            "--parallel",
+            "-m",
+            "pytest",
+            "--numprocesses=auto",
+            *session.posargs,
+        )
     finally:
         if session.interactive:
             session.notify("coverage")
