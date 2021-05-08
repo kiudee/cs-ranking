@@ -19,11 +19,15 @@ readme = "README.rst"
 [tool.poetry.dependencies]
 python = "^3.8"
 numpy = "^1.12.1"
-scipy = "^1.5.2"
-scikit-learn = "^0.23.2"
+scipy = "^1.2"
+scikit-learn = "^0.23"
 pymc3 = "^3.8"
+# We do not use arviz directly, but it is a dependency by pymc3.
+# Since version 0.11.2 causes incompatibility with older versions of pymc3,
+# we restrict the range here:
+arviz = ">=0.10,<0.11.1"
 torch = "^1.8.0"
-skorch = "^0.9.0"
+skorch = ">=0.9,<0.11"
 # These should be optional, but are temporarily made mandatory due
 # to an issue in our optional imports. See
 # https://github.com/kiudee/cs-ranking/issues/137.
