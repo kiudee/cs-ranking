@@ -509,7 +509,7 @@ i18n = ["Babel (>=0.8)"]
 
 [[package]]
 name = "joblib"
-version = "0.16.0"
+version = "0.17.0"
 description = "Lightweight pipelining: using Python functions as pipeline jobs."
 category = "main"
 optional = false
@@ -1711,7 +1711,7 @@ hypervolume = ["pygmo"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "905dcc1780c2804b7f9eab31d29b71ad1e1052bc4c2fe60a8b9b80d340af8117"
+content-hash = "9b4c4cad46f94c72baf1bee9214c385eae7cab7dfe0ceb7df8f047eb67900912"
 
 [metadata.files]
 alabaster = [
@@ -2029,8 +2029,8 @@ jinja2 = [
     {file = "Jinja2-2.11.3.tar.gz", hash = "sha256:a6d58433de0ae800347cab1fa3043cebbabe8baa9d29e668f1c768cb87a333c6"},
 ]
 joblib = [
-    {file = "joblib-0.16.0-py3-none-any.whl", hash = "sha256:d348c5d4ae31496b2aa060d6d9b787864dd204f9480baaa52d18850cb43e9f49"},
-    {file = "joblib-0.16.0.tar.gz", hash = "sha256:8f52bf24c64b608bf0b2563e0e47d6fcf516abc8cfafe10cfd98ad66d94f92d6"},
+    {file = "joblib-0.17.0-py3-none-any.whl", hash = "sha256:698c311779f347cf6b7e6b8a39bb682277b8ee4aba8cf9507bc0cf4cd4737b72"},
+    {file = "joblib-0.17.0.tar.gz", hash = "sha256:9e284edd6be6b71883a63c9b7f124738a3c16195513ad940eae7e3438de885d5"},
 ]
 jsonschema = [
     {file = "jsonschema-3.2.0-py2.py3-none-any.whl", hash = "sha256:4e5b3cf8216f577bee9ce139cbe72eca3ea4f292ec60928ff24758ce626cd163"},
