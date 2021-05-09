@@ -64,7 +64,7 @@ def activate_virtualenv_in_precommit_hooks(session):
 def tests(session):
     """Run the test suite."""
     session.install(".[data]")
-    session.install("coverage[toml]", "pytest", "nox", "nox-poetry")
+    session.install("coverage[toml]", "pytest", "pytest-xdist", "nox", "nox-poetry")
     try:
         session.run("coverage", "run", "--parallel", "-m", "pytest", *session.posargs)
     finally:
