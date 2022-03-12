@@ -66,7 +66,7 @@ parso==0.8.1; python_version >= "3.7"
 patsy==0.5.1; python_version >= "3.7"
 pexpect==4.8.0; sys_platform != "win32" and python_version >= "3.7"
 pickleshare==0.7.5; python_version >= "3.7"
-pillow==8.2.0; python_version >= "3.7"
+pillow==9.0.1; python_version >= "3.7"
 prompt-toolkit==3.0.17; python_full_version >= "3.6.1" and python_version >= "3.7"
 protobuf==3.15.6; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.2.0"
 psycopg2-binary==2.8.6; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.4.0")
