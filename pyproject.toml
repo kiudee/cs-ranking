@@ -40,7 +40,7 @@ Sphinx = {version = "^3.2.1", optional = true}
 sphinx_rtd_theme = {version = "^0.5.0", optional = true}
 sphinxcontrib-bibtex = {version = "^1.0.0", optional = true}
 nbsphinx = {version = "^0.7.1", optional = true}
-IPython = {version = "^7.18.1", optional = true}
+IPython = {version = "^7.31.1", optional = true}
 
 [tool.poetry.dev-dependencies]
 pre-commit = "^2.7.1"
@@ -55,7 +55,7 @@ doc8 = "^0.8.1"
 zimports = "^0.2.2"
 pytest-cov = "^2.10.1"
 nbsphinx = "^0.7.1"
-IPython = "^7.18.1"
+IPython = "^7.31.1"
 pytest-xdist = "^2.1.0"
 nox = "^2020.12.31"
 nox-poetry = "^0.8.4"
