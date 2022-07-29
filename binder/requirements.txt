@@ -49,7 +49,7 @@ latexcodec==2.0.1; python_version >= "2.7" and python_full_version < "3.0.0" or 
 markdown==3.3.4; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.2.0" and python_version >= "3.6"
 markupsafe==1.1.1; python_version >= "3.5" and python_full_version < "3.0.0" or python_full_version >= "3.5.0" and python_version >= "3.5"
 matplotlib==3.3.4; python_version >= "3.7"
-mistune==0.8.4; python_version >= "3.6"
+mistune==2.0.3; python_version >= "3.6"
 nbclient==0.5.3; python_full_version >= "3.6.1" and python_version >= "3.6"
 nbconvert==6.0.7; python_version >= "3.6"
 nbformat==5.1.2; python_full_version >= "3.6.1" and python_version >= "3.6"
