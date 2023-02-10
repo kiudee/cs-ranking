@@ -33,7 +33,7 @@ idna==2.10; python_version >= "3.5" and python_full_version < "3.0.0" or python_
 imagesize==1.2.0; python_version >= "3.5" and python_full_version < "3.0.0" or python_full_version >= "3.4.0" and python_version >= "3.5"
 importlib-metadata==3.7.3; python_version >= "3.6" and python_full_version < "3.0.0" and python_version < "3.8" or python_full_version >= "3.2.0" and python_version >= "3.6" and python_version < "3.8"
 ipython-genutils==0.2.0; python_version >= "3.7"
-ipython==7.21.0; python_version >= "3.7"
+ipython==8.10.0; python_version >= "3.7"
 jedi==0.18.0; python_version >= "3.7"
 jinja2==2.11.3; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.5.0" and python_version >= "3.6"
 joblib==0.16.0; python_version >= "3.6"
